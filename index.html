@@ -23,21 +23,19 @@
             --gauge-red: #e74c3c;
         }
 
-        * {
-            box-sizing: border-box; /* Critical for fixing width issues */
-        }
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--bg-sand);
             color: var(--brand-dark);
             margin: 0;
-            padding: 10px; /* Reduced padding to save space */
-            height: 100vh; /* Fixed height */
+            padding: 10px;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow: hidden; /* Disable scrolling */
+            overflow: hidden; 
             user-select: none; 
         }
 
@@ -56,7 +54,7 @@
 
         h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 1.5rem; /* Slightly smaller for compact fit */
+            font-size: 1.5rem;
             color: var(--brand-dark);
             margin: 0;
             text-align: center;
@@ -75,12 +73,12 @@
         /* --- VIEWS --- */
         .view-section {
             width: 100%;
-            max-width: 500px; /* Constrain width on tablets */
+            max-width: 500px;
             height: 100%;
             display: none;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between; /* Pushes content to fill screen evenly */
+            justify-content: space-between;
             padding-bottom: 10px;
         }
         .view-section.active { display: flex; }
@@ -95,7 +93,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             border: 2px solid #444;
             position: relative;
-            /* Flex growth ensures it takes available space but doesn't overflow */
             flex-shrink: 0; 
         }
         
@@ -126,9 +123,10 @@
             grid-template-columns: 1fr 1fr; 
             gap: 10px; 
             width: 100%;
-            flex-grow: 1; /* Allows grid to take up remaining vertical space */
-            align-content: center; /* Centers items vertically */
+            flex-grow: 1; 
+            align-content: center; 
             margin: 10px 0;
+            overflow-y: auto; /* Allow grid scroll if screens get tiny */
         }
 
         .level-card {
@@ -136,13 +134,13 @@
             padding: 10px; text-align: center; cursor: pointer; position: relative;
             transition: transform 0.1s;
             display: flex; flex-direction: column; justify-content: center; 
-            min-height: 100px; /* Reduced height to fit screen */
+            min-height: 90px;
         }
         .level-card:active { transform: scale(0.98); }
 
-        .level-card h3 { margin: 5px 0 2px 0; color: var(--brand-dark); font-size: 1rem; }
-        .level-icon { font-size: 1.8rem; }
-        .level-status { font-size: 0.7rem; color: #888; margin-top: auto; font-weight: bold; }
+        .level-card h3 { margin: 5px 0 2px 0; color: var(--brand-dark); font-size: 0.9rem; }
+        .level-icon { font-size: 1.5rem; }
+        .level-status { font-size: 0.65rem; color: #888; margin-top: auto; font-weight: bold; }
         
         .status-done { color: #27ae60; }
         
@@ -172,7 +170,6 @@
             width: 100%;
             margin-bottom: 10px;
             position: relative;
-            /* Ensures image area shrinks on small screens */
             flex-shrink: 1; 
             min-height: 0;
             display: flex; justify-content: center; align-items: center;
@@ -181,6 +178,7 @@
         #game-container {
             position: relative; 
             width: 100%; 
+            max-height: 50vh; 
             aspect-ratio: 4/3; 
             background-color: #000; overflow: hidden; border: 3px solid #fff; cursor: pointer; 
         }
@@ -211,10 +209,9 @@
         /* Input Area */
         #input-area { 
             display: flex; flex-direction: column; gap: 8px; width: 100%; 
-            /* Fixed width ensures it doesn't push screen bounds */
             max-width: 100%;
             margin-bottom: 10px; 
-            flex-shrink: 0; /* Prevents this from getting crushed */
+            flex-shrink: 0; 
         }
         
         input[type="text"] {
@@ -224,10 +221,9 @@
         }
         input[type="text"]:focus { border-color: var(--brand-gold); }
 
-        /* THE GOLD BUTTON */
         #enter-btn {
             background-color: var(--brand-gold); 
-            color: #1a1a1a; /* Dark text for contrast against gold */
+            color: #1a1a1a; 
             font-weight: bold;
         }
         
@@ -237,12 +233,10 @@
         }
         .abort-btn { background: transparent; border: 1px solid #ccc; color: #777; margin-top: auto; }
 
-        /* --- UTILS --- */
         #message { margin-top: 0px; font-size: 1.2rem; text-align: center; height: 25px; font-weight: bold; }
         .success { color: #27ae60; }
         .fail { color: var(--brand-red); }
 
-        /* Install Button */
         #install-btn { display: none; margin-top: auto; background: #2c2c2c; color: #fff; margin-bottom: 10px;}
 
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
@@ -266,12 +260,12 @@
         
         <div class="fuel-tank-container">
             <div class="fuel-label">Global Fuel Reserves</div>
-            <div class="fuel-value"><span id="total-fuel-display">3000</span></div>
+            <div class="fuel-value"><span id="total-fuel-display">3500</span></div>
             <div class="fuel-bar-bg">
                 <div class="fuel-bar-fill" id="fuel-bar"></div>
             </div>
             <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;">
-                ⚠️ Need <span style="color:#fff">1000L</span> Remaining to launch Flight 4
+                ⚠️ Need <span style="color:#fff">1000L</span> Remaining to launch Flight 5
             </div>
         </div>
 
@@ -286,7 +280,7 @@
     <div id="game-view" class="view-section">
         <div class="game-header">
             <div id="level-title" style="font-weight:bold;">Flight 1</div>
-            <div class="mini-fuel" id="current-fuel-display">3000</div>
+            <div class="mini-fuel" id="current-fuel-display">3500</div>
         </div>
 
         <div id="game-wrapper">
@@ -309,13 +303,17 @@
         // --- CONFIGURATION ---
         const LEVELS_CONFIG = [
             { image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
-            { image: "a320.jpg", answers: ["airbus a320", "a320", "320"], name: "Airbus A320" },
+            // FIXED: Changed image to a380.jpg and updated answers
+            { image: "a380.jpg", answers: ["airbus a380", "a380", "super jumbo", "380"], name: "Airbus A380" },
             { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
-            // Name is hidden in UI until unlocked/completed
-            { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" }
+            // NEW LEVEL: Embraer E175
+            { image: "e175.jpg", answers: ["e175", "embraer 175", "embraer e175", "e-175"], name: "Embraer E175" },
+            // CLASSIFIED: SR-71 (Now at Index 4)
+            { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "Classified Mission" }
         ];
 
-        const STARTING_GLOBAL_FUEL = 3000;
+        // INCREASED STARTING FUEL to balance 4 levels
+        const STARTING_GLOBAL_FUEL = 3500;
         const UNLOCK_THRESHOLD = 1000; 
         const TILE_COST = 15;
         const WRONG_GUESS_PENALTY = 200;
@@ -349,7 +347,7 @@
         };
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v6'); // Incremented version
+            const saved = localStorage.getItem('fuelQuizState_v7'); 
             if (saved) {
                 globalState = JSON.parse(saved);
             } else {
@@ -362,7 +360,7 @@
         }
 
         function saveState() {
-            localStorage.setItem('fuelQuizState_v6', JSON.stringify(globalState));
+            localStorage.setItem('fuelQuizState_v7', JSON.stringify(globalState));
         }
 
         // --- DASHBOARD LOGIC ---
@@ -378,12 +376,16 @@
             fuelBar.style.backgroundColor = color;
             document.querySelector('.fuel-value').style.color = color;
 
-            // Check UNLOCK Conditions
-            const levelsDone = globalState.levels[0].completed && globalState.levels[1].completed && globalState.levels[2].completed;
+            // CHECK UNLOCK: Level 5 (Index 4) needs 0,1,2,3 completed
+            const levelsDone = globalState.levels[0].completed && 
+                               globalState.levels[1].completed && 
+                               globalState.levels[2].completed &&
+                               globalState.levels[3].completed;
+                               
             const hasFuel = globalState.currentFuel >= UNLOCK_THRESHOLD;
-            const isLevel4Unlocked = levelsDone && hasFuel;
+            const isClassifiedUnlocked = levelsDone && hasFuel;
 
-            if (isLevel4Unlocked) {
+            if (isClassifiedUnlocked) {
                 unlockMessage.innerHTML = "Classified Mission: <span style='color:#2ecc71'>READY</span>";
             } else {
                 unlockMessage.innerHTML = "⚠️ Complete all flights with <span style='color:#fff'>1000L</span>+ remaining";
@@ -394,10 +396,9 @@
             LEVELS_CONFIG.forEach((config, idx) => {
                 const levelState = globalState.levels[idx];
                 const card = document.createElement('div');
-                const isSR71 = idx === 3;
+                const isClassified = idx === 4; // Index 4 is the SR-71
                 
-                // Logic: Locked if Level 4 and conditions NOT met
-                const isLocked = isSR71 && !isLevel4Unlocked;
+                const isLocked = isClassified && !isClassifiedUnlocked;
 
                 if (isLocked) {
                     card.className = "level-card locked";
@@ -411,20 +412,15 @@
                     let icon = "✈️";
                     let statusHtml = "";
                     
-                    // NAME HIDING LOGIC:
-                    // Default name: "Flight X"
-                    // If Level 4: "Classified Mission" (unless completed)
-                    // If Completed: Show Real Name
-                    
                     let displayName = `Flight ${idx + 1}`;
-                    if(isSR71) displayName = "Classified";
+                    if(isClassified) displayName = "Classified";
 
                     if (levelState.completed) {
                         displayName = config.name; // REVEAL NAME
                         icon = "★";
                         statusHtml = `<div class="level-status status-done">Identified</div>`;
-                    } else if (isSR71) {
-                         icon = "🚀"; // Special icon for Level 4
+                    } else if (isClassified) {
+                         icon = "🚀"; 
                          statusHtml = `<div class="level-status">Ready</div>`;
                     } else if (levelState.revealedTiles.length > 0) {
                         statusHtml = `<div class="level-status">In Progress</div>`;
@@ -459,10 +455,9 @@
             gameView.classList.add('active');
 
             let title = `Flight ${idx+1}`;
-            // If completed, show real name, otherwise "Classified" or "Flight X"
             if (levelState.completed) {
                 title = LEVELS_CONFIG[idx].name;
-            } else if (idx === 3) {
+            } else if (idx === 4) { // Classified index
                 title = "Classified";
             }
             
@@ -564,7 +559,7 @@
                 triggerConfetti();
                 saveState();
                 
-                // Show real name immediately upon winning
+                // Show real name
                 document.getElementById('level-title').textContent = LEVELS_CONFIG[activeLevelIdx].name;
 
                 setTimeout(saveAndExit, 2000);

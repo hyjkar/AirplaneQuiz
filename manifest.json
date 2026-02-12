@@ -1,6 +1,6 @@
 {
   "name": "Airplane Quiz Deluxe",
-  "short_name": "Plane Quiz",
+  "short_name": "Fuel Quiz",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#fcfbf9",

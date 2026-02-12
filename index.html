@@ -33,7 +33,6 @@
             background-color: var(--bg-sand);
             color: var(--brand-dark);
             margin: 0; padding: 10px; 
-            /* Fix for mobile address bar cropping */
             height: 100vh; 
             height: 100dvh; 
             display: flex; flex-direction: column; align-items: center;
@@ -41,7 +40,7 @@
         }
 
         /* --- OVERLAYS --- */
-        #orientation-lock, #login-overlay {
+        #orientation-lock, #login-overlay, #restart-overlay {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #111; color: var(--brand-gold);
@@ -49,6 +48,13 @@
             flex-direction: column; justify-content: center; align-items: center; text-align: center;
             padding: 20px;
         }
+        
+        /* Specific style for Restart Overlay to be semi-transparent */
+        #restart-overlay {
+            background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(5px);
+        }
+
         @media screen and (orientation: landscape) and (max-height: 600px) {
             #orientation-lock { display: flex; }
         }
@@ -58,10 +64,21 @@
 
         .view-section { 
             width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; 
-            /* Extra padding at bottom to ensure safety from screen edges */
             padding-bottom: 20px; 
         }
         .view-section.active { display: flex; }
+
+        /* --- MODAL BOX (For Login & Restart) --- */
+        .modal-box {
+            background: #222; border: 2px solid var(--brand-gold);
+            padding: 25px; border-radius: 12px; width: 100%; max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .modal-box.danger {
+            border-color: var(--brand-red);
+            box-shadow: 0 0 20px rgba(215, 25, 32, 0.2);
+        }
 
         /* --- DASHBOARD --- */
         .dashboard-header { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
@@ -95,23 +112,24 @@
 
         /* --- BUTTONS --- */
         .footer-buttons { 
-            width: 100%; 
-            flex-shrink: 0; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
-            margin-top: 5px; 
-            padding-top: 10px; 
-            border-top: 1px solid #eee; 
-            
-            /* CRITICAL FIX FOR BOTTOM VISIBILITY */
-            padding-bottom: 30px; /* Push buttons up */
-            margin-bottom: env(safe-area-inset-bottom); /* For iPhone Home Bar */
+            width: 100%; flex-shrink: 0; display: flex; flex-direction: column; 
+            gap: 8px; margin-top: 5px; padding-top: 10px; border-top: 1px solid #eee; 
+            padding-bottom: 30px; margin-bottom: env(safe-area-inset-bottom);
         }
+        .modal-buttons {
+            display: flex; gap: 10px; margin-top: 20px;
+        }
+        
         button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
+        
         .primary-btn { background-color: var(--brand-red); color: white; }
         .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
         .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
+        
+        /* Modal specific buttons */
+        .danger-btn { background-color: var(--brand-red); color: white; font-weight: bold; }
+        .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
+        
         .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
 
         /* --- GAMEPLAY --- */
@@ -164,11 +182,28 @@
         <p>This mission requires Portrait Mode.</p>
     </div>
 
+    <div id="restart-overlay">
+        <div class="modal-box danger">
+            <h1 style="color: var(--brand-red); margin-bottom: 10px;">SYSTEM PURGE</h1>
+            <p style="margin-bottom: 10px; color: #ccc; font-size: 0.9rem;">
+                WARNING: This will delete all fuel data and flight logs. 
+                <br><br>
+                This action cannot be undone.
+            </p>
+            <div class="modal-buttons">
+                <button class="cancel-btn" onclick="cancelReset()">CANCEL</button>
+                <button class="danger-btn" onclick="confirmReset()">CONFIRM RESET</button>
+            </div>
+        </div>
+    </div>
+
     <div id="login-overlay">
-        <h1 style="color: var(--brand-red); margin-bottom: 10px;">IDENTIFY PILOT</h1>
-        <p style="margin-bottom: 30px; color: #888;">Enter callsign for global registry.</p>
-        <input type="text" id="callsign-input" placeholder="Callsign (e.g. Maverick)" maxlength="12" style="margin-bottom: 15px;">
-        <button class="gold-btn" onclick="registerPilot()">CONFIRM IDENTITY</button>
+        <div class="modal-box">
+            <h1 style="color: var(--brand-gold); margin-bottom: 10px;">IDENTIFY PILOT</h1>
+            <p style="margin-bottom: 20px; color: #888;">Enter callsign for global registry.</p>
+            <input type="text" id="callsign-input" placeholder="Callsign (e.g. Maverick)" maxlength="12" style="margin-bottom: 15px;">
+            <button class="gold-btn" onclick="registerPilot()">CONFIRM IDENTITY</button>
+        </div>
     </div>
 
     <div id="selector-view" class="view-section">
@@ -191,7 +226,7 @@
         <div class="footer-buttons">
             <button class="outline-btn" onclick="openLeaderboard()">🏆 Global Leaderboard</button>
             <button id="install-btn" class="dark-btn">📲 Install App</button>
-            <button class="outline-btn" onclick="resetAllProgress()">Restart Game</button>
+            <button class="outline-btn" onclick="triggerResetUI()">Restart Game</button>
         </div>
     </div>
 
@@ -272,6 +307,7 @@
         const gameView = document.getElementById('game-view');
         const lbView = document.getElementById('leaderboard-view');
         const loginOverlay = document.getElementById('login-overlay');
+        const restartOverlay = document.getElementById('restart-overlay');
         const pilotGreeting = document.getElementById('pilot-greeting');
         
         // --- INIT ---
@@ -312,7 +348,6 @@
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
             
-            // CHANGED COLLECTION NAME TO 'flight_scores_v1' TO RESET LEADERBOARD
             db.collection("flight_scores_v1").doc(globalState.username).set({
                 name: globalState.username,
                 score: globalState.currentFuel,
@@ -333,7 +368,6 @@
                 return;
             }
 
-            // READ FROM NEW COLLECTION
             db.collection("flight_scores_v1").orderBy("score", "desc").limit(20).get()
             .then((querySnapshot) => {
                 let html = "";
@@ -365,7 +399,7 @@
 
         // --- CORE LOGIC ---
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v12'); // Version bump to force reset
+            const saved = localStorage.getItem('fuelQuizState_v12'); 
             if (saved) {
                 globalState = JSON.parse(saved);
             } else {
@@ -379,7 +413,6 @@
         }
 
         function isGameComplete() {
-            // Check if all levels (including SR71 at index 4) are done
             return globalState.levels.every(l => l.completed);
         }
 
@@ -535,7 +568,6 @@
                 saveState();
                 document.getElementById('level-title').textContent = LEVELS_CONFIG[activeLevelIdx].name;
                 
-                // IF THIS WAS THE LAST LEVEL (Index 4), SYNC SCORE
                 if (activeLevelIdx === 4) {
                     syncScoreToCloud();
                 }
@@ -559,11 +591,16 @@
 
         function saveAndExit() { renderDashboard(); gameView.classList.remove('active'); selectorView.classList.add('active'); }
         
-        function resetAllProgress() {
-            if(confirm("Restart Game? All progress will be lost.")) {
-                localStorage.clear();
-                location.reload();
-            }
+        // --- CUSTOM RESTART LOGIC ---
+        function triggerResetUI() {
+            restartOverlay.style.display = 'flex';
+        }
+        function cancelReset() {
+            restartOverlay.style.display = 'none';
+        }
+        function confirmReset() {
+            localStorage.clear();
+            location.reload();
         }
 
         function showFloat(x, y, text) {

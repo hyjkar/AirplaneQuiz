@@ -38,7 +38,7 @@
         }
 
         /* --- OVERLAYS --- */
-        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay {
+        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #111; color: var(--brand-gold);
@@ -47,6 +47,8 @@
             padding: 20px;
         }
         #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
+        #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
+        
         @media screen and (orientation: landscape) and (max-height: 600px) {
             #orientation-lock { display: flex; }
         }
@@ -55,9 +57,16 @@
         h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
 
         .view-section { 
-            width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 20px; 
+            width: 100%; 
+            /* UPDATED: Increased max-width to support 1400px layout on larger screens */
+            max-width: 1400px; 
+            height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; 
+            padding-bottom: 20px;
+            transition: filter 2s ease;
         }
         .view-section.active { display: flex; }
+        
+        .gray-out { filter: grayscale(100%) contrast(1.2); }
 
         .modal-box {
             background: #222; border: 2px solid var(--brand-gold);
@@ -68,7 +77,7 @@
         .modal-box.success { border-color: var(--gauge-green); box-shadow: 0 0 20px rgba(46, 204, 113, 0.2); }
 
         /* --- DASHBOARD --- */
-        .dashboard-header { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+        .dashboard-header { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; max-width: 600px; }
         
         .fuel-tank-container {
             background: #222; padding: 15px; border-radius: 12px; width: 100%; text-align: center;
@@ -79,48 +88,33 @@
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
 
-        /* --- FOLDER / LIST VIEW --- */
+        /* --- LIST VIEW --- */
         #level-list-container {
-            display: flex; flex-direction: column; gap: 10px; width: 100%;
+            display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 800px;
             margin: 15px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; 
         }
         #level-list-container::-webkit-scrollbar { width: 5px; }
         #level-list-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
 
-        /* World Folder Styles */
         .world-folder {
             border: 1px solid #ddd; border-radius: 10px; background: white;
-            overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            flex-shrink: 0; /* Prevent crushing */
+            overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; 
         }
-        
         .world-header {
             padding: 15px; background: #f8f8f8; cursor: pointer;
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid transparent; transition: all 0.2s;
         }
-        
         .world-header:active { background: #eee; }
-        
-        /* When open */
-        .world-folder.open .world-header {
-            background: var(--brand-dark); color: white; border-bottom: 1px solid #444;
-        }
+        .world-folder.open .world-header { background: var(--brand-dark); color: white; border-bottom: 1px solid #444; }
         .world-folder.open .world-header h3 { color: var(--brand-gold); }
         .world-folder.open .arrow { transform: rotate(180deg); }
-
         .world-title-group h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-dark); }
         .world-subtitle { font-size: 0.75rem; color: #888; font-weight: bold; }
-        
         .arrow { transition: transform 0.3s ease; font-size: 1.2rem; color: #888; }
-
-        /* Level Content Area */
-        .world-content {
-            display: none; flex-direction: column; gap: 8px; padding: 10px; background: #fff;
-        }
+        .world-content { display: none; flex-direction: column; gap: 8px; padding: 10px; background: #fff; }
         .world-folder.open .world-content { display: flex; }
 
-        /* Flight Strips */
         .level-strip {
             background: white; border: 1px solid #eee; border-radius: 6px; 
             padding: 12px; width: 100%; min-height: 60px;
@@ -129,23 +123,20 @@
         }
         .level-strip:active { transform: scale(0.98); background-color: #f9f9f9; }
         .level-strip.bonus { border: 1px solid var(--brand-gold); background: #fffdf5; }
-
         .strip-icon { font-size: 1.4rem; width: 30px; text-align: center; margin-right: 10px; }
         .strip-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         .strip-title { font-size: 0.95rem; color: var(--brand-dark); font-weight: bold; margin: 0; }
         .strip-status { font-size: 0.7rem; font-weight: bold; color: #888; text-align: right; min-width: 70px; }
-        
         .status-ready { color: var(--brand-red); }
         .status-done { color: #27ae60; }
         .status-locked { color: #bbb; }
-
         .level-strip.locked { background: #f9f9f9; border-color: #eee; cursor: not-allowed; opacity: 0.7; }
         .level-strip.locked .strip-title { color: #aaa; }
         .level-strip.locked .strip-icon { color: #ccc; }
 
         /* --- BUTTONS --- */
         .footer-buttons { 
-            width: 100%; flex-shrink: 0; display: flex; flex-direction: column; 
+            width: 100%; flex-shrink: 0; display: flex; flex-direction: column; max-width: 600px;
             gap: 8px; margin-top: 5px; padding-top: 10px; border-top: 1px solid #eee; 
             padding-bottom: 30px; margin-bottom: env(safe-area-inset-bottom);
         }
@@ -159,22 +150,45 @@
         .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
 
         /* --- GAMEPLAY --- */
-        .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; }
+        .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; max-width: 1400px;}
         .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
+        
         #game-wrapper {
             padding: 5px; background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%); border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2); width: 100%; margin-bottom: 10px; position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            width: 100%; 
+            margin-bottom: 10px; position: relative;
             flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center;
         }
-        #game-container { position: relative; width: 100%; height: 100%; max-height: 100%; background-color: #000; overflow: hidden; border: 3px solid #fff; cursor: pointer; }
+        
+        #game-container { 
+            position: relative; 
+            width: 100%; 
+            /* UPDATED: 2:1 Aspect Ratio (1400x700) */
+            aspect-ratio: 2 / 1; 
+            max-height: 100%; 
+            background-color: #000; overflow: hidden; border: 3px solid #fff; cursor: pointer; 
+        }
+        
+        /* UPDATED: Contain ensures the wide images fit without cropping */
         #game-container img { object-fit: contain; width: 100%; height: 100%; }
-        #mystery-image { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
-        #cover-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; }
+        
+        #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        
+        /* UPDATED: 20x10 Grid for 2:1 Aspect Ratio */
+        #cover-grid { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            display: grid; 
+            grid-template-columns: repeat(20, 1fr); 
+            grid-template-rows: repeat(10, 1fr); 
+            z-index: 2; 
+        }
+        
         .grid-piece { background-color: var(--piece-color); border: 1px solid #3a3a3a; transition: opacity 0.3s; }
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
         
-        #input-area { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; margin-bottom: 5px; }
+        #input-area { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; margin-bottom: 5px; max-width: 600px;}
         input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; }
         input[type="text"]:focus { border-color: var(--brand-gold); }
         #enter-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
@@ -184,7 +198,7 @@
 
         /* --- LEADERBOARD --- */
         #leaderboard-list {
-            width: 100%; flex-grow: 1; overflow-y: auto; text-align: left;
+            width: 100%; flex-grow: 1; overflow-y: auto; text-align: left; max-width: 600px;
             background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px;
         }
         .lb-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; align-items: center; }
@@ -204,6 +218,17 @@
         <div style="font-size: 4rem; margin-bottom: 20px;">↻</div>
         <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2>
         <p>This mission requires Portrait Mode.</p>
+    </div>
+
+    <div id="game-over-overlay">
+        <div class="modal-box danger">
+            <h1 style="color: var(--brand-red); margin-bottom: 10px; font-size: 1.8rem;">MISSION FAILED</h1>
+            <p style="margin-bottom: 5px; color: #fff; font-size: 1rem; font-weight: bold;">FUEL DEPLETED</p>
+            <p style="margin-bottom: 20px; color: #ccc; font-size: 0.9rem;">
+                Your squadron has been grounded.
+            </p>
+            <button class="gold-btn" onclick="confirmReset()">RETIRE & RESTART</button>
+        </div>
     </div>
 
     <div id="restart-overlay">
@@ -250,7 +275,7 @@
                 <div class="fuel-value"><span id="total-fuel-display">4000</span></div>
                 <div class="fuel-bar-bg"><div class="fuel-bar-fill" id="fuel-bar"></div></div>
                 <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;">
-                    ⚠️ Need <span style="color:#fff">1000L</span> for Next World
+                    ⚠️ Need <span style="color:#fff">1500L</span> for Next World
                 </div>
             </div>
         </div>
@@ -314,26 +339,28 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
         // --- AIRCRAFT DATABASE POOLS ---
         const AIRCRAFT_DATA = {
             standard: [
-                { image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
-                { image: "787.jpg", answers: ["787", "boeing 787", "dreamliner", "b787"], name: "Boeing 787" },
-                { image: "f22.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
-                { image: "antonov.jpg", answers: ["an225", "an-225", "mriya", "antonov 225"], name: "Antonov An-225" },
-                { image: "a350.jpg", answers: ["a350", "airbus a350", "350"], name: "Airbus A350" },
-                { image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
-                { image: "a380.jpg", answers: ["airbus a380", "a380", "super jumbo", "380"], name: "Airbus A380" },
-                { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
-                { image: "p51.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" }
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Supermarine_Spitfire_Mk_XVI_NR_Colling_1.jpg/800px-Supermarine_Spitfire_Mk_XVI_NR_Colling_1.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Etihad_Airways_Boeing_787-9_Dreamliner_A6-BLA_taking_off_at_JFK_Airport.jpg/800px-Etihad_Airways_Boeing_787-9_Dreamliner_A6-BLA_taking_off_at_JFK_Airport.jpg", answers: ["787", "boeing 787", "dreamliner", "b787"], name: "Boeing 787" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/F-22_Raptor_edit1_%28cropped%29.jpg/800px-F-22_Raptor_edit1_%28cropped%29.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Antonov_An-225_Mriya_at_Gostomel_Airport.jpg/800px-Antonov_An-225_Mriya_at_Gostomel_Airport.jpg", answers: ["an225", "an-225", "mriya", "antonov 225"], name: "Antonov An-225" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Finnair_Airbus_A350-941_OH-LWA_at_Frankfurt_Airport.jpg/800px-Finnair_Airbus_A350-941_OH-LWA_at_Frankfurt_Airport.jpg", answers: ["a350", "airbus a350", "350"], name: "Airbus A350" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Lufthansa_Boeing_747-830_D-ABYA_FRA_2012-06-30.jpg/800px-Lufthansa_Boeing_747-830_D-ABYA_FRA_2012-06-30.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/A380_Emirates_A6-EDC.jpg/800px-A380_Emirates_A6-EDC.jpg", answers: ["airbus a380", "a380", "super jumbo", "380"], name: "Airbus A380" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Concorde_at_Filton.jpg/800px-Concorde_at_Filton.jpg", answers: ["concorde"], name: "Concorde" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/5/52/P-51_Mustang_flight.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" }
             ],
-            bonus: [] // Not used dynamically, bosses are hardcoded below
+            bonus: [] 
         };
         
         const BOSS_1 = { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Lockheed_SR-71_Blackbird.jpg/800px-Lockheed_SR-71_Blackbird.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" };
-        const BOSS_2 = { image: "https://upload.wikimedia.org/wikipedia/commons/5/52/P-51_Mustang_flight.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" };
+        const BOSS_2 = { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/P-51_Mustang_flight.jpg/800px-P-51_Mustang_flight.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" };
 
         const STARTING_GLOBAL_FUEL = 4000;
         const UNLOCK_THRESHOLD = 1500; 
         const REFUEL_AMOUNT = 2500; 
-        const TILE_COST = 15;
+        
+        // UPDATED: Cost is 8 to balance the 200 tile count
+        const TILE_COST = 8; 
         const WRONG_GUESS_PENALTY = 200;
 
         // --- STATE ---
@@ -351,6 +378,7 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
         const loginOverlay = document.getElementById('login-overlay');
         const restartOverlay = document.getElementById('restart-overlay');
         const refuelOverlay = document.getElementById('refuel-overlay');
+        const gameOverOverlay = document.getElementById('game-over-overlay');
         const pilotGreeting = document.getElementById('pilot-greeting');
         
         // --- INIT ---
@@ -431,7 +459,7 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v16'); // Updated Version
+            const saved = localStorage.getItem('fuelQuizState_v18'); // Updated Version
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.generatedLevels || globalState.generatedLevels.length === 0) {
@@ -443,10 +471,9 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v16', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v18', JSON.stringify(globalState)); }
         function isGameComplete() { return globalState.generatedLevels.every(l => l.completed); }
 
-        // --- DASHBOARD RENDERER WITH FOLDERS ---
         function renderDashboard() {
             document.getElementById('total-fuel-display').textContent = globalState.currentFuel;
             const pct = Math.min(100, Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100));
@@ -465,30 +492,26 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
             const listContainer = document.getElementById('level-list-container');
             listContainer.innerHTML = "";
 
-            // 1. Group levels by World
+            // GROUP BY WORLD
             const worlds = { 1: [], 2: [] };
             globalState.generatedLevels.forEach((level, index) => {
                 worlds[level.world].push({ ...level, originalIndex: index });
             });
 
-            // 2. Identify Current World (for auto-opening)
+            // DETERMINE ACTIVE WORLD
             let activeWorld = 1;
-            // Find first incomplete level
             const firstIncomplete = globalState.generatedLevels.find(l => !l.completed);
             if (firstIncomplete) activeWorld = firstIncomplete.world;
-            // If all done, keep World 2 open
-            else activeWorld = 2;
+            else activeWorld = 2; // Default to last if all done
 
-            // 3. Build Folder UI
+            // BUILD UI
             [1, 2].forEach(worldNum => {
                 const levels = worlds[worldNum];
                 if(levels.length === 0) return;
 
-                // Create Folder Container
                 const folder = document.createElement('div');
                 folder.className = `world-folder ${worldNum === activeWorld ? 'open' : ''}`;
                 
-                // Header
                 const header = document.createElement('div');
                 header.className = 'world-header';
                 header.innerHTML = `
@@ -498,20 +521,15 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
                     </div>
                     <div class="arrow">▼</div>
                 `;
-                header.onclick = () => {
-                    folder.classList.toggle('open');
-                };
+                header.onclick = () => folder.classList.toggle('open');
 
-                // Content Container
                 const content = document.createElement('div');
                 content.className = 'world-content';
 
-                // Add Levels to Content
                 levels.forEach(levelData => {
                     const idx = levelData.originalIndex;
                     const card = document.createElement('div');
                     
-                    // Logic Logic
                     let isPrevDone = (idx === 0) ? true : globalState.generatedLevels[idx - 1].completed;
                     let isBonusLocked = false;
                     if (levelData.isBonus && globalState.currentFuel < UNLOCK_THRESHOLD) isBonusLocked = true;
@@ -541,10 +559,11 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
                             statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
                         }
 
+                        // Updated Lock Check for 0 Fuel
                         if (globalState.currentFuel <= 0 && !levelData.completed) {
                              card.className += " locked";
                              statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
-                             card.onclick = () => alert("Mission Failed: No Fuel. Please Restart.");
+                             card.onclick = () => triggerGameOver();
                         } else {
                             card.onclick = () => launchLevel(idx);
                         }
@@ -580,7 +599,9 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
 
             const grid = document.getElementById('cover-grid');
             grid.innerHTML = "";
-            for (let i = 0; i < 100; i++) {
+            
+            // UPDATED: Create 200 tiles for the 2:1 aspect ratio grid
+            for (let i = 0; i < 200; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'grid-piece';
                 if (lState.revealedTiles.includes(i) || lState.completed) tile.classList.add('revealed');
@@ -616,7 +637,7 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
             let cy = e.clientY || (e.touches && e.touches[0].clientY);
             if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
 
-            if (globalState.currentFuel <= 0) endGame(false, "FUEL DEPLETED. MISSION FAILED.");
+            if (globalState.currentFuel <= 0) triggerGameOver();
         }
 
         function checkAnswer() {
@@ -635,7 +656,7 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
                 const inp = document.getElementById('guess-input');
                 inp.style.borderColor = "var(--brand-red)";
                 setTimeout(() => inp.style.borderColor = "#ddd", 500);
-                if (globalState.currentFuel <= 0) endGame(false, "FUEL DEPLETED");
+                if (globalState.currentFuel <= 0) triggerGameOver();
             }
         }
 
@@ -661,11 +682,18 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
                 if (!lState.isBonus) setTimeout(saveAndExit, 2000);
             } else {
                 document.getElementById('message').className = "fail";
-                if (globalState.currentFuel <= 0) {
-                    const grid = document.getElementById('cover-grid');
-                    grid.onmousedown = null; grid.ontouchstart = null;
-                }
             }
+        }
+
+        function triggerGameOver() {
+            // Apply Grayscale
+            document.getElementById('game-view').classList.add('gray-out');
+            document.getElementById('selector-view').classList.add('gray-out');
+            
+            // Show Overlay
+            setTimeout(() => {
+                gameOverOverlay.style.display = 'flex';
+            }, 500);
         }
 
         function closeRefuel() { refuelOverlay.style.display = 'none'; saveAndExit(); }

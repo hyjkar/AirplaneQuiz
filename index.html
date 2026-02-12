@@ -9,6 +9,10 @@
     <title>Fuel Command</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -29,257 +33,114 @@
             font-family: 'Roboto', sans-serif;
             background-color: var(--bg-sand);
             color: var(--brand-dark);
-            margin: 0;
-            padding: 15px;
-            height: 100vh; /* Lock height to screen size */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow: hidden; /* No scrolling on the body itself */
-            user-select: none; 
+            margin: 0; padding: 10px; height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            overflow: hidden; user-select: none; 
         }
 
-        /* --- PORTRAIT LOCK OVERLAY --- */
-        #orientation-lock {
+        /* --- OVERLAYS --- */
+        #orientation-lock, #login-overlay {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #111; color: var(--brand-gold);
             z-index: 10000;
             flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            padding: 20px;
         }
         
         @media screen and (orientation: landscape) and (max-height: 600px) {
             #orientation-lock { display: flex; }
         }
 
-        h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.6rem;
-            color: var(--brand-dark);
-            margin: 0;
-            text-align: center;
-            text-transform: uppercase;
-        }
+        h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--brand-dark); margin: 0; text-align: center; text-transform: uppercase; }
+        h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
 
-        h2 {
-            font-size: 0.8rem;
-            color: #777;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin: 2px 0 10px 0;
-            text-align: center;
-        }
-
-        /* --- VIEWS --- */
-        .view-section {
-            width: 100%;
-            max-width: 500px;
-            height: 100%;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            /* No justify-content here, we use flex-grow on children */
-        }
+        .view-section { width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 10px; }
         .view-section.active { display: flex; }
 
-        /* --- DASHBOARD HEADER --- */
-        .dashboard-header {
-            width: 100%;
-            flex-shrink: 0; /* Don't shrink this */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        /* --- DASHBOARD --- */
+        .dashboard-header { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
 
-        /* --- FUEL GAUGE --- */
         .fuel-tank-container {
-            background: #222;
-            padding: 15px;
-            border-radius: 12px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            border: 2px solid #444;
-            position: relative;
-            flex-shrink: 0; 
+            background: #222; padding: 15px; border-radius: 12px; width: 100%; text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #444; position: relative; flex-shrink: 0; 
         }
         
-        .fuel-label { 
-            font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; 
-        }
-        
-        .fuel-value { 
-            font-family: 'Share Tech Mono', monospace; 
-            font-size: 2.5rem; 
-            font-weight: bold; 
-            color: var(--gauge-green);
-            text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
-            transition: color 0.5s;
-            line-height: 1;
-        }
-
-        .fuel-bar-bg {
-            width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden;
-        }
-        .fuel-bar-fill {
-            height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s;
-        }
+        .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
+        .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.5rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
+        .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
+        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
 
         /* --- LEVEL GRID --- */
         #level-grid {
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
-            width: 100%;
-            margin: 15px 0;
-            
-            /* SCROLLING LOGIC */
-            flex-grow: 1; /* Takes up all available middle space */
-            overflow-y: auto; /* Scroll ONLY the grid if needed */
-            align-content: start; 
-            padding-right: 5px; /* Space for scrollbar */
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;
+            margin: 15px 0; flex-grow: 1; overflow-y: auto; align-content: start; padding-right: 5px; 
         }
-
-        /* Custom Scrollbar */
         #level-grid::-webkit-scrollbar { width: 5px; }
         #level-grid::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
 
         .level-card {
             background: white; border: 1px solid #ddd; border-radius: 10px;
             padding: 10px; text-align: center; cursor: pointer; position: relative;
-            transition: transform 0.1s;
-            display: flex; flex-direction: column; justify-content: center; 
-            min-height: 100px;
+            transition: transform 0.1s; display: flex; flex-direction: column; justify-content: center; min-height: 100px;
         }
         .level-card:active { transform: scale(0.98); }
 
         .level-card h3 { margin: 5px 0 2px 0; color: var(--brand-dark); font-size: 0.95rem; }
         .level-icon { font-size: 1.8rem; }
         .level-status { font-size: 0.65rem; color: #888; margin-top: auto; font-weight: bold; }
-        
         .status-done { color: #27ae60; }
         
-        .level-card.locked {
-            background: #202020; border-color: #333; cursor: not-allowed; opacity: 0.9;
-        }
+        .level-card.locked { background: #202020; border-color: #333; cursor: not-allowed; opacity: 0.9; }
         .level-card.locked h3 { color: #888; }
         .level-card.locked .level-status { color: var(--brand-red); }
 
         /* --- FOOTER BUTTONS --- */
-        .footer-buttons {
-            width: 100%;
-            flex-shrink: 0; /* Keep buttons fixed at bottom */
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 5px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
-        }
+        .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: 5px; padding-top: 10px; border-top: 1px solid #eee; }
+        button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
+        .primary-btn { background-color: var(--brand-red); color: white; }
+        .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
+        .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
+        .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
 
-        /* --- GAMEPLAY UI --- */
-        .game-header {
-            display: flex; justify-content: space-between; align-items: center; width: 100%;
-            margin-bottom: 5px; padding: 0 5px; flex-shrink: 0;
-        }
-        
-        .mini-fuel {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 1.5rem; color: var(--brand-dark); font-weight: bold;
-        }
+        /* --- GAMEPLAY --- */
+        .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; }
+        .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
 
         #game-wrapper {
-            padding: 5px;
-            background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            width: 100%;
-            margin-bottom: 10px;
-            position: relative;
-            
-            /* Flexible Height Logic */
-            flex-grow: 1; 
-            min-height: 0; /* Important for flex containers */
-            display: flex; justify-content: center; align-items: center;
+            padding: 5px; background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
+            border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); width: 100%; margin-bottom: 10px; position: relative;
+            flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center;
         }
 
-        #game-container {
-            position: relative; 
-            width: 100%; 
-            height: 100%; /* Fill the wrapper */
-            max-height: 100%;
-            /* Aspect ratio is handled via JS resizing or object-fit usually, 
-               but here we let flexbox handle it to ensure buttons stay visible */
-            background-color: #000; overflow: hidden; border: 3px solid #fff; cursor: pointer; 
-        }
-        
-        /* Force image to fit inside container without overflowing */
-        #game-container img {
-            object-fit: contain; 
-            width: 100%; height: 100%;
-        }
-
-        #mystery-image {
-            width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;
-        }
-
-        #cover-grid {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr);
-            z-index: 2;
-        }
-
-        .grid-piece {
-            background-color: var(--piece-color); border: 1px solid #3a3a3a;
-            transition: opacity 0.3s;
-        }
+        #game-container { position: relative; width: 100%; height: 100%; max-height: 100%; background-color: #000; overflow: hidden; border: 3px solid #fff; cursor: pointer; }
+        #game-container img { object-fit: contain; width: 100%; height: 100%; }
+        #mystery-image { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+        #cover-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; }
+        .grid-piece { background-color: var(--piece-color); border: 1px solid #3a3a3a; transition: opacity 0.3s; }
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
 
-        /* Floating Text */
-        .float-text {
-            position: fixed; color: var(--brand-red); font-weight: bold; font-size: 1.5rem;
-            pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 999;
-            text-shadow: 0 2px 4px rgba(255,255,255,0.8);
-        }
+        .float-text { position: fixed; color: var(--brand-red); font-weight: bold; font-size: 1.5rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 999; text-shadow: 0 2px 4px rgba(255,255,255,0.8); }
 
-        /* Input Area */
-        #input-area { 
-            display: flex; flex-direction: column; gap: 8px; width: 100%; 
-            flex-shrink: 0; 
-            margin-bottom: 5px;
-        }
-        
-        input[type="text"] {
-            width: 100%; padding: 12px; font-size: 1.1rem; 
-            border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center;
-            background: white; color: #333;
-        }
+        #input-area { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; margin-bottom: 5px; }
+        input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; }
         input[type="text"]:focus { border-color: var(--brand-gold); }
-
-        #enter-btn {
-            background-color: var(--brand-gold); 
-            color: #1a1a1a; 
-            font-weight: bold;
-        }
-        
-        button {
-            width: 100%; padding: 12px; font-size: 1rem;
-            border: none; border-radius: 8px; cursor: pointer; font-weight: 500;
-        }
-        .abort-btn { background: transparent; border: 1px solid #ccc; color: #777; }
+        #enter-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
 
         #message { margin-top: 0px; font-size: 1.1rem; text-align: center; height: 25px; font-weight: bold; flex-shrink: 0;}
-        .success { color: #27ae60; }
-        .fail { color: var(--brand-red); }
+        .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
-        /* Install Button - Hidden by default */
-        #install-btn { 
-            display: none; 
-            background: #2c2c2c; 
-            color: #fff; 
-            font-weight: bold;
+        /* --- LEADERBOARD --- */
+        #leaderboard-list {
+            width: 100%; flex-grow: 1; overflow-y: auto; text-align: left;
+            background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px;
         }
+        .lb-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; align-items: center; }
+        .lb-rank { font-weight: bold; width: 30px; color: var(--brand-red); }
+        .lb-name { flex-grow: 1; font-weight: 500;}
+        .lb-fuel { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--brand-dark); }
+        .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
 
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
@@ -294,18 +155,22 @@
         <p>This mission requires Portrait Mode.</p>
     </div>
 
-    <div id="selector-view" class="view-section active">
-        
+    <div id="login-overlay">
+        <h1 style="color: var(--brand-red); margin-bottom: 10px;">IDENTIFY PILOT</h1>
+        <p style="margin-bottom: 30px; color: #888;">Enter callsign for global registry.</p>
+        <input type="text" id="callsign-input" placeholder="Callsign (e.g. Maverick)" maxlength="12" style="margin-bottom: 15px;">
+        <button class="gold-btn" onclick="registerPilot()">CONFIRM IDENTITY</button>
+    </div>
+
+    <div id="selector-view" class="view-section">
         <div class="dashboard-header">
             <h1>Fuel Command</h1>
-            <h2>Reserve Status</h2>
+            <h2 id="pilot-greeting">Welcome Pilot</h2>
             
             <div class="fuel-tank-container">
                 <div class="fuel-label">Global Fuel Reserves</div>
                 <div class="fuel-value"><span id="total-fuel-display">3500</span></div>
-                <div class="fuel-bar-bg">
-                    <div class="fuel-bar-fill" id="fuel-bar"></div>
-                </div>
+                <div class="fuel-bar-bg"><div class="fuel-bar-fill" id="fuel-bar"></div></div>
                 <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;">
                     ⚠️ Need <span style="color:#fff">1000L</span> Remaining to launch Flight 5
                 </div>
@@ -315,8 +180,9 @@
         <div id="level-grid"></div>
         
         <div class="footer-buttons">
-            <button id="install-btn">📲 Install App</button>
-            <button class="abort-btn" onclick="resetAllProgress()">Restart Game</button>
+            <button class="outline-btn" onclick="openLeaderboard()">🏆 Global Leaderboard</button>
+            <button id="install-btn" class="dark-btn">📲 Install App</button>
+            <button class="outline-btn" onclick="resetAllProgress()">Restart Game</button>
         </div>
     </div>
 
@@ -325,31 +191,58 @@
             <div id="level-title" style="font-weight:bold;">Flight 1</div>
             <div class="mini-fuel" id="current-fuel-display">3500</div>
         </div>
-
         <div id="game-wrapper">
             <div id="game-container">
                 <img id="mystery-image" src="" alt="Mystery Airplane">
                 <div id="cover-grid"></div>
             </div>
         </div>
-
         <div id="input-area">
             <input type="text" id="guess-input" placeholder="Identify aircraft..." autocomplete="off">
             <button id="enter-btn">ENTER</button>
             <button class="abort-btn" onclick="saveAndExit()">Abort Mission (Save)</button>
         </div>
-
         <div id="message"></div>
     </div>
 
+    <div id="leaderboard-view" class="view-section">
+        <h1>Global Standings</h1>
+        <h2 style="margin-bottom: 10px;">Top Fuel Reserves</h2>
+        <div id="leaderboard-list">Connecting to HQ...</div>
+        <div class="footer-buttons">
+            <button class="primary-btn" onclick="closeLeaderboard()">Back to Command</button>
+        </div>
+    </div>
+
     <script>
-        // --- CONFIGURATION ---
+        // --- 🔥 FIREBASE CONFIGURATION 🔥 ---
+        // 1. Go to Firebase Console -> Project Settings -> General -> Your Apps
+        // 2. Paste the 'firebaseConfig' object here:
+        
+        const firebaseConfig = {
+  apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
+  authDomain: "fuelcommand.firebaseapp.com",
+  projectId: "fuelcommand",
+  storageBucket: "fuelcommand.firebasestorage.app",
+  messagingSenderId: "211722292779",
+  appId: "1:211722292779:web:5dec358fc0693c7126246e"
+        };
+
+        // Initialize Firebase
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch(e) {
+            console.error("Firebase not configured yet.", e);
+        }
+
+        // --- GAME CONFIG ---
         const LEVELS_CONFIG = [
             { image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
             { image: "a380.jpg", answers: ["airbus a380", "a380", "super jumbo", "380"], name: "Airbus A380" },
             { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
             { image: "e175.jpg", answers: ["e175", "embraer 175", "embraer e175", "e-175"], name: "Embraer E175" },
-            // CLASSIFIED: SR-71 (Index 4)
             { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "Classified Mission" }
         ];
 
@@ -358,325 +251,334 @@
         const TILE_COST = 15;
         const WRONG_GUESS_PENALTY = 200;
 
-        // --- STATE MANAGEMENT ---
+        // --- STATE ---
         let globalState = {
+            username: null,
             currentFuel: STARTING_GLOBAL_FUEL,
             levels: []
         };
         let activeLevelIdx = 0;
 
-        // --- DOM ELEMENTS ---
+        // --- DOM ---
         const selectorView = document.getElementById('selector-view');
         const gameView = document.getElementById('game-view');
-        const levelGrid = document.getElementById('level-grid');
-        const totalFuelDisplay = document.getElementById('total-fuel-display');
-        const fuelBar = document.getElementById('fuel-bar');
-        const unlockMessage = document.getElementById('unlock-message');
-        const gridContainer = document.getElementById('cover-grid');
-        const currentFuelDisplay = document.getElementById('current-fuel-display');
-        const inputField = document.getElementById('guess-input');
-        const messageDisplay = document.getElementById('message');
-
+        const lbView = document.getElementById('leaderboard-view');
+        const loginOverlay = document.getElementById('login-overlay');
+        const pilotGreeting = document.getElementById('pilot-greeting');
+        
         // --- INIT ---
         window.onload = function() {
             loadState();
-            renderDashboard();
             
-            inputField.addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
+            // Check Login
+            if (!globalState.username) {
+                loginOverlay.style.display = 'flex';
+            } else {
+                selectorView.classList.add('active');
+                pilotGreeting.textContent = `Pilot: ${globalState.username}`;
+                renderDashboard();
+                syncScoreToCloud(); 
+            }
+
+            document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             document.getElementById('enter-btn').onclick = checkAnswer;
         };
 
+        // --- AUTH & CLOUD ---
+        function registerPilot() {
+            const name = document.getElementById('callsign-input').value.trim();
+            if (name.length < 2) { alert("Callsign too short."); return; }
+            
+            globalState.username = name;
+            saveState();
+            
+            loginOverlay.style.display = 'none';
+            selectorView.classList.add('active');
+            pilotGreeting.textContent = `Pilot: ${globalState.username}`;
+            
+            syncScoreToCloud();
+            renderDashboard();
+        }
+
+        function syncScoreToCloud() {
+            if (!db || !globalState.username) return;
+            // Write to "scores" collection
+            db.collection("scores").doc(globalState.username).set({
+                name: globalState.username,
+                score: globalState.currentFuel,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => console.log("Score Synced"))
+            .catch(err => console.error("Sync Failed", err));
+        }
+
+        function openLeaderboard() {
+            selectorView.classList.remove('active');
+            lbView.classList.add('active');
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = "Fetching Data...";
+
+            if(!db) {
+                list.innerHTML = "⚠️ Firebase Config Missing in Code.";
+                return;
+            }
+
+            db.collection("scores").orderBy("score", "desc").limit(20).get()
+            .then((querySnapshot) => {
+                let html = "";
+                let rank = 1;
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const isMe = data.name === globalState.username;
+                    html += `
+                        <div class="lb-row ${isMe ? 'me' : ''}">
+                            <div class="lb-rank">#${rank++}</div>
+                            <div class="lb-name">${data.name}</div>
+                            <div class="lb-fuel">${data.score}L</div>
+                        </div>
+                    `;
+                });
+                if(html === "") html = "<div style='text-align:center; padding:20px;'>No pilots registered yet.</div>";
+                list.innerHTML = html;
+            })
+            .catch((error) => {
+                list.innerHTML = "Error loading leaderboard.";
+                console.error("Error getting documents: ", error);
+            });
+        }
+
+        function closeLeaderboard() {
+            lbView.classList.remove('active');
+            selectorView.classList.add('active');
+        }
+
+        // --- CORE LOGIC ---
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v8'); // Version bump
+            const saved = localStorage.getItem('fuelQuizState_v10');
             if (saved) {
                 globalState = JSON.parse(saved);
             } else {
                 globalState.currentFuel = STARTING_GLOBAL_FUEL;
-                globalState.levels = LEVELS_CONFIG.map(() => ({
-                    revealedTiles: [],
-                    completed: false
-                }));
+                globalState.levels = LEVELS_CONFIG.map(() => ({ revealedTiles: [], completed: false }));
             }
         }
 
         function saveState() {
-            localStorage.setItem('fuelQuizState_v8', JSON.stringify(globalState));
+            localStorage.setItem('fuelQuizState_v10', JSON.stringify(globalState));
         }
 
-        // --- DASHBOARD LOGIC ---
         function renderDashboard() {
-            totalFuelDisplay.textContent = globalState.currentFuel;
-            const percentage = Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100);
-            fuelBar.style.width = percentage + "%";
+            document.getElementById('total-fuel-display').textContent = globalState.currentFuel;
+            const pct = Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100);
+            const bar = document.getElementById('fuel-bar');
+            bar.style.width = pct + "%";
             
             let color = "#2ecc71"; 
             if (globalState.currentFuel < 1500) color = "#f39c12"; 
             if (globalState.currentFuel < 1000) color = "#e74c3c"; 
-            
-            fuelBar.style.backgroundColor = color;
+            bar.style.backgroundColor = color;
             document.querySelector('.fuel-value').style.color = color;
 
-            // CHECK UNLOCK
-            const levelsDone = globalState.levels[0].completed && 
-                               globalState.levels[1].completed && 
-                               globalState.levels[2].completed &&
-                               globalState.levels[3].completed;
-                               
+            const allPrevDone = globalState.levels.slice(0, 4).every(l => l.completed);
             const hasFuel = globalState.currentFuel >= UNLOCK_THRESHOLD;
-            const isClassifiedUnlocked = levelsDone && hasFuel;
+            const unlocked = allPrevDone && hasFuel;
 
-            if (isClassifiedUnlocked) {
-                unlockMessage.innerHTML = "Classified Mission: <span style='color:#2ecc71'>READY</span>";
-            } else {
-                unlockMessage.innerHTML = "⚠️ Complete all flights with <span style='color:#fff'>1000L</span>+ remaining";
-            }
+            const unlockMsg = document.getElementById('unlock-message');
+            if (unlocked) unlockMsg.innerHTML = "Classified Mission: <span style='color:#2ecc71'>READY</span>";
+            else unlockMsg.innerHTML = "⚠️ Complete all flights with <span style='color:#fff'>1000L</span>+ remaining";
 
-            levelGrid.innerHTML = "";
+            const grid = document.getElementById('level-grid');
+            grid.innerHTML = "";
 
             LEVELS_CONFIG.forEach((config, idx) => {
-                const levelState = globalState.levels[idx];
+                const lState = globalState.levels[idx];
                 const card = document.createElement('div');
                 const isClassified = idx === 4; 
-                
-                const isLocked = isClassified && !isClassifiedUnlocked;
+                const isLocked = isClassified && !unlocked;
 
                 if (isLocked) {
                     card.className = "level-card locked";
-                    card.innerHTML = `
-                        <div class="level-icon">🔒</div>
-                        <h3>Flight ${idx + 1}</h3>
-                        <div class="level-status">LOCKED</div>
-                    `;
+                    card.innerHTML = `<div class="level-icon">🔒</div><h3>Flight ${idx+1}</h3><div class="level-status">LOCKED</div>`;
                 } else {
                     card.className = "level-card";
                     let icon = "✈️";
-                    let statusHtml = "";
-                    
-                    let displayName = `Flight ${idx + 1}`;
-                    if(isClassified) displayName = "Classified";
+                    let title = `Flight ${idx + 1}`;
+                    if(isClassified) title = "Classified";
 
-                    if (levelState.completed) {
-                        displayName = config.name; 
-                        icon = "★";
-                        statusHtml = `<div class="level-status status-done">Identified</div>`;
+                    let statusHtml = `<div class="level-status">Ready</div>`;
+                    if (lState.completed) {
+                        title = config.name; icon = "★"; statusHtml = `<div class="level-status status-done">Identified</div>`;
                     } else if (isClassified) {
                          icon = "🚀"; 
-                         statusHtml = `<div class="level-status">Ready</div>`;
-                    } else if (levelState.revealedTiles.length > 0) {
+                    } else if (lState.revealedTiles.length > 0) {
                         statusHtml = `<div class="level-status">In Progress</div>`;
-                    } else {
-                        statusHtml = `<div class="level-status">Ready</div>`;
                     }
 
-                    if (globalState.currentFuel <= 0 && !levelState.completed) {
+                    if (globalState.currentFuel <= 0 && !lState.completed) {
                          card.className += " locked";
                          statusHtml = `<div class="level-status" style="color:red">EMPTY</div>`;
-                         card.onclick = () => alert("Mission Failed: No Fuel Remaining. Please Restart.");
+                         card.onclick = () => alert("Mission Failed: No Fuel.");
                     } else {
                         card.onclick = () => launchLevel(idx);
                     }
-
-                    card.innerHTML = `
-                        <div class="level-icon">${icon}</div>
-                        <h3>${displayName}</h3>
-                        ${statusHtml}
-                    `;
+                    card.innerHTML = `<div class="level-icon">${icon}</div><h3>${title}</h3>${statusHtml}`;
                 }
-                levelGrid.appendChild(card);
+                grid.appendChild(card);
             });
         }
 
-        // --- GAME LOGIC ---
         function launchLevel(idx) {
             activeLevelIdx = idx;
-            const levelState = globalState.levels[idx];
-            
+            const lState = globalState.levels[idx];
             selectorView.classList.remove('active');
             gameView.classList.add('active');
 
             let title = `Flight ${idx+1}`;
-            if (levelState.completed) {
-                title = LEVELS_CONFIG[idx].name;
-            } else if (idx === 4) { 
-                title = "Classified";
-            }
+            if (lState.completed) title = LEVELS_CONFIG[idx].name;
+            else if (idx === 4) title = "Classified";
             
             document.getElementById('level-title').textContent = title;
             document.getElementById('mystery-image').src = LEVELS_CONFIG[idx].image;
-            inputField.value = "";
-            inputField.disabled = levelState.completed; 
-            document.getElementById('enter-btn').disabled = levelState.completed;
-            messageDisplay.textContent = levelState.completed ? "Target Already Identified" : "";
+            document.getElementById('guess-input').value = "";
+            document.getElementById('guess-input').disabled = lState.completed; 
+            document.getElementById('enter-btn').disabled = lState.completed;
+            document.getElementById('message').textContent = lState.completed ? "Identified" : "";
             
-            updateMiniFuelUI();
+            updateMiniFuel();
 
-            // Build Grid
-            gridContainer.innerHTML = "";
+            const grid = document.getElementById('cover-grid');
+            grid.innerHTML = "";
             for (let i = 0; i < 100; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'grid-piece';
-                if (levelState.revealedTiles.includes(i) || levelState.completed) {
-                    tile.classList.add('revealed');
-                }
-                gridContainer.appendChild(tile);
+                if (lState.revealedTiles.includes(i) || lState.completed) tile.classList.add('revealed');
+                grid.appendChild(tile);
             }
 
-            if (!levelState.completed && globalState.currentFuel > 0) {
-                gridContainer.onmousedown = handleGridInteraction;
-                gridContainer.ontouchstart = (e) => { e.preventDefault(); handleGridInteraction(e); };
+            if (!lState.completed && globalState.currentFuel > 0) {
+                grid.onmousedown = handleInteraction;
+                grid.ontouchstart = (e) => { e.preventDefault(); handleInteraction(e); };
             } else {
-                gridContainer.onmousedown = null;
-                gridContainer.ontouchstart = null;
+                grid.onmousedown = null; grid.ontouchstart = null;
             }
         }
 
-        function handleGridInteraction(e) {
-            const levelState = globalState.levels[activeLevelIdx];
-            if (levelState.completed) return;
-            if (globalState.currentFuel <= 0) return;
+        function handleInteraction(e) {
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || globalState.currentFuel <= 0) return;
             
-            const hiddenTiles = Array.from(document.querySelectorAll('.grid-piece')).filter((el, idx) => !levelState.revealedTiles.includes(idx));
-            if (hiddenTiles.length === 0) return;
+            const hidden = Array.from(document.querySelectorAll('.grid-piece')).filter((el, idx) => !lState.revealedTiles.includes(idx));
+            if (hidden.length === 0) return;
 
-            const randomDomTile = hiddenTiles[Math.floor(Math.random() * hiddenTiles.length)];
-            const allTiles = Array.from(gridContainer.children);
-            const originalIndex = allTiles.indexOf(randomDomTile);
+            const tile = hidden[Math.floor(Math.random() * hidden.length)];
+            const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile);
 
-            randomDomTile.classList.add('revealed');
-            levelState.revealedTiles.push(originalIndex);
+            tile.classList.add('revealed');
+            lState.revealedTiles.push(idx);
             
-            globalState.currentFuel -= TILE_COST;
-            if (globalState.currentFuel < 0) globalState.currentFuel = 0;
-            
+            globalState.currentFuel = Math.max(0, globalState.currentFuel - TILE_COST);
             saveState();
-            updateMiniFuelUI();
+            syncScoreToCloud();
+            updateMiniFuel();
 
             let cx = e.clientX || (e.touches && e.touches[0].clientX);
             let cy = e.clientY || (e.touches && e.touches[0].clientY);
-            if (cx && cy) showFloatingText(cx, cy, `-${TILE_COST}`);
+            if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
 
-            if (globalState.currentFuel <= 0) {
-                endGame(false, "FUEL DEPLETED. MISSION FAILED.");
-            }
-        }
-
-        function updateMiniFuelUI() {
-            currentFuelDisplay.textContent = globalState.currentFuel;
-            if (globalState.currentFuel <= 200) currentFuelDisplay.classList.add('danger');
-            else currentFuelDisplay.classList.remove('danger');
+            if (globalState.currentFuel <= 0) endGame(false, "FUEL DEPLETED");
         }
 
         function checkAnswer() {
-            const levelState = globalState.levels[activeLevelIdx];
-            if (levelState.completed || globalState.currentFuel <= 0) return;
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || globalState.currentFuel <= 0) return;
 
-            const guess = inputField.value.trim().toLowerCase();
+            const guess = document.getElementById('guess-input').value.trim().toLowerCase();
             const answers = LEVELS_CONFIG[activeLevelIdx].answers;
 
             if (isMatch(guess, answers)) {
-                endGame(true, "Target Verified.");
+                endGame(true, "Target Verified");
             } else {
-                globalState.currentFuel -= WRONG_GUESS_PENALTY;
-                if (globalState.currentFuel < 0) globalState.currentFuel = 0;
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
                 saveState();
-                updateMiniFuelUI();
+                syncScoreToCloud();
+                updateMiniFuel();
+                
+                const inp = document.getElementById('guess-input');
+                inp.style.borderColor = "var(--brand-red)";
+                setTimeout(() => inp.style.borderColor = "#ddd", 500);
 
-                inputField.style.borderColor = "var(--brand-red)";
-                setTimeout(() => inputField.style.borderColor = "#ddd", 500);
-
-                if (globalState.currentFuel <= 0) endGame(false, "FUEL DEPLETED. MISSION FAILED.");
+                if (globalState.currentFuel <= 0) endGame(false, "FUEL DEPLETED");
             }
         }
 
         function endGame(win, msg) {
-            const levelState = globalState.levels[activeLevelIdx];
-            messageDisplay.textContent = msg;
-
+            document.getElementById('message').textContent = msg;
             if (win) {
-                messageDisplay.className = "success";
-                levelState.completed = true;
+                document.getElementById('message').className = "success";
+                globalState.levels[activeLevelIdx].completed = true;
                 document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
                 triggerConfetti();
                 saveState();
-                
+                syncScoreToCloud();
                 document.getElementById('level-title').textContent = LEVELS_CONFIG[activeLevelIdx].name;
-
                 setTimeout(saveAndExit, 2000);
             } else {
-                messageDisplay.className = "fail";
+                document.getElementById('message').className = "fail";
                 if (globalState.currentFuel <= 0) {
-                    gridContainer.onmousedown = null;
-                    gridContainer.ontouchstart = null;
+                    const grid = document.getElementById('cover-grid');
+                    grid.onmousedown = null; grid.ontouchstart = null;
                 }
             }
         }
 
-        function saveAndExit() {
-            renderDashboard();
-            gameView.classList.remove('active');
-            selectorView.classList.add('active');
+        function updateMiniFuel() {
+            const el = document.getElementById('current-fuel-display');
+            el.textContent = globalState.currentFuel;
+            if (globalState.currentFuel <= 200) el.classList.add('danger');
+            else el.classList.remove('danger');
         }
 
-        // --- UTILS ---
-        function showFloatingText(x, y, text) {
-            const el = document.createElement('div');
-            el.className = 'float-text';
-            el.textContent = text;
-            el.style.left = x + 'px';
-            el.style.top = (y - 50) + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 800);
-        }
-
-        function isMatch(guess, answers) {
-            if (answers.includes(guess)) return true;
-            for (let a of answers) {
-                if (a.length < 4) { if (guess === a) return true; continue; }
-                if (levenshteinDistance(guess, a) <= (a.length > 8 ? 2 : 1)) return true;
-            }
-            return false;
-        }
-
-        function levenshteinDistance(a, b) {
-            const matrix = [];
-            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-            for (let i = 1; i <= b.length; i++) {
-                for (let j = 1; j <= a.length; j++) {
-                    if (b.charAt(i - 1) == a.charAt(j - 1)) matrix[i][j] = matrix[i - 1][j - 1];
-                    else matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
-                }
-            }
-            return matrix[b.length][a.length];
-        }
-
-        function triggerConfetti() {
-            try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){}
-        }
-
+        function saveAndExit() { renderDashboard(); gameView.classList.remove('active'); selectorView.classList.add('active'); }
+        
         function resetAllProgress() {
-            if(confirm("Restart Game? All fuel data and progress will be lost.")) {
+            if(confirm("Restart Game? All progress will be lost.")) {
                 localStorage.clear();
                 location.reload();
             }
         }
 
-        // --- PWA INSTALL ---
+        function showFloat(x, y, text) {
+            const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text;
+            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px';
+            document.body.appendChild(el); setTimeout(() => el.remove(), 800);
+        }
+
+        function isMatch(guess, answers) {
+            if (answers.includes(guess)) return true;
+            for (let a of answers) {
+                if (a.length < 4 && guess === a) return true;
+                if (levenshtein(guess, a) <= (a.length > 8 ? 2 : 1)) return true;
+            }
+            return false;
+        }
+
+        function levenshtein(a, b) {
+            const m = []; for(let i=0; i<=b.length; i++) m[i]=[i]; for(let j=0; j<=a.length; j++) m[0][j]=j;
+            for(let i=1; i<=b.length; i++) for(let j=1; j<=a.length; j++) 
+                m[i][j] = (b.charAt(i-1)==a.charAt(j-1)) ? m[i-1][j-1] : Math.min(m[i-1][j-1]+1, Math.min(m[i][j-1]+1, m[i-1][j]+1));
+            return m[b.length][a.length];
+        }
+
+        function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
+
+        // --- PWA ---
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            const btn = document.getElementById('install-btn');
-            btn.style.display = 'block';
-            btn.addEventListener('click', () => {
-                btn.style.display = 'none';
-                deferredPrompt.prompt();
-                deferredPrompt = null;
-            });
+            e.preventDefault(); deferredPrompt = e;
+            const btn = document.getElementById('install-btn'); btn.style.display = 'block';
+            btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; });
         });
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
-        }
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
     </script>
 </body>
 </html>

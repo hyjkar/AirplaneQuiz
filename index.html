@@ -12,7 +12,6 @@
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -39,7 +38,7 @@
         }
 
         /* --- OVERLAYS --- */
-        #orientation-lock, #login-overlay, #restart-overlay {
+        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #111; color: var(--brand-gold);
@@ -47,7 +46,7 @@
             flex-direction: column; justify-content: center; align-items: center; text-align: center;
             padding: 20px;
         }
-        #restart-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
+        #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
         @media screen and (orientation: landscape) and (max-height: 600px) {
             #orientation-lock { display: flex; }
         }
@@ -56,8 +55,7 @@
         h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
 
         .view-section { 
-            width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; 
-            padding-bottom: 20px; 
+            width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 20px; 
         }
         .view-section.active { display: flex; }
 
@@ -67,6 +65,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .modal-box.danger { border-color: var(--brand-red); box-shadow: 0 0 20px rgba(215, 25, 32, 0.2); }
+        .modal-box.success { border-color: var(--gauge-green); box-shadow: 0 0 20px rgba(46, 204, 113, 0.2); }
 
         /* --- DASHBOARD --- */
         .dashboard-header { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
@@ -80,42 +79,40 @@
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
 
-        /* --- LIST VIEW (New Flight Strips) --- */
+        /* --- LIST VIEW --- */
         #level-list-container {
-            display: flex; flex-direction: column; gap: 10px; width: 100%;
+            display: flex; flex-direction: column; gap: 8px; width: 100%;
             margin: 15px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; 
         }
-        /* Custom Scrollbar */
         #level-list-container::-webkit-scrollbar { width: 5px; }
         #level-list-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
+
+        .world-header {
+            font-family: 'Playfair Display', serif; color: var(--brand-dark); 
+            font-size: 1.1rem; margin-top: 15px; margin-bottom: 5px; 
+            border-bottom: 2px solid var(--brand-gold); padding-bottom: 5px;
+        }
 
         .level-strip {
             background: white; border: 1px solid #ddd; border-radius: 8px; 
             padding: 15px; width: 100%; min-height: 70px;
             display: flex; align-items: center; justify-content: space-between;
-            cursor: pointer; transition: transform 0.1s, background-color 0.2s;
+            cursor: pointer; transition: transform 0.1s;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         .level-strip:active { transform: scale(0.98); background-color: #f9f9f9; }
+        .level-strip.bonus { border: 2px solid var(--brand-gold); background: #fffdf5; }
 
-        /* Left side: Icon */
         .strip-icon { font-size: 1.5rem; width: 40px; text-align: center; margin-right: 10px; }
-        
-        /* Middle: Info */
         .strip-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         .strip-title { font-size: 1rem; color: var(--brand-dark); font-weight: bold; margin: 0; }
-        
-        /* Right: Status */
         .strip-status { font-size: 0.75rem; font-weight: bold; color: #888; text-align: right; min-width: 80px; }
         
         .status-ready { color: var(--brand-red); }
         .status-done { color: #27ae60; }
         .status-locked { color: #bbb; }
 
-        /* Locked State */
-        .level-strip.locked {
-            background: #f0f0f0; border-color: #eee; cursor: not-allowed; opacity: 0.8;
-        }
+        .level-strip.locked { background: #f0f0f0; border-color: #eee; cursor: not-allowed; opacity: 0.8; }
         .level-strip.locked .strip-title { color: #888; }
         .level-strip.locked .strip-icon { color: #aaa; }
 
@@ -126,7 +123,6 @@
             padding-bottom: 30px; margin-bottom: env(safe-area-inset-bottom);
         }
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        
         button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
         .primary-btn { background-color: var(--brand-red); color: white; }
         .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
@@ -162,8 +158,7 @@
         /* --- LEADERBOARD --- */
         #leaderboard-list {
             width: 100%; flex-grow: 1; overflow-y: auto; text-align: left;
-            background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px;
-            margin-bottom: 10px;
+            background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px;
         }
         .lb-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; align-items: center; }
         .lb-rank { font-weight: bold; width: 30px; color: var(--brand-red); }
@@ -173,7 +168,6 @@
 
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .float-text { position: fixed; color: var(--brand-red); font-weight: bold; font-size: 1.5rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 999; text-shadow: 0 2px 4px rgba(255,255,255,0.8); }
     </style>
 </head>
@@ -190,13 +184,24 @@
             <h1 style="color: var(--brand-red); margin-bottom: 10px;">SYSTEM PURGE</h1>
             <p style="margin-bottom: 10px; color: #ccc; font-size: 0.9rem;">
                 WARNING: This will delete all fuel data and flight logs. 
-                <br><br>
-                This action cannot be undone.
             </p>
             <div class="modal-buttons">
                 <button class="cancel-btn" onclick="cancelReset()">CANCEL</button>
                 <button class="danger-btn" onclick="confirmReset()">CONFIRM RESET</button>
             </div>
+        </div>
+    </div>
+
+    <div id="refuel-overlay">
+        <div class="modal-box success">
+            <div style="font-size: 3rem;">⛽</div>
+            <h1 style="color: var(--gauge-green); margin-bottom: 10px;">SUPPLY DROP</h1>
+            <p style="margin-bottom: 10px; color: #fff; font-size: 1.1rem;">
+                World Completed Successfully.
+                <br><br>
+                <strong>+2500 Liters Added</strong>
+            </p>
+            <button class="gold-btn" onclick="closeRefuel()">CONTINUE MISSION</button>
         </div>
     </div>
 
@@ -213,13 +218,12 @@
         <div class="dashboard-header">
             <h1>Fuel Command</h1>
             <h2 id="pilot-greeting">Welcome Pilot</h2>
-            
             <div class="fuel-tank-container">
                 <div class="fuel-label">Global Fuel Reserves</div>
-                <div class="fuel-value"><span id="total-fuel-display">5000</span></div>
+                <div class="fuel-value"><span id="total-fuel-display">4000</span></div>
                 <div class="fuel-bar-bg"><div class="fuel-bar-fill" id="fuel-bar"></div></div>
                 <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;">
-                    ⚠️ Need <span style="color:#fff">1500L</span> for Classified Tier
+                    ⚠️ Need <span style="color:#fff">1500L</span> for Next World
                 </div>
             </div>
         </div>
@@ -236,7 +240,7 @@
     <div id="game-view" class="view-section">
         <div class="game-header">
             <div id="level-title" style="font-weight:bold;">Flight 1</div>
-            <div class="mini-fuel" id="current-fuel-display">5000</div>
+            <div class="mini-fuel" id="current-fuel-display">4000</div>
         </div>
         <div id="game-wrapper">
             <div id="game-container">
@@ -257,9 +261,7 @@
             <h1>Global Standings</h1>
             <h2 style="margin-bottom: 10px;">Top Fuel Reserves</h2>
         </div>
-        
         <div id="leaderboard-list">Connecting to HQ...</div>
-        
         <div class="footer-buttons">
             <button class="primary-btn" onclick="closeLeaderboard()">Back to Command</button>
         </div>
@@ -267,14 +269,13 @@
 
     <script>
         // --- 🔥 FIREBASE CONFIGURATION 🔥 ---
-        // PASTE YOUR KEYS HERE
         const firebaseConfig = {
 apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
   authDomain: "fuelcommand.firebaseapp.com",
   projectId: "fuelcommand",
   storageBucket: "fuelcommand.firebasestorage.app",
   messagingSenderId: "211722292779",
-  appId: "1:211722292779:web:5dec358fc0693c7126246e"  
+  appId: "1:211722292779:web:5dec358fc0693c7126246e"
         };
 
         let db;
@@ -283,50 +284,33 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
             db = firebase.firestore();
         } catch(e) { console.error("Firebase Init Error", e); }
 
-        // --- GAME CONFIG (USING ONLINE URLs) ---
-        const LEVELS_CONFIG = [
-            { 
-                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Supermarine_Spitfire_Mk_XVI_NR_Colling_1.jpg/800px-Supermarine_Spitfire_Mk_XVI_NR_Colling_1.jpg", 
-                answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], 
-                name: "Supermarine Spitfire" 
-            },
-            { 
-                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Etihad_Airways_Boeing_787-9_Dreamliner_A6-BLA_taking_off_at_JFK_Airport.jpg/800px-Etihad_Airways_Boeing_787-9_Dreamliner_A6-BLA_taking_off_at_JFK_Airport.jpg", 
-                answers: ["787", "boeing 787", "dreamliner", "b787"], 
-                name: "Boeing 787" 
-            },
-            { 
-                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/F-22_Raptor_edit1_%28cropped%29.jpg/800px-F-22_Raptor_edit1_%28cropped%29.jpg", 
-                answers: ["f22", "f-22", "raptor", "f22 raptor"], 
-                name: "F-22 Raptor" 
-            },
-            { 
-                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Antonov_An-225_Mriya_at_Gostomel_Airport.jpg/800px-Antonov_An-225_Mriya_at_Gostomel_Airport.jpg", 
-                answers: ["an225", "an-225", "mriya", "antonov 225"], 
-                name: "Antonov An-225" 
-            },
-            { 
-                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Finnair_Airbus_A350-941_OH-LWA_at_Frankfurt_Airport.jpg/800px-Finnair_Airbus_A350-941_OH-LWA_at_Frankfurt_Airport.jpg", 
-                answers: ["a350", "airbus a350", "350"], 
-                name: "Airbus A350" 
-            },
-            // CLASSIFIED 1 (Index 5)
-            { 
-                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Lockheed_SR-71_Blackbird.jpg/800px-Lockheed_SR-71_Blackbird.jpg", 
-                answers: ["sr71", "sr-71", "blackbird", "sr 71"], 
-                name: "Classified Mission I" 
-            },
-            // CLASSIFIED 2 (Index 6)
-            { 
-                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/P-51_Mustang_flight.jpg/800px-P-51_Mustang_flight.jpg", 
-                answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], 
-                name: "Classified Mission II" 
-            }
-        ];
+        // --- AIRCRAFT DATABASE POOLS ---
+        const AIRCRAFT_DATA = {
+            standard: [
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Supermarine_Spitfire_Mk_XVI_NR_Colling_1.jpg/800px-Supermarine_Spitfire_Mk_XVI_NR_Colling_1.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Etihad_Airways_Boeing_787-9_Dreamliner_A6-BLA_taking_off_at_JFK_Airport.jpg/800px-Etihad_Airways_Boeing_787-9_Dreamliner_A6-BLA_taking_off_at_JFK_Airport.jpg", answers: ["787", "boeing 787", "dreamliner", "b787"], name: "Boeing 787" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/F-22_Raptor_edit1_%28cropped%29.jpg/800px-F-22_Raptor_edit1_%28cropped%29.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Antonov_An-225_Mriya_at_Gostomel_Airport.jpg/800px-Antonov_An-225_Mriya_at_Gostomel_Airport.jpg", answers: ["an225", "an-225", "mriya", "antonov 225"], name: "Antonov An-225" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Finnair_Airbus_A350-941_OH-LWA_at_Frankfurt_Airport.jpg/800px-Finnair_Airbus_A350-941_OH-LWA_at_Frankfurt_Airport.jpg", answers: ["a350", "airbus a350", "350"], name: "Airbus A350" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Lufthansa_Boeing_747-830_D-ABYA_FRA_2012-06-30.jpg/800px-Lufthansa_Boeing_747-830_D-ABYA_FRA_2012-06-30.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/A380_Emirates_A6-EDC.jpg/800px-A380_Emirates_A6-EDC.jpg", answers: ["airbus a380", "a380", "super jumbo", "380"], name: "Airbus A380" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Concorde_at_Filton.jpg/800px-Concorde_at_Filton.jpg", answers: ["concorde"], name: "Concorde" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/5/52/P-51_Mustang_flight.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" } // moved P51 to standard pool to make room for logic
+            ],
+            bonus: [
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Lockheed_SR-71_Blackbird.jpg/800px-Lockheed_SR-71_Blackbird.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
+                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Supermarine_Spitfire_Mk_XVI_NR_Colling_1.jpg/800px-Supermarine_Spitfire_Mk_XVI_NR_Colling_1.jpg", answers: ["spitfire"], name: "Rare Spitfire" } // Just a placeholder, better to reuse pool or add more. 
+                // Let's actually duplicate P51 and SR71 as the dedicated Bosses for consistency with the request
+            ]
+        };
+        
+        // Hardcoded Bosses for Logic
+        const BOSS_1 = { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Lockheed_SR-71_Blackbird.jpg/800px-Lockheed_SR-71_Blackbird.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" };
+        const BOSS_2 = { image: "https://upload.wikimedia.org/wikipedia/commons/5/52/P-51_Mustang_flight.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" };
 
-        const STARTING_GLOBAL_FUEL = 5000;
-        const UNLOCK_THRESHOLD_1 = 1500; // For SR-71
-        const UNLOCK_THRESHOLD_2 = 1000; // For P-51D
+        const STARTING_GLOBAL_FUEL = 4000;
+        const UNLOCK_THRESHOLD = 1500; 
+        const REFUEL_AMOUNT = 2500; 
         const TILE_COST = 15;
         const WRONG_GUESS_PENALTY = 200;
 
@@ -334,7 +318,7 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
         let globalState = {
             username: null,
             currentFuel: STARTING_GLOBAL_FUEL,
-            levels: []
+            generatedLevels: [] // Replaces static LEVELS_CONFIG
         };
         let activeLevelIdx = 0;
 
@@ -344,52 +328,73 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
         const lbView = document.getElementById('leaderboard-view');
         const loginOverlay = document.getElementById('login-overlay');
         const restartOverlay = document.getElementById('restart-overlay');
+        const refuelOverlay = document.getElementById('refuel-overlay');
         const pilotGreeting = document.getElementById('pilot-greeting');
         
         // --- INIT ---
         window.onload = function() {
             loadState();
-            
-            // Check Login
             if (!globalState.username) {
                 loginOverlay.style.display = 'flex';
             } else {
                 selectorView.classList.add('active');
                 pilotGreeting.textContent = `Pilot: ${globalState.username}`;
                 renderDashboard();
-                
                 if (isGameComplete()) syncScoreToCloud();
             }
-
             document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             document.getElementById('enter-btn').onclick = checkAnswer;
         };
 
-        // --- AUTH & CLOUD ---
+        // --- GENERATOR LOGIC ---
+        function generateGameLevels() {
+            // 1. Shuffle Standard Pool
+            let pool = [...AIRCRAFT_DATA.standard];
+            pool = pool.sort(() => Math.random() - 0.5);
+            
+            // 2. Select 8 planes (4 per world)
+            const world1Planes = pool.slice(0, 4);
+            const world2Planes = pool.slice(4, 8); // Ensures one is left out if pool has 9
+
+            let levels = [];
+
+            // World 1 Build
+            world1Planes.forEach(p => {
+                levels.push({ ...p, world: 1, isBonus: false, revealedTiles: [], completed: false });
+            });
+            // World 1 Boss
+            levels.push({ ...BOSS_1, world: 1, isBonus: true, revealedTiles: [], completed: false });
+
+            // World 2 Build
+            world2Planes.forEach(p => {
+                levels.push({ ...p, world: 2, isBonus: false, revealedTiles: [], completed: false });
+            });
+            // World 2 Boss
+            levels.push({ ...BOSS_2, world: 2, isBonus: true, revealedTiles: [], completed: false });
+
+            return levels;
+        }
+
+        // --- APP LOGIC ---
         function registerPilot() {
             const name = document.getElementById('callsign-input').value.trim();
             if (name.length < 2) { alert("Callsign too short."); return; }
-            
             globalState.username = name;
             saveState();
-            
             loginOverlay.style.display = 'none';
             selectorView.classList.add('active');
             pilotGreeting.textContent = `Pilot: ${globalState.username}`;
             renderDashboard();
         }
 
-        // Only runs when game is beaten
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
-            
-            db.collection("flight_scores_v2").doc(globalState.username).set({
+            // Version 4 for Randomized Leaderboard
+            db.collection("flight_scores_v4").doc(globalState.username).set({
                 name: globalState.username,
                 score: globalState.currentFuel,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            })
-            .then(() => console.log("Victory Score Synced"))
-            .catch(err => console.error("Sync Failed", err));
+            }).catch(console.error);
         }
 
         function openLeaderboard() {
@@ -397,154 +402,113 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
             lbView.classList.add('active');
             const list = document.getElementById('leaderboard-list');
             list.innerHTML = "Fetching Data...";
+            if(!db) { list.innerHTML = "⚠️ Database not connected."; return; }
 
-            if(!db) {
-                list.innerHTML = "⚠️ Database not connected.";
-                return;
-            }
-
-            db.collection("flight_scores_v2").orderBy("score", "desc").limit(20).get()
+            db.collection("flight_scores_v4").orderBy("score", "desc").limit(20).get()
             .then((querySnapshot) => {
                 let html = "";
                 let rank = 1;
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     const isMe = data.name === globalState.username;
-                    html += `
-                        <div class="lb-row ${isMe ? 'me' : ''}">
-                            <div class="lb-rank">#${rank++}</div>
-                            <div class="lb-name">${data.name}</div>
-                            <div class="lb-fuel">${data.score}L</div>
-                        </div>
-                    `;
+                    html += `<div class="lb-row ${isMe ? 'me' : ''}"><div class="lb-rank">#${rank++}</div><div class="lb-name">${data.name}</div><div class="lb-fuel">${data.score}L</div></div>`;
                 });
                 if(html === "") html = "<div style='text-align:center; padding:20px; color:#777;'>No completed missions yet.<br>Be the first.</div>";
                 list.innerHTML = html;
-            })
-            .catch((error) => {
-                list.innerHTML = "Error loading leaderboard.";
-                console.error("Error getting documents: ", error);
             });
         }
 
-        function closeLeaderboard() {
-            lbView.classList.remove('active');
-            selectorView.classList.add('active');
-        }
+        function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
-        // --- CORE LOGIC ---
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v13'); 
+            const saved = localStorage.getItem('fuelQuizState_v15'); // New Version
             if (saved) {
                 globalState = JSON.parse(saved);
+                // Fallback if update messed up levels
+                if(!globalState.generatedLevels || globalState.generatedLevels.length === 0) {
+                    globalState.generatedLevels = generateGameLevels();
+                }
             } else {
                 globalState.currentFuel = STARTING_GLOBAL_FUEL;
-                globalState.levels = LEVELS_CONFIG.map(() => ({ revealedTiles: [], completed: false }));
+                globalState.generatedLevels = generateGameLevels();
             }
         }
 
-        function saveState() {
-            localStorage.setItem('fuelQuizState_v13', JSON.stringify(globalState));
-        }
-
-        function isGameComplete() {
-            return globalState.levels.every(l => l.completed);
-        }
+        function saveState() { localStorage.setItem('fuelQuizState_v15', JSON.stringify(globalState)); }
+        function isGameComplete() { return globalState.generatedLevels.every(l => l.completed); }
 
         function renderDashboard() {
             document.getElementById('total-fuel-display').textContent = globalState.currentFuel;
-            const pct = Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100);
-            const bar = document.getElementById('fuel-bar');
-            bar.style.width = pct + "%";
+            const pct = Math.min(100, Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100));
+            document.getElementById('fuel-bar').style.width = pct + "%";
             
             let color = "#2ecc71"; 
             if (globalState.currentFuel < 2000) color = "#f39c12"; 
             if (globalState.currentFuel < 1000) color = "#e74c3c"; 
-            bar.style.backgroundColor = color;
+            document.getElementById('fuel-bar').style.backgroundColor = color;
             document.querySelector('.fuel-value').style.color = color;
 
-            // --- UNLOCK LOGIC ---
-            const normalLevelsDone = globalState.levels.slice(0, 5).every(l => l.completed);
-            const canUnlockSR71 = normalLevelsDone && globalState.currentFuel >= UNLOCK_THRESHOLD_1;
-
-            const sr71Done = globalState.levels[5].completed;
-            const canUnlockP51 = sr71Done && globalState.currentFuel >= UNLOCK_THRESHOLD_2;
-
             const unlockMsg = document.getElementById('unlock-message');
-            if (canUnlockP51) {
-                unlockMsg.innerHTML = "Final Mission: <span style='color:#2ecc71'>READY</span>";
-            } else if (canUnlockSR71) {
-                unlockMsg.innerHTML = "Classified Tier 1: <span style='color:#2ecc71'>UNLOCKED</span>";
-            } else if (normalLevelsDone) {
-                unlockMsg.innerHTML = "⚠️ <span style='color:#e74c3c'>INSUFFICIENT FUEL</span> for Classified Ops";
+            if (globalState.currentFuel >= UNLOCK_THRESHOLD) {
+                unlockMsg.innerHTML = "Bonus Access: <span style='color:#2ecc71'>GRANTED</span>";
             } else {
-                unlockMsg.innerHTML = "⚠️ Need <span style='color:#fff'>1500L</span> for Classified Tier";
+                unlockMsg.innerHTML = `⚠️ Need <span style='color:#fff'>${UNLOCK_THRESHOLD}L</span> for Classified Ops`;
             }
 
             const listContainer = document.getElementById('level-list-container');
             listContainer.innerHTML = "";
 
-            LEVELS_CONFIG.forEach((config, idx) => {
-                const lState = globalState.levels[idx];
-                const card = document.createElement('div');
-                
-                let isLocked = false;
-                let lockReason = "";
+            let currentWorld = 0;
 
-                if (idx === 5) { // SR-71
-                    if (!canUnlockSR71 && !lState.completed) {
-                        isLocked = true;
-                        lockReason = normalLevelsDone ? "LOW FUEL" : "LOCKED";
-                    }
-                } else if (idx === 6) { // P-51
-                    if (!canUnlockP51 && !lState.completed) {
-                        isLocked = true;
-                        lockReason = sr71Done ? "LOW FUEL" : "LOCKED";
-                    }
+            globalState.generatedLevels.forEach((levelData, idx) => {
+                if (levelData.world !== currentWorld) {
+                    const header = document.createElement('div');
+                    header.className = 'world-header';
+                    header.textContent = `World ${levelData.world}`;
+                    listContainer.appendChild(header);
+                    currentWorld = levelData.world;
                 }
+
+                const card = document.createElement('div');
+                let isPrevDone = (idx === 0) ? true : globalState.generatedLevels[idx - 1].completed;
+                
+                let isBonusLocked = false;
+                if (levelData.isBonus) {
+                    if (globalState.currentFuel < UNLOCK_THRESHOLD) isBonusLocked = true;
+                }
+
+                const isLocked = !isPrevDone || (levelData.isBonus && isBonusLocked && !levelData.completed);
 
                 if (isLocked) {
                     card.className = "level-strip locked";
                     let title = `Flight ${idx+1}`;
-                    if(idx >= 5) title = "Classified";
-                    card.innerHTML = `
-                        <div class="strip-icon">🔒</div>
-                        <div class="strip-info"><div class="strip-title">${title}</div></div>
-                        <div class="strip-status status-locked">${lockReason}</div>
-                    `;
+                    if(levelData.isBonus) title = "Classified";
+                    let reason = "LOCKED";
+                    if(levelData.isBonus && isPrevDone && isBonusLocked) reason = "LOW FUEL";
+                    card.innerHTML = `<div class="strip-icon">🔒</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">${reason}</div>`;
                 } else {
-                    card.className = "level-strip";
+                    card.className = levelData.isBonus ? "level-strip bonus" : "level-strip";
                     let icon = "✈️";
                     let title = `Flight ${idx + 1}`;
-                    if(idx >= 5) title = "Classified";
-
+                    if(levelData.isBonus) title = "Classified";
                     let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
                     
-                    if (lState.completed) {
-                        if(idx === 5) title = "SR-71 Blackbird";
-                        else if(idx === 6) title = "P-51D Mustang";
-                        else title = config.name;
-                        
-                        icon = "★"; 
-                        statusHtml = `<div class="strip-status status-done">Identified</div>`;
-                    } else if (idx >= 5) {
+                    if (levelData.completed) {
+                        title = levelData.name; icon = "★"; statusHtml = `<div class="strip-status status-done">Identified</div>`;
+                    } else if (levelData.isBonus) {
                          icon = "🚀"; 
-                    } else if (lState.revealedTiles.length > 0) {
+                    } else if (levelData.revealedTiles.length > 0) {
                         statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
                     }
 
-                    if (globalState.currentFuel <= 0 && !lState.completed) {
+                    if (globalState.currentFuel <= 0 && !levelData.completed) {
                          card.className += " locked";
                          statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
                          card.onclick = () => alert("Mission Failed: No Fuel. Please Restart.");
                     } else {
                         card.onclick = () => launchLevel(idx);
                     }
-                    card.innerHTML = `
-                        <div class="strip-icon">${icon}</div>
-                        <div class="strip-info"><div class="strip-title">${title}</div></div>
-                        ${statusHtml}
-                    `;
+                    card.innerHTML = `<div class="strip-icon">${icon}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                 }
                 listContainer.appendChild(card);
             });
@@ -552,21 +516,16 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
 
         function launchLevel(idx) {
             activeLevelIdx = idx;
-            const lState = globalState.levels[idx];
+            const lState = globalState.generatedLevels[idx];
             selectorView.classList.remove('active');
             gameView.classList.add('active');
 
             let title = `Flight ${idx+1}`;
-            if (lState.completed) {
-                if(idx === 5) title = "SR-71 Blackbird";
-                else if(idx === 6) title = "P-51D Mustang";
-                else title = LEVELS_CONFIG[idx].name;
-            } else if (idx >= 5) {
-                title = "Classified";
-            }
+            if (lState.completed) title = lState.name;
+            else if (lState.isBonus) title = "Classified";
             
             document.getElementById('level-title').textContent = title;
-            document.getElementById('mystery-image').src = LEVELS_CONFIG[idx].image;
+            document.getElementById('mystery-image').src = lState.image;
             document.getElementById('guess-input').value = "";
             document.getElementById('guess-input').disabled = lState.completed; 
             document.getElementById('enter-btn').disabled = lState.completed;
@@ -592,7 +551,7 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
         }
 
         function handleInteraction(e) {
-            const lState = globalState.levels[activeLevelIdx];
+            const lState = globalState.generatedLevels[activeLevelIdx];
             if (lState.completed || globalState.currentFuel <= 0) return;
             
             const hidden = Array.from(document.querySelectorAll('.grid-piece')).filter((el, idx) => !lState.revealedTiles.includes(idx));
@@ -616,11 +575,11 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
         }
 
         function checkAnswer() {
-            const lState = globalState.levels[activeLevelIdx];
+            const lState = globalState.generatedLevels[activeLevelIdx];
             if (lState.completed || globalState.currentFuel <= 0) return;
 
             const guess = document.getElementById('guess-input').value.trim().toLowerCase();
-            const answers = LEVELS_CONFIG[activeLevelIdx].answers;
+            const answers = lState.answers;
 
             if (isMatch(guess, answers)) {
                 endGame(true, "Target Verified");
@@ -628,11 +587,9 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
                 globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
                 saveState();
                 updateMiniFuelUI();
-                
                 const inp = document.getElementById('guess-input');
                 inp.style.borderColor = "var(--brand-red)";
                 setTimeout(() => inp.style.borderColor = "#ddd", 500);
-
                 if (globalState.currentFuel <= 0) endGame(false, "FUEL DEPLETED");
             }
         }
@@ -641,21 +598,22 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
             document.getElementById('message').textContent = msg;
             if (win) {
                 document.getElementById('message').className = "success";
-                globalState.levels[activeLevelIdx].completed = true;
+                const lState = globalState.generatedLevels[activeLevelIdx];
+                lState.completed = true;
                 document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
                 triggerConfetti();
-                saveState();
                 
-                let name = LEVELS_CONFIG[activeLevelIdx].name;
-                if(activeLevelIdx === 5) name = "SR-71 Blackbird";
-                if(activeLevelIdx === 6) name = "P-51D Mustang";
-                document.getElementById('level-title').textContent = name;
+                document.getElementById('level-title').textContent = lState.name;
                 
-                if (activeLevelIdx === 6) { 
-                    syncScoreToCloud();
+                if (lState.isBonus) {
+                    globalState.currentFuel += REFUEL_AMOUNT;
+                    setTimeout(() => { refuelOverlay.style.display = 'flex'; }, 1000);
                 }
 
-                setTimeout(saveAndExit, 2000);
+                saveState();
+                if (isGameComplete()) syncScoreToCloud();
+                
+                if (!lState.isBonus) setTimeout(saveAndExit, 2000);
             } else {
                 document.getElementById('message').className = "fail";
                 if (globalState.currentFuel <= 0) {
@@ -665,6 +623,7 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
             }
         }
 
+        function closeRefuel() { refuelOverlay.style.display = 'none'; saveAndExit(); }
         function updateMiniFuelUI() {
             const el = document.getElementById('current-fuel-display');
             el.textContent = globalState.currentFuel;
@@ -673,7 +632,6 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
         }
 
         function saveAndExit() { renderDashboard(); gameView.classList.remove('active'); selectorView.classList.add('active'); }
-        
         function triggerResetUI() { restartOverlay.style.display = 'flex'; }
         function cancelReset() { restartOverlay.style.display = 'none'; }
         function confirmReset() { localStorage.clear(); location.reload(); }

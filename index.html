@@ -28,26 +28,26 @@
             background-color: var(--bg-sand);
             color: var(--brand-dark);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            overscroll-behavior: none; 
+            /* Allow scrolling if content is too tall */
+            overflow-y: auto; 
             box-sizing: border-box;
             user-select: none; 
         }
 
         /* --- PORTRAIT LOCK OVERLAY --- */
         #orientation-lock {
-            display: none; /* Hidden by default */
+            display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #111; color: var(--brand-gold);
             z-index: 10000;
             flex-direction: column; justify-content: center; align-items: center; text-align: center;
         }
         
-        /* Show only on landscape mobile screens */
         @media screen and (orientation: landscape) and (max-height: 600px) {
             #orientation-lock { display: flex; }
         }
@@ -78,6 +78,8 @@
             flex-direction: column;
             align-items: center;
             animation: fadeIn 0.5s ease;
+            /* Ensure view takes full available height */
+            flex-grow: 1; 
         }
         .view-section.active { display: flex; }
 
@@ -159,12 +161,16 @@
             border-radius: 8px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             position: relative;
         }
 
         #game-container {
-            position: relative; width: 100%; aspect-ratio: 4/3; 
+            position: relative; 
+            width: 100%; 
+            /* This max-height ensures the image doesn't push buttons off screen on mobile */
+            max-height: 50vh; 
+            aspect-ratio: 4/3; 
             background-color: #000; overflow: hidden; border: 3px solid #fff; cursor: pointer; 
         }
 
@@ -192,7 +198,12 @@
         }
 
         /* Input Area */
-        #input-area { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        #input-area { 
+            display: flex; flex-direction: column; gap: 10px; width: 100%; 
+            /* Ensure input area stays visible */
+            margin-bottom: 20px; 
+        }
+        
         input[type="text"] {
             width: 100%; padding: 15px; font-size: 16px; 
             border: 2px solid #ddd; border-radius: 10px; outline: none; text-align: center;
@@ -207,7 +218,7 @@
         .abort-btn { background: transparent; border: 1px solid #ccc; color: #777; margin-top: 5px; }
 
         /* --- UTILS --- */
-        #message { margin-top: 15px; font-size: 1.4rem; text-align: center; height: 30px; font-weight: bold; }
+        #message { margin-top: 0px; font-size: 1.4rem; text-align: center; height: 30px; font-weight: bold; }
         .success { color: #27ae60; }
         .fail { color: var(--brand-red); }
 
@@ -238,14 +249,14 @@
                 <div class="fuel-bar-fill" id="fuel-bar"></div>
             </div>
             <div id="unlock-message" style="font-size: 0.8rem; margin-top:10px; color:#888;">
-                ⚠️ Need <span style="color:#fff">1000L</span> Remaining to launch Blackbird
+                ⚠️ Need <span style="color:#fff">1000L</span> Remaining to launch Flight 4
             </div>
         </div>
 
         <div id="level-grid"></div>
         
         <button id="install-btn">📲 Install App</button>
-        <button class="abort-btn" onclick="resetAllProgress()">Factory Reset</button>
+        <button class="abort-btn" onclick="resetAllProgress()">Restart Game</button>
     </div>
 
     <div id="game-view" class="view-section">
@@ -263,7 +274,7 @@
 
         <div id="input-area">
             <input type="text" id="guess-input" placeholder="Identify aircraft..." autocomplete="off">
-            <button id="enter-btn">IDENTIFY</button>
+            <button id="enter-btn">ENTER</button>
             <button class="abort-btn" onclick="saveAndExit()">Abort Mission (Save)</button>
         </div>
 
@@ -276,11 +287,12 @@
             { image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
             { image: "a320.jpg", answers: ["airbus a320", "a320", "320"], name: "Airbus A320" },
             { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
-            { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" }
+            // SPOILER: Name is generic here, revealed only upon success if desired.
+            { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "Classified Mission" }
         ];
 
         const STARTING_GLOBAL_FUEL = 3000;
-        const UNLOCK_THRESHOLD = 1000; // Need this much LEFT to open Level 4
+        const UNLOCK_THRESHOLD = 1000; 
         const TILE_COST = 15;
         const WRONG_GUESS_PENALTY = 200;
 
@@ -313,11 +325,10 @@
         };
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v4');
+            const saved = localStorage.getItem('fuelQuizState_v5');
             if (saved) {
                 globalState = JSON.parse(saved);
             } else {
-                // Initialize default state
                 globalState.currentFuel = STARTING_GLOBAL_FUEL;
                 globalState.levels = LEVELS_CONFIG.map(() => ({
                     revealedTiles: [],
@@ -327,33 +338,33 @@
         }
 
         function saveState() {
-            localStorage.setItem('fuelQuizState_v4', JSON.stringify(globalState));
+            localStorage.setItem('fuelQuizState_v5', JSON.stringify(globalState));
         }
 
         // --- DASHBOARD LOGIC ---
         function renderDashboard() {
-            // Update Fuel Gauge
             totalFuelDisplay.textContent = globalState.currentFuel;
             const percentage = Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100);
             fuelBar.style.width = percentage + "%";
             
-            // Color Logic
-            let color = "#2ecc71"; // Green
-            if (globalState.currentFuel < 1500) color = "#f39c12"; // Orange
-            if (globalState.currentFuel < 1000) color = "#e74c3c"; // Red
+            let color = "#2ecc71"; 
+            if (globalState.currentFuel < 1500) color = "#f39c12"; 
+            if (globalState.currentFuel < 1000) color = "#e74c3c"; 
             
             fuelBar.style.backgroundColor = color;
             document.querySelector('.fuel-value').style.color = color;
 
-            // Unlock Status
-            const isLevel4Unlocked = globalState.currentFuel >= UNLOCK_THRESHOLD;
+            // Check UNLOCK Conditions (All 3 previous done AND Enough Fuel)
+            const levelsDone = globalState.levels[0].completed && globalState.levels[1].completed && globalState.levels[2].completed;
+            const hasFuel = globalState.currentFuel >= UNLOCK_THRESHOLD;
+            const isLevel4Unlocked = levelsDone && hasFuel;
+
             if (isLevel4Unlocked) {
-                unlockMessage.innerHTML = "Blackbird Launch System: <span style='color:#2ecc71'>READY</span>";
+                unlockMessage.innerHTML = "Classified Mission: <span style='color:#2ecc71'>READY</span>";
             } else {
-                unlockMessage.innerHTML = "⚠️ <span style='color:#e74c3c'>CRITICAL FUEL LOW</span> - Blackbird Grounded";
+                unlockMessage.innerHTML = "⚠️ Complete all flights with <span style='color:#fff'>1000L</span>+ remaining";
             }
 
-            // Render Grid
             levelGrid.innerHTML = "";
 
             LEVELS_CONFIG.forEach((config, idx) => {
@@ -361,7 +372,7 @@
                 const card = document.createElement('div');
                 const isSR71 = idx === 3;
                 
-                // Lock Logic
+                // Logic: Locked if it's Level 4 and conditions met
                 const isLocked = isSR71 && !isLevel4Unlocked;
 
                 if (isLocked) {
@@ -369,14 +380,22 @@
                     card.innerHTML = `
                         <div class="level-icon">🔒</div>
                         <h3>Classified</h3>
-                        <div class="level-status">REQUIRE ${UNLOCK_THRESHOLD}L</div>
+                        <div class="level-status">LOCKED</div>
                     `;
                 } else {
                     card.className = "level-card";
                     let icon = "✈️";
                     let statusHtml = "";
-                    let title = `Flight ${idx + 1}`;
-                    if (isSR71) { icon = "🚀"; title = "Blackbird"; }
+                    let title = config.name; 
+                    
+                    // Spoiler Protection: Always show "Classified" until completed
+                    if (isSR71 && !levelState.completed) {
+                        icon = "🚀"; 
+                        title = "Classified Mission";
+                    } else if (isSR71 && levelState.completed) {
+                        icon = "🚀"; 
+                        title = "SR-71 Blackbird"; // Reveal name only after win
+                    }
 
                     if (levelState.completed) {
                         icon = "★";
@@ -387,11 +406,10 @@
                         statusHtml = `<div class="level-status">Ready</div>`;
                     }
 
-                    // Disable clicking if fuel is 0 (Game Over basically)
                     if (globalState.currentFuel <= 0 && !levelState.completed) {
                          card.className += " locked";
                          statusHtml = `<div class="level-status" style="color:red">EMPTY</div>`;
-                         card.onclick = () => alert("Mission Failed: No Fuel Remaining. Please Reset.");
+                         card.onclick = () => alert("Mission Failed: No Fuel Remaining. Please Restart.");
                     } else {
                         card.onclick = () => launchLevel(idx);
                     }
@@ -414,7 +432,10 @@
             selectorView.classList.remove('active');
             gameView.classList.add('active');
 
-            document.getElementById('level-title').textContent = LEVELS_CONFIG[idx].name === "SR-71 Blackbird" ? "Classified" : `Flight ${idx + 1}`;
+            let title = LEVELS_CONFIG[idx].name;
+            if(idx === 3 && !levelState.completed) title = "Classified Mission";
+            
+            document.getElementById('level-title').textContent = title;
             document.getElementById('mystery-image').src = LEVELS_CONFIG[idx].image;
             inputField.value = "";
             inputField.disabled = levelState.completed; 
@@ -435,7 +456,6 @@
             }
 
             if (!levelState.completed && globalState.currentFuel > 0) {
-                // Support both Mouse and Touch
                 gridContainer.onmousedown = handleGridInteraction;
                 gridContainer.ontouchstart = (e) => { e.preventDefault(); handleGridInteraction(e); };
             } else {
@@ -452,23 +472,19 @@
             const hiddenTiles = Array.from(document.querySelectorAll('.grid-piece')).filter((el, idx) => !levelState.revealedTiles.includes(idx));
             if (hiddenTiles.length === 0) return;
 
-            // Pick random tile
             const randomDomTile = hiddenTiles[Math.floor(Math.random() * hiddenTiles.length)];
             const allTiles = Array.from(gridContainer.children);
             const originalIndex = allTiles.indexOf(randomDomTile);
 
-            // Update DOM & State
             randomDomTile.classList.add('revealed');
             levelState.revealedTiles.push(originalIndex);
             
-            // DEDUCT GLOBAL FUEL
             globalState.currentFuel -= TILE_COST;
             if (globalState.currentFuel < 0) globalState.currentFuel = 0;
             
             saveState();
             updateMiniFuelUI();
 
-            // Float Text Logic
             let cx = e.clientX || (e.touches && e.touches[0].clientX);
             let cy = e.clientY || (e.touches && e.touches[0].clientY);
             if (cx && cy) showFloatingText(cx, cy, `-${TILE_COST}`);
@@ -516,11 +532,16 @@
                 document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
                 triggerConfetti();
                 saveState();
+                
+                // If this was the last level, show special message
+                if(activeLevelIdx === 3) {
+                     document.getElementById('level-title').textContent = "SR-71 Blackbird";
+                }
+
                 setTimeout(saveAndExit, 2500);
             } else {
                 messageDisplay.className = "fail";
                 if (globalState.currentFuel <= 0) {
-                    // Game Over State
                     gridContainer.onmousedown = null;
                     gridContainer.ontouchstart = null;
                 }
@@ -571,7 +592,7 @@
         }
 
         function resetAllProgress() {
-            if(confirm("Factory Reset: Refuel to 3000L and reset all progress?")) {
+            if(confirm("Restart Game? All fuel data and progress will be lost.")) {
                 localStorage.clear();
                 location.reload();
             }

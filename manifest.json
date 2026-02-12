@@ -1,0 +1,16 @@
+{
+  "name": "Airplane Quiz Deluxe",
+  "short_name": "Plane Quiz",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fcfbf9",
+  "theme_color": "#d71920",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

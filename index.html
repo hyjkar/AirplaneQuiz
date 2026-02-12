@@ -58,7 +58,7 @@
 
         .view-section { 
             width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; 
-            padding-bottom: 20px; 
+            padding-bottom: 10px; /* Reduced padding */
             transition: filter 2s ease;
         }
         .view-section.active { display: flex; }
@@ -88,7 +88,7 @@
         /* --- LIST VIEW --- */
         #level-list-container {
             display: flex; flex-direction: column; gap: 8px; width: 100%;
-            margin: 15px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; 
+            margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; 
         }
         #level-list-container::-webkit-scrollbar { width: 5px; }
         #level-list-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
@@ -98,7 +98,7 @@
             overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; 
         }
         .world-header {
-            padding: 15px; background: #f8f8f8; cursor: pointer;
+            padding: 12px 15px; background: #f8f8f8; cursor: pointer;
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid transparent; transition: all 0.2s;
         }
@@ -107,7 +107,6 @@
         .world-folder.open .world-header h3 { color: var(--brand-gold); }
         .world-folder.open .arrow { transform: rotate(180deg); }
         .world-title-group h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-dark); }
-        
         .arrow { transition: transform 0.3s ease; font-size: 1.2rem; color: #888; }
         .world-content { display: none; flex-direction: column; gap: 8px; padding: 10px; background: #fff; }
         .world-folder.open .world-content { display: flex; }
@@ -135,7 +134,7 @@
         .footer-buttons { 
             width: 100%; flex-shrink: 0; display: flex; flex-direction: column; 
             gap: 8px; margin-top: 5px; padding-top: 10px; border-top: 1px solid #eee; 
-            padding-bottom: 30px; margin-bottom: env(safe-area-inset-bottom);
+            padding-bottom: 20px; margin-bottom: env(safe-area-inset-bottom);
         }
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
         button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
@@ -146,27 +145,40 @@
         .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
         .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
 
-        /* --- GAMEPLAY --- */
-        .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; }
+        /* --- GAMEPLAY VIEW --- */
+        
+        .game-header { 
+            display: flex; justify-content: space-between; align-items: center; width: 100%; 
+            margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; 
+        }
         .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
+        
+        /* Removed Gold Background & Padding */
         #game-wrapper {
-            padding: 5px; background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%); border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2); width: 100%; margin-bottom: 10px; position: relative;
-            flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center;
+            background: transparent;
+            box-shadow: none;
+            border-radius: 0;
+            padding: 0;
+            width: 100%; 
+            margin-bottom: 10px; /* Reduced margin */
+            position: relative;
+            flex-grow: 1; /* Key for flex layout */
+            min-height: 0; /* Allows shrinking */
+            display: flex; justify-content: center; align-items: center;
         }
         
-        /* 4:3 ASPECT RATIO */
+        /* 4:3 Aspect Ratio, but flexible */
         #game-container { 
             position: relative; width: 100%; 
             aspect-ratio: 4/3; 
-            max-height: 100%; background-color: #000; overflow: hidden; border: 3px solid #fff; cursor: pointer; 
+            max-height: 100%; 
+            background-color: #000; overflow: hidden; border: 2px solid #ccc; cursor: pointer; 
         }
         #game-container img { object-fit: cover; width: 100%; height: 100%; }
         
         #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
         
-        /* 10x10 GRID */
         #cover-grid { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); 
@@ -175,13 +187,29 @@
         .grid-piece { background-color: var(--piece-color); border: 1px solid #3a3a3a; transition: opacity 0.3s; }
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
         
-        #input-area { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; margin-bottom: 5px; }
-        input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; }
+        /* Input Area - Tight spacing */
+        #input-area { 
+            display: flex; flex-direction: column; gap: 5px; width: 100%; 
+            flex-shrink: 0; margin-bottom: 0px; 
+        }
+        input[type="text"] { 
+            width: 100%; padding: 12px; font-size: 1.1rem; 
+            border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; 
+            background: white; color: #333; 
+        }
         input[type="text"]:focus { border-color: var(--brand-gold); }
         #enter-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
         
-        #message { margin-top: 0px; font-size: 1.1rem; text-align: center; height: 25px; font-weight: bold; flex-shrink: 0;}
+        #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
+
+        /* --- MOBILE KEYBOARD FIX --- */
+        /* When screen height is small (keyboard open), hide the header to make room for image */
+        @media (max-height: 500px) {
+            .game-header { display: none !important; }
+            #game-wrapper { margin-bottom: 5px; }
+            h1 { display: none; } /* Hide main title if visible */
+        }
 
         /* --- LEADERBOARD --- */
         #leaderboard-list {
@@ -309,7 +337,7 @@
     <script>
         // --- 🔥 FIREBASE CONFIGURATION 🔥 ---
         const firebaseConfig = {
-apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
+  apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
   authDomain: "fuelcommand.firebaseapp.com",
   projectId: "fuelcommand",
   storageBucket: "fuelcommand.firebasestorage.app",
@@ -324,7 +352,6 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
         } catch(e) { console.error("Firebase Init Error", e); }
 
         // --- AIRCRAFT DATABASE POOLS ---
-        // USING LOCAL FILENAMES
         const AIRCRAFT_DATA = {
             standard: [
                 { image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
@@ -340,7 +367,6 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
             bonus: [] 
         };
         
-        // BOSS LEVELS
         const BOSS_1 = { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" };
         const BOSS_2 = { image: "p51.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" };
 
@@ -388,16 +414,13 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
             let pool = [...AIRCRAFT_DATA.standard];
             pool = pool.sort(() => Math.random() - 0.5);
             
-            // Pick 8 random standard planes
             const world1Planes = pool.slice(0, 4);
             const world2Planes = pool.slice(4, 8); 
 
             let levels = [];
-            // World 1
             world1Planes.forEach(p => levels.push({ ...p, world: 1, isBonus: false, revealedTiles: [], completed: false }));
             levels.push({ ...BOSS_1, world: 1, isBonus: true, revealedTiles: [], completed: false });
 
-            // World 2
             world2Planes.forEach(p => levels.push({ ...p, world: 2, isBonus: false, revealedTiles: [], completed: false }));
             levels.push({ ...BOSS_2, world: 2, isBonus: true, revealedTiles: [], completed: false });
 
@@ -449,7 +472,7 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v20'); // New Version ID
+            const saved = localStorage.getItem('fuelQuizState_v19'); // Consistent version
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.generatedLevels || globalState.generatedLevels.length === 0) {
@@ -461,10 +484,9 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v20', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v19', JSON.stringify(globalState)); }
         function isGameComplete() { return globalState.generatedLevels.every(l => l.completed); }
 
-        // --- DASHBOARD ---
         function renderDashboard() {
             document.getElementById('total-fuel-display').textContent = globalState.currentFuel;
             const pct = Math.min(100, Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100));
@@ -502,7 +524,6 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
                 
                 const header = document.createElement('div');
                 header.className = 'world-header';
-                // REMOVED SUBTITLES
                 header.innerHTML = `
                     <div class="world-title-group"><h3>World ${worldNum}</h3></div>
                     <div class="arrow">▼</div>
@@ -584,7 +605,6 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
 
             const grid = document.getElementById('cover-grid');
             grid.innerHTML = "";
-            
             for (let i = 0; i < 100; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'grid-piece';

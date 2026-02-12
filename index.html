@@ -27,11 +27,15 @@
             --gauge-red: #e74c3c;
         }
         * { box-sizing: border-box; }
+        
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--bg-sand);
             color: var(--brand-dark);
-            margin: 0; padding: 10px; height: 100vh;
+            margin: 0; padding: 10px; 
+            /* Fix for mobile address bar cropping */
+            height: 100vh; 
+            height: 100dvh; 
             display: flex; flex-direction: column; align-items: center;
             overflow: hidden; user-select: none; 
         }
@@ -52,7 +56,11 @@
         h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--brand-dark); margin: 0; text-align: center; text-transform: uppercase; }
         h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
 
-        .view-section { width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 10px; }
+        .view-section { 
+            width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; 
+            /* Extra padding at bottom to ensure safety from screen edges */
+            padding-bottom: 20px; 
+        }
         .view-section.active { display: flex; }
 
         /* --- DASHBOARD --- */
@@ -88,14 +96,17 @@
         /* --- BUTTONS --- */
         .footer-buttons { 
             width: 100%; 
-            flex-shrink: 0; /* Prevents squashing */
+            flex-shrink: 0; 
             display: flex; 
             flex-direction: column; 
             gap: 8px; 
             margin-top: 5px; 
             padding-top: 10px; 
             border-top: 1px solid #eee; 
-            padding-bottom: 20px; /* Added padding for bottom visibility */
+            
+            /* CRITICAL FIX FOR BOTTOM VISIBILITY */
+            padding-bottom: 30px; /* Push buttons up */
+            margin-bottom: env(safe-area-inset-bottom); /* For iPhone Home Bar */
         }
         button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
         .primary-btn { background-color: var(--brand-red); color: white; }
@@ -218,6 +229,7 @@
 
     <script>
         // --- 🔥 FIREBASE CONFIGURATION 🔥 ---
+        // PASTE YOUR KEYS HERE
         const firebaseConfig = {
   apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
   authDomain: "fuelcommand.firebaseapp.com",
@@ -274,7 +286,7 @@
                 pilotGreeting.textContent = `Pilot: ${globalState.username}`;
                 renderDashboard();
                 
-                // If game was previously finished, sync logic ensures they are on board
+                // Ensure only game beaters are synced
                 if (isGameComplete()) syncScoreToCloud();
             }
 
@@ -300,7 +312,8 @@
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
             
-            db.collection("scores").doc(globalState.username).set({
+            // CHANGED COLLECTION NAME TO 'flight_scores_v1' TO RESET LEADERBOARD
+            db.collection("flight_scores_v1").doc(globalState.username).set({
                 name: globalState.username,
                 score: globalState.currentFuel,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -320,7 +333,8 @@
                 return;
             }
 
-            db.collection("scores").orderBy("score", "desc").limit(20).get()
+            // READ FROM NEW COLLECTION
+            db.collection("flight_scores_v1").orderBy("score", "desc").limit(20).get()
             .then((querySnapshot) => {
                 let html = "";
                 let rank = 1;
@@ -351,7 +365,7 @@
 
         // --- CORE LOGIC ---
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v11');
+            const saved = localStorage.getItem('fuelQuizState_v12'); // Version bump to force reset
             if (saved) {
                 globalState = JSON.parse(saved);
             } else {
@@ -361,7 +375,7 @@
         }
 
         function saveState() {
-            localStorage.setItem('fuelQuizState_v11', JSON.stringify(globalState));
+            localStorage.setItem('fuelQuizState_v12', JSON.stringify(globalState));
         }
 
         function isGameComplete() {

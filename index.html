@@ -6,9 +6,11 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#d71920">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
-    <title>Airplane Quiz - Deluxe</title>
+    <title>Airplane Quiz - Fuel Operations</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
     <style>
         :root {
             --brand-red: #d71920;
@@ -16,6 +18,7 @@
             --brand-dark: #202020;
             --bg-sand: #fcfbf9;
             --piece-color: #2c2c2c;
+            --status-blue: #3498db;
         }
 
         body {
@@ -33,7 +36,6 @@
             user-select: none; 
         }
 
-        /* --- TYPOGRAPHY --- */
         h1 {
             font-family: 'Playfair Display', serif;
             font-size: 1.8rem;
@@ -63,31 +65,65 @@
         }
         .view-section.active { display: flex; }
 
-        /* --- SCOREBOARD --- */
-        .score-board {
-            display: flex;
-            justify-content: space-between;
+        /* --- DASHBOARD (HOME) --- */
+        .fuel-tank-display {
+            background: linear-gradient(135deg, #333 0%, #000 100%);
+            color: var(--brand-gold);
+            padding: 20px;
+            border-radius: 12px;
             width: 100%;
-            margin-bottom: 10px;
-            font-family: 'Playfair Display', serif;
-        }
-
-        .score-box {
-            background: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-sizing: border-box;
             text-align: center;
-            flex: 1;
-            margin: 0 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid #444;
         }
         
-        .score-label { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 1px; }
-        .score-val { font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; }
-        .score-val.danger { color: var(--brand-red); animation: pulse 0.5s infinite; }
+        .fuel-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; margin-bottom: 5px; }
+        .fuel-value { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: bold; }
+        .fuel-unit { font-size: 1rem; font-weight: normal; }
 
-        /* --- GAME AREA --- */
+        #level-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%;
+        }
+
+        .level-card {
+            background: white; border: 1px solid #ddd; border-radius: 10px;
+            padding: 15px; text-align: center; cursor: pointer; position: relative;
+            transition: transform 0.2s;
+            display: flex; flex-direction: column; justify-content: center; min-height: 120px;
+        }
+        .level-card:active { transform: scale(0.98); }
+
+        .level-card h3 { margin: 10px 0 5px 0; color: var(--brand-dark); font-size: 1.1rem; }
+        .level-icon { font-size: 2rem; }
+
+        .level-status { font-size: 0.75rem; color: #888; margin-top: auto; font-weight: bold; }
+        
+        /* Status Variations */
+        .status-ready { color: var(--brand-red); }
+        .status-progress { color: var(--status-blue); }
+        .status-done { color: #27ae60; }
+        
+        /* Locked Level 4 */
+        .level-card.locked {
+            background: #202020; border-color: #333; cursor: not-allowed;
+        }
+        .level-card.locked h3 { color: #888; }
+        .level-card.locked .level-status { color: var(--brand-red); }
+
+        /* --- GAMEPLAY UI --- */
+        .mission-header {
+            display: flex; justify-content: space-between; align-items: center; width: 100%;
+            margin-bottom: 10px; padding: 0 5px;
+        }
+        
+        .level-fuel-gauge {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem; color: var(--brand-dark); font-weight: bold;
+        }
+        .level-fuel-gauge.danger { color: var(--brand-red); animation: pulse 1s infinite; }
+
         #game-wrapper {
             padding: 8px;
             background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
@@ -99,147 +135,83 @@
         }
 
         #game-container {
-            position: relative;
-            width: 100%; 
-            aspect-ratio: 4/3; 
-            background-color: #000;
-            overflow: hidden;
-            border: 3px solid #fff;
-            cursor: pointer; 
+            position: relative; width: 100%; aspect-ratio: 4/3; 
+            background-color: #000; overflow: hidden; border: 3px solid #fff; cursor: pointer; 
         }
 
         #mystery-image {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;
         }
 
-        /* --- GRID --- */
         #cover-grid {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            display: grid;
-            grid-template-columns: repeat(10, 1fr); 
-            grid-template-rows: repeat(10, 1fr);
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr);
             z-index: 2;
         }
 
         .grid-piece {
-            background-color: var(--piece-color);
-            border: 1px solid #3a3a3a;
-            transition: transform 0.2s, opacity 0.3s;
+            background-color: var(--piece-color); border: 1px solid #3a3a3a;
+            transition: opacity 0.3s;
         }
-
-        #cover-grid:active .grid-piece:not(.revealed) { background-color: #3d3d3d; }
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
 
-        /* Floating text animation */
+        /* Floating Text */
         .float-text {
-            position: fixed;
-            color: var(--brand-red);
-            font-weight: bold;
-            font-size: 1.5rem;
-            pointer-events: none;
-            animation: floatUp 0.8s ease-out forwards;
-            z-index: 999;
+            position: fixed; color: var(--brand-red); font-weight: bold; font-size: 1.5rem;
+            pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 999;
             text-shadow: 0 2px 4px rgba(255,255,255,0.8);
         }
 
-        /* --- INPUT --- */
-        #input-area {
-            display: flex; flex-direction: column;
-            align-items: center; gap: 10px; width: 100%;
-        }
-
+        /* Input Area */
+        #input-area { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         input[type="text"] {
-            width: 100%; box-sizing: border-box; padding: 15px;
-            font-size: 16px; border: 2px solid #ddd; border-radius: 10px;
-            outline: none; text-align: center;
+            width: 100%; padding: 15px; font-size: 16px; 
+            border: 2px solid #ddd; border-radius: 10px; outline: none; text-align: center;
         }
         input[type="text"]:focus { border-color: var(--brand-gold); }
 
         button {
             width: 100%; padding: 15px; font-size: 1.1rem;
             background-color: var(--brand-red); color: white;
-            border: none; border-radius: 10px; cursor: pointer;
-            font-weight: 500; letter-spacing: 1px;
+            border: none; border-radius: 10px; cursor: pointer; font-weight: 500;
         }
-
-        /* --- MENU & BUTTONS --- */
-        #level-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 20px;
-        }
-        .level-card {
-            background: white; border: 1px solid #ddd; border-radius: 10px;
-            padding: 20px; text-align: center; cursor: pointer; position: relative;
-        }
-        .level-card.locked { background: #f0f0f0; opacity: 0.6; pointer-events: none; }
-        
-        .level-card.score-locked {
-            background: #222; color: #fff; border: 1px solid #444; cursor: not-allowed;
-        }
-        .level-card.score-locked h3 { color: #fff; }
-        .level-card.score-locked .status { color: var(--brand-red); font-weight: bold; font-size: 0.8rem; }
-
-        .secondary-btn {
-            margin-top:15px; background:transparent; border:1px solid #ccc; color:#777;
-        }
-        
-        /* The Install Button (Hidden by default) */
-        #install-btn {
-            display: none; /* JS will show this */
-            margin-top: 20px;
-            background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
-            color: var(--brand-dark);
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(197, 160, 40, 0.3);
-        }
+        .abort-btn { background: transparent; border: 1px solid #ccc; color: #777; margin-top: 5px; }
 
         /* --- UTILS --- */
-        #message {
-            margin-top: 15px; font-family: 'Playfair Display', serif;
-            font-size: 1.4rem; text-align: center; height: 30px;
-        }
+        #message { margin-top: 15px; font-size: 1.4rem; text-align: center; height: 30px; font-weight: bold; }
         .success { color: #27ae60; }
         .fail { color: var(--brand-red); }
 
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
+        /* Install Button */
+        #install-btn { display: none; margin-top: 20px; background: #2c2c2c; color: #fff; }
+
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
     </style>
 </head>
 <body>
 
     <div id="selector-view" class="view-section active">
-        <h1>Flight Selector</h1>
-        <h2>Choose Your Mission</h2>
+        <h1>Fuel Operations</h1>
+        <h2>Select Mission</h2>
         
-        <div class="score-board">
-            <div class="score-box">
-                <div class="score-label">Total Score</div>
-                <div class="score-val" id="total-score-display">0</div>
-            </div>
+        <div class="fuel-tank-display">
+            <div class="fuel-label">Total Banked Fuel</div>
+            <div class="fuel-value"><span id="total-fuel-display">0</span> <span class="fuel-unit">L</span></div>
+            <div id="unlock-message" style="font-size: 0.8rem; margin-top:5px; color:#888;">Need 1500L to unlock Classified</div>
         </div>
 
         <div id="level-grid"></div>
         
         <button id="install-btn">📲 Install App</button>
-        
-        <button class="secondary-btn" onclick="resetProgress()">Reset Game</button>
+        <button class="abort-btn" onclick="resetAllProgress()">Reset All Data</button>
     </div>
 
     <div id="game-view" class="view-section">
-        <header>
-            <h1 id="level-title">Flight 1</h1>
-            <h2>Tap image to reveal random area (-15 pts)</h2>
-        </header>
-
-        <div class="score-board">
-            <div class="score-box">
-                <div class="score-label">Fuel (Points)</div>
-                <div class="score-val" id="level-score-display">1000</div>
-            </div>
+        <div class="mission-header">
+            <div id="level-title" style="font-weight:bold;">Flight 1</div>
+            <div class="level-fuel-gauge" id="current-fuel-display">1000</div>
         </div>
 
         <div id="game-wrapper">
@@ -250,68 +222,21 @@
         </div>
 
         <div id="input-area">
-            <input type="text" id="guess-input" placeholder="Type airplane model..." autocomplete="off">
-            <button id="enter-btn">ENTER FLIGHT PLAN</button>
-            <button class="secondary-btn" onclick="showSelector()">Abort Mission</button>
+            <input type="text" id="guess-input" placeholder="Identify aircraft..." autocomplete="off">
+            <button id="enter-btn">IDENTIFY</button>
+            <button class="abort-btn" onclick="saveAndExit()">Abort & Save Progress</button>
         </div>
 
         <div id="message"></div>
     </div>
 
     <script>
-        // --- PWA INSTALL LOGIC ---
-        let deferredPrompt;
-        const installBtn = document.getElementById('install-btn');
-
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then(reg => {
-                    console.log('SW registered:', reg);
-                }).catch(err => console.log('SW reg failed:', err));
-            });
-        }
-
-        // Listen for install prompt criteria met
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent Chrome 67 and earlier from automatically showing the prompt
-            e.preventDefault();
-            // Stash the event so it can be triggered later.
-            deferredPrompt = e;
-            // Update UI notify the user they can add to home screen
-            installBtn.style.display = 'block';
-        });
-
-        installBtn.addEventListener('click', (e) => {
-            // Hide the app provided install promotion
-            installBtn.style.display = 'none';
-            // Show the prompt
-            deferredPrompt.prompt();
-            // Wait for the user to respond to the prompt
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('User accepted the A2HS prompt');
-                } else {
-                    console.log('User dismissed the A2HS prompt');
-                }
-                deferredPrompt = null;
-            });
-        });
-
-        window.addEventListener('appinstalled', () => {
-            // Hide the app-provided install promotion
-            installBtn.style.display = 'none';
-            deferredPrompt = null;
-            console.log('PWA was installed');
-        });
-
-
-        // --- GAME CONFIGURATION ---
-        const LEVELS = [
+        // --- CONFIGURATION ---
+        const LEVELS_CONFIG = [
             { image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
             { image: "a320.jpg", answers: ["airbus a320", "a320", "320"], name: "Airbus A320" },
             { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
-            { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" }
+            { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" } // Level 4
         ];
 
         const STARTING_FUEL = 1000;
@@ -319,224 +244,283 @@
         const WRONG_GUESS_PENALTY = 200;
         const UNLOCK_THRESHOLD = 1500; 
 
-        // --- STATE ---
-        let currentLevelIdx = 0;
-        let maxUnlockedIdx = 0;
-        let totalScore = 0;
-        let currentLevelScore = 0;
-        let gameActive = false;
+        // --- STATE MANAGEMENT ---
+        let globalState = {
+            levels: [
+                // Template for each level state
+                // { fuel: 1000, revealedTiles: [], completed: false } 
+            ]
+        };
+        let activeLevelIdx = 0;
 
-        // --- DOM ---
+        // --- DOM ELEMENTS ---
         const selectorView = document.getElementById('selector-view');
         const gameView = document.getElementById('game-view');
         const levelGrid = document.getElementById('level-grid');
+        const totalFuelDisplay = document.getElementById('total-fuel-display');
+        const unlockMessage = document.getElementById('unlock-message');
         const gridContainer = document.getElementById('cover-grid');
-        const levelScoreDisplay = document.getElementById('level-score-display');
-        const totalScoreDisplay = document.getElementById('total-score-display');
+        const currentFuelDisplay = document.getElementById('current-fuel-display');
         const inputField = document.getElementById('guess-input');
         const messageDisplay = document.getElementById('message');
 
         // --- INIT ---
         window.onload = function() {
-            if(localStorage.getItem('quizMaxIdx')) maxUnlockedIdx = parseInt(localStorage.getItem('quizMaxIdx'));
-            if(localStorage.getItem('quizTotalScore')) totalScore = parseInt(localStorage.getItem('quizTotalScore'));
+            loadState();
+            renderDashboard();
             
-            updateTotalScoreUI();
-            renderMenu();
-
-            inputField.addEventListener("keypress", function(event) {
-                if (event.key === "Enter") checkAnswer();
-            });
+            inputField.addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             document.getElementById('enter-btn').onclick = checkAnswer;
         };
 
-        // --- MENU LOGIC ---
-        function renderMenu() {
-            levelGrid.innerHTML = "";
-            LEVELS.forEach((lvl, idx) => {
-                const card = document.createElement('div');
-                let isBonusLevel = (idx === 3); 
-                let isScoreLocked = isBonusLevel && totalScore < UNLOCK_THRESHOLD;
+        function loadState() {
+            const saved = localStorage.getItem('fuelQuizState_v2');
+            if (saved) {
+                globalState = JSON.parse(saved);
+            } else {
+                // Initialize default state if new user
+                globalState.levels = LEVELS_CONFIG.map(() => ({
+                    fuel: STARTING_FUEL,
+                    revealedTiles: [],
+                    completed: false
+                }));
+            }
+        }
 
-                if (idx > maxUnlockedIdx) {
+        function saveState() {
+            localStorage.setItem('fuelQuizState_v2', JSON.stringify(globalState));
+        }
+
+        // --- DASHBOARD LOGIC ---
+        function calculateTotalBankedFuel() {
+            // Only sum fuel from COMPLETED levels
+            return globalState.levels.reduce((sum, level) => {
+                return sum + (level.completed ? level.fuel : 0);
+            }, 0);
+        }
+
+        function renderDashboard() {
+            const bankedFuel = calculateTotalBankedFuel();
+            totalFuelDisplay.textContent = bankedFuel;
+
+            // Check unlock condition
+            const isLevel4Unlocked = bankedFuel >= UNLOCK_THRESHOLD;
+            if (isLevel4Unlocked) {
+                unlockMessage.textContent = "Classified Mission Unlocked";
+                unlockMessage.style.color = "#27ae60";
+            } else {
+                unlockMessage.textContent = `Need ${UNLOCK_THRESHOLD}L Total Fuel to unlock Classified`;
+                unlockMessage.style.color = "#d71920";
+            }
+
+            levelGrid.innerHTML = "";
+
+            LEVELS_CONFIG.forEach((config, idx) => {
+                const levelState = globalState.levels[idx];
+                const card = document.createElement('div');
+                const isSR71 = idx === 3;
+                const isLocked = isSR71 && !isLevel4Unlocked;
+
+                if (isLocked) {
                     card.className = "level-card locked";
-                    card.innerHTML = `<div style="font-size:2rem; margin-bottom:10px;">🔒</div><h3>Flight ${idx + 1}</h3>`;
-                } else if (isScoreLocked) {
-                    card.className = "level-card score-locked";
-                    card.innerHTML = `<div style="font-size:2rem; margin-bottom:10px;">⚠️</div><h3>Classified</h3><div class="status">Need ${UNLOCK_THRESHOLD} Pts</div>`;
+                    card.innerHTML = `
+                        <div class="level-icon">🔒</div>
+                        <h3>Classified</h3>
+                        <div class="level-status">INSUFFICIENT FUEL</div>
+                    `;
                 } else {
                     card.className = "level-card";
                     let icon = "✈️";
-                    if (idx < maxUnlockedIdx) icon = "★";
-                    if (isBonusLevel) icon = "🚀"; 
-                    
-                    card.innerHTML = `<div style="font-size:2rem; margin-bottom:10px;">${icon}</div><h3>Flight ${idx + 1}</h3>`;
-                    card.onclick = () => startGame(idx);
+                    let statusHtml = "";
+                    let title = `Flight ${idx + 1}`;
+                    if (isSR71) { icon = "🚀"; title = "Blackbird"; }
+
+                    if (levelState.completed) {
+                        icon = "★";
+                        statusHtml = `<div class="level-status status-done">Mission Complete (${levelState.fuel}L)</div>`;
+                    } else if (levelState.revealedTiles.length > 0 || levelState.fuel < 1000) {
+                        statusHtml = `<div class="level-status status-progress">In Progress (${levelState.fuel}L)</div>`;
+                    } else {
+                        statusHtml = `<div class="level-status status-ready">Ready for Takeoff</div>`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="level-icon">${icon}</div>
+                        <h3>${title}</h3>
+                        ${statusHtml}
+                    `;
+                    card.onclick = () => launchLevel(idx);
                 }
                 levelGrid.appendChild(card);
             });
         }
 
-        function showSelector() {
-            gameActive = false;
-            gameView.classList.remove('active');
-            selectorView.classList.add('active');
-            renderMenu();
-        }
-
         // --- GAME LOGIC ---
-        function startGame(idx) {
-            currentLevelIdx = idx;
-            currentLevelScore = STARTING_FUEL;
-            gameActive = true;
-
+        function launchLevel(idx) {
+            activeLevelIdx = idx;
+            const levelState = globalState.levels[idx];
+            
+            // Switch Views
             selectorView.classList.remove('active');
             gameView.classList.add('active');
 
-            let title = `Flight ${idx+1}`;
-            if(idx === 3) title = "CLASSIFIED MISSION"; 
-            document.getElementById('level-title').textContent = title;
-            
-            document.getElementById('mystery-image').src = LEVELS[idx].image;
+            // Setup UI
+            document.getElementById('level-title').textContent = LEVELS_CONFIG[idx].name === "SR-71 Blackbird" ? "Classified" : `Flight ${idx + 1}`;
+            document.getElementById('mystery-image').src = LEVELS_CONFIG[idx].image;
             inputField.value = "";
-            inputField.disabled = false;
-            messageDisplay.textContent = "";
-            updateLevelScoreUI();
+            inputField.disabled = levelState.completed; // Disable input if already won
+            document.getElementById('enter-btn').disabled = levelState.completed;
+            messageDisplay.textContent = levelState.completed ? "Mission Already Completed" : "";
+            
+            updateFuelUI();
 
+            // Build Grid
             gridContainer.innerHTML = "";
             for (let i = 0; i < 100; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'grid-piece';
+                
+                // If this tile is in our saved list, reveal it immediately
+                if (levelState.revealedTiles.includes(i) || levelState.completed) {
+                    tile.classList.add('revealed');
+                }
+                
                 gridContainer.appendChild(tile);
             }
-            
-            gridContainer.onmousedown = handleGridInteraction;
-            gridContainer.ontouchstart = (e) => {
-                e.preventDefault(); 
-                handleGridInteraction(e);
-            }
 
-            inputField.focus();
+            // Only allow interaction if not completed
+            if (!levelState.completed) {
+                gridContainer.onmousedown = handleGridInteraction;
+                gridContainer.ontouchstart = (e) => { e.preventDefault(); handleGridInteraction(e); };
+            } else {
+                gridContainer.onmousedown = null;
+                gridContainer.ontouchstart = null;
+            }
         }
 
         function handleGridInteraction(e) {
-            if (!gameActive) return;
+            const levelState = globalState.levels[activeLevelIdx];
+            if (levelState.completed) return;
             
-            const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
+            const hiddenTiles = Array.from(document.querySelectorAll('.grid-piece')).filter((el, idx) => !levelState.revealedTiles.includes(idx));
+            
             if (hiddenTiles.length === 0) return;
 
-            const randomIndex = Math.floor(Math.random() * hiddenTiles.length);
-            const tileToRemove = hiddenTiles[randomIndex];
-            tileToRemove.classList.add('revealed');
+            // Pick random tile
+            const randomDomTile = hiddenTiles[Math.floor(Math.random() * hiddenTiles.length)];
+            
+            // Find its original index
+            const allTiles = Array.from(gridContainer.children);
+            const originalIndex = allTiles.indexOf(randomDomTile);
 
-            currentLevelScore -= TILE_COST;
-            if (currentLevelScore < 0) currentLevelScore = 0;
-            updateLevelScoreUI();
+            // Update DOM
+            randomDomTile.classList.add('revealed');
+            
+            // Update State
+            levelState.revealedTiles.push(originalIndex);
+            levelState.fuel -= TILE_COST;
+            if (levelState.fuel < 0) levelState.fuel = 0;
+            
+            saveState(); // Save immediately on every move
+            updateFuelUI();
 
-            let clientX, clientY;
-            if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
-            }
+            // Floating Text
+            let cx = e.clientX || (e.touches && e.touches[0].clientX);
+            let cy = e.clientY || (e.touches && e.touches[0].clientY);
+            if (cx && cy) showFloatingText(cx, cy, `-${TILE_COST}`);
 
-            showFloatingText(clientX, clientY, `-${TILE_COST}`);
-
-            if (currentLevelScore <= 0) {
-                endGame(false, "Out of Fuel!");
-            }
-        }
-
-        function showFloatingText(x, y, text) {
-            const floatEl = document.createElement('div');
-            floatEl.className = 'float-text';
-            floatEl.textContent = text;
-            floatEl.style.left = x + 'px';
-            floatEl.style.top = (y - 50) + 'px';
-            document.body.appendChild(floatEl);
-            setTimeout(() => { floatEl.remove(); }, 800);
-        }
-
-        function updateLevelScoreUI() {
-            levelScoreDisplay.textContent = currentLevelScore;
-            if (currentLevelScore <= 200) {
-                levelScoreDisplay.classList.add('danger');
-            } else {
-                levelScoreDisplay.classList.remove('danger');
+            // Loss Check
+            if (levelState.fuel <= 0) {
+                levelState.fuel = 0; // Cap at 0
+                endGame(false, "Fuel Depleted! Resetting...");
             }
         }
 
-        function updateTotalScoreUI() {
-            totalScoreDisplay.textContent = totalScore;
+        function updateFuelUI() {
+            const levelState = globalState.levels[activeLevelIdx];
+            currentFuelDisplay.textContent = levelState.fuel;
+            if (levelState.fuel <= 200) currentFuelDisplay.classList.add('danger');
+            else currentFuelDisplay.classList.remove('danger');
         }
 
         function checkAnswer() {
-            if (!gameActive) return;
+            const levelState = globalState.levels[activeLevelIdx];
+            if (levelState.completed || levelState.fuel <= 0) return;
 
             const guess = inputField.value.trim().toLowerCase();
-            const answers = LEVELS[currentLevelIdx].answers;
+            const answers = LEVELS_CONFIG[activeLevelIdx].answers;
 
             if (isMatch(guess, answers)) {
-                endGame(true, "Target Identified!");
+                endGame(true, "Target Verified!");
             } else {
-                currentLevelScore -= WRONG_GUESS_PENALTY;
-                if (currentLevelScore < 0) currentLevelScore = 0;
-                updateLevelScoreUI();
-                
+                levelState.fuel -= WRONG_GUESS_PENALTY;
+                if (levelState.fuel < 0) levelState.fuel = 0;
+                saveState();
+                updateFuelUI();
+
                 inputField.style.borderColor = "var(--brand-red)";
                 setTimeout(() => inputField.style.borderColor = "#ddd", 500);
-                
-                if (currentLevelScore <= 0) {
-                    endGame(false, "Out of Fuel!");
-                }
+
+                if (levelState.fuel <= 0) endGame(false, "Fuel Depleted!");
             }
         }
 
-        function endGame(win, msgText) {
-            gameActive = false;
-            messageDisplay.textContent = msgText;
-            
+        function endGame(win, msg) {
+            const levelState = globalState.levels[activeLevelIdx];
+            messageDisplay.textContent = msg;
+
             if (win) {
                 messageDisplay.className = "success";
+                levelState.completed = true;
+                // Reveal all
                 document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
-                
                 triggerConfetti();
-
-                totalScore += currentLevelScore;
-                localStorage.setItem('quizTotalScore', totalScore);
-                
-                if (currentLevelIdx >= maxUnlockedIdx && maxUnlockedIdx < LEVELS.length - 1) {
-                    maxUnlockedIdx++;
-                    localStorage.setItem('quizMaxIdx', maxUnlockedIdx);
-                }
-
-                updateTotalScoreUI();
-                setTimeout(showSelector, 3000);
+                saveState();
+                setTimeout(saveAndExit, 3000);
             } else {
                 messageDisplay.className = "fail";
-                document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
-                setTimeout(showSelector, 3000);
+                // Don't save "completed", but keep the failed state until manual reset or just reset immediately?
+                // Let's reset the level so they can try again fresh
+                setTimeout(() => {
+                    levelState.fuel = STARTING_FUEL;
+                    levelState.revealedTiles = [];
+                    saveState();
+                    launchLevel(activeLevelIdx); // Restart level
+                }, 2000);
             }
+        }
+
+        function saveAndExit() {
+            // State is already saved on every interaction, this just switches views
+            renderDashboard();
+            gameView.classList.remove('active');
+            selectorView.classList.add('active');
         }
 
         // --- UTILS ---
+        function showFloatingText(x, y, text) {
+            const el = document.createElement('div');
+            el.className = 'float-text';
+            el.textContent = text;
+            el.style.left = x + 'px';
+            el.style.top = (y - 50) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
         function isMatch(guess, answers) {
             if (answers.includes(guess)) return true;
-            for (let answer of answers) {
-                if (answer.length < 4) { if (guess === answer) return true; continue; }
-                const dist = levenshteinDistance(guess, answer);
-                const allowedErrors = answer.length > 8 ? 2 : 1;
-                if (dist <= allowedErrors) return true;
+            for (let a of answers) {
+                if (a.length < 4) { if (guess === a) return true; continue; }
+                if (levenshteinDistance(guess, a) <= (a.length > 8 ? 2 : 1)) return true;
             }
             return false;
         }
 
         function levenshteinDistance(a, b) {
             const matrix = [];
-            for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
-            for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
             for (let i = 1; i <= b.length; i++) {
                 for (let j = 1; j <= a.length; j++) {
                     if (b.charAt(i - 1) == a.charAt(j - 1)) matrix[i][j] = matrix[i - 1][j - 1];
@@ -547,16 +531,31 @@
         }
 
         function triggerConfetti() {
-            try {
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            } catch(e) { console.log("Confetti blocked"); }
+            try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){}
         }
 
-        function resetProgress() {
-            if(confirm("Reset all progress?")) {
+        function resetAllProgress() {
+            if(confirm("Factory Reset: Wipe all fuel data and progress?")) {
                 localStorage.clear();
                 location.reload();
             }
+        }
+
+        // --- PWA INSTALL (Optional) ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('install-btn');
+            btn.style.display = 'block';
+            btn.addEventListener('click', () => {
+                btn.style.display = 'none';
+                deferredPrompt.prompt();
+                deferredPrompt = null;
+            });
+        });
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
         }
     </script>
 </body>

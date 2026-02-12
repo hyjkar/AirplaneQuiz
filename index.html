@@ -23,19 +23,21 @@
             --gauge-red: #e74c3c;
         }
 
+        * {
+            box-sizing: border-box; /* Critical for fixing width issues */
+        }
+
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--bg-sand);
             color: var(--brand-dark);
             margin: 0;
-            padding: 15px;
-            min-height: 100vh;
+            padding: 10px; /* Reduced padding to save space */
+            height: 100vh; /* Fixed height */
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Allow scrolling if content is too tall */
-            overflow-y: auto; 
-            box-sizing: border-box;
+            overflow: hidden; /* Disable scrolling */
             user-select: none; 
         }
 
@@ -54,7 +56,7 @@
 
         h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
+            font-size: 1.5rem; /* Slightly smaller for compact fit */
             color: var(--brand-dark);
             margin: 0;
             text-align: center;
@@ -62,57 +64,57 @@
         }
 
         h2 {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #777;
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin: 5px 0 20px 0;
+            margin: 2px 0 10px 0;
             text-align: center;
         }
 
         /* --- VIEWS --- */
         .view-section {
             width: 100%;
-            max-width: 600px;
+            max-width: 500px; /* Constrain width on tablets */
+            height: 100%;
             display: none;
             flex-direction: column;
             align-items: center;
-            animation: fadeIn 0.5s ease;
-            /* Ensure view takes full available height */
-            flex-grow: 1; 
+            justify-content: space-between; /* Pushes content to fill screen evenly */
+            padding-bottom: 10px;
         }
         .view-section.active { display: flex; }
 
         /* --- FUEL GAUGE --- */
         .fuel-tank-container {
             background: #222;
-            padding: 20px;
+            padding: 15px;
             border-radius: 12px;
             width: 100%;
-            box-sizing: border-box;
             text-align: center;
-            margin-bottom: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             border: 2px solid #444;
             position: relative;
-            overflow: hidden;
+            /* Flex growth ensures it takes available space but doesn't overflow */
+            flex-shrink: 0; 
         }
         
         .fuel-label { 
-            font-size: 0.8rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; 
+            font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; 
         }
         
         .fuel-value { 
             font-family: 'Share Tech Mono', monospace; 
-            font-size: 3rem; 
+            font-size: 2.5rem; 
             font-weight: bold; 
             color: var(--gauge-green);
             text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
             transition: color 0.5s;
+            line-height: 1;
         }
 
         .fuel-bar-bg {
-            width: 100%; height: 10px; background: #444; margin-top: 10px; border-radius: 5px; overflow: hidden;
+            width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden;
         }
         .fuel-bar-fill {
             height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s;
@@ -120,20 +122,27 @@
 
         /* --- LEVEL GRID --- */
         #level-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%;
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            width: 100%;
+            flex-grow: 1; /* Allows grid to take up remaining vertical space */
+            align-content: center; /* Centers items vertically */
+            margin: 10px 0;
         }
 
         .level-card {
             background: white; border: 1px solid #ddd; border-radius: 10px;
-            padding: 15px; text-align: center; cursor: pointer; position: relative;
+            padding: 10px; text-align: center; cursor: pointer; position: relative;
             transition: transform 0.1s;
-            display: flex; flex-direction: column; justify-content: center; min-height: 120px;
+            display: flex; flex-direction: column; justify-content: center; 
+            min-height: 100px; /* Reduced height to fit screen */
         }
         .level-card:active { transform: scale(0.98); }
 
-        .level-card h3 { margin: 10px 0 5px 0; color: var(--brand-dark); font-size: 1.1rem; }
-        .level-icon { font-size: 2rem; }
-        .level-status { font-size: 0.75rem; color: #888; margin-top: auto; font-weight: bold; }
+        .level-card h3 { margin: 5px 0 2px 0; color: var(--brand-dark); font-size: 1rem; }
+        .level-icon { font-size: 1.8rem; }
+        .level-status { font-size: 0.7rem; color: #888; margin-top: auto; font-weight: bold; }
         
         .status-done { color: #27ae60; }
         
@@ -146,7 +155,7 @@
         /* --- GAMEPLAY UI --- */
         .game-header {
             display: flex; justify-content: space-between; align-items: center; width: 100%;
-            margin-bottom: 10px; padding: 0 5px; box-sizing: border-box;
+            margin-bottom: 5px; padding: 0 5px; 
         }
         
         .mini-fuel {
@@ -156,20 +165,22 @@
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
 
         #game-wrapper {
-            padding: 8px;
+            padding: 5px;
             background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
             border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             width: 100%;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             position: relative;
+            /* Ensures image area shrinks on small screens */
+            flex-shrink: 1; 
+            min-height: 0;
+            display: flex; justify-content: center; align-items: center;
         }
 
         #game-container {
             position: relative; 
             width: 100%; 
-            /* This max-height ensures the image doesn't push buttons off screen on mobile */
-            max-height: 50vh; 
             aspect-ratio: 4/3; 
             background-color: #000; overflow: hidden; border: 3px solid #fff; cursor: pointer; 
         }
@@ -199,31 +210,40 @@
 
         /* Input Area */
         #input-area { 
-            display: flex; flex-direction: column; gap: 10px; width: 100%; 
-            /* Ensure input area stays visible */
-            margin-bottom: 20px; 
+            display: flex; flex-direction: column; gap: 8px; width: 100%; 
+            /* Fixed width ensures it doesn't push screen bounds */
+            max-width: 100%;
+            margin-bottom: 10px; 
+            flex-shrink: 0; /* Prevents this from getting crushed */
         }
         
         input[type="text"] {
-            width: 100%; padding: 15px; font-size: 16px; 
-            border: 2px solid #ddd; border-radius: 10px; outline: none; text-align: center;
+            width: 100%; padding: 12px; font-size: 1.1rem; 
+            border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center;
+            background: white; color: #333;
         }
         input[type="text"]:focus { border-color: var(--brand-gold); }
 
-        button {
-            width: 100%; padding: 15px; font-size: 1.1rem;
-            background-color: var(--brand-red); color: white;
-            border: none; border-radius: 10px; cursor: pointer; font-weight: 500;
+        /* THE GOLD BUTTON */
+        #enter-btn {
+            background-color: var(--brand-gold); 
+            color: #1a1a1a; /* Dark text for contrast against gold */
+            font-weight: bold;
         }
-        .abort-btn { background: transparent; border: 1px solid #ccc; color: #777; margin-top: 5px; }
+        
+        button {
+            width: 100%; padding: 12px; font-size: 1rem;
+            border: none; border-radius: 8px; cursor: pointer; font-weight: 500;
+        }
+        .abort-btn { background: transparent; border: 1px solid #ccc; color: #777; margin-top: auto; }
 
         /* --- UTILS --- */
-        #message { margin-top: 0px; font-size: 1.4rem; text-align: center; height: 30px; font-weight: bold; }
+        #message { margin-top: 0px; font-size: 1.2rem; text-align: center; height: 25px; font-weight: bold; }
         .success { color: #27ae60; }
         .fail { color: var(--brand-red); }
 
         /* Install Button */
-        #install-btn { display: none; margin-top: 20px; background: #2c2c2c; color: #fff; }
+        #install-btn { display: none; margin-top: auto; background: #2c2c2c; color: #fff; margin-bottom: 10px;}
 
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
@@ -239,8 +259,10 @@
     </div>
 
     <div id="selector-view" class="view-section active">
-        <h1>Fuel Command</h1>
-        <h2>Reserve Status</h2>
+        <div>
+            <h1>Fuel Command</h1>
+            <h2>Reserve Status</h2>
+        </div>
         
         <div class="fuel-tank-container">
             <div class="fuel-label">Global Fuel Reserves</div>
@@ -248,15 +270,17 @@
             <div class="fuel-bar-bg">
                 <div class="fuel-bar-fill" id="fuel-bar"></div>
             </div>
-            <div id="unlock-message" style="font-size: 0.8rem; margin-top:10px; color:#888;">
+            <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;">
                 ⚠️ Need <span style="color:#fff">1000L</span> Remaining to launch Flight 4
             </div>
         </div>
 
         <div id="level-grid"></div>
         
-        <button id="install-btn">📲 Install App</button>
-        <button class="abort-btn" onclick="resetAllProgress()">Restart Game</button>
+        <div style="width:100%; display:flex; flex-direction:column; gap:5px; margin-top: auto;">
+            <button id="install-btn">📲 Install App</button>
+            <button class="abort-btn" onclick="resetAllProgress()">Restart Game</button>
+        </div>
     </div>
 
     <div id="game-view" class="view-section">
@@ -287,8 +311,8 @@
             { image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
             { image: "a320.jpg", answers: ["airbus a320", "a320", "320"], name: "Airbus A320" },
             { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
-            // SPOILER: Name is generic here, revealed only upon success if desired.
-            { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "Classified Mission" }
+            // Name is hidden in UI until unlocked/completed
+            { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" }
         ];
 
         const STARTING_GLOBAL_FUEL = 3000;
@@ -325,7 +349,7 @@
         };
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v5');
+            const saved = localStorage.getItem('fuelQuizState_v6'); // Incremented version
             if (saved) {
                 globalState = JSON.parse(saved);
             } else {
@@ -338,7 +362,7 @@
         }
 
         function saveState() {
-            localStorage.setItem('fuelQuizState_v5', JSON.stringify(globalState));
+            localStorage.setItem('fuelQuizState_v6', JSON.stringify(globalState));
         }
 
         // --- DASHBOARD LOGIC ---
@@ -354,7 +378,7 @@
             fuelBar.style.backgroundColor = color;
             document.querySelector('.fuel-value').style.color = color;
 
-            // Check UNLOCK Conditions (All 3 previous done AND Enough Fuel)
+            // Check UNLOCK Conditions
             const levelsDone = globalState.levels[0].completed && globalState.levels[1].completed && globalState.levels[2].completed;
             const hasFuel = globalState.currentFuel >= UNLOCK_THRESHOLD;
             const isLevel4Unlocked = levelsDone && hasFuel;
@@ -372,34 +396,36 @@
                 const card = document.createElement('div');
                 const isSR71 = idx === 3;
                 
-                // Logic: Locked if it's Level 4 and conditions met
+                // Logic: Locked if Level 4 and conditions NOT met
                 const isLocked = isSR71 && !isLevel4Unlocked;
 
                 if (isLocked) {
                     card.className = "level-card locked";
                     card.innerHTML = `
                         <div class="level-icon">🔒</div>
-                        <h3>Classified</h3>
+                        <h3>Flight ${idx + 1}</h3>
                         <div class="level-status">LOCKED</div>
                     `;
                 } else {
                     card.className = "level-card";
                     let icon = "✈️";
                     let statusHtml = "";
-                    let title = config.name; 
                     
-                    // Spoiler Protection: Always show "Classified" until completed
-                    if (isSR71 && !levelState.completed) {
-                        icon = "🚀"; 
-                        title = "Classified Mission";
-                    } else if (isSR71 && levelState.completed) {
-                        icon = "🚀"; 
-                        title = "SR-71 Blackbird"; // Reveal name only after win
-                    }
+                    // NAME HIDING LOGIC:
+                    // Default name: "Flight X"
+                    // If Level 4: "Classified Mission" (unless completed)
+                    // If Completed: Show Real Name
+                    
+                    let displayName = `Flight ${idx + 1}`;
+                    if(isSR71) displayName = "Classified";
 
                     if (levelState.completed) {
+                        displayName = config.name; // REVEAL NAME
                         icon = "★";
                         statusHtml = `<div class="level-status status-done">Identified</div>`;
+                    } else if (isSR71) {
+                         icon = "🚀"; // Special icon for Level 4
+                         statusHtml = `<div class="level-status">Ready</div>`;
                     } else if (levelState.revealedTiles.length > 0) {
                         statusHtml = `<div class="level-status">In Progress</div>`;
                     } else {
@@ -416,7 +442,7 @@
 
                     card.innerHTML = `
                         <div class="level-icon">${icon}</div>
-                        <h3>${title}</h3>
+                        <h3>${displayName}</h3>
                         ${statusHtml}
                     `;
                 }
@@ -432,8 +458,13 @@
             selectorView.classList.remove('active');
             gameView.classList.add('active');
 
-            let title = LEVELS_CONFIG[idx].name;
-            if(idx === 3 && !levelState.completed) title = "Classified Mission";
+            let title = `Flight ${idx+1}`;
+            // If completed, show real name, otherwise "Classified" or "Flight X"
+            if (levelState.completed) {
+                title = LEVELS_CONFIG[idx].name;
+            } else if (idx === 3) {
+                title = "Classified";
+            }
             
             document.getElementById('level-title').textContent = title;
             document.getElementById('mystery-image').src = LEVELS_CONFIG[idx].image;
@@ -508,7 +539,7 @@
             const answers = LEVELS_CONFIG[activeLevelIdx].answers;
 
             if (isMatch(guess, answers)) {
-                endGame(true, "Target Verified. Fuel Consumption Halted.");
+                endGame(true, "Target Verified.");
             } else {
                 globalState.currentFuel -= WRONG_GUESS_PENALTY;
                 if (globalState.currentFuel < 0) globalState.currentFuel = 0;
@@ -533,12 +564,10 @@
                 triggerConfetti();
                 saveState();
                 
-                // If this was the last level, show special message
-                if(activeLevelIdx === 3) {
-                     document.getElementById('level-title').textContent = "SR-71 Blackbird";
-                }
+                // Show real name immediately upon winning
+                document.getElementById('level-title').textContent = LEVELS_CONFIG[activeLevelIdx].name;
 
-                setTimeout(saveAndExit, 2500);
+                setTimeout(saveAndExit, 2000);
             } else {
                 messageDisplay.className = "fail";
                 if (globalState.currentFuel <= 0) {

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#d71920">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <title>Airplane Quiz - Deluxe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --brand-red: #d71920;
+            --brand-gold: #cfa86e;
+            --brand-dark: #202020;
+            --bg-sand: #fcfbf9;
+            --piece-color: #2c2c2c;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-sand);
+            color: var(--brand-dark);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overscroll-behavior: none; 
+            box-sizing: border-box;
+            user-select: none; 
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--brand-dark);
+            margin: 0;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 0.9rem;
+            color: var(--brand-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 5px 0 20px 0;
+            text-align: center;
+        }
+
+        /* --- VIEWS --- */
+        .view-section {
+            width: 100%;
+            max-width: 600px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.5s ease;
+        }
+        .view-section.active { display: flex; }
+
+        /* --- SCOREBOARD --- */
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .score-box {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            text-align: center;
+            flex: 1;
+            margin: 0 5px;
+        }
+        
+        .score-label { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 1px; }
+        .score-val { font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; }
+        .score-val.danger { color: var(--brand-red); animation: pulse 0.5s infinite; }
+
+        /* --- GAME AREA --- */
+        #game-wrapper {
+            padding: 8px;
+            background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%; 
+            aspect-ratio: 4/3; 
+            background-color: #000;
+            overflow: hidden;
+            border: 3px solid #fff;
+            cursor: pointer; 
+        }
+
+        #mystery-image {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            position: absolute; top: 0; left: 0;
+        }
+
+        /* --- GRID --- */
+        #cover-grid {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr); 
+            grid-template-rows: repeat(10, 1fr);
+            z-index: 2;
+        }
+
+        .grid-piece {
+            background-color: var(--piece-color);
+            border: 1px solid #3a3a3a;
+            transition: transform 0.2s, opacity 0.3s;
+        }
+
+        #cover-grid:active .grid-piece:not(.revealed) { background-color: #3d3d3d; }
+        .grid-piece.revealed { opacity: 0; pointer-events: none; }
+
+        /* Floating text animation */
+        .float-text {
+            position: fixed;
+            color: var(--brand-red);
+            font-weight: bold;
+            font-size: 1.5rem;
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 999;
+            text-shadow: 0 2px 4px rgba(255,255,255,0.8);
+        }
+
+        /* --- INPUT --- */
+        #input-area {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 10px; width: 100%;
+        }
+
+        input[type="text"] {
+            width: 100%; box-sizing: border-box; padding: 15px;
+            font-size: 16px; border: 2px solid #ddd; border-radius: 10px;
+            outline: none; text-align: center;
+        }
+        input[type="text"]:focus { border-color: var(--brand-gold); }
+
+        button {
+            width: 100%; padding: 15px; font-size: 1.1rem;
+            background-color: var(--brand-red); color: white;
+            border: none; border-radius: 10px; cursor: pointer;
+            font-weight: 500; letter-spacing: 1px;
+        }
+
+        /* --- MENU & BUTTONS --- */
+        #level-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 20px;
+        }
+        .level-card {
+            background: white; border: 1px solid #ddd; border-radius: 10px;
+            padding: 20px; text-align: center; cursor: pointer; position: relative;
+        }
+        .level-card.locked { background: #f0f0f0; opacity: 0.6; pointer-events: none; }
+        
+        .level-card.score-locked {
+            background: #222; color: #fff; border: 1px solid #444; cursor: not-allowed;
+        }
+        .level-card.score-locked h3 { color: #fff; }
+        .level-card.score-locked .status { color: var(--brand-red); font-weight: bold; font-size: 0.8rem; }
+
+        .secondary-btn {
+            margin-top:15px; background:transparent; border:1px solid #ccc; color:#777;
+        }
+        
+        /* The Install Button (Hidden by default) */
+        #install-btn {
+            display: none; /* JS will show this */
+            margin-top: 20px;
+            background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
+            color: var(--brand-dark);
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(197, 160, 40, 0.3);
+        }
+
+        /* --- UTILS --- */
+        #message {
+            margin-top: 15px; font-family: 'Playfair Display', serif;
+            font-size: 1.4rem; text-align: center; height: 30px;
+        }
+        .success { color: #27ae60; }
+        .fail { color: var(--brand-red); }
+
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <div id="selector-view" class="view-section active">
+        <h1>Flight Selector</h1>
+        <h2>Choose Your Mission</h2>
+        
+        <div class="score-board">
+            <div class="score-box">
+                <div class="score-label">Total Score</div>
+                <div class="score-val" id="total-score-display">0</div>
+            </div>
+        </div>
+
+        <div id="level-grid"></div>
+        
+        <button id="install-btn">📲 Install App</button>
+        
+        <button class="secondary-btn" onclick="resetProgress()">Reset Game</button>
+    </div>
+
+    <div id="game-view" class="view-section">
+        <header>
+            <h1 id="level-title">Flight 1</h1>
+            <h2>Tap image to reveal random area (-15 pts)</h2>
+        </header>
+
+        <div class="score-board">
+            <div class="score-box">
+                <div class="score-label">Fuel (Points)</div>
+                <div class="score-val" id="level-score-display">1000</div>
+            </div>
+        </div>
+
+        <div id="game-wrapper">
+            <div id="game-container">
+                <img id="mystery-image" src="" alt="Mystery Airplane">
+                <div id="cover-grid"></div>
+            </div>
+        </div>
+
+        <div id="input-area">
+            <input type="text" id="guess-input" placeholder="Type airplane model..." autocomplete="off">
+            <button id="enter-btn">ENTER FLIGHT PLAN</button>
+            <button class="secondary-btn" onclick="showSelector()">Abort Mission</button>
+        </div>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // --- PWA INSTALL LOGIC ---
+        let deferredPrompt;
+        const installBtn = document.getElementById('install-btn');
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    console.log('SW registered:', reg);
+                }).catch(err => console.log('SW reg failed:', err));
+            });
+        }
+
+        // Listen for install prompt criteria met
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later.
+            deferredPrompt = e;
+            // Update UI notify the user they can add to home screen
+            installBtn.style.display = 'block';
+        });
+
+        installBtn.addEventListener('click', (e) => {
+            // Hide the app provided install promotion
+            installBtn.style.display = 'none';
+            // Show the prompt
+            deferredPrompt.prompt();
+            // Wait for the user to respond to the prompt
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the A2HS prompt');
+                } else {
+                    console.log('User dismissed the A2HS prompt');
+                }
+                deferredPrompt = null;
+            });
+        });
+
+        window.addEventListener('appinstalled', () => {
+            // Hide the app-provided install promotion
+            installBtn.style.display = 'none';
+            deferredPrompt = null;
+            console.log('PWA was installed');
+        });
+
+
+        // --- GAME CONFIGURATION ---
+        const LEVELS = [
+            { image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
+            { image: "a320.jpg", answers: ["airbus a320", "a320", "320"], name: "Airbus A320" },
+            { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
+            { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" }
+        ];
+
+        const STARTING_FUEL = 1000;
+        const TILE_COST = 15;
+        const WRONG_GUESS_PENALTY = 200;
+        const UNLOCK_THRESHOLD = 1500; 
+
+        // --- STATE ---
+        let currentLevelIdx = 0;
+        let maxUnlockedIdx = 0;
+        let totalScore = 0;
+        let currentLevelScore = 0;
+        let gameActive = false;
+
+        // --- DOM ---
+        const selectorView = document.getElementById('selector-view');
+        const gameView = document.getElementById('game-view');
+        const levelGrid = document.getElementById('level-grid');
+        const gridContainer = document.getElementById('cover-grid');
+        const levelScoreDisplay = document.getElementById('level-score-display');
+        const totalScoreDisplay = document.getElementById('total-score-display');
+        const inputField = document.getElementById('guess-input');
+        const messageDisplay = document.getElementById('message');
+
+        // --- INIT ---
+        window.onload = function() {
+            if(localStorage.getItem('quizMaxIdx')) maxUnlockedIdx = parseInt(localStorage.getItem('quizMaxIdx'));
+            if(localStorage.getItem('quizTotalScore')) totalScore = parseInt(localStorage.getItem('quizTotalScore'));
+            
+            updateTotalScoreUI();
+            renderMenu();
+
+            inputField.addEventListener("keypress", function(event) {
+                if (event.key === "Enter") checkAnswer();
+            });
+            document.getElementById('enter-btn').onclick = checkAnswer;
+        };
+
+        // --- MENU LOGIC ---
+        function renderMenu() {
+            levelGrid.innerHTML = "";
+            LEVELS.forEach((lvl, idx) => {
+                const card = document.createElement('div');
+                let isBonusLevel = (idx === 3); 
+                let isScoreLocked = isBonusLevel && totalScore < UNLOCK_THRESHOLD;
+
+                if (idx > maxUnlockedIdx) {
+                    card.className = "level-card locked";
+                    card.innerHTML = `<div style="font-size:2rem; margin-bottom:10px;">🔒</div><h3>Flight ${idx + 1}</h3>`;
+                } else if (isScoreLocked) {
+                    card.className = "level-card score-locked";
+                    card.innerHTML = `<div style="font-size:2rem; margin-bottom:10px;">⚠️</div><h3>Classified</h3><div class="status">Need ${UNLOCK_THRESHOLD} Pts</div>`;
+                } else {
+                    card.className = "level-card";
+                    let icon = "✈️";
+                    if (idx < maxUnlockedIdx) icon = "★";
+                    if (isBonusLevel) icon = "🚀"; 
+                    
+                    card.innerHTML = `<div style="font-size:2rem; margin-bottom:10px;">${icon}</div><h3>Flight ${idx + 1}</h3>`;
+                    card.onclick = () => startGame(idx);
+                }
+                levelGrid.appendChild(card);
+            });
+        }
+
+        function showSelector() {
+            gameActive = false;
+            gameView.classList.remove('active');
+            selectorView.classList.add('active');
+            renderMenu();
+        }
+
+        // --- GAME LOGIC ---
+        function startGame(idx) {
+            currentLevelIdx = idx;
+            currentLevelScore = STARTING_FUEL;
+            gameActive = true;
+
+            selectorView.classList.remove('active');
+            gameView.classList.add('active');
+
+            let title = `Flight ${idx+1}`;
+            if(idx === 3) title = "CLASSIFIED MISSION"; 
+            document.getElementById('level-title').textContent = title;
+            
+            document.getElementById('mystery-image').src = LEVELS[idx].image;
+            inputField.value = "";
+            inputField.disabled = false;
+            messageDisplay.textContent = "";
+            updateLevelScoreUI();
+
+            gridContainer.innerHTML = "";
+            for (let i = 0; i < 100; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'grid-piece';
+                gridContainer.appendChild(tile);
+            }
+            
+            gridContainer.onmousedown = handleGridInteraction;
+            gridContainer.ontouchstart = (e) => {
+                e.preventDefault(); 
+                handleGridInteraction(e);
+            }
+
+            inputField.focus();
+        }
+
+        function handleGridInteraction(e) {
+            if (!gameActive) return;
+            
+            const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
+            if (hiddenTiles.length === 0) return;
+
+            const randomIndex = Math.floor(Math.random() * hiddenTiles.length);
+            const tileToRemove = hiddenTiles[randomIndex];
+            tileToRemove.classList.add('revealed');
+
+            currentLevelScore -= TILE_COST;
+            if (currentLevelScore < 0) currentLevelScore = 0;
+            updateLevelScoreUI();
+
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            showFloatingText(clientX, clientY, `-${TILE_COST}`);
+
+            if (currentLevelScore <= 0) {
+                endGame(false, "Out of Fuel!");
+            }
+        }
+
+        function showFloatingText(x, y, text) {
+            const floatEl = document.createElement('div');
+            floatEl.className = 'float-text';
+            floatEl.textContent = text;
+            floatEl.style.left = x + 'px';
+            floatEl.style.top = (y - 50) + 'px';
+            document.body.appendChild(floatEl);
+            setTimeout(() => { floatEl.remove(); }, 800);
+        }
+
+        function updateLevelScoreUI() {
+            levelScoreDisplay.textContent = currentLevelScore;
+            if (currentLevelScore <= 200) {
+                levelScoreDisplay.classList.add('danger');
+            } else {
+                levelScoreDisplay.classList.remove('danger');
+            }
+        }
+
+        function updateTotalScoreUI() {
+            totalScoreDisplay.textContent = totalScore;
+        }
+
+        function checkAnswer() {
+            if (!gameActive) return;
+
+            const guess = inputField.value.trim().toLowerCase();
+            const answers = LEVELS[currentLevelIdx].answers;
+
+            if (isMatch(guess, answers)) {
+                endGame(true, "Target Identified!");
+            } else {
+                currentLevelScore -= WRONG_GUESS_PENALTY;
+                if (currentLevelScore < 0) currentLevelScore = 0;
+                updateLevelScoreUI();
+                
+                inputField.style.borderColor = "var(--brand-red)";
+                setTimeout(() => inputField.style.borderColor = "#ddd", 500);
+                
+                if (currentLevelScore <= 0) {
+                    endGame(false, "Out of Fuel!");
+                }
+            }
+        }
+
+        function endGame(win, msgText) {
+            gameActive = false;
+            messageDisplay.textContent = msgText;
+            
+            if (win) {
+                messageDisplay.className = "success";
+                document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+                
+                triggerConfetti();
+
+                totalScore += currentLevelScore;
+                localStorage.setItem('quizTotalScore', totalScore);
+                
+                if (currentLevelIdx >= maxUnlockedIdx && maxUnlockedIdx < LEVELS.length - 1) {
+                    maxUnlockedIdx++;
+                    localStorage.setItem('quizMaxIdx', maxUnlockedIdx);
+                }
+
+                updateTotalScoreUI();
+                setTimeout(showSelector, 3000);
+            } else {
+                messageDisplay.className = "fail";
+                document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+                setTimeout(showSelector, 3000);
+            }
+        }
+
+        // --- UTILS ---
+        function isMatch(guess, answers) {
+            if (answers.includes(guess)) return true;
+            for (let answer of answers) {
+                if (answer.length < 4) { if (guess === answer) return true; continue; }
+                const dist = levenshteinDistance(guess, answer);
+                const allowedErrors = answer.length > 8 ? 2 : 1;
+                if (dist <= allowedErrors) return true;
+            }
+            return false;
+        }
+
+        function levenshteinDistance(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+            for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) == a.charAt(j - 1)) matrix[i][j] = matrix[i - 1][j - 1];
+                    else matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        function triggerConfetti() {
+            try {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            } catch(e) { console.log("Confetti blocked"); }
+        }
+
+        function resetProgress() {
+            if(confirm("Reset all progress?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

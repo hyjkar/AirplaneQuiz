@@ -26,9 +26,7 @@
             --gauge-orange: #f39c12;
             --gauge-red: #e74c3c;
         }
-
         * { box-sizing: border-box; }
-
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--bg-sand);
@@ -47,7 +45,6 @@
             flex-direction: column; justify-content: center; align-items: center; text-align: center;
             padding: 20px;
         }
-        
         @media screen and (orientation: landscape) and (max-height: 600px) {
             #orientation-lock { display: flex; }
         }
@@ -60,43 +57,46 @@
 
         /* --- DASHBOARD --- */
         .dashboard-header { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
-
+        
         .fuel-tank-container {
             background: #222; padding: 15px; border-radius: 12px; width: 100%; text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #444; position: relative; flex-shrink: 0; 
         }
-        
         .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
         .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.5rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
 
-        /* --- LEVEL GRID --- */
+        /* --- GRID --- */
         #level-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;
-            margin: 15px 0; flex-grow: 1; overflow-y: auto; align-content: start; padding-right: 5px; 
+            margin: 10px 0; flex-grow: 1; overflow-y: auto; align-content: start; padding-right: 5px; 
         }
-        #level-grid::-webkit-scrollbar { width: 5px; }
-        #level-grid::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
-
         .level-card {
-            background: white; border: 1px solid #ddd; border-radius: 10px;
-            padding: 10px; text-align: center; cursor: pointer; position: relative;
-            transition: transform 0.1s; display: flex; flex-direction: column; justify-content: center; min-height: 100px;
+            background: white; border: 1px solid #ddd; border-radius: 10px; padding: 10px; text-align: center; 
+            cursor: pointer; position: relative; transition: transform 0.1s; display: flex; flex-direction: column; justify-content: center; min-height: 100px;
         }
         .level-card:active { transform: scale(0.98); }
-
         .level-card h3 { margin: 5px 0 2px 0; color: var(--brand-dark); font-size: 0.95rem; }
         .level-icon { font-size: 1.8rem; }
         .level-status { font-size: 0.65rem; color: #888; margin-top: auto; font-weight: bold; }
         .status-done { color: #27ae60; }
-        
         .level-card.locked { background: #202020; border-color: #333; cursor: not-allowed; opacity: 0.9; }
         .level-card.locked h3 { color: #888; }
         .level-card.locked .level-status { color: var(--brand-red); }
 
-        /* --- FOOTER BUTTONS --- */
-        .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: 5px; padding-top: 10px; border-top: 1px solid #eee; }
+        /* --- BUTTONS --- */
+        .footer-buttons { 
+            width: 100%; 
+            flex-shrink: 0; /* Prevents squashing */
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            margin-top: 5px; 
+            padding-top: 10px; 
+            border-top: 1px solid #eee; 
+            padding-bottom: 20px; /* Added padding for bottom visibility */
+        }
         button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
         .primary-btn { background-color: var(--brand-red); color: white; }
         .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
@@ -107,27 +107,23 @@
         .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; }
         .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
-
         #game-wrapper {
-            padding: 5px; background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
-            border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); width: 100%; margin-bottom: 10px; position: relative;
+            padding: 5px; background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%); border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); width: 100%; margin-bottom: 10px; position: relative;
             flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center;
         }
-
         #game-container { position: relative; width: 100%; height: 100%; max-height: 100%; background-color: #000; overflow: hidden; border: 3px solid #fff; cursor: pointer; }
         #game-container img { object-fit: contain; width: 100%; height: 100%; }
         #mystery-image { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
         #cover-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; }
         .grid-piece { background-color: var(--piece-color); border: 1px solid #3a3a3a; transition: opacity 0.3s; }
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
-
-        .float-text { position: fixed; color: var(--brand-red); font-weight: bold; font-size: 1.5rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 999; text-shadow: 0 2px 4px rgba(255,255,255,0.8); }
-
+        
         #input-area { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; margin-bottom: 5px; }
         input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; }
         input[type="text"]:focus { border-color: var(--brand-gold); }
         #enter-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
-
+        
         #message { margin-top: 0px; font-size: 1.1rem; text-align: center; height: 25px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
@@ -135,6 +131,7 @@
         #leaderboard-list {
             width: 100%; flex-grow: 1; overflow-y: auto; text-align: left;
             background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px;
+            margin-bottom: 10px;
         }
         .lb-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; align-items: center; }
         .lb-rank { font-weight: bold; width: 30px; color: var(--brand-red); }
@@ -145,6 +142,7 @@
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .float-text { position: fixed; color: var(--brand-red); font-weight: bold; font-size: 1.5rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 999; text-shadow: 0 2px 4px rgba(255,255,255,0.8); }
     </style>
 </head>
 <body>
@@ -200,15 +198,19 @@
         <div id="input-area">
             <input type="text" id="guess-input" placeholder="Identify aircraft..." autocomplete="off">
             <button id="enter-btn">ENTER</button>
-            <button class="abort-btn" onclick="saveAndExit()">Abort Mission (Save)</button>
+            <button class="outline-btn" onclick="saveAndExit()">Abort Mission (Save)</button>
         </div>
         <div id="message"></div>
     </div>
 
     <div id="leaderboard-view" class="view-section">
-        <h1>Global Standings</h1>
-        <h2 style="margin-bottom: 10px;">Top Fuel Reserves</h2>
+        <div style="flex-shrink: 0; width:100%; text-align:center;">
+            <h1>Global Standings</h1>
+            <h2 style="margin-bottom: 10px;">Top Fuel Reserves</h2>
+        </div>
+        
         <div id="leaderboard-list">Connecting to HQ...</div>
+        
         <div class="footer-buttons">
             <button class="primary-btn" onclick="closeLeaderboard()">Back to Command</button>
         </div>
@@ -216,9 +218,6 @@
 
     <script>
         // --- 🔥 FIREBASE CONFIGURATION 🔥 ---
-        // 1. Go to Firebase Console -> Project Settings -> General -> Your Apps
-        // 2. Paste the 'firebaseConfig' object here:
-        
         const firebaseConfig = {
   apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
   authDomain: "fuelcommand.firebaseapp.com",
@@ -228,14 +227,11 @@
   appId: "1:211722292779:web:5dec358fc0693c7126246e"
         };
 
-        // Initialize Firebase
         let db;
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
-        } catch(e) {
-            console.error("Firebase not configured yet.", e);
-        }
+        } catch(e) { console.error("Firebase Init Error", e); }
 
         // --- GAME CONFIG ---
         const LEVELS_CONFIG = [
@@ -277,7 +273,9 @@
                 selectorView.classList.add('active');
                 pilotGreeting.textContent = `Pilot: ${globalState.username}`;
                 renderDashboard();
-                syncScoreToCloud(); 
+                
+                // If game was previously finished, sync logic ensures they are on board
+                if (isGameComplete()) syncScoreToCloud();
             }
 
             document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
@@ -295,20 +293,19 @@
             loginOverlay.style.display = 'none';
             selectorView.classList.add('active');
             pilotGreeting.textContent = `Pilot: ${globalState.username}`;
-            
-            syncScoreToCloud();
             renderDashboard();
         }
 
+        // Only runs when game is beaten
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
-            // Write to "scores" collection
+            
             db.collection("scores").doc(globalState.username).set({
                 name: globalState.username,
                 score: globalState.currentFuel,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             })
-            .then(() => console.log("Score Synced"))
+            .then(() => console.log("Victory Score Synced"))
             .catch(err => console.error("Sync Failed", err));
         }
 
@@ -319,7 +316,7 @@
             list.innerHTML = "Fetching Data...";
 
             if(!db) {
-                list.innerHTML = "⚠️ Firebase Config Missing in Code.";
+                list.innerHTML = "⚠️ Database not connected.";
                 return;
             }
 
@@ -338,7 +335,7 @@
                         </div>
                     `;
                 });
-                if(html === "") html = "<div style='text-align:center; padding:20px;'>No pilots registered yet.</div>";
+                if(html === "") html = "<div style='text-align:center; padding:20px; color:#777;'>No completed missions yet.<br>Be the first.</div>";
                 list.innerHTML = html;
             })
             .catch((error) => {
@@ -354,7 +351,7 @@
 
         // --- CORE LOGIC ---
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v10');
+            const saved = localStorage.getItem('fuelQuizState_v11');
             if (saved) {
                 globalState = JSON.parse(saved);
             } else {
@@ -364,7 +361,12 @@
         }
 
         function saveState() {
-            localStorage.setItem('fuelQuizState_v10', JSON.stringify(globalState));
+            localStorage.setItem('fuelQuizState_v11', JSON.stringify(globalState));
+        }
+
+        function isGameComplete() {
+            // Check if all levels (including SR71 at index 4) are done
+            return globalState.levels.every(l => l.completed);
         }
 
         function renderDashboard() {
@@ -478,7 +480,6 @@
             
             globalState.currentFuel = Math.max(0, globalState.currentFuel - TILE_COST);
             saveState();
-            syncScoreToCloud();
             updateMiniFuel();
 
             let cx = e.clientX || (e.touches && e.touches[0].clientX);
@@ -500,7 +501,6 @@
             } else {
                 globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
                 saveState();
-                syncScoreToCloud();
                 updateMiniFuel();
                 
                 const inp = document.getElementById('guess-input');
@@ -519,8 +519,13 @@
                 document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
                 triggerConfetti();
                 saveState();
-                syncScoreToCloud();
                 document.getElementById('level-title').textContent = LEVELS_CONFIG[activeLevelIdx].name;
+                
+                // IF THIS WAS THE LAST LEVEL (Index 4), SYNC SCORE
+                if (activeLevelIdx === 4) {
+                    syncScoreToCloud();
+                }
+
                 setTimeout(saveAndExit, 2000);
             } else {
                 document.getElementById('message').className = "fail";

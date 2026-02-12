@@ -1,8 +1,9 @@
 {
-  "name": "Airplane Quiz Deluxe",
-  "short_name": "Fuel Quiz",
+  "name": "Fuel Command",
+  "short_name": "FuelCmd",
   "start_url": "./index.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#fcfbf9",
   "theme_color": "#d71920",
   "icons": [

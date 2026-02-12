@@ -79,42 +79,69 @@
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
 
-        /* --- LIST VIEW --- */
+        /* --- FOLDER / LIST VIEW --- */
         #level-list-container {
-            display: flex; flex-direction: column; gap: 8px; width: 100%;
+            display: flex; flex-direction: column; gap: 10px; width: 100%;
             margin: 15px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; 
         }
         #level-list-container::-webkit-scrollbar { width: 5px; }
         #level-list-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
 
-        .world-header {
-            font-family: 'Playfair Display', serif; color: var(--brand-dark); 
-            font-size: 1.1rem; margin-top: 15px; margin-bottom: 5px; 
-            border-bottom: 2px solid var(--brand-gold); padding-bottom: 5px;
+        /* World Folder Styles */
+        .world-folder {
+            border: 1px solid #ddd; border-radius: 10px; background: white;
+            overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            flex-shrink: 0; /* Prevent crushing */
         }
+        
+        .world-header {
+            padding: 15px; background: #f8f8f8; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid transparent; transition: all 0.2s;
+        }
+        
+        .world-header:active { background: #eee; }
+        
+        /* When open */
+        .world-folder.open .world-header {
+            background: var(--brand-dark); color: white; border-bottom: 1px solid #444;
+        }
+        .world-folder.open .world-header h3 { color: var(--brand-gold); }
+        .world-folder.open .arrow { transform: rotate(180deg); }
 
+        .world-title-group h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-dark); }
+        .world-subtitle { font-size: 0.75rem; color: #888; font-weight: bold; }
+        
+        .arrow { transition: transform 0.3s ease; font-size: 1.2rem; color: #888; }
+
+        /* Level Content Area */
+        .world-content {
+            display: none; flex-direction: column; gap: 8px; padding: 10px; background: #fff;
+        }
+        .world-folder.open .world-content { display: flex; }
+
+        /* Flight Strips */
         .level-strip {
-            background: white; border: 1px solid #ddd; border-radius: 8px; 
-            padding: 15px; width: 100%; min-height: 70px;
+            background: white; border: 1px solid #eee; border-radius: 6px; 
+            padding: 12px; width: 100%; min-height: 60px;
             display: flex; align-items: center; justify-content: space-between;
             cursor: pointer; transition: transform 0.1s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         .level-strip:active { transform: scale(0.98); background-color: #f9f9f9; }
-        .level-strip.bonus { border: 2px solid var(--brand-gold); background: #fffdf5; }
+        .level-strip.bonus { border: 1px solid var(--brand-gold); background: #fffdf5; }
 
-        .strip-icon { font-size: 1.5rem; width: 40px; text-align: center; margin-right: 10px; }
+        .strip-icon { font-size: 1.4rem; width: 30px; text-align: center; margin-right: 10px; }
         .strip-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-        .strip-title { font-size: 1rem; color: var(--brand-dark); font-weight: bold; margin: 0; }
-        .strip-status { font-size: 0.75rem; font-weight: bold; color: #888; text-align: right; min-width: 80px; }
+        .strip-title { font-size: 0.95rem; color: var(--brand-dark); font-weight: bold; margin: 0; }
+        .strip-status { font-size: 0.7rem; font-weight: bold; color: #888; text-align: right; min-width: 70px; }
         
         .status-ready { color: var(--brand-red); }
         .status-done { color: #27ae60; }
         .status-locked { color: #bbb; }
 
-        .level-strip.locked { background: #f0f0f0; border-color: #eee; cursor: not-allowed; opacity: 0.8; }
-        .level-strip.locked .strip-title { color: #888; }
-        .level-strip.locked .strip-icon { color: #aaa; }
+        .level-strip.locked { background: #f9f9f9; border-color: #eee; cursor: not-allowed; opacity: 0.7; }
+        .level-strip.locked .strip-title { color: #aaa; }
+        .level-strip.locked .strip-icon { color: #ccc; }
 
         /* --- BUTTONS --- */
         .footer-buttons { 
@@ -223,7 +250,7 @@
                 <div class="fuel-value"><span id="total-fuel-display">4000</span></div>
                 <div class="fuel-bar-bg"><div class="fuel-bar-fill" id="fuel-bar"></div></div>
                 <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;">
-                    ⚠️ Need <span style="color:#fff">1500L</span> for Next World
+                    ⚠️ Need <span style="color:#fff">1000L</span> for Next World
                 </div>
             </div>
         </div>
@@ -295,16 +322,11 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
                 { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Lufthansa_Boeing_747-830_D-ABYA_FRA_2012-06-30.jpg/800px-Lufthansa_Boeing_747-830_D-ABYA_FRA_2012-06-30.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
                 { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/A380_Emirates_A6-EDC.jpg/800px-A380_Emirates_A6-EDC.jpg", answers: ["airbus a380", "a380", "super jumbo", "380"], name: "Airbus A380" },
                 { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Concorde_at_Filton.jpg/800px-Concorde_at_Filton.jpg", answers: ["concorde"], name: "Concorde" },
-                { image: "https://upload.wikimedia.org/wikipedia/commons/5/52/P-51_Mustang_flight.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" } // moved P51 to standard pool to make room for logic
+                { image: "https://upload.wikimedia.org/wikipedia/commons/5/52/P-51_Mustang_flight.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" }
             ],
-            bonus: [
-                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Lockheed_SR-71_Blackbird.jpg/800px-Lockheed_SR-71_Blackbird.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
-                { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Supermarine_Spitfire_Mk_XVI_NR_Colling_1.jpg/800px-Supermarine_Spitfire_Mk_XVI_NR_Colling_1.jpg", answers: ["spitfire"], name: "Rare Spitfire" } // Just a placeholder, better to reuse pool or add more. 
-                // Let's actually duplicate P51 and SR71 as the dedicated Bosses for consistency with the request
-            ]
+            bonus: [] // Not used dynamically, bosses are hardcoded below
         };
         
-        // Hardcoded Bosses for Logic
         const BOSS_1 = { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Lockheed_SR-71_Blackbird.jpg/800px-Lockheed_SR-71_Blackbird.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" };
         const BOSS_2 = { image: "https://upload.wikimedia.org/wikipedia/commons/5/52/P-51_Mustang_flight.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" };
 
@@ -318,7 +340,7 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
         let globalState = {
             username: null,
             currentFuel: STARTING_GLOBAL_FUEL,
-            generatedLevels: [] // Replaces static LEVELS_CONFIG
+            generatedLevels: []
         };
         let activeLevelIdx = 0;
 
@@ -348,28 +370,17 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
 
         // --- GENERATOR LOGIC ---
         function generateGameLevels() {
-            // 1. Shuffle Standard Pool
             let pool = [...AIRCRAFT_DATA.standard];
             pool = pool.sort(() => Math.random() - 0.5);
             
-            // 2. Select 8 planes (4 per world)
             const world1Planes = pool.slice(0, 4);
-            const world2Planes = pool.slice(4, 8); // Ensures one is left out if pool has 9
+            const world2Planes = pool.slice(4, 8); 
 
             let levels = [];
-
-            // World 1 Build
-            world1Planes.forEach(p => {
-                levels.push({ ...p, world: 1, isBonus: false, revealedTiles: [], completed: false });
-            });
-            // World 1 Boss
+            world1Planes.forEach(p => levels.push({ ...p, world: 1, isBonus: false, revealedTiles: [], completed: false }));
             levels.push({ ...BOSS_1, world: 1, isBonus: true, revealedTiles: [], completed: false });
 
-            // World 2 Build
-            world2Planes.forEach(p => {
-                levels.push({ ...p, world: 2, isBonus: false, revealedTiles: [], completed: false });
-            });
-            // World 2 Boss
+            world2Planes.forEach(p => levels.push({ ...p, world: 2, isBonus: false, revealedTiles: [], completed: false }));
             levels.push({ ...BOSS_2, world: 2, isBonus: true, revealedTiles: [], completed: false });
 
             return levels;
@@ -389,7 +400,6 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
 
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
-            // Version 4 for Randomized Leaderboard
             db.collection("flight_scores_v4").doc(globalState.username).set({
                 name: globalState.username,
                 score: globalState.currentFuel,
@@ -421,10 +431,9 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v15'); // New Version
+            const saved = localStorage.getItem('fuelQuizState_v16'); // Updated Version
             if (saved) {
                 globalState = JSON.parse(saved);
-                // Fallback if update messed up levels
                 if(!globalState.generatedLevels || globalState.generatedLevels.length === 0) {
                     globalState.generatedLevels = generateGameLevels();
                 }
@@ -434,9 +443,10 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v15', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v16', JSON.stringify(globalState)); }
         function isGameComplete() { return globalState.generatedLevels.every(l => l.completed); }
 
+        // --- DASHBOARD RENDERER WITH FOLDERS ---
         function renderDashboard() {
             document.getElementById('total-fuel-display').textContent = globalState.currentFuel;
             const pct = Math.min(100, Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100));
@@ -449,68 +459,103 @@ apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
             document.querySelector('.fuel-value').style.color = color;
 
             const unlockMsg = document.getElementById('unlock-message');
-            if (globalState.currentFuel >= UNLOCK_THRESHOLD) {
-                unlockMsg.innerHTML = "Bonus Access: <span style='color:#2ecc71'>GRANTED</span>";
-            } else {
-                unlockMsg.innerHTML = `⚠️ Need <span style='color:#fff'>${UNLOCK_THRESHOLD}L</span> for Classified Ops`;
-            }
+            if (globalState.currentFuel >= UNLOCK_THRESHOLD) unlockMsg.innerHTML = "Bonus Access: <span style='color:#2ecc71'>GRANTED</span>";
+            else unlockMsg.innerHTML = `⚠️ Need <span style='color:#fff'>${UNLOCK_THRESHOLD}L</span> for Classified Ops`;
 
             const listContainer = document.getElementById('level-list-container');
             listContainer.innerHTML = "";
 
-            let currentWorld = 0;
+            // 1. Group levels by World
+            const worlds = { 1: [], 2: [] };
+            globalState.generatedLevels.forEach((level, index) => {
+                worlds[level.world].push({ ...level, originalIndex: index });
+            });
 
-            globalState.generatedLevels.forEach((levelData, idx) => {
-                if (levelData.world !== currentWorld) {
-                    const header = document.createElement('div');
-                    header.className = 'world-header';
-                    header.textContent = `World ${levelData.world}`;
-                    listContainer.appendChild(header);
-                    currentWorld = levelData.world;
-                }
+            // 2. Identify Current World (for auto-opening)
+            let activeWorld = 1;
+            // Find first incomplete level
+            const firstIncomplete = globalState.generatedLevels.find(l => !l.completed);
+            if (firstIncomplete) activeWorld = firstIncomplete.world;
+            // If all done, keep World 2 open
+            else activeWorld = 2;
 
-                const card = document.createElement('div');
-                let isPrevDone = (idx === 0) ? true : globalState.generatedLevels[idx - 1].completed;
+            // 3. Build Folder UI
+            [1, 2].forEach(worldNum => {
+                const levels = worlds[worldNum];
+                if(levels.length === 0) return;
+
+                // Create Folder Container
+                const folder = document.createElement('div');
+                folder.className = `world-folder ${worldNum === activeWorld ? 'open' : ''}`;
                 
-                let isBonusLocked = false;
-                if (levelData.isBonus) {
-                    if (globalState.currentFuel < UNLOCK_THRESHOLD) isBonusLocked = true;
-                }
+                // Header
+                const header = document.createElement('div');
+                header.className = 'world-header';
+                header.innerHTML = `
+                    <div class="world-title-group">
+                        <h3>World ${worldNum}</h3>
+                        <div class="world-subtitle">${worldNum === 1 ? 'THE GOLDEN AGE' : 'MODERN MARVELS'}</div>
+                    </div>
+                    <div class="arrow">▼</div>
+                `;
+                header.onclick = () => {
+                    folder.classList.toggle('open');
+                };
 
-                const isLocked = !isPrevDone || (levelData.isBonus && isBonusLocked && !levelData.completed);
+                // Content Container
+                const content = document.createElement('div');
+                content.className = 'world-content';
 
-                if (isLocked) {
-                    card.className = "level-strip locked";
-                    let title = `Flight ${idx+1}`;
-                    if(levelData.isBonus) title = "Classified";
-                    let reason = "LOCKED";
-                    if(levelData.isBonus && isPrevDone && isBonusLocked) reason = "LOW FUEL";
-                    card.innerHTML = `<div class="strip-icon">🔒</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">${reason}</div>`;
-                } else {
-                    card.className = levelData.isBonus ? "level-strip bonus" : "level-strip";
-                    let icon = "✈️";
-                    let title = `Flight ${idx + 1}`;
-                    if(levelData.isBonus) title = "Classified";
-                    let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
+                // Add Levels to Content
+                levels.forEach(levelData => {
+                    const idx = levelData.originalIndex;
+                    const card = document.createElement('div');
                     
-                    if (levelData.completed) {
-                        title = levelData.name; icon = "★"; statusHtml = `<div class="strip-status status-done">Identified</div>`;
-                    } else if (levelData.isBonus) {
-                         icon = "🚀"; 
-                    } else if (levelData.revealedTiles.length > 0) {
-                        statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
-                    }
+                    // Logic Logic
+                    let isPrevDone = (idx === 0) ? true : globalState.generatedLevels[idx - 1].completed;
+                    let isBonusLocked = false;
+                    if (levelData.isBonus && globalState.currentFuel < UNLOCK_THRESHOLD) isBonusLocked = true;
+                    
+                    const isLocked = !isPrevDone || (levelData.isBonus && isBonusLocked && !levelData.completed);
 
-                    if (globalState.currentFuel <= 0 && !levelData.completed) {
-                         card.className += " locked";
-                         statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
-                         card.onclick = () => alert("Mission Failed: No Fuel. Please Restart.");
+                    if (isLocked) {
+                        card.className = "level-strip locked";
+                        let title = `Flight ${idx+1}`;
+                        if(levelData.isBonus) title = "Classified";
+                        let reason = "LOCKED";
+                        if(levelData.isBonus && isPrevDone && isBonusLocked) reason = "LOW FUEL";
+                        
+                        card.innerHTML = `<div class="strip-icon">🔒</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">${reason}</div>`;
                     } else {
-                        card.onclick = () => launchLevel(idx);
+                        card.className = levelData.isBonus ? "level-strip bonus" : "level-strip";
+                        let icon = "✈️";
+                        let title = `Flight ${idx + 1}`;
+                        if(levelData.isBonus) title = "Classified";
+                        let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
+                        
+                        if (levelData.completed) {
+                            title = levelData.name; icon = "★"; statusHtml = `<div class="strip-status status-done">Identified</div>`;
+                        } else if (levelData.isBonus) {
+                             icon = "🚀"; 
+                        } else if (levelData.revealedTiles.length > 0) {
+                            statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
+                        }
+
+                        if (globalState.currentFuel <= 0 && !levelData.completed) {
+                             card.className += " locked";
+                             statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
+                             card.onclick = () => alert("Mission Failed: No Fuel. Please Restart.");
+                        } else {
+                            card.onclick = () => launchLevel(idx);
+                        }
+                        card.innerHTML = `<div class="strip-icon">${icon}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                     }
-                    card.innerHTML = `<div class="strip-icon">${icon}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
-                }
-                listContainer.appendChild(card);
+                    content.appendChild(card);
+                });
+
+                folder.appendChild(header);
+                folder.appendChild(content);
+                listContainer.appendChild(folder);
             });
         }
 

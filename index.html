@@ -83,7 +83,7 @@
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
 
-        /* --- FOLDER LIST --- */
+        /* --- HANGAR LIST --- */
         #level-list-container {
             display: flex; flex-direction: column; gap: 8px; width: 100%;
             margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; 
@@ -99,7 +99,7 @@
         .world-folder.locked-world { opacity: 0.6; pointer-events: none; background: #f0f0f0; }
         
         .world-header {
-            padding: 12px 15px; background: #f8f8f8; cursor: pointer;
+            padding: 15px 15px; background: #f8f8f8; cursor: pointer;
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid transparent; transition: all 0.2s;
         }
@@ -108,7 +108,6 @@
         .world-folder.open .world-header h3 { color: var(--brand-gold); }
         .world-folder.open .arrow { transform: rotate(180deg); }
         .world-title-group h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-dark); }
-        .world-subtitle { font-size: 0.75rem; color: #888; font-weight: bold; }
         .arrow { transition: transform 0.3s ease; font-size: 1.2rem; color: #888; }
         .world-content { display: none; flex-direction: column; gap: 8px; padding: 10px; background: #fff; }
         .world-folder.open .world-content { display: flex; }
@@ -233,7 +232,7 @@
             <div style="font-size: 3rem;">⛽</div>
             <h1 style="color: var(--gauge-green); margin-bottom: 10px;">SUPPLY DROP</h1>
             <p style="margin-bottom: 10px; color: #fff; font-size: 1.1rem;">
-                World Completed.<br>
+                Hangar Completed.<br>
                 <strong>+2000 Liters Added</strong>
             </p>
             <button class="gold-btn" onclick="closeRefuel()">CONTINUE</button>
@@ -316,20 +315,18 @@
             db = firebase.firestore();
         } catch(e) { console.error("Firebase Init Error", e); }
 
-        // --- PLANES DATA ---
+        // --- PLANES DATA (Randomized Pools) ---
         const AIRCRAFT_DATA = {
-            world1: [
+            standard: [
                 { image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
                 { image: "a380.jpg", answers: ["airbus a380", "a380", "super jumbo", "380"], name: "Airbus A380" },
                 { image: "787.jpg", answers: ["787", "boeing 787", "dreamliner", "b787"], name: "Boeing 787" },
-                { image: "e175.jpg", answers: ["e175", "embraer 175", "embraer e175", "e-175"], name: "Embraer E175" }
-            ],
-            world2: [
+                { image: "e175.jpg", answers: ["e175", "embraer 175", "embraer e175", "e-175"], name: "Embraer E175" },
                 { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
                 { image: "antonov.jpg", answers: ["an225", "an-225", "mriya", "antonov 225"], name: "Antonov An-225" },
                 { image: "a350.jpg", answers: ["a350", "airbus a350", "350"], name: "Airbus A350" }
             ],
-            world3: [
+            classified: [
                 { image: "f22.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
                 { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
                 { image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
@@ -341,7 +338,6 @@
         const REFUEL_AMOUNT = 2000; 
         const TILE_COST = 15;
         const WRONG_GUESS_PENALTY = 200;
-        const CLASSIFIED_FUEL_COST = 500; // Required to unlock a classified level? No, standard logic.
 
         // --- STATE ---
         let globalState = {
@@ -381,17 +377,17 @@
         // --- GENERATOR ---
         function generateGameLevels() {
             let levels = [];
-            // World 1 (Random order)
-            let w1 = [...AIRCRAFT_DATA.world1].sort(() => Math.random() - 0.5);
-            w1.forEach(p => levels.push({ ...p, world: 1, isClassified: false, revealedTiles: [], completed: false }));
+            // Shuffle Standard Planes
+            let pool = [...AIRCRAFT_DATA.standard].sort(() => Math.random() - 0.5);
             
-            // World 2 (Random order)
-            let w2 = [...AIRCRAFT_DATA.world2].sort(() => Math.random() - 0.5);
-            w2.forEach(p => levels.push({ ...p, world: 2, isClassified: false, revealedTiles: [], completed: false }));
+            // Hangar 1: 4 Random Planes
+            pool.slice(0, 4).forEach(p => levels.push({ ...p, hangar: 1, isClassified: false, revealedTiles: [], completed: false }));
             
-            // World 3 (Random order - Classified)
-            let w3 = [...AIRCRAFT_DATA.world3].sort(() => Math.random() - 0.5);
-            w3.forEach(p => levels.push({ ...p, world: 3, isClassified: true, revealedTiles: [], completed: false }));
+            // Hangar 2: Remaining 3 Planes
+            pool.slice(4, 7).forEach(p => levels.push({ ...p, hangar: 2, isClassified: false, revealedTiles: [], completed: false }));
+            
+            // Hangar 3: Fixed Classified Planes
+            AIRCRAFT_DATA.classified.forEach(p => levels.push({ ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false }));
             
             return levels;
         }
@@ -410,7 +406,7 @@
 
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
-            db.collection("fuel_command_v1").doc(globalState.username).set({
+            db.collection("fuel_command_v2").doc(globalState.username).set({
                 name: globalState.username,
                 score: globalState.currentFuel,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -424,7 +420,7 @@
             list.innerHTML = "Fetching Data...";
             if(!db) { list.innerHTML = "⚠️ Database not connected."; return; }
 
-            db.collection("fuel_command_v1").orderBy("score", "desc").limit(20).get()
+            db.collection("fuel_command_v2").orderBy("score", "desc").limit(20).get()
             .then((querySnapshot) => {
                 let html = "";
                 let rank = 1;
@@ -441,7 +437,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v21'); 
+            const saved = localStorage.getItem('fuelQuizState_v22'); 
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -453,10 +449,10 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v21', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v22', JSON.stringify(globalState)); }
         
-        function isWorldComplete(wNum) {
-            return globalState.levels.filter(l => l.world === wNum).every(l => l.completed);
+        function isHangarComplete(hNum) {
+            return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
         }
         function isAllWorldsComplete() {
             return globalState.levels.every(l => l.completed);
@@ -467,61 +463,53 @@
             const pct = Math.min(100, Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100));
             document.getElementById('fuel-bar').style.width = pct + "%";
             
-            // Check World Status
-            const w1Done = isWorldComplete(1);
-            const w2Done = isWorldComplete(2);
+            const h1Done = isHangarComplete(1);
+            const h2Done = isHangarComplete(2);
             
-            // Handle one-time fuel rewards (state flags prevent infinite loop)
-            if (w1Done && !globalState.world1Complete) {
+            // One-time fuel rewards
+            if (h1Done && !globalState.world1Complete) {
                 globalState.world1Complete = true;
                 triggerRefuel();
             }
-            if (w2Done && !globalState.world2Complete) {
+            if (h2Done && !globalState.world2Complete) {
                 globalState.world2Complete = true;
                 triggerRefuel();
             }
 
             const unlockMsg = document.getElementById('unlock-message');
-            if(w2Done) unlockMsg.innerHTML = "Classified Ops: <span style='color:#2ecc71'>GRANTED</span>";
-            else if(w1Done) unlockMsg.innerHTML = "World 2: <span style='color:#2ecc71'>UNLOCKED</span>";
-            else unlockMsg.innerHTML = "Complete World 1 to advance";
+            if(h2Done) unlockMsg.innerHTML = "Classified Ops: <span style='color:#2ecc71'>GRANTED</span>";
+            else if(h1Done) unlockMsg.innerHTML = "Hangar 2: <span style='color:#2ecc71'>UNLOCKED</span>";
+            else unlockMsg.innerHTML = "Complete Hangar 1 to advance";
 
             const listContainer = document.getElementById('level-list-container');
             listContainer.innerHTML = "";
 
-            // Group Levels
-            const worlds = { 1: [], 2: [], 3: [] };
+            const hangars = { 1: [], 2: [], 3: [] };
             globalState.levels.forEach((level, index) => {
-                worlds[level.world].push({ ...level, originalIndex: index });
+                hangars[level.hangar].push({ ...level, originalIndex: index });
             });
 
             // Determine active folder
-            let activeWorld = 1;
-            if (w1Done) activeWorld = 2;
-            if (w2Done) activeWorld = 3;
+            let activeHangar = 1;
+            if (h1Done) activeHangar = 2;
+            if (h2Done) activeHangar = 3;
 
-            const worldNames = { 1: "Commercial Giants", 2: "Aviation Legends", 3: "Classified Ops" };
-
-            [1, 2, 3].forEach(worldNum => {
-                const levels = worlds[worldNum];
+            [1, 2, 3].forEach(hNum => {
+                const levels = hangars[hNum];
                 if(levels.length === 0) return;
 
                 const folder = document.createElement('div');
-                // Lock Logic for Folder
                 let isFolderLocked = false;
-                if (worldNum === 2 && !w1Done) isFolderLocked = true;
-                if (worldNum === 3 && !w2Done) isFolderLocked = true;
+                if (hNum === 2 && !h1Done) isFolderLocked = true;
+                if (hNum === 3 && !h2Done) isFolderLocked = true;
 
-                folder.className = `world-folder ${isFolderLocked ? 'locked-world' : ''} ${worldNum === activeWorld ? 'open' : ''}`;
+                folder.className = `world-folder ${isFolderLocked ? 'locked-world' : ''} ${hNum === activeHangar ? 'open' : ''}`;
                 
                 const header = document.createElement('div');
                 header.className = 'world-header';
                 let lockIcon = isFolderLocked ? '🔒 ' : '';
                 header.innerHTML = `
-                    <div class="world-title-group">
-                        <h3>${lockIcon}World ${worldNum}</h3>
-                        <div class="world-subtitle">${worldNames[worldNum]}</div>
-                    </div>
+                    <div class="world-title-group"><h3>${lockIcon}Hangar ${hNum}</h3></div>
                     <div class="arrow">▼</div>
                 `;
                 if (!isFolderLocked) {
@@ -535,39 +523,33 @@
                     const idx = levelData.originalIndex;
                     const card = document.createElement('div');
                     
-                    // Logic for World 3 individual locks (Fuel check?)
-                    // Let's say Classified levels need 1000L fuel to START
-                    let isFuelLocked = false;
-                    if (worldNum === 3 && globalState.currentFuel < 1000 && !levelData.completed) {
-                        isFuelLocked = true;
-                    }
-
-                    if (isFuelLocked) {
-                        card.className = "level-strip locked";
-                        card.innerHTML = `<div class="strip-icon">⛽</div><div class="strip-info"><div class="strip-title">Classified</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
+                    if (levelData.isClassified) {
+                        card.className = "level-strip classified";
                     } else {
-                        card.className = levelData.isClassified ? "level-strip classified" : "level-strip";
-                        let icon = "✈️";
-                        let title = `Flight ${idx + 1}`;
-                        if(levelData.isClassified) { icon = "🚀"; title = "Classified"; }
-
-                        let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
-                        
-                        if (levelData.completed) {
-                            title = levelData.name; icon = "★"; statusHtml = `<div class="strip-status status-done">Identified</div>`;
-                        } else if (levelData.revealedTiles.length > 0) {
-                            statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
-                        }
-
-                        if (globalState.currentFuel <= 0 && !levelData.completed) {
-                             card.className += " locked";
-                             statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
-                             card.onclick = () => triggerGameOver();
-                        } else {
-                            card.onclick = () => launchLevel(idx);
-                        }
-                        card.innerHTML = `<div class="strip-icon">${icon}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
+                        card.className = "level-strip";
                     }
+
+                    let icon = "✈️";
+                    let title = `Flight ${idx + 1}`;
+                    if(levelData.isClassified) { icon = "🚀"; title = "Classified"; }
+
+                    let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
+                    
+                    if (levelData.completed) {
+                        title = levelData.name; icon = "★"; statusHtml = `<div class="strip-status status-done">Identified</div>`;
+                    } else if (levelData.revealedTiles.length > 0) {
+                        statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
+                    }
+
+                    if (globalState.currentFuel <= 0 && !levelData.completed) {
+                         card.className += " locked";
+                         statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
+                         card.onclick = () => triggerGameOver();
+                    } else {
+                        card.onclick = () => launchLevel(idx);
+                    }
+                    card.innerHTML = `<div class="strip-icon">${icon}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
+                    
                     content.appendChild(card);
                 });
 

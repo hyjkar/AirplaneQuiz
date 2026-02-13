@@ -58,11 +58,9 @@
 
         .view-section { 
             width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; 
-            padding-bottom: 10px; /* Reduced padding */
-            transition: filter 2s ease;
+            padding-bottom: 10px; transition: filter 2s ease;
         }
         .view-section.active { display: flex; }
-        
         .gray-out { filter: grayscale(100%) contrast(1.2); }
 
         .modal-box {
@@ -85,7 +83,7 @@
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
 
-        /* --- LIST VIEW --- */
+        /* --- FOLDER LIST --- */
         #level-list-container {
             display: flex; flex-direction: column; gap: 8px; width: 100%;
             margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; 
@@ -96,7 +94,10 @@
         .world-folder {
             border: 1px solid #ddd; border-radius: 10px; background: white;
             overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; 
+            transition: opacity 0.3s;
         }
+        .world-folder.locked-world { opacity: 0.6; pointer-events: none; background: #f0f0f0; }
+        
         .world-header {
             padding: 12px 15px; background: #f8f8f8; cursor: pointer;
             display: flex; justify-content: space-between; align-items: center;
@@ -107,10 +108,12 @@
         .world-folder.open .world-header h3 { color: var(--brand-gold); }
         .world-folder.open .arrow { transform: rotate(180deg); }
         .world-title-group h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-dark); }
+        .world-subtitle { font-size: 0.75rem; color: #888; font-weight: bold; }
         .arrow { transition: transform 0.3s ease; font-size: 1.2rem; color: #888; }
         .world-content { display: none; flex-direction: column; gap: 8px; padding: 10px; background: #fff; }
         .world-folder.open .world-content { display: flex; }
 
+        /* FLIGHT STRIPS */
         .level-strip {
             background: white; border: 1px solid #eee; border-radius: 6px; 
             padding: 12px; width: 100%; min-height: 60px;
@@ -118,7 +121,7 @@
             cursor: pointer; transition: transform 0.1s;
         }
         .level-strip:active { transform: scale(0.98); background-color: #f9f9f9; }
-        .level-strip.bonus { border: 1px solid var(--brand-gold); background: #fffdf5; }
+        .level-strip.classified { border: 1px solid var(--brand-red); background: #fff5f5; }
         .strip-icon { font-size: 1.4rem; width: 30px; text-align: center; margin-right: 10px; }
         .strip-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         .strip-title { font-size: 0.95rem; color: var(--brand-dark); font-weight: bold; margin: 0; }
@@ -145,70 +148,41 @@
         .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
         .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
 
-        /* --- GAMEPLAY VIEW --- */
-        
-        .game-header { 
-            display: flex; justify-content: space-between; align-items: center; width: 100%; 
-            margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; 
-        }
+        /* --- GAMEPLAY --- */
+        .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; }
         .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
         
-        /* Removed Gold Background & Padding */
         #game-wrapper {
-            background: transparent;
-            box-shadow: none;
-            border-radius: 0;
-            padding: 0;
-            width: 100%; 
-            margin-bottom: 10px; /* Reduced margin */
-            position: relative;
-            flex-grow: 1; /* Key for flex layout */
-            min-height: 0; /* Allows shrinking */
-            display: flex; justify-content: center; align-items: center;
+            background: transparent; box-shadow: none; border-radius: 0; padding: 0;
+            width: 100%; margin-bottom: 10px; position: relative;
+            flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center;
         }
-        
-        /* 4:3 Aspect Ratio, but flexible */
         #game-container { 
-            position: relative; width: 100%; 
-            aspect-ratio: 4/3; 
-            max-height: 100%; 
+            position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; 
             background-color: #000; overflow: hidden; border: 2px solid #ccc; cursor: pointer; 
         }
         #game-container img { object-fit: cover; width: 100%; height: 100%; }
-        
         #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-        
         #cover-grid { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); 
-            z-index: 2; 
+            display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; 
         }
         .grid-piece { background-color: var(--piece-color); border: 1px solid #3a3a3a; transition: opacity 0.3s; }
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
         
-        /* Input Area - Tight spacing */
-        #input-area { 
-            display: flex; flex-direction: column; gap: 5px; width: 100%; 
-            flex-shrink: 0; margin-bottom: 0px; 
-        }
-        input[type="text"] { 
-            width: 100%; padding: 12px; font-size: 1.1rem; 
-            border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; 
-            background: white; color: #333; 
-        }
+        #input-area { display: flex; flex-direction: column; gap: 5px; width: 100%; flex-shrink: 0; margin-bottom: 0px; }
+        input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; }
         input[type="text"]:focus { border-color: var(--brand-gold); }
         #enter-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
         
         #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
-        /* --- MOBILE KEYBOARD FIX --- */
-        /* When screen height is small (keyboard open), hide the header to make room for image */
         @media (max-height: 500px) {
             .game-header { display: none !important; }
             #game-wrapper { margin-bottom: 5px; }
-            h1 { display: none; } /* Hide main title if visible */
+            h1 { display: none; }
         }
 
         /* --- LEADERBOARD --- */
@@ -239,9 +213,6 @@
         <div class="modal-box danger">
             <h1 style="color: var(--brand-red); margin-bottom: 10px; font-size: 1.8rem;">MISSION FAILED</h1>
             <p style="margin-bottom: 5px; color: #fff; font-size: 1rem; font-weight: bold;">FUEL DEPLETED</p>
-            <p style="margin-bottom: 20px; color: #ccc; font-size: 0.9rem;">
-                Your squadron has been grounded.
-            </p>
             <button class="gold-btn" onclick="confirmReset()">RETIRE & RESTART</button>
         </div>
     </div>
@@ -249,12 +220,10 @@
     <div id="restart-overlay">
         <div class="modal-box danger">
             <h1 style="color: var(--brand-red); margin-bottom: 10px;">SYSTEM PURGE</h1>
-            <p style="margin-bottom: 10px; color: #ccc; font-size: 0.9rem;">
-                WARNING: This will delete all fuel data and flight logs. 
-            </p>
+            <p style="margin-bottom: 10px; color: #ccc; font-size: 0.9rem;">Delete all data?</p>
             <div class="modal-buttons">
                 <button class="cancel-btn" onclick="cancelReset()">CANCEL</button>
-                <button class="danger-btn" onclick="confirmReset()">CONFIRM RESET</button>
+                <button class="danger-btn" onclick="confirmReset()">CONFIRM</button>
             </div>
         </div>
     </div>
@@ -264,19 +233,17 @@
             <div style="font-size: 3rem;">⛽</div>
             <h1 style="color: var(--gauge-green); margin-bottom: 10px;">SUPPLY DROP</h1>
             <p style="margin-bottom: 10px; color: #fff; font-size: 1.1rem;">
-                World Completed Successfully.
-                <br><br>
-                <strong>+2500 Liters Added</strong>
+                World Completed.<br>
+                <strong>+2000 Liters Added</strong>
             </p>
-            <button class="gold-btn" onclick="closeRefuel()">CONTINUE MISSION</button>
+            <button class="gold-btn" onclick="closeRefuel()">CONTINUE</button>
         </div>
     </div>
 
     <div id="login-overlay">
         <div class="modal-box">
             <h1 style="color: var(--brand-gold); margin-bottom: 10px;">IDENTIFY PILOT</h1>
-            <p style="margin-bottom: 20px; color: #888;">Enter callsign for global registry.</p>
-            <input type="text" id="callsign-input" placeholder="Callsign (e.g. Maverick)" maxlength="12" style="margin-bottom: 15px;">
+            <input type="text" id="callsign-input" placeholder="Callsign" maxlength="12" style="margin-bottom: 15px;">
             <button class="gold-btn" onclick="registerPilot()">CONFIRM IDENTITY</button>
         </div>
     </div>
@@ -289,9 +256,7 @@
                 <div class="fuel-label">Global Fuel Reserves</div>
                 <div class="fuel-value"><span id="total-fuel-display">4000</span></div>
                 <div class="fuel-bar-bg"><div class="fuel-bar-fill" id="fuel-bar"></div></div>
-                <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;">
-                    ⚠️ Need <span style="color:#fff">1500L</span> for Next World
-                </div>
+                <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;"></div>
             </div>
         </div>
 
@@ -351,36 +316,40 @@
             db = firebase.firestore();
         } catch(e) { console.error("Firebase Init Error", e); }
 
-        // --- AIRCRAFT DATABASE POOLS ---
+        // --- PLANES DATA ---
         const AIRCRAFT_DATA = {
-            standard: [
-                { image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
-                { image: "787.jpg", answers: ["787", "boeing 787", "dreamliner", "b787"], name: "Boeing 787" },
-                { image: "f22.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
-                { image: "antonov.jpg", answers: ["an225", "an-225", "mriya", "antonov 225"], name: "Antonov An-225" },
-                { image: "a350.jpg", answers: ["a350", "airbus a350", "350"], name: "Airbus A350" },
+            world1: [
                 { image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
                 { image: "a380.jpg", answers: ["airbus a380", "a380", "super jumbo", "380"], name: "Airbus A380" },
-                { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
+                { image: "787.jpg", answers: ["787", "boeing 787", "dreamliner", "b787"], name: "Boeing 787" },
                 { image: "e175.jpg", answers: ["e175", "embraer 175", "embraer e175", "e-175"], name: "Embraer E175" }
             ],
-            bonus: [] 
+            world2: [
+                { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
+                { image: "antonov.jpg", answers: ["an225", "an-225", "mriya", "antonov 225"], name: "Antonov An-225" },
+                { image: "a350.jpg", answers: ["a350", "airbus a350", "350"], name: "Airbus A350" }
+            ],
+            world3: [
+                { image: "f22.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
+                { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
+                { image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
+                { image: "p51.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" }
+            ]
         };
-        
-        const BOSS_1 = { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" };
-        const BOSS_2 = { image: "p51.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" };
 
         const STARTING_GLOBAL_FUEL = 4000;
-        const UNLOCK_THRESHOLD = 1500; 
-        const REFUEL_AMOUNT = 2500; 
+        const REFUEL_AMOUNT = 2000; 
         const TILE_COST = 15;
         const WRONG_GUESS_PENALTY = 200;
+        const CLASSIFIED_FUEL_COST = 500; // Required to unlock a classified level? No, standard logic.
 
         // --- STATE ---
         let globalState = {
             username: null,
             currentFuel: STARTING_GLOBAL_FUEL,
-            generatedLevels: []
+            levels: [],
+            world1Complete: false,
+            world2Complete: false
         };
         let activeLevelIdx = 0;
 
@@ -403,31 +372,31 @@
                 selectorView.classList.add('active');
                 pilotGreeting.textContent = `Pilot: ${globalState.username}`;
                 renderDashboard();
-                if (isGameComplete()) syncScoreToCloud();
+                if (isAllWorldsComplete()) syncScoreToCloud();
             }
             document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             document.getElementById('enter-btn').onclick = checkAnswer;
         };
 
-        // --- GENERATOR LOGIC ---
+        // --- GENERATOR ---
         function generateGameLevels() {
-            let pool = [...AIRCRAFT_DATA.standard];
-            pool = pool.sort(() => Math.random() - 0.5);
-            
-            const world1Planes = pool.slice(0, 4);
-            const world2Planes = pool.slice(4, 8); 
-
             let levels = [];
-            world1Planes.forEach(p => levels.push({ ...p, world: 1, isBonus: false, revealedTiles: [], completed: false }));
-            levels.push({ ...BOSS_1, world: 1, isBonus: true, revealedTiles: [], completed: false });
-
-            world2Planes.forEach(p => levels.push({ ...p, world: 2, isBonus: false, revealedTiles: [], completed: false }));
-            levels.push({ ...BOSS_2, world: 2, isBonus: true, revealedTiles: [], completed: false });
-
+            // World 1 (Random order)
+            let w1 = [...AIRCRAFT_DATA.world1].sort(() => Math.random() - 0.5);
+            w1.forEach(p => levels.push({ ...p, world: 1, isClassified: false, revealedTiles: [], completed: false }));
+            
+            // World 2 (Random order)
+            let w2 = [...AIRCRAFT_DATA.world2].sort(() => Math.random() - 0.5);
+            w2.forEach(p => levels.push({ ...p, world: 2, isClassified: false, revealedTiles: [], completed: false }));
+            
+            // World 3 (Random order - Classified)
+            let w3 = [...AIRCRAFT_DATA.world3].sort(() => Math.random() - 0.5);
+            w3.forEach(p => levels.push({ ...p, world: 3, isClassified: true, revealedTiles: [], completed: false }));
+            
             return levels;
         }
 
-        // --- APP LOGIC ---
+        // --- LOGIC ---
         function registerPilot() {
             const name = document.getElementById('callsign-input').value.trim();
             if (name.length < 2) { alert("Callsign too short."); return; }
@@ -441,7 +410,7 @@
 
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
-            db.collection("flight_scores_v4").doc(globalState.username).set({
+            db.collection("fuel_command_v1").doc(globalState.username).set({
                 name: globalState.username,
                 score: globalState.currentFuel,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -455,7 +424,7 @@
             list.innerHTML = "Fetching Data...";
             if(!db) { list.innerHTML = "⚠️ Database not connected."; return; }
 
-            db.collection("flight_scores_v4").orderBy("score", "desc").limit(20).get()
+            db.collection("fuel_command_v1").orderBy("score", "desc").limit(20).get()
             .then((querySnapshot) => {
                 let html = "";
                 let rank = 1;
@@ -464,7 +433,7 @@
                     const isMe = data.name === globalState.username;
                     html += `<div class="lb-row ${isMe ? 'me' : ''}"><div class="lb-rank">#${rank++}</div><div class="lb-name">${data.name}</div><div class="lb-fuel">${data.score}L</div></div>`;
                 });
-                if(html === "") html = "<div style='text-align:center; padding:20px; color:#777;'>No completed missions yet.<br>Be the first.</div>";
+                if(html === "") html = "<div style='text-align:center; padding:20px; color:#777;'>No completed missions yet.</div>";
                 list.innerHTML = html;
             });
         }
@@ -472,63 +441,92 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v19'); // Consistent version
+            const saved = localStorage.getItem('fuelQuizState_v21'); 
             if (saved) {
                 globalState = JSON.parse(saved);
-                if(!globalState.generatedLevels || globalState.generatedLevels.length === 0) {
-                    globalState.generatedLevels = generateGameLevels();
+                if(!globalState.levels || globalState.levels.length === 0) {
+                    globalState.levels = generateGameLevels();
                 }
             } else {
                 globalState.currentFuel = STARTING_GLOBAL_FUEL;
-                globalState.generatedLevels = generateGameLevels();
+                globalState.levels = generateGameLevels();
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v19', JSON.stringify(globalState)); }
-        function isGameComplete() { return globalState.generatedLevels.every(l => l.completed); }
+        function saveState() { localStorage.setItem('fuelQuizState_v21', JSON.stringify(globalState)); }
+        
+        function isWorldComplete(wNum) {
+            return globalState.levels.filter(l => l.world === wNum).every(l => l.completed);
+        }
+        function isAllWorldsComplete() {
+            return globalState.levels.every(l => l.completed);
+        }
 
         function renderDashboard() {
             document.getElementById('total-fuel-display').textContent = globalState.currentFuel;
             const pct = Math.min(100, Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100));
             document.getElementById('fuel-bar').style.width = pct + "%";
             
-            let color = "#2ecc71"; 
-            if (globalState.currentFuel < 2000) color = "#f39c12"; 
-            if (globalState.currentFuel < 1000) color = "#e74c3c"; 
-            document.getElementById('fuel-bar').style.backgroundColor = color;
-            document.querySelector('.fuel-value').style.color = color;
+            // Check World Status
+            const w1Done = isWorldComplete(1);
+            const w2Done = isWorldComplete(2);
+            
+            // Handle one-time fuel rewards (state flags prevent infinite loop)
+            if (w1Done && !globalState.world1Complete) {
+                globalState.world1Complete = true;
+                triggerRefuel();
+            }
+            if (w2Done && !globalState.world2Complete) {
+                globalState.world2Complete = true;
+                triggerRefuel();
+            }
 
             const unlockMsg = document.getElementById('unlock-message');
-            if (globalState.currentFuel >= UNLOCK_THRESHOLD) unlockMsg.innerHTML = "Bonus Access: <span style='color:#2ecc71'>GRANTED</span>";
-            else unlockMsg.innerHTML = `⚠️ Need <span style='color:#fff'>${UNLOCK_THRESHOLD}L</span> for Classified Ops`;
+            if(w2Done) unlockMsg.innerHTML = "Classified Ops: <span style='color:#2ecc71'>GRANTED</span>";
+            else if(w1Done) unlockMsg.innerHTML = "World 2: <span style='color:#2ecc71'>UNLOCKED</span>";
+            else unlockMsg.innerHTML = "Complete World 1 to advance";
 
             const listContainer = document.getElementById('level-list-container');
             listContainer.innerHTML = "";
 
-            const worlds = { 1: [], 2: [] };
-            globalState.generatedLevels.forEach((level, index) => {
+            // Group Levels
+            const worlds = { 1: [], 2: [], 3: [] };
+            globalState.levels.forEach((level, index) => {
                 worlds[level.world].push({ ...level, originalIndex: index });
             });
 
+            // Determine active folder
             let activeWorld = 1;
-            const firstIncomplete = globalState.generatedLevels.find(l => !l.completed);
-            if (firstIncomplete) activeWorld = firstIncomplete.world;
-            else activeWorld = 2;
+            if (w1Done) activeWorld = 2;
+            if (w2Done) activeWorld = 3;
 
-            [1, 2].forEach(worldNum => {
+            const worldNames = { 1: "Commercial Giants", 2: "Aviation Legends", 3: "Classified Ops" };
+
+            [1, 2, 3].forEach(worldNum => {
                 const levels = worlds[worldNum];
                 if(levels.length === 0) return;
 
                 const folder = document.createElement('div');
-                folder.className = `world-folder ${worldNum === activeWorld ? 'open' : ''}`;
+                // Lock Logic for Folder
+                let isFolderLocked = false;
+                if (worldNum === 2 && !w1Done) isFolderLocked = true;
+                if (worldNum === 3 && !w2Done) isFolderLocked = true;
+
+                folder.className = `world-folder ${isFolderLocked ? 'locked-world' : ''} ${worldNum === activeWorld ? 'open' : ''}`;
                 
                 const header = document.createElement('div');
                 header.className = 'world-header';
+                let lockIcon = isFolderLocked ? '🔒 ' : '';
                 header.innerHTML = `
-                    <div class="world-title-group"><h3>World ${worldNum}</h3></div>
+                    <div class="world-title-group">
+                        <h3>${lockIcon}World ${worldNum}</h3>
+                        <div class="world-subtitle">${worldNames[worldNum]}</div>
+                    </div>
                     <div class="arrow">▼</div>
                 `;
-                header.onclick = () => folder.classList.toggle('open');
+                if (!isFolderLocked) {
+                    header.onclick = () => folder.classList.toggle('open');
+                }
 
                 const content = document.createElement('div');
                 content.className = 'world-content';
@@ -537,31 +535,26 @@
                     const idx = levelData.originalIndex;
                     const card = document.createElement('div');
                     
-                    let isPrevDone = (idx === 0) ? true : globalState.generatedLevels[idx - 1].completed;
-                    let isBonusLocked = false;
-                    if (levelData.isBonus && globalState.currentFuel < UNLOCK_THRESHOLD) isBonusLocked = true;
-                    
-                    const isLocked = !isPrevDone || (levelData.isBonus && isBonusLocked && !levelData.completed);
+                    // Logic for World 3 individual locks (Fuel check?)
+                    // Let's say Classified levels need 1000L fuel to START
+                    let isFuelLocked = false;
+                    if (worldNum === 3 && globalState.currentFuel < 1000 && !levelData.completed) {
+                        isFuelLocked = true;
+                    }
 
-                    if (isLocked) {
+                    if (isFuelLocked) {
                         card.className = "level-strip locked";
-                        let title = `Flight ${idx+1}`;
-                        if(levelData.isBonus) title = "Classified";
-                        let reason = "LOCKED";
-                        if(levelData.isBonus && isPrevDone && isBonusLocked) reason = "LOW FUEL";
-                        
-                        card.innerHTML = `<div class="strip-icon">🔒</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">${reason}</div>`;
+                        card.innerHTML = `<div class="strip-icon">⛽</div><div class="strip-info"><div class="strip-title">Classified</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
                     } else {
-                        card.className = levelData.isBonus ? "level-strip bonus" : "level-strip";
+                        card.className = levelData.isClassified ? "level-strip classified" : "level-strip";
                         let icon = "✈️";
                         let title = `Flight ${idx + 1}`;
-                        if(levelData.isBonus) title = "Classified";
+                        if(levelData.isClassified) { icon = "🚀"; title = "Classified"; }
+
                         let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
                         
                         if (levelData.completed) {
                             title = levelData.name; icon = "★"; statusHtml = `<div class="strip-status status-done">Identified</div>`;
-                        } else if (levelData.isBonus) {
-                             icon = "🚀"; 
                         } else if (levelData.revealedTiles.length > 0) {
                             statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
                         }
@@ -584,15 +577,21 @@
             });
         }
 
+        function triggerRefuel() {
+            globalState.currentFuel += REFUEL_AMOUNT;
+            saveState();
+            setTimeout(() => { refuelOverlay.style.display = 'flex'; }, 500);
+        }
+
         function launchLevel(idx) {
             activeLevelIdx = idx;
-            const lState = globalState.generatedLevels[idx];
+            const lState = globalState.levels[idx];
             selectorView.classList.remove('active');
             gameView.classList.add('active');
 
             let title = `Flight ${idx+1}`;
             if (lState.completed) title = lState.name;
-            else if (lState.isBonus) title = "Classified";
+            else if (lState.isClassified) title = "Classified";
             
             document.getElementById('level-title').textContent = title;
             document.getElementById('mystery-image').src = lState.image;
@@ -621,7 +620,7 @@
         }
 
         function handleInteraction(e) {
-            const lState = globalState.generatedLevels[activeLevelIdx];
+            const lState = globalState.levels[activeLevelIdx];
             if (lState.completed || globalState.currentFuel <= 0) return;
             
             const hidden = Array.from(document.querySelectorAll('.grid-piece')).filter((el, idx) => !lState.revealedTiles.includes(idx));
@@ -645,7 +644,7 @@
         }
 
         function checkAnswer() {
-            const lState = globalState.generatedLevels[activeLevelIdx];
+            const lState = globalState.levels[activeLevelIdx];
             if (lState.completed || globalState.currentFuel <= 0) return;
 
             const guess = document.getElementById('guess-input').value.trim().toLowerCase();
@@ -668,22 +667,16 @@
             document.getElementById('message').textContent = msg;
             if (win) {
                 document.getElementById('message').className = "success";
-                const lState = globalState.generatedLevels[activeLevelIdx];
+                const lState = globalState.levels[activeLevelIdx];
                 lState.completed = true;
                 document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
                 triggerConfetti();
                 
                 document.getElementById('level-title').textContent = lState.name;
-                
-                if (lState.isBonus) {
-                    globalState.currentFuel += REFUEL_AMOUNT;
-                    setTimeout(() => { refuelOverlay.style.display = 'flex'; }, 1000);
-                }
-
                 saveState();
-                if (isGameComplete()) syncScoreToCloud();
+                if (isAllWorldsComplete()) syncScoreToCloud();
                 
-                if (!lState.isBonus) setTimeout(saveAndExit, 2000);
+                setTimeout(saveAndExit, 2000);
             } else {
                 document.getElementById('message').className = "fail";
             }

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cat Dash Level Editor</title>
+    <style>
+        body { margin: 0; padding: 0; background: #222; color: white; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar for Tools */
+        #sidebar {
+            width: 250px;
+            background: #333;
+            border-right: 2px solid #444;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            z-index: 10;
+        }
+
+        h2 { margin-top: 0; font-size: 18px; text-transform: uppercase; color: #aaa; }
+        
+        .tool-category { margin-bottom: 20px; }
+        .label { font-size: 12px; color: #888; margin-bottom: 5px; display: block; }
+
+        /* Draggable Items */
+        .palette-item {
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            border: 2px solid #555;
+            background: #444;
+            font-size: 24px;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+        .palette-item:active { cursor: grabbing; transform: scale(0.95); }
+        
+        /* Item Styles */
+        .block { background-color: #3498db; }
+        .spike { background-color: #e74c3c; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+        .coin { background-color: #f1c40f; border-radius: 50%; width: 40px; height: 40px; }
+        .finish { background: repeating-linear-gradient(45deg, #fff, #fff 10px, #000 10px, #000 20px); }
+
+        /* Buttons */
+        button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 5px;
+            border-radius: 4px;
+        }
+        button:hover { background: #2ecc71; }
+        button.clear { background: #c0392b; margin-top: auto; }
+        
+        /* Main Editor Area */
+        #editor-container {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden; /* We handle scroll via JS */
+            background: #1a1a1a;
+            cursor: grab;
+        }
+        #editor-container:active { cursor: grabbing; }
+
+        /* The Grid Canvas */
+        canvas { display: block; }
+        
+        /* Floating Output Box */
+        #output-modal {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 100;
+            width: 400px;
+        }
+        textarea { width: 100%; height: 150px; margin-top: 10px; font-family: monospace; }
+        #close-modal { background: #555; margin-top: 10px; }
+
+        /* Overlay for drag info */
+        #info { position: absolute; bottom: 10px; right: 20px; color: #666; font-size: 14px; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h2>Level Creator</h2>
+    
+    <div class="tool-category">
+        <span class="label">Ground & Walls</span>
+        <div class="palette-item block" draggable="true" data-type="block"></div>
+    </div>
+
+    <div class="tool-category">
+        <span class="label">Hazards</span>
+        <div class="palette-item spike" draggable="true" data-type="spike"></div>
+    </div>
+
+    <div class="tool-category">
+        <span class="label">Collectibles</span>
+        <div class="palette-item coin" draggable="true" data-type="coin"></div>
+    </div>
+    
+    <div class="tool-category">
+        <span class="label">Triggers</span>
+        <div class="palette-item finish" draggable="true" data-type="finish"></div>
+    </div>
+
+    <button onclick="exportLevel()">EXPORT JSON</button>
+    <button class="clear" onclick="clearLevel()">CLEAR LEVEL</button>
+</div>
+
+<div id="editor-container" id="container">
+    <canvas id="levelCanvas"></canvas>
+    <div id="info">Middle Click/Drag to Pan • Click to Delete</div>
+</div>
+
+<div id="output-modal">
+    <h3>Level JSON Data</h3>
+    <p>Copy this into your game code:</p>
+    <textarea id="json-output"></textarea>
+    <button id="close-modal" onclick="closeModal()">Close</button>
+</div>
+
+<script>
+    // --- CONFIGURATION ---
+    const TILE_SIZE = 50;
+    const VIEWPORT_HEIGHT_TILES = 12; // 12 tiles high (600px)
+    const LEVEL_LENGTH_TILES = 200;   // Level is 200 tiles long
+    
+    const canvas = document.getElementById('levelCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('editor-container');
+    
+    // State
+    let levelData = []; // Stores {x, y, type}
+    let cameraX = 0;
+    let isPanning = false;
+    let startPanX = 0;
+    
+    // Setup Canvas Size
+    function resize() {
+        canvas.height = container.clientHeight;
+        canvas.width = container.clientWidth;
+        draw();
+    }
+    window.addEventListener('resize', resize);
+    
+    // --- DRAG & DROP LOGIC ---
+    let draggedType = null;
+
+    // Handle sidebar items
+    document.querySelectorAll('.palette-item').forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+            draggedType = e.target.getAttribute('data-type');
+            e.dataTransfer.effectAllowed = "copy";
+        });
+    });
+
+    // Handle dropping onto canvas
+    container.addEventListener('dragover', (e) => {
+        e.preventDefault(); // Necessary to allow dropping
+    });
+
+    container.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        // Calculate Grid Position
+        // We add cameraX to get the absolute world position
+        const gridX = Math.floor((mouseX + cameraX) / TILE_SIZE);
+        const gridY = Math.floor(mouseY / TILE_SIZE);
+
+        if (gridY >= 0 && gridY < VIEWPORT_HEIGHT_TILES) {
+            placeObject(gridX, gridY, draggedType);
+        }
+    });
+
+    function placeObject(x, y, type) {
+        // Remove existing object at this spot if any
+        levelData = levelData.filter(obj => !(obj.x === x && obj.y === y));
+        
+        // Add new object
+        levelData.push({ x, y, type });
+        draw();
+    }
+
+    // --- MOUSE INTERACTION (Delete & Pan) ---
+    container.addEventListener('mousedown', (e) => {
+        // Middle mouse or Right click to pan
+        if (e.button === 1 || e.button === 2) {
+            isPanning = true;
+            startPanX = e.clientX + cameraX;
+            container.style.cursor = 'grabbing';
+            e.preventDefault();
+        } 
+        // Left click to delete
+        else if (e.button === 0) {
+            const rect = canvas.getBoundingClientRect();
+            const worldX = (e.clientX - rect.left) + cameraX;
+            const worldY = e.clientY - rect.top;
+            
+            const gridX = Math.floor(worldX / TILE_SIZE);
+            const gridY = Math.floor(worldY / TILE_SIZE);
+            
+            // Check if we clicked an object
+            const clickedIndex = levelData.findIndex(obj => obj.x === gridX && obj.y === gridY);
+            if (clickedIndex !== -1) {
+                levelData.splice(clickedIndex, 1);
+                draw();
+            }
+        }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (isPanning) {
+            cameraX = startPanX - e.clientX;
+            // Clamp camera
+            if (cameraX < 0) cameraX = 0;
+            // Limit scroll to level end
+            const maxScroll = (LEVEL_LENGTH_TILES * TILE_SIZE) - canvas.width;
+            if (cameraX > maxScroll) cameraX = maxScroll;
+            draw();
+        }
+    });
+
+    window.addEventListener('mouseup', () => {
+        isPanning = false;
+        container.style.cursor = 'grab';
+    });
+    
+    // Prevent context menu on right click
+    window.addEventListener('contextmenu', e => e.preventDefault());
+
+    // --- DRAWING ---
+    function draw() {
+        // Clear background
+        ctx.fillStyle = '#222';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Grid (Virtual)
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        
+        // Offset grid by camera
+        const offsetX = cameraX % TILE_SIZE;
+        const startCol = Math.floor(cameraX / TILE_SIZE);
+        const visibleCols = Math.ceil(canvas.width / TILE_SIZE) + 1;
+
+        for (let col = 0; col < visibleCols; col++) {
+            for (let row = 0; row < VIEWPORT_HEIGHT_TILES; row++) {
+                const x = (col * TILE_SIZE) - offsetX;
+                const y = row * TILE_SIZE;
+                ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
+            }
+        }
+
+        // Draw Ground Line
+        ctx.beginPath();
+        ctx.moveTo(0, (VIEWPORT_HEIGHT_TILES - 2) * TILE_SIZE); // Assuming floor is 2 tiles from bottom
+        ctx.strokeStyle = '#444';
+        ctx.stroke();
+
+        // Draw Objects
+        levelData.forEach(obj => {
+            // Only draw if visible
+            const screenX = (obj.x * TILE_SIZE) - cameraX;
+            const screenY = obj.y * TILE_SIZE;
+
+            if (screenX > -TILE_SIZE && screenX < canvas.width) {
+                ctx.save();
+                ctx.translate(screenX, screenY);
+
+                if (obj.type === 'block') {
+                    ctx.fillStyle = '#3498db';
+                    ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+                    ctx.strokeStyle = '#fff';
+                    ctx.strokeRect(2, 2, TILE_SIZE-4, TILE_SIZE-4);
+                } 
+                else if (obj.type === 'spike') {
+                    ctx.fillStyle = '#e74c3c';
+                    ctx.beginPath();
+                    ctx.moveTo(TILE_SIZE/2, 0);
+                    ctx.lineTo(0, TILE_SIZE);
+                    ctx.lineTo(TILE_SIZE, TILE_SIZE);
+                    ctx.fill();
+                }
+                else if (obj.type === 'coin') {
+                    ctx.fillStyle = '#f1c40f';
+                    ctx.beginPath();
+                    ctx.arc(TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE/3, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#f39c12';
+                    ctx.stroke();
+                }
+                else if (obj.type === 'finish') {
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE * 10); // Tall finish line
+                    ctx.fillStyle = '#000'; // Checkered pattern simplified
+                    ctx.fillText("FINISH", 5, 20);
+                }
+
+                ctx.restore();
+            }
+        });
+    }
+
+    // --- EXPORT/IMPORT ---
+    function exportLevel() {
+        const json = JSON.stringify(levelData);
+        document.getElementById('json-output').value = json;
+        document.getElementById('output-modal').style.display = 'block';
+    }
+
+    function clearLevel() {
+        if(confirm("Clear entire level?")) {
+            levelData = [];
+            draw();
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('output-modal').style.display = 'none';
+    }
+
+    // Init
+    resize();
+    // Pre-populate a floor for demo
+    for(let i=0; i<30; i++) {
+        levelData.push({x: i, y: 10, type: 'block'});
+    }
+    draw();
+
+</script>
+</body>
+</html>

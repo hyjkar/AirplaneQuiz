@@ -3,32 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pixel Art Pro</title>
+    <title>Pixel Art Pro: Masterpiece</title>
     <style>
         :root {
-            --bg-color: #e3f2fd;
-            --cell-size: 35px; /* Dynamic variable for Zoom */
+            --bg-color: #f0f4f8;
+            --grid-line: #e0e0e0;
         }
 
         body {
-            font-family: 'Chalkboard SE', 'Comic Sans MS', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             margin: 0;
             height: 100vh;
             width: 100vw;
-            overflow: hidden; /* Prevent body scroll, we handle it internally */
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             user-select: none;
             -webkit-user-select: none;
+            touch-action: none; /* We handle touches manually */
         }
 
-        /* --- Portrait Lock Screen --- */
+        /* --- Portrait Lock --- */
         #portrait-warning {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #1565c0;
+            background: #263238;
             color: white;
             z-index: 9999;
             flex-direction: column;
@@ -37,419 +38,472 @@
             text-align: center;
             padding: 20px;
         }
-
-        #portrait-warning h2 { font-size: 2rem; }
-        #portrait-warning .icon { font-size: 4rem; margin-bottom: 20px; animation: rotatePhone 2s infinite; }
-
         @media screen and (orientation: landscape) {
             #portrait-warning { display: flex; }
         }
 
-        @keyframes rotatePhone {
-            0% { transform: rotate(-90deg); }
-            50% { transform: rotate(0deg); }
-            100% { transform: rotate(-90deg); }
-        }
-
-        /* --- Main App Layout --- */
+        /* --- Header --- */
         header {
-            padding: 15px;
-            text-align: center;
+            height: 60px;
             background: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 0 20px;
+            z-index: 20;
         }
 
-        h1 { margin: 0; font-size: 1.2rem; color: #1565c0; }
-        
-        .header-btn {
-            background: #e3f2fd;
-            border: none;
-            color: #1565c0;
-            font-weight: bold;
-            padding: 8px 12px;
-            border-radius: 12px;
-            cursor: pointer;
+        h1 { margin: 0; font-size: 1.1rem; color: #37474f; font-weight: 700; letter-spacing: 0.5px; }
+
+        .btn-text {
+            border: none; background: none; color: #0288d1;
+            font-weight: 600; font-size: 0.9rem; cursor: pointer;
         }
 
-        /* --- The Viewport (Scrollable Area) --- */
+        /* --- Canvas Area --- */
         #viewport {
-            flex: 1; /* Takes remaining height */
+            flex: 1;
             position: relative;
-            overflow: auto; /* Native scrolling for panning */
-            -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
-            background-color: #cfd8dc;
-            display: flex;
-            align-items: center; /* Center grid when zoomed out */
-            justify-content: center;
-            padding: 50px; /* Space around the grid */
-            touch-action: pan-x pan-y;
+            background-color: #cfd8dc; /* Canvas background */
+            overflow: hidden;
+            cursor: grab;
         }
 
-        /* The Grid Wrapper */
+        #viewport:active { cursor: grabbing; }
+
+        /* The moving container */
+        #canvas-layer {
+            position: absolute;
+            top: 50%; left: 50%; /* Start centered */
+            transform-origin: center center;
+            /* We will control transform via JS */
+        }
+
+        /* The Grid */
         #grid {
             display: grid;
-            gap: 1px;
-            background-color: #90a4ae;
-            border: 10px solid white;
-            border-radius: 4px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            /* Important: Grid sizing is now controlled by CSS Variable */
-            grid-template-columns: repeat(var(--cols), var(--cell-size));
-            grid-template-rows: repeat(var(--rows), var(--cell-size));
-            transition: all 0.1s ease-out; /* Smooth zoom transition */
+            /* 32 cols x 20px base size = 640px width */
+            width: 640px; 
+            grid-template-columns: repeat(32, 1fr);
+            background-color: #fff;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border: 1px solid #ccc;
         }
 
         .pixel {
+            width: 20px; /* Base size */
+            height: 20px;
             background-color: white;
+            border: 1px solid var(--grid-line);
+            box-sizing: border-box;
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Font size scales with cell size */
-            font-size: calc(var(--cell-size) * 0.5); 
+            font-size: 8px;
             color: #ccc;
-            cursor: pointer;
         }
 
-        .pixel.filled { color: transparent; }
+        .pixel.filled {
+            color: transparent;
+            border-color: rgba(0,0,0,0.05);
+        }
+        
+        /* Highlight numbers when zoomed in */
+        .pixel.filled span { display: none; }
 
-        /* --- Controls Area (Bottom) --- */
+        /* --- Palette (Bottom) --- */
         #bottom-panel {
+            height: 90px;
             background: white;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            padding: 15px 10px 30px 10px; /* Extra bottom padding for iPad bar */
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
             z-index: 20;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        /* Zoom Controls */
-        #zoom-bar {
-            display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 15px;
-            color: #666;
-            font-size: 0.9rem;
+            padding: 0 15px;
+            padding-bottom: 10px; /* Safe area */
         }
 
-        input[type=range] {
-            width: 60%;
-            accent-color: #1565c0;
-            height: 25px; /* Taller touch target */
-        }
-
-        /* Palette */
         #palette {
             display: flex;
-            gap: 12px;
-            overflow-x: auto; /* Horizontal scroll if many colors */
+            gap: 15px;
+            overflow-x: auto;
+            width: 100%;
             padding: 5px;
-            justify-content: flex-start; /* Align left to allow scrolling */
             -webkit-overflow-scrolling: touch;
         }
         
-        /* Spacer to center palette items if they fit on screen */
-        .palette-spacer { margin: auto; display: flex; gap: 12px; }
-
         .color-btn {
             flex-shrink: 0;
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            border: 4px solid white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            border: 2px solid #eee;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            color: white;
             font-weight: bold;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-            transition: transform 0.2s, border-color 0.2s;
+            font-size: 1.1rem;
+            color: white;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
         }
 
         .color-btn.selected {
-            border-color: #333;
-            transform: scale(1.15);
+            transform: scale(1.1) translateY(-5px);
+            border: 3px solid #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         
-        .color-btn.light-text { color: #333; text-shadow: none; }
+        .color-btn.dark-text { color: #444; text-shadow: none; }
 
-        /* Win Overlay */
+        /* --- Win Overlay --- */
         #win-message {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.95);
             display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
+            flex-direction: column; align-items: center; justify-content: center;
+            z-index: 100; opacity: 0; transition: opacity 0.5s;
         }
-        
-        #win-message h2 { font-size: 3rem; color: #1565c0; margin-bottom: 20px;}
+        #win-message.visible { opacity: 1; }
+        #win-message h2 { font-size: 2.5rem; color: #37474f; }
         .big-btn {
-            background: #1565c0; color: white; border: none;
-            padding: 15px 40px; font-size: 1.5rem; border-radius: 50px;
-            font-family: inherit; box-shadow: 0 5px 0 #0d47a1;
+            background: #29b6f6; color: white; padding: 15px 40px;
+            font-size: 1.2rem; border-radius: 50px; border:none;
+            box-shadow: 0 5px 15px rgba(41, 182, 246, 0.4);
         }
-        .big-btn:active { transform: translateY(5px); box-shadow: none; }
 
     </style>
 </head>
 <body>
 
     <div id="portrait-warning">
-        <div class="icon">📱</div>
-        <h2>Please rotate your iPad</h2>
-        <p>This game works best in Portrait Mode.</p>
+        <div style="font-size: 3rem; margin-bottom: 20px">📱</div>
+        <h3>Please rotate to Portrait</h3>
     </div>
 
     <header>
-        <button class="header-btn" onclick="resetLevel()">↺ Reset</button>
-        <h1 id="level-title">Level 1</h1>
-        <button class="header-btn" onclick="nextLevel()">Next ➡</button>
+        <button class="btn-text" onclick="resetView()">Recenter</button>
+        <h1 id="level-title">Detailed Ragdoll</h1>
+        <button class="btn-text" onclick="resetLevel()">Reset</button>
     </header>
 
     <div id="viewport">
-        <div id="grid"></div>
+        <div id="canvas-layer">
+            <div id="grid"></div>
+        </div>
     </div>
 
     <div id="bottom-panel">
-        <div id="zoom-bar">
-            <span>🔎 -</span>
-            <input type="range" id="zoom-slider" min="20" max="70" value="35" oninput="updateZoom(this.value)">
-            <span>+ 🔍</span>
-        </div>
-        <div id="palette">
-            <div class="palette-spacer" id="palette-content"></div>
-        </div>
+        <div id="palette"></div>
     </div>
 
     <div id="win-message">
-        <h2>Beautiful! 🎨</h2>
-        <button class="big-btn" onclick="nextLevel()">Next Picture</button>
+        <h2>Masterpiece!</h2>
+        <button class="big-btn" onclick="hideWin()">Keep Painting</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
-        // --- DATA ---
-        const levels = [
-            {
-                name: "Ragdoll Cat (Detailed)",
-                rows: 20,
-                cols: 20,
-                palette: [
-                    { id: 1, color: '#5D4037', label: '1' }, // Dark Points
-                    { id: 2, color: '#FFF8E1', label: '2' }, // Cream Body
-                    { id: 3, color: '#FFB74D', label: '3' }, // Shading
-                    { id: 4, color: '#29B6F6', label: '4' }, // Eyes
-                    { id: 5, color: '#F48FB1', label: '5' }  // Nose
-                ],
-                data: [
-                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                    0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-                    0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,
-                    0,1,1,1,2,2,2,2,2,2,2,2,2,2,2,1,1,1,0,0,
-                    0,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,0,0,
-                    0,1,2,2,2,1,1,1,2,2,2,1,1,1,2,2,2,1,0,0,
-                    0,2,2,2,1,1,4,1,1,2,1,1,4,1,1,2,2,2,0,0,
-                    0,2,2,2,1,4,4,4,1,2,1,4,4,4,1,2,2,2,0,0,
-                    0,2,2,2,1,1,4,1,1,2,1,1,4,1,1,2,2,2,0,0,
-                    0,2,2,2,2,1,1,1,2,5,2,1,1,1,2,2,2,2,0,0,
-                    0,0,2,2,2,2,2,2,2,5,2,2,2,2,2,2,2,0,0,0,
-                    0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,
-                    0,0,2,2,2,2,3,3,3,3,3,3,2,2,2,2,0,0,0,1,
-                    0,2,2,2,3,3,3,3,3,3,3,3,3,3,2,2,2,0,1,1,
-                    0,2,2,3,3,3,3,3,3,3,3,3,3,3,3,2,2,1,1,1,
-                    0,2,2,3,3,3,3,3,3,3,3,3,3,3,3,2,2,1,1,1,
-                    1,2,2,3,3,3,3,3,3,3,3,3,3,3,3,2,2,1,1,1,
-                    1,1,2,2,3,3,3,3,3,3,3,3,3,3,2,2,1,1,1,0,
-                    1,1,1,2,2,3,3,3,3,3,3,3,3,2,2,1,1,1,0,0,
-                    1,1,1,1,2,2,2,2,2,2,2,2,2,2,1,1,1,0,0,0
-                ]
-            },
-            {
-                name: "Golden Snitch",
-                rows: 11,
-                cols: 15,
-                palette: [
-                    { id: 1, color: '#DAA520', label: '1' },
-                    { id: 2, color: '#B0C4DE', label: '2' },
-                    { id: 3, color: '#B8860B', label: '3' },
-                ],
-                data: [
-                   0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0,
-                   0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0,
-                   2, 2, 0, 2, 2, 0, 0, 0, 0, 0, 2, 2, 0, 2, 2,
-                   2, 0, 0, 0, 2, 0, 1, 1, 1, 0, 2, 0, 0, 0, 2,
-                   0, 0, 0, 0, 0, 1, 1, 3, 1, 1, 0, 0, 0, 0, 0,
-                   0, 0, 0, 0, 1, 1, 3, 3, 3, 1, 1, 0, 0, 0, 0,
-                   0, 0, 0, 0, 1, 1, 3, 3, 3, 1, 1, 0, 0, 0, 0,
-                   0, 0, 0, 0, 0, 1, 1, 3, 1, 1, 0, 0, 0, 0, 0,
-                   0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-                ]
+        
+        // --- DATA: 32x32 Detailed Ragdoll Cat ---
+        const catLevel = {
+            name: "Detailed Ragdoll",
+            rows: 32,
+            cols: 32,
+            palette: [
+                { id: 1, color: '#4E342E', label: '1' }, // Dark Brown (Ears/Points)
+                { id: 2, color: '#FFF8E1', label: '2' }, // Cream (Base Fur)
+                { id: 3, color: '#D7CCC8', label: '3' }, // Light Shadow (Fur shading)
+                { id: 4, color: '#039BE5', label: '4' }, // Sapphire Blue (Eyes)
+                { id: 5, color: '#F48FB1', label: '5' }, // Pink (Nose/Blush)
+                { id: 6, color: '#FFFFFF', label: '6' }  // Pure White (Highlights/Whiskers)
+            ],
+            // Compressed logic to generate the array (to save space)
+            // This builds a "Cute Ragdoll" 32x32 shape
+            data: [] 
+        };
+
+        // --- GENERATE PIXEL DATA ---
+        // I am generating the 1024 pixel array programmatically to ensure symmetry and detail
+        function generateCatData() {
+            let d = new Array(32 * 32).fill(0);
+            const set = (r, c, val) => {
+                if (r >= 0 && r < 32 && c >= 0 && c < 32) d[r * 32 + c] = val;
+            };
+            const fillRect = (r1, c1, r2, c2, val) => {
+                for(let r=r1; r<=r2; r++) for(let c=c1; c<=c2; c++) set(r,c,val);
+            };
+
+            // 1. Base Shape (Fluffy Circle Body)
+            // Head Area
+            for(let r=4; r<22; r++) {
+                for(let c=4; c<28; c++) {
+                    // Simple circle math
+                    let dx = c - 15.5; let dy = r - 14;
+                    if(dx*dx + dy*dy < 90) set(r,c, 2); // Cream Head
+                }
             }
-        ];
+            
+            // Body Area (Bottom)
+            for(let r=18; r<30; r++) {
+                for(let c=2; c<30; c++) {
+                    let dx = c - 15.5; let dy = r - 22;
+                    if(dx*dx*0.7 + dy*dy < 70) set(r,c, 2); // Cream Body
+                }
+            }
 
-        // --- GAME STATE ---
-        let currentLevelIndex = 0;
-        let selectedColorId = 1;
-        let gridState = [];
+            // 2. Ears (Dark Brown Points)
+            // Left Ear
+            set(4,6,1); set(5,5,1); set(5,6,1); set(5,7,1); 
+            set(6,4,1); set(6,5,1); set(6,6,1); set(6,7,1); set(6,8,1);
+            set(7,5,1); set(7,6,1); set(7,7,1); 
+            // Right Ear
+            set(4,25,1); set(5,24,1); set(5,25,1); set(5,26,1);
+            set(6,23,1); set(6,24,1); set(6,25,1); set(6,26,1); set(6,27,1);
+            set(7,24,1); set(7,25,1); set(7,26,1);
 
-        // --- DOM ELEMENTS ---
+            // 3. Face Details (The "Mask" shadow)
+            for(let r=10; r<18; r++) {
+                for(let c=10; c<22; c++) {
+                    if(d[r*32+c] === 2) set(r,c, 3); // Light Shadow mask
+                }
+            }
+
+            // 4. Eyes (Sapphire Blue with White Sparkle)
+            // Left Eye
+            fillRect(12, 10, 14, 12, 4); // Blue
+            set(12, 10, 6); // Sparkle
+            // Right Eye
+            fillRect(12, 19, 14, 21, 4); // Blue
+            set(12, 19, 6); // Sparkle
+
+            // 5. Nose & Mouth (Pink)
+            set(16, 15, 5); set(16, 16, 5); 
+            set(17, 16, 5); // Tiny nose tip
+
+            // 6. Whiskers (White)
+            set(16, 8, 6); set(16, 7, 6);
+            set(17, 8, 6); 
+            set(16, 23, 6); set(16, 24, 6);
+            set(17, 23, 6);
+
+            // 7. Tail (Dark Brown) curving out
+            set(25,28,1); set(26,29,1); set(27,29,1); set(28,29,1); set(29,28,1);
+
+            // 8. Paws (White)
+            fillRect(28, 12, 29, 14, 6); // Left Paw
+            fillRect(28, 17, 29, 19, 6); // Right Paw
+
+            catLevel.data = d;
+        }
+        generateCatData();
+
+        // --- APP STATE ---
+        let selectedColor = 1;
+        
+        // --- VIEWPORT STATE (Transform) ---
+        let state = {
+            scale: 1, // Current zoom level
+            panning: false,
+            pointX: 0,
+            pointY: 0,
+            startX: 0,
+            startY: 0,
+            cssX: -320, // Start centered (Grid width 640 / 2)
+            cssY: -320  // Start centered
+        };
+
+        const viewport = document.getElementById('viewport');
+        const canvasLayer = document.getElementById('canvas-layer');
         const gridEl = document.getElementById('grid');
-        const paletteContentEl = document.getElementById('palette-content');
-        const titleEl = document.getElementById('level-title');
-        const winMsg = document.getElementById('win-message');
-        const zoomSlider = document.getElementById('zoom-slider');
+        const paletteEl = document.getElementById('palette');
 
         // --- INIT ---
-        function initGame() {
-            loadLevel(currentLevelIndex);
-        }
-
-        // --- ZOOM LOGIC ---
-        function updateZoom(val) {
-            // Update the CSS variable --cell-size
-            document.documentElement.style.setProperty('--cell-size', val + 'px');
-        }
-
-        // --- LEVEL LOADING ---
-        function loadLevel(index) {
-            if (index >= levels.length) index = 0;
-            currentLevelIndex = index;
-            const level = levels[index];
-
-            titleEl.textContent = level.name;
-            winMsg.style.display = 'none';
+        function init() {
+            // Build Grid
             gridEl.innerHTML = '';
-            paletteContentEl.innerHTML = '';
-            gridState = new Array(level.data.length).fill(0);
-
-            // Set Grid Dimensions CSS
-            gridEl.style.setProperty('--cols', level.cols);
-            gridEl.style.setProperty('--rows', level.rows);
-            
-            // Set default zoom based on grid size (Start zoomed out for overview)
-            let startZoom = 35;
-            if(level.cols > 15) startZoom = 30;
-            zoomSlider.value = startZoom;
-            updateZoom(startZoom);
-
-            // Generate Grid Cells
-            level.data.forEach((colorId, i) => {
-                const cell = document.createElement('div');
-                cell.classList.add('pixel');
-                cell.dataset.index = i;
-                cell.dataset.targetColor = colorId;
-
-                if (colorId === 0) {
-                    cell.style.backgroundColor = 'transparent';
-                    cell.style.cursor = 'default';
+            catLevel.data.forEach((val, i) => {
+                const px = document.createElement('div');
+                px.className = 'pixel';
+                px.dataset.i = i;
+                px.dataset.c = val; // Target color
+                if(val === 0) {
+                    px.style.opacity = 0; // Invisible background
+                    px.style.pointerEvents = 'none';
                 } else {
-                    cell.textContent = colorId;
-                    // Add Pointer Events (better for touch)
-                    cell.addEventListener('pointerdown', handlePixelClick);
+                    px.textContent = val;
                 }
-                gridEl.appendChild(cell);
+                gridEl.appendChild(px);
             });
 
-            // Generate Palette
-            level.palette.forEach((p, i) => {
+            // Build Palette
+            paletteEl.innerHTML = '';
+            catLevel.palette.forEach((p, index) => {
                 const btn = document.createElement('div');
-                btn.classList.add('color-btn');
+                btn.className = 'color-btn';
+                if(['#FFF8E1', '#FFFFFF', '#D7CCC8'].includes(p.color)) btn.classList.add('dark-text');
                 btn.style.backgroundColor = p.color;
                 btn.textContent = p.label;
-                btn.dataset.id = p.id;
+                btn.onclick = () => selectColorBtn(p.id, btn);
+                paletteEl.appendChild(btn);
+                if(index === 0) selectColorBtn(p.id, btn);
+            });
 
-                if (['#FFF8E1', '#ffdbac', '#B0C4DE', '#eeba30', '#ffcccc'].includes(p.color)) {
-                    btn.classList.add('light-text');
+            // Initial Centering
+            resetView();
+            
+            // Attach Event Listeners
+            attachInputHandlers();
+        }
+
+        function selectColorBtn(id, btn) {
+            selectedColor = id;
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+
+        function resetView() {
+            state.scale = 0.8; // Start slightly zoomed out to see whole cat
+            state.cssX = 0;
+            state.cssY = 0;
+            updateTransform();
+        }
+
+        function updateTransform() {
+            // We use translate3d for hardware acceleration
+            canvasLayer.style.transform = `translate3d(${state.cssX}px, ${state.cssY}px, 0px) scale(${state.scale})`;
+        }
+
+        // --- INTERACTION ENGINE (The Pinch/Zoom Logic) ---
+        function attachInputHandlers() {
+            let startDist = 0;
+            let startScale = 1;
+
+            // 1. TOUCH EVENTS (iPad/Mobile)
+            viewport.addEventListener('touchstart', (e) => {
+                // Determine Interaction Type
+                if (e.touches.length === 2) {
+                    // PINCH START
+                    state.panning = false;
+                    startDist = Math.hypot(
+                        e.touches[0].pageX - e.touches[1].pageX,
+                        e.touches[0].pageY - e.touches[1].pageY
+                    );
+                    startScale = state.scale;
+                } else if (e.touches.length === 1) {
+                    // PAN START
+                    state.panning = true;
+                    state.startX = e.touches[0].clientX - state.cssX;
+                    state.startY = e.touches[0].clientY - state.cssY;
                 }
+            }, { passive: false });
 
-                btn.addEventListener('click', () => selectColor(p.id, btn));
-                paletteContentEl.appendChild(btn);
+            viewport.addEventListener('touchmove', (e) => {
+                e.preventDefault(); // Prevent Browser Scroll
 
-                if (i === 0) selectColor(p.id, btn);
+                if (e.touches.length === 2) {
+                    // PINCH MOVE
+                    const dist = Math.hypot(
+                        e.touches[0].pageX - e.touches[1].pageX,
+                        e.touches[0].pageY - e.touches[1].pageY
+                    );
+                    // Calculate new scale
+                    let newScale = startScale * (dist / startDist);
+                    // Clamp scale (0.5x to 4.0x)
+                    state.scale = Math.min(Math.max(0.5, newScale), 4);
+                    updateTransform();
+                } else if (e.touches.length === 1 && state.panning) {
+                    // PAN MOVE
+                    state.cssX = e.touches[0].clientX - state.startX;
+                    state.cssY = e.touches[0].clientY - state.startY;
+                    updateTransform();
+                }
+            }, { passive: false });
+
+            viewport.addEventListener('touchend', () => {
+                state.panning = false;
+            });
+
+            // 2. MOUSE EVENTS (Desktop/Debugging)
+            viewport.addEventListener('mousedown', (e) => {
+                state.panning = true;
+                state.startX = e.clientX - state.cssX;
+                state.startY = e.clientY - state.cssY;
+                viewport.style.cursor = 'grabbing';
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (!state.panning) return;
+                e.preventDefault();
+                state.cssX = e.clientX - state.startX;
+                state.cssY = e.clientY - state.startY;
+                updateTransform();
+            });
+            window.addEventListener('mouseup', () => {
+                state.panning = false;
+                viewport.style.cursor = 'grab';
+            });
+            // Mouse Wheel Zoom
+            viewport.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                state.scale = Math.min(Math.max(0.5, state.scale * delta), 4);
+                updateTransform();
+            }, { passive: false });
+
+            // 3. PAINTING EVENTS (Clicking Pixels)
+            // We use event delegation on the Grid
+            gridEl.addEventListener('pointerup', (e) => { // pointerup prevents firing while dragging
+                // Only paint if we weren't dragging/panning
+                if(state.panning) return; 
+
+                const pixel = e.target.closest('.pixel');
+                if (!pixel) return;
+
+                const targetColor = parseInt(pixel.dataset.c);
+                if (targetColor === selectedColor) {
+                    if (!pixel.classList.contains('filled')) {
+                        pixel.style.backgroundColor = catLevel.palette.find(c => c.id === targetColor).color;
+                        pixel.classList.add('filled');
+                        checkWin();
+                    }
+                } else {
+                    // Wiggle animation
+                    pixel.animate([
+                        { transform: 'translateX(0)' },
+                        { transform: 'translateX(5px)' },
+                        { transform: 'translateX(-5px)' },
+                        { transform: 'translateX(0)' }
+                    ], { duration: 200 });
+                }
             });
         }
 
-        function selectColor(id, btnElement) {
-            selectedColorId = id;
-            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
-            btnElement.classList.add('selected');
-        }
-
-        function handlePixelClick(e) {
-            e.preventDefault(); 
-            const cell = e.target;
-            const targetId = parseInt(cell.dataset.targetColor);
-            const index = parseInt(cell.dataset.index);
-
-            if (targetId === selectedColorId) {
-                if (!cell.classList.contains('filled')) {
-                    const colorObj = levels[currentLevelIndex].palette.find(c => c.id === targetId);
-                    cell.style.backgroundColor = colorObj.color;
-                    cell.classList.add('filled');
-                    gridState[index] = targetId; 
-                    checkWin();
-                }
-            } else {
-                // Shake effect using simple transform
-                // (Note: works best when not transitioning zoom, but acceptable here)
-                cell.style.opacity = "0.5";
-                setTimeout(() => cell.style.opacity = "1", 200);
-            }
-        }
-
+        // --- WIN LOGIC ---
         function checkWin() {
-            const level = levels[currentLevelIndex];
-            const totalPixelsToFill = level.data.filter(x => x !== 0).length;
-            const filledPixels = document.querySelectorAll('.pixel.filled').length;
-
-            if (filledPixels === totalPixelsToFill) {
-                setTimeout(() => {
-                    winMsg.style.display = 'flex';
-                    triggerConfetti();
-                }, 300);
+            const filled = document.querySelectorAll('.pixel.filled').length;
+            const total = catLevel.data.filter(x => x > 0).length;
+            if (filled === total) {
+                document.getElementById('win-message').style.display = 'flex';
+                setTimeout(() => document.getElementById('win-message').classList.add('visible'), 10);
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             }
         }
-
-        function nextLevel() {
-            currentLevelIndex++;
-            loadLevel(currentLevelIndex);
+        
+        function hideWin() {
+            document.getElementById('win-message').classList.remove('visible');
+            setTimeout(() => document.getElementById('win-message').style.display = 'none', 500);
         }
 
         function resetLevel() {
-            loadLevel(currentLevelIndex);
-        }
-
-        function triggerConfetti() {
-            const count = 200;
-            const defaults = { origin: { y: 0.7 }, zIndex: 1000 };
-
-            function fire(particleRatio, opts) {
-                confetti(Object.assign({}, defaults, opts, {
-                    particleCount: Math.floor(count * particleRatio)
-                }));
-            }
-
-            fire(0.25, { spread: 26, startVelocity: 55 });
-            fire(0.2, { spread: 60 });
-            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-            fire(0.1, { spread: 120, startVelocity: 45 });
+            document.querySelectorAll('.pixel').forEach(p => {
+                p.classList.remove('filled');
+                p.style.backgroundColor = 'white';
+            });
         }
 
         // Start
-        initGame();
+        init();
 
     </script>
 </body>

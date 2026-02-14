@@ -1,41 +1,224 @@
-// --- LEVEL DATA ---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Magical Pixel Art</title>
+    <style>
+        :root {
+            --bg-color: #f3e5f5; /* Light magical purple */
+            --grid-gap: 1px;
+        }
+
+        body {
+            font-family: 'Chalkboard SE', 'Comic Sans MS', sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none; /* Critical for iPad interaction */
+        }
+
+        h1 {
+            color: #4a148c;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
+        }
+
+        /* The Game Area */
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 95%;
+            max-width: 600px;
+        }
+
+        /* The Grid */
+        #grid {
+            display: grid;
+            gap: var(--grid-gap);
+            background-color: #999;
+            border: 4px solid #fff;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            touch-action: manipulation;
+            margin: 0 auto;
+        }
+
+        .pixel {
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px; /* Smaller font for numbers */
+            color: #ccc;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+
+        .pixel.filled {
+            color: transparent;
+            transform: scale(1.02);
+            box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
+        }
+
+        /* The Palette */
+        #palette {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 90%;
+        }
+
+        .color-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: white; /* Number color inside circle */
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .color-btn.selected {
+            border-color: #333;
+            transform: scale(1.15);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        /* Controls */
+        #controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button.nav-btn {
+            background: #7b1fa2; /* Deep purple */
+            border: none;
+            padding: 12px 24px;
+            color: white;
+            font-size: 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #4a148c;
+            transition: transform 0.1s;
+        }
+
+        button.nav-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        /* Win Message Overlay */
+        #win-message {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            display: none; /* Hidden by default */
+            backdrop-filter: blur(5px);
+        }
+
+        #win-message h2 {
+            color: #7b1fa2;
+            font-size: 3rem;
+            margin: 0 0 20px 0;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1 id="level-title">Level 1</h1>
+
+    <div id="game-container">
+        <div id="grid"></div>
+        <div id="palette"></div>
+    </div>
+
+    <div id="controls">
+        <button class="nav-btn" onclick="resetLevel()">↺ Reset</button>
+        <button class="nav-btn" onclick="nextLevel()">Next Level ➡</button>
+    </div>
+
+    <div id="win-message">
+        <h2>Magical! ✨</h2>
+        <button class="nav-btn" onclick="nextLevel()">Next Spell</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        // --- LEVEL DATA ---
         const levels = [
             {
                 name: "The Boy Wizard",
                 rows: 13,
                 cols: 13,
                 palette: [
-                    { id: 1, color: '#222222', label: '1' }, // Black (Hair/Glasses)
+                    { id: 1, color: '#222222', label: '1' }, // Black
                     { id: 2, color: '#ffdbac', label: '2' }, // Skin
-                    { id: 3, color: '#ffcc00', label: '3' }, // Lightning Scar (Bright Yellow)
-                    { id: 4, color: '#740001', label: '4' }, // Scarf Red
-                    { id: 5, color: '#eeba30', label: '5' }  // Scarf Gold
+                    { id: 3, color: '#ffcc00', label: '3' }, // Scar Yellow
+                    { id: 4, color: '#740001', label: '4' }, // Red
+                    { id: 5, color: '#eeba30', label: '5' }  // Gold
                 ],
-                // 13x13 Grid
                 data: [
-                    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, // Row 1: Hair top
-                    0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, // Row 2: Hair mid
-                    0, 1, 1, 2, 2, 2, 3, 3, 2, 1, 1, 1, 0, // Row 3: Hair/Forehead/Scar top
-                    0, 1, 2, 2, 2, 3, 3, 2, 2, 2, 1, 1, 0, // Row 4: Forehead/Scar mid
-                    0, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 1, 0, // Row 5: Scar tip
-                    0, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 0, // Row 6: Glasses Top
-                    0, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 0, // Row 7: Glasses/Eyes
-                    0, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 0, // Row 8: Glasses Bottom
-                    0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, // Row 9: Cheeks
-                    0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, // Row 10: Chin
-                    4, 4, 5, 5, 4, 4, 5, 5, 4, 4, 5, 5, 4, // Row 11: Scarf
-                    4, 4, 5, 5, 4, 4, 5, 5, 4, 4, 5, 5, 4, // Row 12: Scarf
-                    5, 5, 4, 4, 5, 5, 4, 4, 5, 5, 4, 4, 5  // Row 13: Scarf (Offset)
+                    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+                    0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+                    0, 1, 1, 2, 2, 2, 3, 3, 2, 1, 1, 1, 0,
+                    0, 1, 2, 2, 2, 3, 3, 2, 2, 2, 1, 1, 0,
+                    0, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 1, 0,
+                    0, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 0,
+                    0, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 0,
+                    0, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 0,
+                    0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0,
+                    0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0,
+                    4, 4, 5, 5, 4, 4, 5, 5, 4, 4, 5, 5, 4,
+                    4, 4, 5, 5, 4, 4, 5, 5, 4, 4, 5, 5, 4,
+                    5, 5, 4, 4, 5, 5, 4, 4, 5, 5, 4, 4, 5
                 ]
             },
             {
-                name: "Golden Snitch",
+                name: "The Golden Snitch",
                 rows: 11,
                 cols: 15,
                 palette: [
                     { id: 1, color: '#DAA520', label: '1' }, // Gold Body
-                    { id: 2, color: '#C0C0C0', label: '2' }, // Silver Wings
-                    { id: 3, color: '#B8860B', label: '3' }, // Dark Gold (Shadow)
+                    { id: 2, color: '#B0C4DE', label: '2' }, // Silver Wings
+                    { id: 3, color: '#B8860B', label: '3' }, // Dark Gold Shadow
                 ],
                 data: [
                    0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0,
@@ -48,7 +231,174 @@
                    0, 0, 0, 0, 0, 1, 1, 3, 1, 1, 0, 0, 0, 0, 0,
                    0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,
                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                ]
+            },
+            {
+                name: "The Heart (Warm Up)",
+                rows: 8,
+                cols: 8,
+                palette: [
+                    { id: 1, color: '#ff4d4d', label: '1' },
+                    { id: 2, color: '#ffcccc', label: '2' },
+                ],
+                data: [
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 1, 1, 0, 0, 1, 1, 0,
+                    1, 2, 2, 1, 1, 2, 2, 1,
+                    1, 2, 2, 2, 2, 2, 2, 1,
+                    0, 1, 2, 2, 2, 2, 1, 0,
+                    0, 0, 1, 2, 2, 1, 0, 0,
+                    0, 0, 0, 1, 1, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0
                 ]
             }
         ];
+
+        // --- GAME LOGIC ---
+        let currentLevelIndex = 0;
+        let selectedColorId = 1;
+        let gridState = []; 
+
+        const gridEl = document.getElementById('grid');
+        const paletteEl = document.getElementById('palette');
+        const titleEl = document.getElementById('level-title');
+        const winMsg = document.getElementById('win-message');
+
+        function initGame() {
+            loadLevel(currentLevelIndex);
+        }
+
+        function loadLevel(index) {
+            if (index >= levels.length) index = 0;
+            currentLevelIndex = index;
+            const level = levels[index];
+            
+            titleEl.textContent = level.name;
+            winMsg.style.display = 'none'; // Hide win screen
+            gridEl.innerHTML = '';
+            paletteEl.innerHTML = '';
+            gridState = new Array(level.data.length).fill(0);
+
+            // --- Dynamic Cell Sizing ---
+            // 8x8 grids get large cells (35px)
+            // 13x13 grids get smaller cells (25px) to fit iPad screens
+            let cellSize = 35; 
+            if (level.cols > 10) cellSize = 26; 
+            if (level.cols > 14) cellSize = 22;
+
+            gridEl.style.gridTemplateColumns = `repeat(${level.cols}, ${cellSize}px)`;
+            gridEl.style.gridTemplateRows = `repeat(${level.rows}, ${cellSize}px)`;
+
+            // Create Grid
+            level.data.forEach((colorId, i) => {
+                const cell = document.createElement('div');
+                cell.classList.add('pixel');
+                cell.dataset.index = i;
+                cell.dataset.targetColor = colorId;
+                
+                // Keep font size proportional
+                cell.style.fontSize = (cellSize * 0.5) + 'px';
+
+                if (colorId === 0) {
+                    cell.style.backgroundColor = 'transparent';
+                    cell.style.cursor = 'default';
+                } else {
+                    cell.textContent = colorId; 
+                    // Support touch events better
+                    cell.addEventListener('pointerdown', handlePixelClick);
+                }
+                gridEl.appendChild(cell);
+            });
+
+            // Create Palette
+            level.palette.forEach((p, i) => {
+                const btn = document.createElement('div');
+                btn.classList.add('color-btn');
+                btn.style.backgroundColor = p.color;
+                btn.textContent = p.label;
+                btn.dataset.id = p.id;
+                
+                // Adjust text color if background is very light
+                if (p.color === '#ffcccc' || p.color === '#ffdbac' || p.color === '#B0C4DE') {
+                    btn.style.color = '#333';
+                    btn.style.textShadow = 'none';
+                }
+
+                btn.addEventListener('click', () => selectColor(p.id, btn));
+                paletteEl.appendChild(btn);
+
+                if (i === 0) selectColor(p.id, btn);
+            });
+        }
+
+        function selectColor(id, btnElement) {
+            selectedColorId = id;
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+            btnElement.classList.add('selected');
+        }
+
+        function handlePixelClick(e) {
+            e.preventDefault(); 
+            const cell = e.target;
+            const targetId = parseInt(cell.dataset.targetColor);
+            const index = parseInt(cell.dataset.index);
+
+            // Logic: Is this the correct color?
+            if (targetId === selectedColorId) {
+                if (!cell.classList.contains('filled')) {
+                    const colorObj = levels[currentLevelIndex].palette.find(c => c.id === targetId);
+                    cell.style.backgroundColor = colorObj.color;
+                    cell.classList.add('filled');
+                    gridState[index] = targetId; 
+                    checkWin();
+                }
+            } else {
+                // Shake effect for wrong color
+                cell.style.transform = "translateX(4px)";
+                setTimeout(() => cell.style.transform = "translateX(0)", 150);
+            }
+        }
+
+        function checkWin() {
+            const level = levels[currentLevelIndex];
+            const totalPixelsToFill = level.data.filter(x => x !== 0).length;
+            const filledPixels = document.querySelectorAll('.pixel.filled').length;
+
+            if (filledPixels === totalPixelsToFill) {
+                setTimeout(() => {
+                    winMsg.style.display = 'flex'; // Use flex to center content
+                    triggerConfetti();
+                }, 300);
+            }
+        }
+
+        function nextLevel() {
+            currentLevelIndex++;
+            loadLevel(currentLevelIndex);
+        }
+
+        function resetLevel() {
+            loadLevel(currentLevelIndex);
+        }
+
+        function triggerConfetti() {
+            // Big burst
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            // Side bursts
+            setTimeout(() => {
+                 confetti({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0 } });
+                 confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 } });
+            }, 500);
+        }
+
+        // Start
+        initGame();
+
+    </script>
+</body>
+</html>

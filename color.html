@@ -3,53 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Magical Pixel Art</title>
+    <title>Pixel Art Pro</title>
     <style>
         :root {
-            --bg-color: #f3e5f5; /* Light magical purple */
-            --grid-gap: 1px;
+            --bg-color: #e3f2fd;
+            --cell-size: 35px; /* Dynamic variable for Zoom */
         }
 
         body {
             font-family: 'Chalkboard SE', 'Comic Sans MS', sans-serif;
             background-color: var(--bg-color);
+            margin: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* Prevent body scroll, we handle it internally */
             display: flex;
+            flex-direction: column;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* --- Portrait Lock Screen --- */
+        #portrait-warning {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #1565c0;
+            color: white;
+            z-index: 9999;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            touch-action: none; /* Critical for iPad interaction */
+            text-align: center;
+            padding: 20px;
         }
 
-        h1 {
-            color: #4a148c;
-            margin-bottom: 10px;
-            font-size: 1.8rem;
-            text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
+        #portrait-warning h2 { font-size: 2rem; }
+        #portrait-warning .icon { font-size: 4rem; margin-bottom: 20px; animation: rotatePhone 2s infinite; }
+
+        @media screen and (orientation: landscape) {
+            #portrait-warning { display: flex; }
         }
 
-        /* The Game Area */
-        #game-container {
+        @keyframes rotatePhone {
+            0% { transform: rotate(-90deg); }
+            50% { transform: rotate(0deg); }
+            100% { transform: rotate(-90deg); }
+        }
+
+        /* --- Main App Layout --- */
+        header {
+            padding: 15px;
+            text-align: center;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            gap: 15px;
-            width: 95%;
-            max-width: 600px;
         }
 
-        /* The Grid */
+        h1 { margin: 0; font-size: 1.2rem; color: #1565c0; }
+        
+        .header-btn {
+            background: #e3f2fd;
+            border: none;
+            color: #1565c0;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        /* --- The Viewport (Scrollable Area) --- */
+        #viewport {
+            flex: 1; /* Takes remaining height */
+            position: relative;
+            overflow: auto; /* Native scrolling for panning */
+            -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
+            background-color: #cfd8dc;
+            display: flex;
+            align-items: center; /* Center grid when zoomed out */
+            justify-content: center;
+            padding: 50px; /* Space around the grid */
+            touch-action: pan-x pan-y;
+        }
+
+        /* The Grid Wrapper */
         #grid {
             display: grid;
-            gap: var(--grid-gap);
-            background-color: #999;
-            border: 4px solid #fff;
-            border-radius: 8px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-            touch-action: manipulation;
-            margin: 0 auto;
+            gap: 1px;
+            background-color: #90a4ae;
+            border: 10px solid white;
+            border-radius: 4px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            /* Important: Grid sizing is now controlled by CSS Variable */
+            grid-template-columns: repeat(var(--cols), var(--cell-size));
+            grid-template-rows: repeat(var(--rows), var(--cell-size));
+            transition: all 0.1s ease-out; /* Smooth zoom transition */
         }
 
         .pixel {
@@ -57,145 +108,149 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px; /* Smaller font for numbers */
+            /* Font size scales with cell size */
+            font-size: calc(var(--cell-size) * 0.5); 
             color: #ccc;
             cursor: pointer;
-            user-select: none;
-            transition: transform 0.1s;
         }
 
-        .pixel.filled {
-            color: transparent;
-            transform: scale(1.02);
-            box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
-        }
+        .pixel.filled { color: transparent; }
 
-        /* The Palette */
-        #palette {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            padding: 10px 20px;
+        /* --- Controls Area (Bottom) --- */
+        #bottom-panel {
             background: white;
-            border-radius: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            max-width: 90%;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            padding: 15px 10px 30px 10px; /* Extra bottom padding for iPad bar */
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .color-btn {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            cursor: pointer;
-            font-size: 1.1rem;
-            color: white; /* Number color inside circle */
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-            font-weight: bold;
+        /* Zoom Controls */
+        #zoom-bar {
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 15px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        input[type=range] {
+            width: 60%;
+            accent-color: #1565c0;
+            height: 25px; /* Taller touch target */
+        }
+
+        /* Palette */
+        #palette {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto; /* Horizontal scroll if many colors */
+            padding: 5px;
+            justify-content: flex-start; /* Align left to allow scrolling */
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Spacer to center palette items if they fit on screen */
+        .palette-spacer { margin: auto; display: flex; gap: 12px; }
+
+        .color-btn {
+            flex-shrink: 0;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: 4px solid white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
             transition: transform 0.2s, border-color 0.2s;
         }
 
         .color-btn.selected {
             border-color: #333;
             transform: scale(1.15);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            z-index: 10;
         }
+        
+        .color-btn.light-text { color: #333; text-shadow: none; }
 
-        /* Controls */
-        #controls {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-        }
-
-        button.nav-btn {
-            background: #7b1fa2; /* Deep purple */
-            border: none;
-            padding: 12px 24px;
-            color: white;
-            font-size: 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            font-family: inherit;
-            box-shadow: 0 4px 0 #4a148c;
-            transition: transform 0.1s;
-        }
-
-        button.nav-btn:active {
-            transform: translateY(4px);
-            box-shadow: none;
-        }
-
-        /* Win Message Overlay */
+        /* Win Overlay */
         #win-message {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 100;
-            display: none; /* Hidden by default */
-            backdrop-filter: blur(5px);
         }
-
-        #win-message h2 {
-            color: #7b1fa2;
-            font-size: 3rem;
-            margin: 0 0 20px 0;
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        
+        #win-message h2 { font-size: 3rem; color: #1565c0; margin-bottom: 20px;}
+        .big-btn {
+            background: #1565c0; color: white; border: none;
+            padding: 15px 40px; font-size: 1.5rem; border-radius: 50px;
+            font-family: inherit; box-shadow: 0 5px 0 #0d47a1;
         }
-
-        @keyframes popIn {
-            from { transform: scale(0); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        .big-btn:active { transform: translateY(5px); box-shadow: none; }
 
     </style>
 </head>
 <body>
 
-    <h1 id="level-title">Level 1</h1>
-
-    <div id="game-container">
-        <div id="grid"></div>
-        <div id="palette"></div>
+    <div id="portrait-warning">
+        <div class="icon">📱</div>
+        <h2>Please rotate your iPad</h2>
+        <p>This game works best in Portrait Mode.</p>
     </div>
 
-    <div id="controls">
-        <button class="nav-btn" onclick="resetLevel()">↺ Reset</button>
-        <button class="nav-btn" onclick="nextLevel()">Next Level ➡</button>
+    <header>
+        <button class="header-btn" onclick="resetLevel()">↺ Reset</button>
+        <h1 id="level-title">Level 1</h1>
+        <button class="header-btn" onclick="nextLevel()">Next ➡</button>
+    </header>
+
+    <div id="viewport">
+        <div id="grid"></div>
+    </div>
+
+    <div id="bottom-panel">
+        <div id="zoom-bar">
+            <span>🔎 -</span>
+            <input type="range" id="zoom-slider" min="20" max="70" value="35" oninput="updateZoom(this.value)">
+            <span>+ 🔍</span>
+        </div>
+        <div id="palette">
+            <div class="palette-spacer" id="palette-content"></div>
+        </div>
     </div>
 
     <div id="win-message">
-        <h2>Magical! ✨</h2>
-        <button class="nav-btn" onclick="nextLevel()">Next Spell</button>
+        <h2>Beautiful! 🎨</h2>
+        <button class="big-btn" onclick="nextLevel()">Next Picture</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
     <script>
-        // --- LEVEL DATA ---
-const levels = [
+        // --- DATA ---
+        const levels = [
             {
-                name: "Ragdoll Cat (Hard)",
+                name: "Ragdoll Cat (Detailed)",
                 rows: 20,
                 cols: 20,
                 palette: [
-                    { id: 1, color: '#5D4037', label: '1' }, // Dark Brown (Points)
-                    { id: 2, color: '#FFF8E1', label: '2' }, // Cream (Main Fur)
-                    { id: 3, color: '#FFB74D', label: '3' }, // Beige (Shading)
-                    { id: 4, color: '#29B6F6', label: '4' }, // Blue (Eyes)
-                    { id: 5, color: '#F48FB1', label: '5' }  // Pink (Nose)
+                    { id: 1, color: '#5D4037', label: '1' }, // Dark Points
+                    { id: 2, color: '#FFF8E1', label: '2' }, // Cream Body
+                    { id: 3, color: '#FFB74D', label: '3' }, // Shading
+                    { id: 4, color: '#29B6F6', label: '4' }, // Eyes
+                    { id: 5, color: '#F48FB1', label: '5' }  // Nose
                 ],
-                // 20x20 Grid
                 data: [
                     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                     0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
@@ -220,107 +275,107 @@ const levels = [
                 ]
             },
             {
-                name: "The Boy Wizard",
-                rows: 13,
-                cols: 13,
+                name: "Golden Snitch",
+                rows: 11,
+                cols: 15,
                 palette: [
-                    { id: 1, color: '#222222', label: '1' }, 
-                    { id: 2, color: '#ffdbac', label: '2' }, 
-                    { id: 3, color: '#ffcc00', label: '3' }, 
-                    { id: 4, color: '#740001', label: '4' }, 
-                    { id: 5, color: '#eeba30', label: '5' }  
+                    { id: 1, color: '#DAA520', label: '1' },
+                    { id: 2, color: '#B0C4DE', label: '2' },
+                    { id: 3, color: '#B8860B', label: '3' },
                 ],
                 data: [
-                    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
-                    0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
-                    0, 1, 1, 2, 2, 2, 3, 3, 2, 1, 1, 1, 0,
-                    0, 1, 2, 2, 2, 3, 3, 2, 2, 2, 1, 1, 0,
-                    0, 1, 2, 2, 2, 2, 3, 2, 2, 2, 2, 1, 0,
-                    0, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 0,
-                    0, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 0,
-                    0, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 0,
-                    0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0,
-                    0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0,
-                    4, 4, 5, 5, 4, 4, 5, 5, 4, 4, 5, 5, 4,
-                    4, 4, 5, 5, 4, 4, 5, 5, 4, 4, 5, 5, 4,
-                    5, 5, 4, 4, 5, 5, 4, 4, 5, 5, 4, 4, 5
+                   0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0,
+                   0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0,
+                   2, 2, 0, 2, 2, 0, 0, 0, 0, 0, 2, 2, 0, 2, 2,
+                   2, 0, 0, 0, 2, 0, 1, 1, 1, 0, 2, 0, 0, 0, 2,
+                   0, 0, 0, 0, 0, 1, 1, 3, 1, 1, 0, 0, 0, 0, 0,
+                   0, 0, 0, 0, 1, 1, 3, 3, 3, 1, 1, 0, 0, 0, 0,
+                   0, 0, 0, 0, 1, 1, 3, 3, 3, 1, 1, 0, 0, 0, 0,
+                   0, 0, 0, 0, 0, 1, 1, 3, 1, 1, 0, 0, 0, 0, 0,
+                   0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                 ]
             }
         ];
 
-        // --- GAME LOGIC ---
+        // --- GAME STATE ---
         let currentLevelIndex = 0;
         let selectedColorId = 1;
-        let gridState = []; 
+        let gridState = [];
 
+        // --- DOM ELEMENTS ---
         const gridEl = document.getElementById('grid');
-        const paletteEl = document.getElementById('palette');
+        const paletteContentEl = document.getElementById('palette-content');
         const titleEl = document.getElementById('level-title');
         const winMsg = document.getElementById('win-message');
+        const zoomSlider = document.getElementById('zoom-slider');
 
+        // --- INIT ---
         function initGame() {
             loadLevel(currentLevelIndex);
         }
 
+        // --- ZOOM LOGIC ---
+        function updateZoom(val) {
+            // Update the CSS variable --cell-size
+            document.documentElement.style.setProperty('--cell-size', val + 'px');
+        }
+
+        // --- LEVEL LOADING ---
         function loadLevel(index) {
             if (index >= levels.length) index = 0;
             currentLevelIndex = index;
             const level = levels[index];
-            
+
             titleEl.textContent = level.name;
-            winMsg.style.display = 'none'; // Hide win screen
+            winMsg.style.display = 'none';
             gridEl.innerHTML = '';
-            paletteEl.innerHTML = '';
+            paletteContentEl.innerHTML = '';
             gridState = new Array(level.data.length).fill(0);
 
-            // --- Dynamic Cell Sizing ---
-            let cellSize = 35; // Standard size
+            // Set Grid Dimensions CSS
+            gridEl.style.setProperty('--cols', level.cols);
+            gridEl.style.setProperty('--rows', level.rows);
             
-            // If the grid is wide, shrink the cells
-            if (level.cols > 10) cellSize = 26; 
-            if (level.cols > 14) cellSize = 22;
-            if (level.cols > 18) cellSize = 18; // New size for the 20x20 Cat
+            // Set default zoom based on grid size (Start zoomed out for overview)
+            let startZoom = 35;
+            if(level.cols > 15) startZoom = 30;
+            zoomSlider.value = startZoom;
+            updateZoom(startZoom);
 
-            gridEl.style.gridTemplateColumns = `repeat(${level.cols}, ${cellSize}px)`;
-            gridEl.style.gridTemplateRows = `repeat(${level.rows}, ${cellSize}px)`;
-
-            // Create Grid
+            // Generate Grid Cells
             level.data.forEach((colorId, i) => {
                 const cell = document.createElement('div');
                 cell.classList.add('pixel');
                 cell.dataset.index = i;
                 cell.dataset.targetColor = colorId;
-                
-                // Keep font size proportional
-                cell.style.fontSize = (cellSize * 0.5) + 'px';
 
                 if (colorId === 0) {
                     cell.style.backgroundColor = 'transparent';
                     cell.style.cursor = 'default';
                 } else {
-                    cell.textContent = colorId; 
-                    // Support touch events better
+                    cell.textContent = colorId;
+                    // Add Pointer Events (better for touch)
                     cell.addEventListener('pointerdown', handlePixelClick);
                 }
                 gridEl.appendChild(cell);
             });
 
-            // Create Palette
+            // Generate Palette
             level.palette.forEach((p, i) => {
                 const btn = document.createElement('div');
                 btn.classList.add('color-btn');
                 btn.style.backgroundColor = p.color;
                 btn.textContent = p.label;
                 btn.dataset.id = p.id;
-                
-                // Adjust text color if background is very light
-                if (p.color === '#ffcccc' || p.color === '#ffdbac' || p.color === '#B0C4DE') {
-                    btn.style.color = '#333';
-                    btn.style.textShadow = 'none';
+
+                if (['#FFF8E1', '#ffdbac', '#B0C4DE', '#eeba30', '#ffcccc'].includes(p.color)) {
+                    btn.classList.add('light-text');
                 }
 
                 btn.addEventListener('click', () => selectColor(p.id, btn));
-                paletteEl.appendChild(btn);
+                paletteContentEl.appendChild(btn);
 
                 if (i === 0) selectColor(p.id, btn);
             });
@@ -338,7 +393,6 @@ const levels = [
             const targetId = parseInt(cell.dataset.targetColor);
             const index = parseInt(cell.dataset.index);
 
-            // Logic: Is this the correct color?
             if (targetId === selectedColorId) {
                 if (!cell.classList.contains('filled')) {
                     const colorObj = levels[currentLevelIndex].palette.find(c => c.id === targetId);
@@ -348,9 +402,10 @@ const levels = [
                     checkWin();
                 }
             } else {
-                // Shake effect for wrong color
-                cell.style.transform = "translateX(4px)";
-                setTimeout(() => cell.style.transform = "translateX(0)", 150);
+                // Shake effect using simple transform
+                // (Note: works best when not transitioning zoom, but acceptable here)
+                cell.style.opacity = "0.5";
+                setTimeout(() => cell.style.opacity = "1", 200);
             }
         }
 
@@ -361,7 +416,7 @@ const levels = [
 
             if (filledPixels === totalPixelsToFill) {
                 setTimeout(() => {
-                    winMsg.style.display = 'flex'; // Use flex to center content
+                    winMsg.style.display = 'flex';
                     triggerConfetti();
                 }, 300);
             }
@@ -377,17 +432,20 @@ const levels = [
         }
 
         function triggerConfetti() {
-            // Big burst
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 }
-            });
-            // Side bursts
-            setTimeout(() => {
-                 confetti({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0 } });
-                 confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 } });
-            }, 500);
+            const count = 200;
+            const defaults = { origin: { y: 0.7 }, zIndex: 1000 };
+
+            function fire(particleRatio, opts) {
+                confetti(Object.assign({}, defaults, opts, {
+                    particleCount: Math.floor(count * particleRatio)
+                }));
+            }
+
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
         }
 
         // Start

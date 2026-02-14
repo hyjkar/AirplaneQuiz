@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pixel Art Pro: Masterpiece</title>
+    <title>Pixel Pro: Ultra Detail</title>
     <style>
         :root {
-            --bg-color: #f0f4f8;
-            --grid-line: #e0e0e0;
+            --bg-color: #ECEFF1;
+            --panel-color: #ffffff;
+            --accent: #2962FF;
         }
 
         body {
@@ -21,171 +22,164 @@
             flex-direction: column;
             user-select: none;
             -webkit-user-select: none;
-            touch-action: none; /* We handle touches manually */
-        }
-
-        /* --- Portrait Lock --- */
-        #portrait-warning {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #263238;
-            color: white;
-            z-index: 9999;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-        }
-        @media screen and (orientation: landscape) {
-            #portrait-warning { display: flex; }
+            touch-action: none; /* Disables browser native zoom/scroll completely */
         }
 
         /* --- Header --- */
         header {
-            height: 60px;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            height: 50px;
+            background: var(--panel-color);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             padding: 0 20px;
-            z-index: 20;
-        }
-
-        h1 { margin: 0; font-size: 1.1rem; color: #37474f; font-weight: 700; letter-spacing: 0.5px; }
-
-        .btn-text {
-            border: none; background: none; color: #0288d1;
-            font-weight: 600; font-size: 0.9rem; cursor: pointer;
-        }
-
-        /* --- Canvas Area --- */
-        #viewport {
-            flex: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            z-index: 50;
             position: relative;
-            background-color: #cfd8dc; /* Canvas background */
-            overflow: hidden;
+        }
+
+        h1 { font-size: 1rem; color: #455A64; font-weight: 700; margin: 0; }
+        .stat { font-size: 0.8rem; color: #90A4AE; font-weight: 600; }
+
+        /* --- Viewport (The Canvas Window) --- */
+        #viewport {
+            flex: 1; /* Fills remaining space */
+            position: relative;
+            background-color: #cfd8dc;
+            overflow: hidden; /* We handle movement via JS transform */
             cursor: grab;
+            z-index: 10; /* Lower than UI */
         }
 
         #viewport:active { cursor: grabbing; }
 
-        /* The moving container */
+        /* The Canvas Layer (Moving Part) */
         #canvas-layer {
             position: absolute;
-            top: 50%; left: 50%; /* Start centered */
-            transform-origin: center center;
-            /* We will control transform via JS */
+            top: 0; left: 0;
+            transform-origin: 0 0; /* Easier math for zooming */
+            will-change: transform;
         }
 
         /* The Grid */
         #grid {
             display: grid;
-            /* 32 cols x 20px base size = 640px width */
-            width: 640px; 
-            grid-template-columns: repeat(32, 1fr);
-            background-color: #fff;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-            border: 1px solid #ccc;
+            /* 64 cols * 12px = 768px width */
+            width: 768px; 
+            grid-template-columns: repeat(64, 12px); 
+            grid-template-rows: repeat(64, 12px);
+            background-color: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
 
         .pixel {
-            width: 20px; /* Base size */
-            height: 20px;
-            background-color: white;
-            border: 1px solid var(--grid-line);
+            width: 12px;
+            height: 12px;
+            background-color: rgba(255,255,255,0.8);
             box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8px;
+            border: 1px solid #eee; /* Very faint lines */
+            position: relative;
+        }
+
+        /* Number Hint - Only visible when zoomed in */
+        .pixel::after {
+            content: attr(data-c);
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 6px;
             color: #ccc;
+            opacity: 0; /* Hidden by default to reduce clutter */
         }
 
-        .pixel.filled {
-            color: transparent;
-            border-color: rgba(0,0,0,0.05);
-        }
-        
-        /* Highlight numbers when zoomed in */
-        .pixel.filled span { display: none; }
+        /* Show numbers when we add a specific class to body (Zoom Level High) */
+        body.zoomed-in .pixel:not(.filled)::after { opacity: 1; }
 
-        /* --- Palette (Bottom) --- */
-        #bottom-panel {
-            height: 90px;
-            background: white;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
-            z-index: 20;
+        .pixel.filled { 
+            border-color: transparent; 
+        }
+        .pixel.filled::after { display: none; }
+
+
+        /* --- UI Controls (Bottom) --- */
+        #ui-layer {
+            height: 110px;
+            background: var(--panel-color);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+            z-index: 100; /* Highest priority - fixes "Can't Click" bug */
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 20px; /* Safe area for iPhone home bar */
+        }
+
+        #palette-scroll {
+            flex: 1;
+            overflow-x: auto;
             display: flex;
             align-items: center;
             padding: 0 15px;
-            padding-bottom: 10px; /* Safe area */
-        }
-
-        #palette {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            width: 100%;
-            padding: 5px;
+            gap: 12px;
             -webkit-overflow-scrolling: touch;
         }
-        
-        .color-btn {
-            flex-shrink: 0;
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            border: 2px solid #eee;
+
+        .color-group {
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 5px;
+        }
+        .color-label { font-size: 9px; color: #999; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;}
+
+        .swatch {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            border: 2px solid #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            font-size: 14px;
+            transition: transform 0.1s;
+            flex-shrink: 0;
+        }
+
+        .swatch.active {
+            transform: scale(1.15) translateY(-5px);
+            border: 3px solid #333;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 101;
+        }
+
+        /* --- Loading / Win Overlay --- */
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: white;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
-            transition: transform 0.1s;
+            transition: opacity 0.5s;
         }
-
-        .color-btn.selected {
-            transform: scale(1.1) translateY(-5px);
-            border: 3px solid #333;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
+        #overlay.hidden { pointer-events: none; opacity: 0; }
         
-        .color-btn.dark-text { color: #444; text-shadow: none; }
-
-        /* --- Win Overlay --- */
-        #win-message {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.95);
-            display: none;
-            flex-direction: column; align-items: center; justify-content: center;
-            z-index: 100; opacity: 0; transition: opacity 0.5s;
+        .loader {
+            width: 40px; height: 40px;
+            border: 4px solid #eee; border-top: 4px solid var(--accent);
+            border-radius: 50%; animation: spin 1s linear infinite;
         }
-        #win-message.visible { opacity: 1; }
-        #win-message h2 { font-size: 2.5rem; color: #37474f; }
-        .big-btn {
-            background: #29b6f6; color: white; padding: 15px 40px;
-            font-size: 1.2rem; border-radius: 50px; border:none;
-            box-shadow: 0 5px 15px rgba(41, 182, 246, 0.4);
-        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
     </style>
 </head>
-<body>
-
-    <div id="portrait-warning">
-        <div style="font-size: 3rem; margin-bottom: 20px">📱</div>
-        <h3>Please rotate to Portrait</h3>
-    </div>
+<body class="">
 
     <header>
-        <button class="btn-text" onclick="resetView()">Recenter</button>
-        <h1 id="level-title">Detailed Ragdoll</h1>
-        <button class="btn-text" onclick="resetLevel()">Reset</button>
+        <h1>Pixel Pro: Ragdoll</h1>
+        <div class="stat"><span id="progress">0</span>%</div>
     </header>
 
     <div id="viewport">
@@ -194,315 +188,361 @@
         </div>
     </div>
 
-    <div id="bottom-panel">
-        <div id="palette"></div>
+    <div id="ui-layer">
+        <div id="palette-scroll">
+            </div>
     </div>
 
-    <div id="win-message">
-        <h2>Masterpiece!</h2>
-        <button class="big-btn" onclick="hideWin()">Keep Painting</button>
+    <div id="overlay">
+        <h2 id="overlay-text">Generating Artwork...</h2>
+        <div class="loader" id="loader"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
-        
-        // --- DATA: 32x32 Detailed Ragdoll Cat ---
-        const catLevel = {
-            name: "Detailed Ragdoll",
-            rows: 32,
-            cols: 32,
-            palette: [
-                { id: 1, color: '#4E342E', label: '1' }, // Dark Brown (Ears/Points)
-                { id: 2, color: '#FFF8E1', label: '2' }, // Cream (Base Fur)
-                { id: 3, color: '#D7CCC8', label: '3' }, // Light Shadow (Fur shading)
-                { id: 4, color: '#039BE5', label: '4' }, // Sapphire Blue (Eyes)
-                { id: 5, color: '#F48FB1', label: '5' }, // Pink (Nose/Blush)
-                { id: 6, color: '#FFFFFF', label: '6' }  // Pure White (Highlights/Whiskers)
-            ],
-            // Compressed logic to generate the array (to save space)
-            // This builds a "Cute Ragdoll" 32x32 shape
-            data: [] 
+        // --- 1. CONFIG & STATE ---
+        const CONFIG = {
+            rows: 64,
+            cols: 64,
+            pixelSize: 12 // Actual pixels on screen (before zoom)
         };
 
-        // --- GENERATE PIXEL DATA ---
-        // I am generating the 1024 pixel array programmatically to ensure symmetry and detail
-        function generateCatData() {
-            let d = new Array(32 * 32).fill(0);
-            const set = (r, c, val) => {
-                if (r >= 0 && r < 32 && c >= 0 && c < 32) d[r * 32 + c] = val;
-            };
-            const fillRect = (r1, c1, r2, c2, val) => {
-                for(let r=r1; r<=r2; r++) for(let c=c1; c<=c2; c++) set(r,c,val);
-            };
+        const STATE = {
+            scale: 0.5, // Start zoomed out
+            x: 0,       // Pan X
+            y: 0,       // Pan Y
+            selectedColor: 1,
+            isDragging: false,
+            pixelsFilled: 0,
+            totalPixels: 0
+        };
 
-            // 1. Base Shape (Fluffy Circle Body)
-            // Head Area
-            for(let r=4; r<22; r++) {
-                for(let c=4; c<28; c++) {
-                    // Simple circle math
-                    let dx = c - 15.5; let dy = r - 14;
-                    if(dx*dx + dy*dy < 90) set(r,c, 2); // Cream Head
-                }
-            }
+        // --- 2. ADVANCED PALETTE (Gradients) ---
+        // We use ranges of colors to create gradients (e.g., 10-19 is Cream Gradient)
+        const PALETTE = [
+            // CREAM (Body Gradient) - IDs 1-5
+            { id: 1, hex: '#FFF8E1', label: 'Cream Light' },
+            { id: 2, hex: '#FFECB3', label: 'Cream Mid' },
+            { id: 3, hex: '#FFE082', label: 'Cream Dark' },
+            { id: 4, hex: '#FFD54F', label: 'Cream Shadow' },
             
-            // Body Area (Bottom)
-            for(let r=18; r<30; r++) {
-                for(let c=2; c<30; c++) {
-                    let dx = c - 15.5; let dy = r - 22;
-                    if(dx*dx*0.7 + dy*dy < 70) set(r,c, 2); // Cream Body
+            // BROWN (Points/Ears Gradient) - IDs 5-8
+            { id: 5, hex: '#8D6E63', label: 'Brown Light' },
+            { id: 6, hex: '#6D4C41', label: 'Brown Mid' },
+            { id: 7, hex: '#4E342E', label: 'Brown Dark' },
+            { id: 8, hex: '#3E2723', label: 'Brown Deep' },
+
+            // EYES (Blue Gradient) - IDs 9-11
+            { id: 9, hex: '#80D8FF', label: 'Eye Light' },
+            { id: 10, hex: '#00B0FF', label: 'Eye Mid' },
+            { id: 11, hex: '#0091EA', label: 'Eye Deep' },
+
+            // PINK (Nose)
+            { id: 12, hex: '#F48FB1', label: 'Pink' },
+            
+            // WHITE (Highlights)
+            { id: 13, hex: '#FFFFFF', label: 'White' }
+        ];
+
+        // --- 3. PROCEDURAL ART ENGINE ---
+        // This generates a unique, detailed image every time
+        const pixelData = new Uint8Array(CONFIG.rows * CONFIG.cols);
+
+        function generateArt() {
+            const CX = CONFIG.cols / 2;
+            const CY = CONFIG.rows / 2;
+
+            for (let y = 0; y < CONFIG.rows; y++) {
+                for (let x = 0; x < CONFIG.cols; x++) {
+                    let color = 0;
+                    
+                    // Normalized coordinates (-1 to 1)
+                    let nx = (x - CX) / (CONFIG.cols / 2);
+                    let ny = (y - CY) / (CONFIG.rows / 2);
+                    
+                    // Distance from center
+                    let d = Math.sqrt(nx*nx + ny*ny);
+                    
+                    // Noise function (simulated) for fur texture
+                    let noise = Math.sin(x * 0.5) * Math.cos(y * 0.5) * 0.1;
+
+                    // --- SHAPE LOGIC ---
+
+                    // 1. MAIN BODY (Fluffy Oval)
+                    if (d + noise < 0.85) {
+                        // Gradient Logic: Darker at bottom, lighter at top
+                        if (y < 20) color = 1;      // Lightest top
+                        else if (y < 35) color = 2; // Mid
+                        else if (y < 50) color = 3; // Darker
+                        else color = 4;             // Shadow bottom
+                    }
+
+                    // 2. FACE MASK (The Ragdoll "Mask")
+                    // An oval in the middle
+                    let maskD = Math.sqrt(nx*nx*1.5 + (ny+0.1)*(ny+0.1));
+                    if (maskD < 0.35) {
+                        // Gradient for face
+                        if (y < 28) color = 5;
+                        else if (y < 35) color = 6;
+                        else color = 7;
+                    }
+
+                    // 3. EARS (Triangles)
+                    // Left Ear
+                    if (y < 20 && x < 25 && x > 10) {
+                        if (x + y < 35 && -x + y < 5) color = 7;
+                    }
+                    // Right Ear
+                    if (y < 20 && x > 38 && x < 54) {
+                        if (-x + y < -28 && x + y < 80) color = 7; 
+                    }
+
+                    // 4. EYES (Detailed)
+                    // Left Eye
+                    if (x > 22 && x < 29 && y > 28 && y < 34) {
+                        color = 11; // Deep Blue border
+                        if (x > 23 && x < 28 && y > 29 && y < 33) color = 10; // Mid
+                        if (x === 24 && y === 30) color = 13; // White Sparkle
+                    }
+                    // Right Eye
+                    if (x > 35 && x < 42 && y > 28 && y < 34) {
+                        color = 11;
+                        if (x > 36 && x < 41 && y > 29 && y < 33) color = 10;
+                        if (x === 37 && y === 30) color = 13; // White Sparkle
+                    }
+
+                    // 5. NOSE
+                    if (x > 30 && x < 34 && y > 38 && y < 41) color = 12;
+
+                    // 6. WHISKERS (White lines)
+                    if ((y===42 || y===44) && ((x>15 && x<28) || (x>36 && x<49))) color = 13;
+
+                    // Save pixel
+                    if (color !== 0) {
+                        pixelData[y * CONFIG.cols + x] = color;
+                        STATE.totalPixels++;
+                    }
                 }
             }
-
-            // 2. Ears (Dark Brown Points)
-            // Left Ear
-            set(4,6,1); set(5,5,1); set(5,6,1); set(5,7,1); 
-            set(6,4,1); set(6,5,1); set(6,6,1); set(6,7,1); set(6,8,1);
-            set(7,5,1); set(7,6,1); set(7,7,1); 
-            // Right Ear
-            set(4,25,1); set(5,24,1); set(5,25,1); set(5,26,1);
-            set(6,23,1); set(6,24,1); set(6,25,1); set(6,26,1); set(6,27,1);
-            set(7,24,1); set(7,25,1); set(7,26,1);
-
-            // 3. Face Details (The "Mask" shadow)
-            for(let r=10; r<18; r++) {
-                for(let c=10; c<22; c++) {
-                    if(d[r*32+c] === 2) set(r,c, 3); // Light Shadow mask
-                }
-            }
-
-            // 4. Eyes (Sapphire Blue with White Sparkle)
-            // Left Eye
-            fillRect(12, 10, 14, 12, 4); // Blue
-            set(12, 10, 6); // Sparkle
-            // Right Eye
-            fillRect(12, 19, 14, 21, 4); // Blue
-            set(12, 19, 6); // Sparkle
-
-            // 5. Nose & Mouth (Pink)
-            set(16, 15, 5); set(16, 16, 5); 
-            set(17, 16, 5); // Tiny nose tip
-
-            // 6. Whiskers (White)
-            set(16, 8, 6); set(16, 7, 6);
-            set(17, 8, 6); 
-            set(16, 23, 6); set(16, 24, 6);
-            set(17, 23, 6);
-
-            // 7. Tail (Dark Brown) curving out
-            set(25,28,1); set(26,29,1); set(27,29,1); set(28,29,1); set(29,28,1);
-
-            // 8. Paws (White)
-            fillRect(28, 12, 29, 14, 6); // Left Paw
-            fillRect(28, 17, 29, 19, 6); // Right Paw
-
-            catLevel.data = d;
         }
-        generateCatData();
 
-        // --- APP STATE ---
-        let selectedColor = 1;
-        
-        // --- VIEWPORT STATE (Transform) ---
-        let state = {
-            scale: 1, // Current zoom level
-            panning: false,
-            pointX: 0,
-            pointY: 0,
-            startX: 0,
-            startY: 0,
-            cssX: -320, // Start centered (Grid width 640 / 2)
-            cssY: -320  // Start centered
-        };
-
-        const viewport = document.getElementById('viewport');
-        const canvasLayer = document.getElementById('canvas-layer');
-        const gridEl = document.getElementById('grid');
-        const paletteEl = document.getElementById('palette');
-
-        // --- INIT ---
+        // --- 4. RENDER ENGINE ---
         function init() {
+            generateArt();
+            const grid = document.getElementById('grid');
+            const paletteScroll = document.getElementById('palette-scroll');
+
             // Build Grid
-            gridEl.innerHTML = '';
-            catLevel.data.forEach((val, i) => {
+            const fragment = document.createDocumentFragment();
+            for (let i = 0; i < pixelData.length; i++) {
                 const px = document.createElement('div');
                 px.className = 'pixel';
-                px.dataset.i = i;
-                px.dataset.c = val; // Target color
-                if(val === 0) {
-                    px.style.opacity = 0; // Invisible background
+                if (pixelData[i] === 0) {
+                    px.style.opacity = 0; // Transparent/Hidden
                     px.style.pointerEvents = 'none';
                 } else {
-                    px.textContent = val;
+                    px.dataset.i = i;
+                    px.dataset.c = pixelData[i];
                 }
-                gridEl.appendChild(px);
-            });
+                fragment.appendChild(px);
+            }
+            grid.appendChild(fragment);
 
             // Build Palette
-            paletteEl.innerHTML = '';
-            catLevel.palette.forEach((p, index) => {
+            PALETTE.forEach(p => {
                 const btn = document.createElement('div');
-                btn.className = 'color-btn';
-                if(['#FFF8E1', '#FFFFFF', '#D7CCC8'].includes(p.color)) btn.classList.add('dark-text');
-                btn.style.backgroundColor = p.color;
-                btn.textContent = p.label;
-                btn.onclick = () => selectColorBtn(p.id, btn);
-                paletteEl.appendChild(btn);
-                if(index === 0) selectColorBtn(p.id, btn);
+                btn.className = 'swatch';
+                btn.textContent = p.id;
+                btn.style.backgroundColor = p.hex;
+                // Dark text for light colors
+                if(['#FFF8E1','#FFECB3','#FFFFFF'].includes(p.hex)) {
+                    btn.style.color = '#333';
+                    btn.style.textShadow = 'none';
+                }
+                
+                btn.onclick = (e) => {
+                    e.stopPropagation(); // Stop click from triggering canvas logic
+                    selectColor(p.id, btn);
+                };
+                paletteScroll.appendChild(btn);
+
+                if(p.id === 1) selectColor(1, btn);
             });
 
-            // Initial Centering
-            resetView();
+            // Center Viewport
+            centerCanvas();
             
-            // Attach Event Listeners
-            attachInputHandlers();
+            // Remove Loader
+            setTimeout(() => {
+                document.getElementById('overlay').classList.add('hidden');
+            }, 800);
         }
 
-        function selectColorBtn(id, btn) {
-            selectedColor = id;
-            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
+        function selectColor(id, btn) {
+            STATE.selectedColor = id;
+            document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+            btn.classList.add('active');
         }
 
-        function resetView() {
-            state.scale = 0.8; // Start slightly zoomed out to see whole cat
-            state.cssX = 0;
-            state.cssY = 0;
+        function centerCanvas() {
+            // Calculate center
+            const viewportW = document.getElementById('viewport').clientWidth;
+            const viewportH = document.getElementById('viewport').clientHeight;
+            const gridW = CONFIG.cols * CONFIG.pixelSize; // 768
+            const gridH = CONFIG.rows * CONFIG.pixelSize; // 768
+
+            STATE.x = (viewportW - gridW) / 2;
+            STATE.y = (viewportH - gridH) / 2;
+            STATE.scale = 0.5; // Start zoomed out
             updateTransform();
         }
 
+        // --- 5. INTERACTION ENGINE (The Logic Fix) ---
+        const viewport = document.getElementById('viewport');
+        const canvasLayer = document.getElementById('canvas-layer');
+        
+        let pointers = [];
+        let startDist = 0;
+        let startScale = 1;
+        let lastX = 0;
+        let lastY = 0;
+        let isDragGesture = false;
+
+        // Pointer Events (Unified Touch/Mouse)
+        viewport.addEventListener('pointerdown', (e) => {
+            pointers.push(e);
+            isDragGesture = false; // Reset gesture assumption
+            
+            if (pointers.length === 1) {
+                lastX = e.clientX;
+                lastY = e.clientY;
+            } else if (pointers.length === 2) {
+                // Pinch Start
+                startDist = getDist(pointers[0], pointers[1]);
+                startScale = STATE.scale;
+            }
+        });
+
+        viewport.addEventListener('pointermove', (e) => {
+            // Update pointer record
+            const index = pointers.findIndex(p => p.pointerId === e.pointerId);
+            if (index !== -1) pointers[index] = e;
+
+            if (pointers.length === 1) {
+                // PANNING
+                const dx = e.clientX - lastX;
+                const dy = e.clientY - lastY;
+                
+                // Threshold to detect drag vs tap
+                if (Math.abs(dx) > 3 || Math.abs(dy) > 3) isDragGesture = true;
+
+                if (isDragGesture) {
+                    STATE.x += dx;
+                    STATE.y += dy;
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                    updateTransform();
+                }
+
+            } else if (pointers.length === 2) {
+                // ZOOMING
+                isDragGesture = true;
+                const dist = getDist(pointers[0], pointers[1]);
+                const scaleDiff = dist / startDist;
+                
+                // Limit Zoom
+                STATE.scale = Math.min(Math.max(0.2, startScale * scaleDiff), 4.0);
+                updateTransform();
+            }
+        });
+
+        viewport.addEventListener('pointerup', (e) => {
+            // --- TAP DETECTION ---
+            // If we released a pointer, and we DID NOT drag, it's a click!
+            if (!isDragGesture && pointers.length === 1) {
+                handleTap(e);
+            }
+
+            // Remove pointer
+            pointers = pointers.filter(p => p.pointerId !== e.pointerId);
+            
+            // Reset gesture logic if no fingers left
+            if (pointers.length === 0) isDragGesture = false;
+        });
+        
+        // Helper: Distance between two pointers
+        function getDist(p1, p2) {
+            return Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
+        }
+
         function updateTransform() {
-            // We use translate3d for hardware acceleration
-            canvasLayer.style.transform = `translate3d(${state.cssX}px, ${state.cssY}px, 0px) scale(${state.scale})`;
+            // Apply CSS transform
+            canvasLayer.style.transform = `translate3d(${STATE.x}px, ${STATE.y}px, 0) scale(${STATE.scale})`;
+            
+            // Toggle "High Detail" mode based on zoom level
+            if (STATE.scale > 1.8) document.body.classList.add('zoomed-in');
+            else document.body.classList.remove('zoomed-in');
         }
 
-        // --- INTERACTION ENGINE (The Pinch/Zoom Logic) ---
-        function attachInputHandlers() {
-            let startDist = 0;
-            let startScale = 1;
+        // --- 6. GAME LOGIC ---
+        function handleTap(e) {
+            // We need to calculate which pixel was clicked based on the Transform
+            // Get click coordinates relative to the Viewport
+            const rect = viewport.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
 
-            // 1. TOUCH EVENTS (iPad/Mobile)
-            viewport.addEventListener('touchstart', (e) => {
-                // Determine Interaction Type
-                if (e.touches.length === 2) {
-                    // PINCH START
-                    state.panning = false;
-                    startDist = Math.hypot(
-                        e.touches[0].pageX - e.touches[1].pageX,
-                        e.touches[0].pageY - e.touches[1].pageY
-                    );
-                    startScale = state.scale;
-                } else if (e.touches.length === 1) {
-                    // PAN START
-                    state.panning = true;
-                    state.startX = e.touches[0].clientX - state.cssX;
-                    state.startY = e.touches[0].clientY - state.cssY;
-                }
-            }, { passive: false });
+            // Convert to Canvas Coordinates (undo translate & scale)
+            const canvasX = (clickX - STATE.x) / STATE.scale;
+            const canvasY = (clickY - STATE.y) / STATE.scale;
 
-            viewport.addEventListener('touchmove', (e) => {
-                e.preventDefault(); // Prevent Browser Scroll
+            // Convert to Grid Index
+            const col = Math.floor(canvasX / CONFIG.pixelSize);
+            const row = Math.floor(canvasY / CONFIG.pixelSize);
 
-                if (e.touches.length === 2) {
-                    // PINCH MOVE
-                    const dist = Math.hypot(
-                        e.touches[0].pageX - e.touches[1].pageX,
-                        e.touches[0].pageY - e.touches[1].pageY
-                    );
-                    // Calculate new scale
-                    let newScale = startScale * (dist / startDist);
-                    // Clamp scale (0.5x to 4.0x)
-                    state.scale = Math.min(Math.max(0.5, newScale), 4);
-                    updateTransform();
-                } else if (e.touches.length === 1 && state.panning) {
-                    // PAN MOVE
-                    state.cssX = e.touches[0].clientX - state.startX;
-                    state.cssY = e.touches[0].clientY - state.startY;
-                    updateTransform();
-                }
-            }, { passive: false });
+            // Bounds check
+            if (col < 0 || col >= CONFIG.cols || row < 0 || row >= CONFIG.rows) return;
 
-            viewport.addEventListener('touchend', () => {
-                state.panning = false;
-            });
+            // Find the specific pixel element at this index
+            const index = row * CONFIG.cols + col;
+            // We use querySelector on the dataset to find the exact div
+            const pixelEl = document.querySelector(`.pixel[data-i="${index}"]`);
 
-            // 2. MOUSE EVENTS (Desktop/Debugging)
-            viewport.addEventListener('mousedown', (e) => {
-                state.panning = true;
-                state.startX = e.clientX - state.cssX;
-                state.startY = e.clientY - state.cssY;
-                viewport.style.cursor = 'grabbing';
-            });
-            window.addEventListener('mousemove', (e) => {
-                if (!state.panning) return;
-                e.preventDefault();
-                state.cssX = e.clientX - state.startX;
-                state.cssY = e.clientY - state.startY;
-                updateTransform();
-            });
-            window.addEventListener('mouseup', () => {
-                state.panning = false;
-                viewport.style.cursor = 'grab';
-            });
-            // Mouse Wheel Zoom
-            viewport.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                const delta = e.deltaY > 0 ? 0.9 : 1.1;
-                state.scale = Math.min(Math.max(0.5, state.scale * delta), 4);
-                updateTransform();
-            }, { passive: false });
-
-            // 3. PAINTING EVENTS (Clicking Pixels)
-            // We use event delegation on the Grid
-            gridEl.addEventListener('pointerup', (e) => { // pointerup prevents firing while dragging
-                // Only paint if we weren't dragging/panning
-                if(state.panning) return; 
-
-                const pixel = e.target.closest('.pixel');
-                if (!pixel) return;
-
-                const targetColor = parseInt(pixel.dataset.c);
-                if (targetColor === selectedColor) {
-                    if (!pixel.classList.contains('filled')) {
-                        pixel.style.backgroundColor = catLevel.palette.find(c => c.id === targetColor).color;
-                        pixel.classList.add('filled');
-                        checkWin();
-                    }
+            if (pixelEl && !pixelEl.classList.contains('filled')) {
+                const targetColor = parseInt(pixelEl.dataset.c);
+                if (targetColor === STATE.selectedColor) {
+                    // Correct!
+                    const colorHex = PALETTE.find(p => p.id === targetColor).hex;
+                    pixelEl.style.backgroundColor = colorHex;
+                    pixelEl.classList.add('filled');
+                    STATE.pixelsFilled++;
+                    checkWin();
                 } else {
-                    // Wiggle animation
-                    pixel.animate([
-                        { transform: 'translateX(0)' },
-                        { transform: 'translateX(5px)' },
-                        { transform: 'translateX(-5px)' },
-                        { transform: 'translateX(0)' }
-                    ], { duration: 200 });
+                    // Wrong - Flash Red
+                    pixelEl.style.backgroundColor = '#ffcdd2';
+                    setTimeout(() => pixelEl.style.backgroundColor = 'rgba(255,255,255,0.8)', 200);
                 }
-            });
-        }
-
-        // --- WIN LOGIC ---
-        function checkWin() {
-            const filled = document.querySelectorAll('.pixel.filled').length;
-            const total = catLevel.data.filter(x => x > 0).length;
-            if (filled === total) {
-                document.getElementById('win-message').style.display = 'flex';
-                setTimeout(() => document.getElementById('win-message').classList.add('visible'), 10);
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             }
         }
-        
-        function hideWin() {
-            document.getElementById('win-message').classList.remove('visible');
-            setTimeout(() => document.getElementById('win-message').style.display = 'none', 500);
+
+        function checkWin() {
+            // Update percent
+            const pct = Math.floor((STATE.pixelsFilled / STATE.totalPixels) * 100);
+            document.getElementById('progress').innerText = pct;
+
+            if (STATE.pixelsFilled === STATE.totalPixels) {
+                confetti({
+                    particleCount: 200,
+                    spread: 100,
+                    origin: { y: 0.6 }
+                });
+                document.getElementById('overlay-text').innerText = "Masterpiece!";
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('overlay').classList.remove('hidden');
+            }
         }
 
-        function resetLevel() {
-            document.querySelectorAll('.pixel').forEach(p => {
-                p.classList.remove('filled');
-                p.style.backgroundColor = 'white';
-            });
-        }
-
-        // Start
+        // --- START ---
         init();
 
     </script>

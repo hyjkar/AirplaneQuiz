@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pixel Art: Color by Number</title>
+    <style>
+        :root {
+            --bg-color: #f0f8ff;
+            --grid-gap: 2px;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif; /* Friendly fonts */
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Prevent scrolling */
+            touch-action: none; /* Prevent zoom/scroll on touch devices */
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        /* The Game Area */
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        /* The Grid */
+        #grid {
+            display: grid;
+            gap: var(--grid-gap);
+            background-color: #ccc;
+            border: 5px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            touch-action: manipulation;
+        }
+
+        .pixel {
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #ddd;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .pixel.filled {
+            color: transparent; /* Hide number when filled */
+            transform: scale(1.05); /* Slight pop effect */
+        }
+
+        .pixel:active {
+            transform: scale(0.9);
+        }
+
+        /* The Palette */
+        #palette {
+            display: flex;
+            gap: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .color-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .color-btn.selected {
+            border-color: #333;
+            transform: scale(1.2);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Controls */
+        #controls {
+            margin-top: 20px;
+        }
+
+        button.nav-btn {
+            background: #ff6b6b;
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            font-size: 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* Win Message */
+        #win-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 100;
+        }
+
+        #win-message h2 {
+            color: #ff6b6b;
+            font-size: 2rem;
+            margin: 0 0 20px 0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1 id="level-title">Level 1: The Heart</h1>
+
+    <div id="game-container">
+        <div id="grid"></div>
+        <div id="palette"></div>
+    </div>
+
+    <div id="controls">
+        <button class="nav-btn" onclick="nextLevel()">Next Level ➡</button>
+    </div>
+
+    <div id="win-message">
+        <h2>🎉 You Did It! 🎉</h2>
+        <button class="nav-btn" onclick="nextLevel()">Play Next!</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        // --- LEVEL DATA ---
+        // 0 = Empty/Background (White)
+        // Numbers match the Palette index
+        const levels = [
+            {
+                name: "The Heart",
+                rows: 8,
+                cols: 8,
+                palette: [
+                    { id: 1, color: '#ff4d4d', label: '1' }, // Red
+                    { id: 2, color: '#ffcccc', label: '2' }, // Pink
+                ],
+                // The visual grid logic
+                data: [
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 1, 1, 0, 0, 1, 1, 0,
+                    1, 2, 2, 1, 1, 2, 2, 1,
+                    1, 2, 2, 2, 2, 2, 2, 1,
+                    0, 1, 2, 2, 2, 2, 1, 0,
+                    0, 0, 1, 2, 2, 1, 0, 0,
+                    0, 0, 0, 1, 1, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0
+                ]
+            },
+            {
+                name: "The Flower",
+                rows: 9,
+                cols: 9,
+                palette: [
+                    { id: 1, color: '#ffcc00', label: '1' }, // Center (Yellow)
+                    { id: 2, color: '#9933cc', label: '2' }, // Petals (Purple)
+                    { id: 3, color: '#66bb6a', label: '3' }  // Stem (Green)
+                ],
+                data: [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 2, 0, 2, 0, 2, 0, 0,
+                    0, 2, 2, 2, 2, 2, 2, 2, 0,
+                    0, 0, 2, 1, 1, 1, 2, 0, 0,
+                    0, 0, 2, 1, 1, 1, 2, 0, 0,
+                    0, 0, 0, 2, 3, 2, 0, 0, 0,
+                    0, 0, 0, 0, 3, 0, 0, 0, 0,
+                    0, 3, 0, 0, 3, 0, 0, 3, 0,
+                    0, 0, 3, 3, 3, 3, 3, 0, 0
+                ]
+            }
+        ];
+
+        // --- GAME LOGIC ---
+        let currentLevelIndex = 0;
+        let selectedColorId = 1;
+        let gridState = []; // Keeps track of what the user has painted
+
+        const gridEl = document.getElementById('grid');
+        const paletteEl = document.getElementById('palette');
+        const titleEl = document.getElementById('level-title');
+        const winMsg = document.getElementById('win-message');
+
+        function initGame() {
+            loadLevel(currentLevelIndex);
+        }
+
+        function loadLevel(index) {
+            // Reset
+            if (index >= levels.length) index = 0; // Loop back to start
+            currentLevelIndex = index;
+            const level = levels[index];
+            
+            titleEl.textContent = level.name;
+            winMsg.style.display = 'none';
+            gridEl.innerHTML = '';
+            paletteEl.innerHTML = '';
+            gridState = new Array(level.data.length).fill(0); // Reset user progress
+
+            // Setup Grid Style
+            gridEl.style.gridTemplateColumns = `repeat(${level.cols}, 40px)`;
+            gridEl.style.gridTemplateRows = `repeat(${level.rows}, 40px)`;
+
+            // create Grid Cells
+            level.data.forEach((colorId, i) => {
+                const cell = document.createElement('div');
+                cell.classList.add('pixel');
+                cell.dataset.index = i;
+                cell.dataset.targetColor = colorId;
+                
+                // If it's 0, it's background, no need to color
+                if (colorId === 0) {
+                    cell.style.backgroundColor = 'transparent';
+                    cell.style.cursor = 'default';
+                } else {
+                    cell.textContent = colorId; // Show the number
+                    // Add Click/Touch Event
+                    cell.addEventListener('pointerdown', handlePixelClick);
+                }
+                gridEl.appendChild(cell);
+            });
+
+            // Create Palette
+            level.palette.forEach((p, i) => {
+                const btn = document.createElement('div');
+                btn.classList.add('color-btn');
+                btn.style.backgroundColor = p.color;
+                btn.textContent = p.label;
+                btn.dataset.id = p.id;
+                
+                btn.addEventListener('click', () => selectColor(p.id, btn));
+                paletteEl.appendChild(btn);
+
+                // Select first color by default
+                if (i === 0) selectColor(p.id, btn);
+            });
+        }
+
+        function selectColor(id, btnElement) {
+            selectedColorId = id;
+            // Visual feedback for selection
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+            btnElement.classList.add('selected');
+        }
+
+        function handlePixelClick(e) {
+            e.preventDefault(); // Prevent double-tap zoom
+            const cell = e.target;
+            const targetId = parseInt(cell.dataset.targetColor);
+            const index = parseInt(cell.dataset.index);
+
+            // Logic: Is this the correct color?
+            if (targetId === selectedColorId) {
+                // Correct!
+                if (!cell.classList.contains('filled')) {
+                    const colorObj = levels[currentLevelIndex].palette.find(c => c.id === targetId);
+                    cell.style.backgroundColor = colorObj.color;
+                    cell.classList.add('filled');
+                    gridState[index] = targetId; // Mark as filled
+                    
+                    checkWin();
+                }
+            } else {
+                // Incorrect - Simple shake effect
+                cell.style.transform = "translateX(5px)";
+                setTimeout(() => cell.style.transform = "translateX(0)", 100);
+            }
+        }
+
+        function checkWin() {
+            const level = levels[currentLevelIndex];
+            // Check if all non-zero pixels are filled
+            const totalPixelsToFill = level.data.filter(x => x !== 0).length;
+            const filledPixels = document.querySelectorAll('.pixel.filled').length;
+
+            if (filledPixels === totalPixelsToFill) {
+                // WINNER!
+                setTimeout(() => {
+                    winMsg.style.display = 'block';
+                    triggerConfetti();
+                }, 300);
+            }
+        }
+
+        function nextLevel() {
+            currentLevelIndex++;
+            loadLevel(currentLevelIndex);
+        }
+
+        function triggerConfetti() {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        // Initialize
+        initGame();
+
+    </script>
+</body>
+</html>

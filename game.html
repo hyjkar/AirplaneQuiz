@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ragdoll Cat Dash</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #222; font-family: sans-serif; }
+        canvas { display: block; }
+        #ui {
+            position: absolute; top: 20px; left: 20px; color: white;
+            background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;
+            pointer-events: none; /* Let clicks pass through */
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+</head>
+<body>
+
+<div id="ui">
+    <h2>Cat Dash</h2>
+    <p>Tap or Space to Jump</p>
+    <p>Status: <span id="status">Running</span></p>
+</div>
+
+<script>
+    // --- 1. SETUP PHYSICS ENGINE ---
+    const Engine = Matter.Engine,
+          Render = Matter.Render,
+          Runner = Matter.Runner,
+          Bodies = Matter.Bodies,
+          Composite = Matter.Composite,
+          Constraint = Matter.Constraint,
+          Events = Matter.Events,
+          Vector = Matter.Vector;
+
+    // Create the engine
+    const engine = Engine.create();
+    const world = engine.world;
+    
+    // Create the renderer (Canvas)
+    const canvas = document.createElement('canvas');
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+
+    // Resize canvas
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // --- 2. GAME SETTINGS ---
+    const CAT_SPEED = 7;
+    const JUMP_FORCE = 0.25;
+    const TILE_SIZE = 50;
+    let isGameOver = false;
+
+    // --- 3. CREATE THE RAGDOLL CAT ---
+    function createCat(x, y) {
+        const group = Matter.Body.nextGroup(true);
+        
+        // Body parts
+        const torso = Bodies.rectangle(x, y, 40, 25, { 
+            collisionFilter: { group: group },
+            friction: 0,
+            density: 0.005,
+            render: { fillStyle: '#FFA500' } // Orange cat
+        });
+
+        const head = Bodies.circle(x + 25, y - 10, 15, { 
+            collisionFilter: { group: group },
+            friction: 0,
+            density: 0.001,
+            render: { fillStyle: '#FFA500' } 
+        });
+        
+        // Connect Head to Torso
+        const neck = Constraint.create({
+            bodyA: torso,
+            pointA: { x: 15, y: -5 },
+            bodyB: head,
+            stiffness: 0.5,
+            length: 0,
+            render: { visible: false }
+        });
+
+        // Add to world
+        const catComposite = Composite.create();
+        Composite.add(catComposite, [torso, head, neck]);
+        Composite.add(world, catComposite);
+
+        return { composite: catComposite, body: torso };
+    }
+
+    let cat = createCat(100, 300);
+
+    // --- 4. LOAD LEVEL (PASTE YOUR JSON HERE) ---
+    // Default level just in case you haven't made one yet
+    let levelJSON = [
+        {"x":0,"y":10,"type":"block"},{"x":1,"y":10,"type":"block"},{"x":2,"y":10,"type":"block"},
+        {"x":3,"y":10,"type":"block"},{"x":4,"y":10,"type":"block"},{"x":5,"y":10,"type":"block"},
+        {"x":8,"y":9,"type":"spike"}, {"x":12,"y":7,"type":"block"}, {"x":13,"y":7,"type":"block"}
+    ];
+
+    function loadLevel(json) {
+        // Clear previous static bodies (not the cat)
+        // Note: In a full game, you'd clear everything. Here we just add to the world.
+        
+        // Create Floor (Infinite runner style base)
+        const floor = Bodies.rectangle(0, 600, 100000, 100, { isStatic: true, render: { fillStyle: '#333' } });
+        Composite.add(world, floor);
+
+        json.forEach(obj => {
+            const wx = obj.x * TILE_SIZE;
+            const wy = obj.y * TILE_SIZE;
+
+            if (obj.type === 'block') {
+                Composite.add(world, Bodies.rectangle(wx + 25, wy + 25, 50, 50, { 
+                    isStatic: true,
+                    render: { fillStyle: '#3498db' }
+                }));
+            } else if (obj.type === 'spike') {
+                // Triangle
+                Composite.add(world, Bodies.polygon(wx + 25, wy + 35, 3, 25, { 
+                    isStatic: true, 
+                    label: 'deadly',
+                    angle: -Math.PI/2, // Point up
+                    render: { fillStyle: '#e74c3c' }
+                }));
+            }
+        });
+    }
+
+    // Load the default level initially
+    loadLevel(levelJSON);
+
+
+    // --- 5. GAME LOOP & LOGIC ---
+    
+    // Handle Input (Jump)
+    function jump() {
+        if (isGameOver) {
+            location.reload(); // Restart on click if dead
+            return;
+        }
+        // Apply upward force to the main body
+        Matter.Body.applyForce(cat.body, cat.body.position, { x: 0, y: -JUMP_FORCE });
+    }
+    
+    window.addEventListener('mousedown', jump);
+    window.addEventListener('keydown', (e) => { if(e.code === 'Space') jump(); });
+
+    // Collision Logic (Death)
+    Events.on(engine, 'collisionStart', (event) => {
+        event.pairs.forEach((pair) => {
+            const bodyA = pair.bodyA;
+            const bodyB = pair.bodyB;
+            
+            // If either body is "deadly" (spike)
+            if (bodyA.label === 'deadly' || bodyB.label === 'deadly') {
+                isGameOver = true;
+                document.getElementById('status').innerText = "GAME OVER (Click to Restart)";
+                document.getElementById('status').style.color = "red";
+                // Make cat go limp (stop forcing movement)
+            }
+        });
+    });
+
+    // Main Update Loop
+    function update() {
+        Engine.update(engine, 1000 / 60);
+
+        if (!isGameOver) {
+            // 1. Force move cat to the right (Geometry dash auto-scroll)
+            // We set velocity directly to keep constant speed
+            Matter.Body.setVelocity(cat.body, { x: CAT_SPEED, y: cat.body.velocity.y });
+
+            // 2. Correct rotation (keep cat mostly upright but allow some wobble)
+            // This gives it that "ragdoll" feel without it flipping over constantly
+            if (Math.abs(cat.body.angle) > 0.5) {
+               Matter.Body.setAngularVelocity(cat.body, -cat.body.angle * 0.1);
+            }
+        }
+
+        draw();
+        requestAnimationFrame(update);
+    }
+
+    // --- 6. CUSTOM RENDERING ---
+    function draw() {
+        // Clear Screen
+        ctx.fillStyle = '#222';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Camera Follow Logic
+        ctx.save();
+        // Move the "camera" to keep the cat on the left side
+        const cameraX = -cat.body.position.x + 150; 
+        ctx.translate(cameraX, 0);
+
+        // Draw all bodies
+        const bodies = Composite.allBodies(world);
+        bodies.forEach(body => {
+            ctx.beginPath();
+            const vertices = body.vertices;
+            ctx.moveTo(vertices[0].x, vertices[0].y);
+            for (let j = 1; j < vertices.length; j += 1) {
+                ctx.lineTo(vertices[j].x, vertices[j].y);
+            }
+            ctx.lineTo(vertices[0].x, vertices[0].y);
+            
+            ctx.fillStyle = body.render.fillStyle || '#fff';
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.stroke();
+        });
+
+        ctx.restore();
+    }
+
+    // Start
+    update();
+
+</script>
+</body>
+</html>

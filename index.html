@@ -58,9 +58,11 @@
 
         .view-section { 
             width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; 
-            padding-bottom: 10px; transition: filter 2s ease;
+            padding-bottom: 20px; 
+            transition: filter 2s ease;
         }
         .view-section.active { display: flex; }
+        
         .gray-out { filter: grayscale(100%) contrast(1.2); }
 
         .modal-box {
@@ -83,7 +85,7 @@
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
 
-        /* --- HANGAR LIST --- */
+        /* --- LIST VIEW --- */
         #level-list-container {
             display: flex; flex-direction: column; gap: 8px; width: 100%;
             margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; 
@@ -99,7 +101,7 @@
         .world-folder.locked-world { opacity: 0.6; pointer-events: none; background: #f0f0f0; }
         
         .world-header {
-            padding: 15px 15px; background: #f8f8f8; cursor: pointer;
+            padding: 12px 15px; background: #f8f8f8; cursor: pointer;
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid transparent; transition: all 0.2s;
         }
@@ -112,7 +114,6 @@
         .world-content { display: none; flex-direction: column; gap: 8px; padding: 10px; background: #fff; }
         .world-folder.open .world-content { display: flex; }
 
-        /* FLIGHT STRIPS */
         .level-strip {
             background: white; border: 1px solid #eee; border-radius: 6px; 
             padding: 12px; width: 100%; min-height: 60px;
@@ -163,6 +164,7 @@
         }
         #game-container img { object-fit: cover; width: 100%; height: 100%; }
         #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        
         #cover-grid { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; 
@@ -170,6 +172,24 @@
         .grid-piece { background-color: var(--piece-color); border: 1px solid #3a3a3a; transition: opacity 0.3s; }
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
         
+        /* BOMB BUTTON */
+        #bomb-wrapper { margin-bottom: 5px; width: 100%; text-align: center; }
+        #smart-bomb-btn {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: #fff; border: 1px solid #fff; box-shadow: 0 0 10px rgba(142, 68, 173, 0.4);
+            padding: 8px; font-size: 0.9rem; letter-spacing: 1px;
+            display: none; /* Hidden by default */
+        }
+        
+        /* SHAKE ANIMATION */
+        .shake-it { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
         #input-area { display: flex; flex-direction: column; gap: 5px; width: 100%; flex-shrink: 0; margin-bottom: 0px; }
         input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; }
         input[type="text"]:focus { border-color: var(--brand-gold); }
@@ -273,6 +293,11 @@
             <div id="level-title" style="font-weight:bold;">Flight 1</div>
             <div class="mini-fuel" id="current-fuel-display">4000</div>
         </div>
+        
+        <div id="bomb-wrapper">
+            <button id="smart-bomb-btn" onclick="triggerSmartBomb()">💣 SMART BOMB (1 LEFT)</button>
+        </div>
+
         <div id="game-wrapper">
             <div id="game-container">
                 <img id="mystery-image" src="" alt="Mystery Airplane">
@@ -282,7 +307,7 @@
         <div id="input-area">
             <input type="text" id="guess-input" placeholder="Identify aircraft..." autocomplete="off">
             <button id="enter-btn">ENTER</button>
-            <button class="outline-btn" onclick="saveAndExit()">Abort Mission (Save)</button>
+            <button class="outline-btn" onclick="saveAndExit()">Continue Later</button>
         </div>
         <div id="message"></div>
     </div>
@@ -301,12 +326,12 @@
     <script>
         // --- 🔥 FIREBASE CONFIGURATION 🔥 ---
         const firebaseConfig = {
-  apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
-  authDomain: "fuelcommand.firebaseapp.com",
-  projectId: "fuelcommand",
-  storageBucket: "fuelcommand.firebasestorage.app",
-  messagingSenderId: "211722292779",
-  appId: "1:211722292779:web:5dec358fc0693c7126246e"
+  apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
+  authDomain: "fuelcommand.firebaseapp.com",
+  projectId: "fuelcommand",
+  storageBucket: "fuelcommand.firebasestorage.app",
+  messagingSenderId: "211722292779",
+  appId: "1:211722292779:web:5dec358fc0693c7126246e"
         };
 
         let db;
@@ -344,6 +369,7 @@
             username: null,
             currentFuel: STARTING_GLOBAL_FUEL,
             levels: [],
+            hasSmartBomb: true, // NEW
             world1Complete: false,
             world2Complete: false
         };
@@ -358,6 +384,7 @@
         const refuelOverlay = document.getElementById('refuel-overlay');
         const gameOverOverlay = document.getElementById('game-over-overlay');
         const pilotGreeting = document.getElementById('pilot-greeting');
+        const bombBtn = document.getElementById('smart-bomb-btn');
         
         // --- INIT ---
         window.onload = function() {
@@ -437,19 +464,21 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v22'); 
+            const saved = localStorage.getItem('fuelQuizState_v23'); // Version bump for Bomb
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
                     globalState.levels = generateGameLevels();
                 }
+                if(globalState.hasSmartBomb === undefined) globalState.hasSmartBomb = true; // migration
             } else {
                 globalState.currentFuel = STARTING_GLOBAL_FUEL;
                 globalState.levels = generateGameLevels();
+                globalState.hasSmartBomb = true;
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v22', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v23', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -466,7 +495,6 @@
             const h1Done = isHangarComplete(1);
             const h2Done = isHangarComplete(2);
             
-            // One-time fuel rewards
             if (h1Done && !globalState.world1Complete) {
                 globalState.world1Complete = true;
                 triggerRefuel();
@@ -489,7 +517,6 @@
                 hangars[level.hangar].push({ ...level, originalIndex: index });
             });
 
-            // Determine active folder
             let activeHangar = 1;
             if (h1Done) activeHangar = 2;
             if (h2Done) activeHangar = 3;
@@ -582,6 +609,13 @@
             document.getElementById('enter-btn').disabled = lState.completed;
             document.getElementById('message').textContent = lState.completed ? "Identified" : "";
             
+            // SHOW/HIDE BOMB
+            if (globalState.hasSmartBomb && !lState.completed) {
+                bombBtn.style.display = "inline-block";
+            } else {
+                bombBtn.style.display = "none";
+            }
+            
             updateMiniFuelUI();
 
             const grid = document.getElementById('cover-grid');
@@ -599,6 +633,27 @@
             } else {
                 grid.onmousedown = null; grid.ontouchstart = null;
             }
+        }
+
+        // --- BOMB LOGIC ---
+        function triggerSmartBomb() {
+            if (!globalState.hasSmartBomb) return;
+            
+            // Visuals
+            const wrapper = document.getElementById('game-wrapper');
+            wrapper.classList.add('shake-it');
+            setTimeout(() => wrapper.classList.remove('shake-it'), 500);
+            
+            // Logic
+            document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+            
+            // Update State
+            globalState.hasSmartBomb = false;
+            // Mark all tiles as revealed for this specific level
+            globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()];
+            
+            saveState();
+            bombBtn.style.display = "none"; // Hide button
         }
 
         function handleInteraction(e) {
@@ -655,6 +710,7 @@
                 triggerConfetti();
                 
                 document.getElementById('level-title').textContent = lState.name;
+                bombBtn.style.display = "none"; // Hide bomb on win
                 saveState();
                 if (isAllWorldsComplete()) syncScoreToCloud();
                 

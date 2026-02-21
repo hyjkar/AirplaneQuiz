@@ -172,12 +172,14 @@
         }
         #game-container img { object-fit: cover; width: 100%; height: 100%; }
         #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        
+        /* TILE GRID */
         #cover-grid { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; 
         }
 
-        /* TILE STYLING WITH FC LOGO */
+        /* ARMORED FC TILES */
         .grid-piece { 
             background: linear-gradient(135deg, #2a2a2a 0%, #151515 100%);
             border: 1px solid #333;
@@ -188,32 +190,33 @@
         .grid-piece::after {
             content: 'FC';
             font-family: 'Share Tech Mono', monospace;
-            color: rgba(207, 168, 110, 0.15); /* Faint brand gold */
+            color: rgba(207, 168, 110, 0.15); /* Faint gold watermark */
             font-size: 14px; font-weight: bold;
         }
         
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
         
-        /* EXPLOSION CLASSES */
+        /* EXPLODING TILES (SMART BOMB) */
         .grid-piece.exploded {
             transition: none !important; /* Override standard fade */
-            animation: blowUp 1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            animation: blowUp 1s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
             z-index: 10;
-            border-color: var(--brand-red);
-            box-shadow: 0 0 15px rgba(215, 25, 32, 0.8);
-            background: var(--brand-dark);
+            border: 2px solid var(--gauge-orange);
+            box-shadow: 0 0 20px var(--brand-red);
+            background: var(--brand-red);
         }
+        .grid-piece.exploded::after { color: #fff; } /* Flash logo white */
         
         @keyframes blowUp {
-            0% { opacity: 1; transform: scale(1) translate(0, 0) rotate(0deg); filter: brightness(2); }
-            30% { opacity: 1; transform: scale(1.5) translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3)) rotate(calc(var(--rot) * 0.3)); }
-            100% { opacity: 0; transform: scale(2) translate(var(--tx), var(--ty)) rotate(var(--rot)); }
+            0% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); filter: brightness(2); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.5); }
         }
 
+        /* SCREEN FLASH FX */
         .flash-screen { animation: whiteFlash 0.6s ease-out; }
         @keyframes whiteFlash {
             0% { filter: brightness(1); }
-            15% { filter: brightness(3) contrast(1.5); }
+            10% { filter: brightness(4) contrast(1.5); }
             100% { filter: brightness(1); }
         }
         
@@ -537,7 +540,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v26'); // Ver bump for animation updates
+            const saved = localStorage.getItem('fuelQuizState_v27'); 
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -551,7 +554,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v26', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v27', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -736,11 +739,10 @@
             }
         }
 
-        // --- EXPLOSION ANIMATION ---
+        // --- NEW EXPLOSION LOGIC ---
         function triggerSmartBomb() {
             if (!globalState.hasSmartBomb) return;
             
-            // Screen shake & flash
             const wrapper = document.getElementById('game-wrapper');
             wrapper.classList.add('shake-it');
             wrapper.classList.add('flash-screen');
@@ -749,13 +751,33 @@
                 wrapper.classList.remove('flash-screen');
             }, 600);
             
-            // Tile explosions
+            const gridContainer = document.getElementById('cover-grid');
+            const gridRect = gridContainer.getBoundingClientRect();
+            const centerX = gridRect.width / 2;
+            const centerY = gridRect.height / 2;
+
             const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
+            
             hiddenTiles.forEach(p => {
-                // Randomize trajectory
-                const tx = (Math.random() - 0.5) * 600 + 'px';
-                const ty = (Math.random() - 0.5) * 600 + 'px';
-                const rot = (Math.random() - 0.5) * 720 + 'deg';
+                const rect = p.getBoundingClientRect();
+                // Find tile center relative to grid center
+                const tileCX = (rect.left - gridRect.left) + (rect.width / 2);
+                const tileCY = (rect.top - gridRect.top) + (rect.height / 2);
+                
+                let dx = tileCX - centerX;
+                let dy = tileCY - centerY;
+                
+                // Add chaos
+                dx += (Math.random() - 0.5) * 50;
+                dy += (Math.random() - 0.5) * 50;
+
+                const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+                // Blast radius between 1500px and 2500px away
+                const force = (Math.random() * 1000) + 1500; 
+                
+                const tx = (dx / dist) * force + 'px';
+                const ty = (dy / dist) * force + 'px';
+                const rot = (Math.random() - 0.5) * 1440 + 'deg'; 
                 
                 p.style.setProperty('--tx', tx);
                 p.style.setProperty('--ty', ty);
@@ -845,7 +867,7 @@
                 lState.completed = true;
                 
                 if (lState.type === 'image') {
-                    // Only do standard reveal if bomb wasn't used to clear the very last tile
+                    // Make sure we only gently fade out tiles that weren't blown up by the bomb
                     document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed'));
                 }
                 

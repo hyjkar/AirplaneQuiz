@@ -228,19 +228,41 @@
         
         #takeoff-viewport { 
             position: relative; width: 100%; flex-grow: 1; min-height: 200px; 
-            background: linear-gradient(to bottom, #87CEEB 0%, #e0f6ff 100%); 
             border: 2px solid #ccc; border-radius: 8px; overflow: hidden; margin-bottom: 10px;
         }
+
+        /* WEATHER THEMES */
+        .theme-day { background: linear-gradient(to bottom, #87CEEB 0%, #e0f6ff 100%); }
+        .theme-rainy { background: linear-gradient(to bottom, #4a5d6a 0%, #7c8e9b 100%); }
+        .theme-night { background: linear-gradient(to bottom, #0f1722 0%, #1c2b3d 100%); }
+
+        #tk-weather-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 5; }
+        
+        .weather-rain {
+            width: 150%; height: 150%; top: -25%; left: -25%;
+            background-image: repeating-linear-gradient(-15deg, transparent, transparent 15px, rgba(255,255,255,0.4) 16px, transparent 17px);
+            background-size: 100px 100%;
+            animation: rainFall 0.3s linear infinite;
+        }
+        @keyframes rainFall { from { transform: translateY(-50px) translateX(10px); } to { transform: translateY(50px) translateX(-10px); } }
+
+        .weather-fog {
+            width: 200%; height: 100%; top: 0; left: -50%;
+            background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 60%);
+            background-size: 50% 100%; background-repeat: repeat-x;
+            animation: fogDrift 5s linear infinite alternate;
+            filter: blur(8px); opacity: 0.8;
+        }
+        @keyframes fogDrift { from { transform: translateX(-15%); } to { transform: translateX(15%); } }
         
         #tk-gauge-container {
             position: absolute; right: 10px; top: 10px; bottom: 30px; width: 20px;
-            background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px solid rgba(255,255,255,0.5); z-index: 5;
+            background: rgba(0,0,0,0.5); border-radius: 10px; border: 1px solid rgba(255,255,255,0.5); z-index: 6;
         }
-        /* UPDATED TARGET ZONE: 9 to 16 degrees (approx 30% to 53% up the gauge) */
-        #tk-target-zone { position: absolute; left: 0; right: 0; bottom: 30%; height: 23%; background: var(--gauge-green); border-radius: 2px; }
+        #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); border-radius: 2px; }
         #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); border-radius: 2px; transition: bottom 0.05s linear; }
 
-        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 25px; background: #444; border-top: 2px solid #666; z-index: 3;}
+        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 25px; background: #333; border-top: 2px solid #555; z-index: 3;}
         .runway-lines { 
             width: 200%; height: 4px; background: repeating-linear-gradient(90deg, transparent, transparent 40px, #fff 40px, #fff 80px);
             position: absolute; top: 10px; left: 0; 
@@ -305,9 +327,10 @@
         <div class="modal-box">
             <h1 style="color: var(--brand-gold); margin-bottom: 15px;">FLIGHT MANUAL</h1>
             <p class="tutorial-text">
-                1. Wait for your speed to reach <strong style="color:var(--gauge-green)">140 KTS</strong>.<br><br>
+                1. Wait for your speed to reach <strong style="color:var(--gauge-green)">140 KTS</strong>. <br>(Rotating early causes a crash!)<br><br>
                 2. <strong>HOLD</strong> the button to pull the nose up.<br><br>
-                3. Keep the needle in the <strong style="color:var(--gauge-green)">GREEN ZONE</strong> to gain lift before the runway ends!
+                3. Keep the needle in the <strong style="color:var(--gauge-green)">GREEN ZONE</strong> to gain lift before the runway ends!<br><br>
+                <span style="color:var(--brand-red); font-size:0.9rem;">⚠️ You have 3 attempts to earn a fuel bonus. If you fail, the mission is aborted.</span>
             </p>
             <button class="gold-btn" onclick="startTakeoffFromTutorial()">START ENGINES</button>
         </div>
@@ -427,6 +450,8 @@
             </div>
             
             <div id="takeoff-viewport">
+                <div id="tk-weather-overlay"></div>
+                
                 <div id="tk-gauge-container">
                     <div id="tk-target-zone"></div>
                     <div id="tk-needle"></div>
@@ -491,7 +516,8 @@
             lock: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="vertical-align: text-bottom; margin-right: 2px;"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>`,
             star: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
             fuel: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>`,
-            takeoff: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M2.5 19h19v2h-19zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 1.82 3.16.77 1.33 1.6-.43 5.31-1.42 4.35-1.16L21 11.49c.81-.23 1.28-1.05 1.07-1.85z"/></svg>`
+            takeoff: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M2.5 19h19v2h-19zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 1.82 3.16.77 1.33 1.6-.43 5.31-1.42 4.35-1.16L21 11.49c.81-.23 1.28-1.05 1.07-1.85z"/></svg>`,
+            cross: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`
         };
 
         const AIRCRAFT_DATA = {
@@ -506,7 +532,7 @@
             ],
             classified: [
                 { type: 'image', image: "f22.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
-                { type: 'image', image: "sr71.jpg", answers: ["sr71", "sr71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
+                { type: 'image', image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
                 { type: 'image', image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
                 { type: 'image', image: "p51.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" }
             ]
@@ -570,13 +596,21 @@
             const tkBtn = document.getElementById('takeoff-btn');
             
             const startPress = (e) => { 
-                e.preventDefault(); 
+                e.preventDefault();
+                
+                // INSTANT EARLY ROTATION FAIL LOGIC
+                if (tkState.active && tkState.speed < 140) {
+                    tkState.pressing = false; // Prevent logic getting stuck
+                    failTakeoff("ROTATED TOO EARLY");
+                    return;
+                }
+                
                 tkState.pressing = true; 
                 tkBtn.style.backgroundColor = "var(--brand-red)"; 
             };
             
             const endPress = (e) => { 
-                e.preventDefault();
+                if (e && e.cancelable) e.preventDefault();
                 tkState.pressing = false; 
                 tkBtn.style.backgroundColor = "var(--brand-gold)"; 
             };
@@ -595,11 +629,14 @@
             let h2 = pool.slice(4, 7).map(p => ({ ...p, hangar: 2, isClassified: false, revealedTiles: [], completed: false }));
             let h3 = classPool.map(p => ({ ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false }));
 
-            // Hangar 1 gets Takeoff + 1 Trivia
-            h1.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 1, isClassified: false, completed: false });
+            // Insert 1 Takeoff & 1 Trivia per Hangar
+            h1.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 1, isClassified: false, completed: false, failed: false, attempts: 0 });
             h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
             
+            h2.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 2, isClassified: false, completed: false, failed: false, attempts: 0 });
             h2.push({ ...tPool[1], hangar: 2, isClassified: false, completed: false });
+            
+            h3.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 3, isClassified: true, completed: false, failed: false, attempts: 0 });
             h3.push({ ...tPool[2], hangar: 3, isClassified: true, completed: false }); 
 
             h1 = h1.sort(() => Math.random() - 0.5);
@@ -653,7 +690,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v39'); // Ver Bump for target zone fix
+            const saved = localStorage.getItem('fuelQuizState_v41'); // Version bump for early fail rule
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -669,7 +706,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v39', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v41', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -764,26 +801,36 @@
 
                     let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
                     
-                    if (levelData.completed) {
+                    if (levelData.failed) {
+                        iconSvg = ICONS.cross;
+                        iconColor = "var(--brand-red)";
+                        statusHtml = `<div class="strip-status" style="color:var(--brand-red)">FAILED</div>`;
+                    } else if (levelData.completed) {
                         title = levelData.name; 
                         iconSvg = ICONS.star; 
                         iconColor = "var(--brand-gold)";
                         statusHtml = `<div class="strip-status status-done">Cleared</div>`;
+                    } else if (levelData.type === 'takeoff') {
+                        let triesLeft = 3 - (levelData.attempts || 0);
+                        statusHtml = `<div class="strip-status status-ready">Tries: ${triesLeft}</div>`;
                     } else if (levelData.type === 'image' && levelData.revealedTiles.length > 0) {
                         statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
                     }
 
                     let isFuelLocked = false;
-                    if (hNum === 3 && globalState.currentFuel < 1000 && !levelData.completed) isFuelLocked = true;
+                    if (hNum === 3 && globalState.currentFuel < 1000 && !levelData.completed && !levelData.failed) isFuelLocked = true;
 
                     if (isFuelLocked) {
                         card.className = "level-strip locked";
                         card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${ICONS.fuel}</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
-                    } else if (globalState.currentFuel <= 0 && !levelData.completed) {
+                    } else if (globalState.currentFuel <= 0 && !levelData.completed && !levelData.failed) {
                          card.className += " locked";
                          statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
                          card.onclick = () => triggerGameOver();
                          card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
+                    } else if (levelData.failed) {
+                        card.className = "level-strip locked"; // Disable click
+                        card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                     } else {
                         card.onclick = () => launchLevel(idx);
                         card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
@@ -881,8 +928,27 @@
                 takeoffArea.style.display = 'flex';
                 bombBtn.style.display = "none";
                 
-                if (!lState.completed) {
-                    // Check if they need the tutorial
+                // Set Theme based on Hangar
+                const vp = document.getElementById('takeoff-viewport');
+                const weather = document.getElementById('tk-weather-overlay');
+                const zone = document.getElementById('tk-target-zone');
+                
+                vp.className = ''; weather.className = '';
+                if (lState.hangar === 1) {
+                    vp.classList.add('theme-day');
+                    tkState.minAngle = 9; tkState.maxAngle = 16;
+                    zone.style.bottom = '30%'; zone.style.height = '23.3%';
+                } else if (lState.hangar === 2) {
+                    vp.classList.add('theme-rainy'); weather.classList.add('weather-rain');
+                    tkState.minAngle = 10; tkState.maxAngle = 15;
+                    zone.style.bottom = '33.3%'; zone.style.height = '16.6%';
+                } else {
+                    vp.classList.add('theme-night'); weather.classList.add('weather-fog');
+                    tkState.minAngle = 11; tkState.maxAngle = 14;
+                    zone.style.bottom = '36.6%'; zone.style.height = '10%';
+                }
+                
+                if (!lState.completed && !lState.failed) {
                     if (!globalState.hasSeenTakeoffTutorial) {
                         takeoffTutorialOverlay.style.display = 'flex';
                     } else {
@@ -900,8 +966,7 @@
             }
         }
 
-        // --- TAKEOFF MINI GAME LOGIC (EXTENDED & PHYSICS IMPROVED) ---
-        
+        // --- TAKEOFF MINI GAME LOGIC (DYNAMIC DIFFICULTY) ---
         function startTakeoffFromTutorial() {
             globalState.hasSeenTakeoffTutorial = true;
             saveState();
@@ -910,24 +975,15 @@
         }
 
         let tkState = { 
-            active: false, 
-            pitch: 0, 
-            pitchVelocity: 0, 
-            lift: 0, 
-            distance: 100, 
-            speed: 0,
-            pressing: false, 
-            frameId: null 
+            active: false, pitch: 0, pitchVelocity: 0, lift: 0, 
+            distance: 100, speed: 0, pressing: false, frameId: null,
+            minAngle: 9, maxAngle: 16
         };
 
         function startTakeoff() {
             tkState.active = true;
-            tkState.pitch = 0;
-            tkState.pitchVelocity = 0;
-            tkState.lift = 0;
-            tkState.distance = 100;
-            tkState.speed = 0;
-            tkState.pressing = false;
+            tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0;
+            tkState.distance = 100; tkState.speed = 0; tkState.pressing = false;
             
             document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`;
             document.getElementById('tk-needle').style.bottom = `0%`;
@@ -943,41 +999,29 @@
         function takeoffLoop() {
             if (!tkState.active) return;
 
-            // 1. Forward Acceleration & Drag
             let acceleration = 1.0;
-            if (tkState.pitch > 0) {
-                // Pitching up early causes massive aerodynamic drag
-                acceleration -= (tkState.pitch * 0.05); 
-            }
+            if (tkState.pitch > 0) acceleration -= (tkState.pitch * 0.05); 
             tkState.speed += acceleration;
             tkState.speed = Math.max(0, Math.min(220, tkState.speed));
 
-            // 2. Pitch Momentum Physics
-            if (tkState.pressing) {
-                tkState.pitchVelocity += 0.04; 
-            } else {
-                tkState.pitchVelocity -= 0.02; // Gravity pulling nose down
-            }
+            if (tkState.pressing) tkState.pitchVelocity += 0.04; 
+            else tkState.pitchVelocity -= 0.02; 
             
-            tkState.pitchVelocity *= 0.95; // Friction/damping gives it weight
+            tkState.pitchVelocity *= 0.95; 
             tkState.pitchVelocity = Math.max(-0.6, Math.min(0.8, tkState.pitchVelocity)); 
             
             tkState.pitch += tkState.pitchVelocity;
-            
-            // Hard clamp 
             tkState.pitch = Math.max(0, Math.min(30, tkState.pitch));
             if(tkState.pitch === 30 || tkState.pitch === 0) tkState.pitchVelocity = 0;
 
-            // 3. Lift accumulation 
-            // Target: 9 to 16 degrees AND Speed >= 140
-            if (tkState.speed >= 140 && tkState.pitch >= 9 && tkState.pitch <= 16) {
-                tkState.lift += 0.5; // Slightly slower fill to match longer runway
+            // Lift accumulation using dynamic sweet spot
+            if (tkState.speed >= 140 && tkState.pitch >= tkState.minAngle && tkState.pitch <= tkState.maxAngle) {
+                tkState.lift += 0.5; 
             } else {
                 tkState.lift = Math.max(0, tkState.lift - 0.2); 
             }
 
-            // 4. Visual updates
-            const liftY = (tkState.lift / 100) * 80; // Levitate off the ground visually
+            const liftY = (tkState.lift / 100) * 80; 
             const planeEl = document.getElementById('tk-plane');
             planeEl.style.transform = `translateY(-${liftY}px) rotate(-${tkState.pitch}deg)`;
 
@@ -989,13 +1033,11 @@
             if (tkState.speed >= 140) speedEl.style.color = "var(--gauge-green)";
             else speedEl.style.color = "var(--brand-red)";
 
-            // 5. Distance Calculation (Slower drain = longer runway)
             tkState.distance -= (tkState.speed / 1200); 
 
             document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%';
             document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
 
-            // 6. Win/Fail Checks
             if (tkState.lift >= 100) return winTakeoff();
             if (tkState.distance <= 0) return failTakeoff("RAN OUT OF RUNWAY");
 
@@ -1006,6 +1048,9 @@
             tkState.active = false;
             document.getElementById('takeoff-viewport').classList.remove('rolling');
             
+            const lState = globalState.levels[activeLevelIdx];
+            lState.attempts = (lState.attempts || 0) + 1;
+            
             globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
             saveState();
             updateMiniFuelUI();
@@ -1014,13 +1059,26 @@
             wrapper.classList.add('wrong-flash');
             setTimeout(() => wrapper.classList.remove('wrong-flash'), 500);
 
-            if (globalState.currentFuel <= 0) {
+            if (lState.attempts >= 3) {
+                lState.failed = true;
+                lState.completed = true; // Mark done so they aren't stuck in the hangar
+                saveState();
+                
+                document.getElementById('message').textContent = "SYSTEM LOCKED - MAX ATTEMPTS FAILED (-200L)";
+                document.getElementById('message').className = "fail";
+                
+                setTimeout(() => {
+                    if (isAllWorldsComplete()) syncScoreToCloud();
+                    saveAndExit();
+                }, 2500);
+            } else if (globalState.currentFuel <= 0) {
                 triggerGameOver();
             } else {
-                document.getElementById('message').textContent = reason + " (-200L)";
+                let triesLeft = 3 - lState.attempts;
+                document.getElementById('message').textContent = `${reason} | TRIES LEFT: ${triesLeft} (-200L)`;
                 document.getElementById('message').className = "fail";
                 setTimeout(() => {
-                    if(!globalState.levels[activeLevelIdx].completed && globalState.currentFuel > 0 && document.getElementById('takeoff-game-area').style.display !== 'none') {
+                    if(!lState.completed && !lState.failed && globalState.currentFuel > 0 && document.getElementById('takeoff-game-area').style.display !== 'none') {
                         document.getElementById('message').textContent = "";
                         startTakeoff();
                     }
@@ -1031,7 +1089,22 @@
         function winTakeoff() {
             tkState.active = false;
             document.getElementById('takeoff-viewport').classList.remove('rolling');
-            endGame(true, "PERFECT TAKEOFF!");
+            
+            const bonus = 500;
+            globalState.currentFuel += bonus; // Give massive bonus
+            updateMiniFuelUI();
+            
+            const lState = globalState.levels[activeLevelIdx];
+            lState.completed = true;
+            
+            triggerConfetti();
+            document.getElementById('level-title').textContent = lState.name;
+            document.getElementById('message').textContent = `PERFECT TAKEOFF! +${bonus}L BONUS`;
+            document.getElementById('message').className = "success";
+            
+            saveState();
+            if (isAllWorldsComplete()) syncScoreToCloud();
+            setTimeout(saveAndExit, 2500);
         }
 
         // --- SMART BOMB LOGIC ---
@@ -1076,7 +1149,7 @@
                 const rot = (Math.random() - 0.5) * 720; 
                 
                 p.classList.add('exploded');
-                void p.offsetWidth; // Reflow
+                void p.offsetWidth; 
                 
                 p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s';
                 p.style.pointerEvents = 'none';

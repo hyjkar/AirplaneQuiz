@@ -57,8 +57,11 @@
         h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
 
         .view-section { 
-            width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; 
-            padding-bottom: 10px; transition: filter 2s ease;
+            width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; 
+            /* FIX: min-height: 0 allows flex children to shrink properly without overflowing */
+            min-height: 0; 
+            padding-bottom: max(10px, env(safe-area-inset-bottom)); 
+            transition: filter 2s ease;
         }
         .view-section.active { display: flex; }
         .gray-out { filter: grayscale(100%) contrast(1.2); }
@@ -87,6 +90,8 @@
         #level-list-container {
             display: flex; flex-direction: column; gap: 8px; width: 100%;
             margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; 
+            /* FIX: min-height: 0 ensures scrolling works properly instead of pushing buttons away */
+            min-height: 0; 
         }
         #level-list-container::-webkit-scrollbar { width: 5px; }
         #level-list-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
@@ -137,8 +142,7 @@
         /* --- BUTTONS --- */
         .footer-buttons { 
             width: 100%; flex-shrink: 0; display: flex; flex-direction: column; 
-            gap: 8px; margin-top: 5px; padding-top: 10px; border-top: 1px solid #eee; 
-            padding-bottom: 20px; margin-bottom: env(safe-area-inset-bottom);
+            gap: 8px; margin-top: auto; padding-top: 10px; border-top: 1px solid #eee; 
         }
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
         button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
@@ -162,7 +166,7 @@
         }
 
         /* --- IMAGE MODE --- */
-        #image-game-area { width: 100%; display: flex; flex-direction: column; flex-grow: 1; }
+        #image-game-area { width: 100%; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
         #game-wrapper {
             background: transparent; box-shadow: none; border-radius: 0; padding: 0;
             width: 100%; margin-bottom: 10px; position: relative;
@@ -221,6 +225,7 @@
         #leaderboard-list {
             width: 100%; flex-grow: 1; overflow-y: auto; text-align: left;
             background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px;
+            min-height: 0;
         }
         .lb-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; align-items: center; }
         .lb-rank { font-weight: bold; width: 30px; color: var(--brand-red); }
@@ -337,7 +342,10 @@
         </div>
 
         <div id="message"></div>
-        <button class="outline-btn" onclick="saveAndExit()" style="margin-top:auto; flex-shrink:0;">Continue Later</button>
+        
+        <div class="footer-buttons" style="margin-top: 0; padding-top: 5px; padding-bottom: 0;">
+             <button class="outline-btn" onclick="saveAndExit()">Continue Later</button>
+        </div>
     </div>
 
     <div id="leaderboard-view" class="view-section">
@@ -435,23 +443,18 @@
         };
 
         function generateGameLevels() {
-            // Shuffle Planes
             let pool = [...AIRCRAFT_DATA.standard].sort(() => Math.random() - 0.5);
             let classPool = [...AIRCRAFT_DATA.classified].sort(() => Math.random() - 0.5);
-            
-            // Shuffle Trivia
             let tPool = [...TRIVIA_DATA].sort(() => Math.random() - 0.5);
 
             let h1 = pool.slice(0, 4).map(p => ({ ...p, hangar: 1, isClassified: false, revealedTiles: [], completed: false }));
             let h2 = pool.slice(4, 7).map(p => ({ ...p, hangar: 2, isClassified: false, revealedTiles: [], completed: false }));
             let h3 = classPool.map(p => ({ ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false }));
 
-            // Inject 1 Trivia into each hangar
             h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
             h2.push({ ...tPool[1], hangar: 2, isClassified: false, completed: false });
-            h3.push({ ...tPool[2], hangar: 3, isClassified: true, completed: false }); // Locked via hangar 3 logic
+            h3.push({ ...tPool[2], hangar: 3, isClassified: true, completed: false }); 
 
-            // Shuffle each hangar so trivia is randomly placed
             h1 = h1.sort(() => Math.random() - 0.5);
             h2 = h2.sort(() => Math.random() - 0.5);
             h3 = h3.sort(() => Math.random() - 0.5);
@@ -503,7 +506,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v24'); 
+            const saved = localStorage.getItem('fuelQuizState_v25'); // Ver bump
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -517,7 +520,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v24', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v25', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -605,7 +608,6 @@
                         statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
                     }
 
-                    // For Classified levels, require 1000L minimum fuel to enter
                     let isFuelLocked = false;
                     if (hNum === 3 && globalState.currentFuel < 1000 && !levelData.completed) isFuelLocked = true;
 
@@ -684,17 +686,16 @@
             } else if (lState.type === 'trivia') {
                 imgArea.style.display = 'none';
                 triviaArea.style.display = 'flex';
-                bombBtn.style.display = "none"; // No bombs for trivia
+                bombBtn.style.display = "none";
 
                 document.getElementById('trivia-question').textContent = lState.question;
                 
-                // Populate options
                 lState.options.forEach((optText, i) => {
                     const btn = document.getElementById('btn-opt-' + i);
                     btn.textContent = String.fromCharCode(65 + i) + ". " + optText;
                     btn.disabled = lState.completed;
-                    btn.style.backgroundColor = ""; // reset
-                    btn.style.color = ""; // reset
+                    btn.style.backgroundColor = ""; 
+                    btn.style.color = ""; 
                     
                     if(lState.completed && i === lState.correctIdx) {
                         btn.style.backgroundColor = "var(--gauge-green)";
@@ -704,7 +705,6 @@
             }
         }
 
-        // --- TRIVIA LOGIC ---
         function submitTrivia(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx];
             if(lState.completed || globalState.currentFuel <= 0) return;
@@ -727,7 +727,6 @@
             }
         }
 
-        // --- IMAGE BOMB LOGIC ---
         function triggerSmartBomb() {
             if (!globalState.hasSmartBomb) return;
             const wrapper = document.getElementById('game-wrapper');

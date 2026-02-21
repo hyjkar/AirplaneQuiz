@@ -47,7 +47,7 @@
         }
 
         /* --- OVERLAYS --- */
-        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay {
+        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #111; color: var(--brand-gold);
@@ -57,6 +57,7 @@
         }
         #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
         #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
+        #takeoff-tutorial-overlay { background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); }
         
         @media screen and (orientation: landscape) and (max-height: 600px) {
             #orientation-lock { display: flex; }
@@ -235,8 +236,7 @@
             position: absolute; right: 10px; top: 10px; bottom: 30px; width: 20px;
             background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px solid rgba(255,255,255,0.5); z-index: 5;
         }
-        /* Target Zone: 10 to 15 degrees (approx 33% to 50%) */
-        #tk-target-zone { position: absolute; left: 0; right: 0; bottom: 33.3%; height: 16.6%; background: var(--gauge-green); border-radius: 2px; }
+        #tk-target-zone { position: absolute; left: 0; right: 0; bottom: 23%; height: 37%; background: var(--gauge-green); border-radius: 2px; }
         #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); border-radius: 2px; transition: bottom 0.05s linear; }
 
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 25px; background: #444; border-top: 2px solid #666; z-index: 3;}
@@ -285,6 +285,11 @@
         .lb-name { flex-grow: 1; font-weight: 500;}
         .lb-fuel { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--brand-dark); }
         .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
+        
+        .tutorial-text {
+            color: #ccc; font-size: 1rem; margin-bottom: 20px; text-align: left; line-height: 1.5;
+        }
+        .tutorial-text strong { color: #fff; }
     </style>
 </head>
 <body>
@@ -293,6 +298,18 @@
         <svg viewBox="0 0 24 24" width="60" height="60" fill="currentColor" style="margin-bottom:20px;"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.25-.77c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.46L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zm-7.31.29C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
         <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2>
         <p>This mission requires Portrait Mode.</p>
+    </div>
+
+    <div id="takeoff-tutorial-overlay">
+        <div class="modal-box">
+            <h1 style="color: var(--brand-gold); margin-bottom: 15px;">FLIGHT MANUAL</h1>
+            <p class="tutorial-text">
+                1. Wait for your speed to reach <strong style="color:var(--gauge-green)">140 KTS</strong>.<br><br>
+                2. <strong>HOLD</strong> the button to pull the nose up.<br><br>
+                3. Keep the needle in the <strong style="color:var(--gauge-green)">GREEN ZONE</strong> to gain lift before the runway ends!
+            </p>
+            <button class="gold-btn" onclick="startTakeoffFromTutorial()">START ENGINES</button>
+        </div>
     </div>
 
     <div id="game-over-overlay">
@@ -428,7 +445,7 @@
                 </div>
             </div>
             
-            <button id="takeoff-btn" class="gold-btn" oncontextmenu="return false;">HOLD TO ROTATE</button>
+            <button id="takeoff-btn" class="gold-btn" oncontextmenu="return false;">HOLD TO PITCH UP</button>
         </div>
 
         <div id="message"></div>
@@ -466,7 +483,6 @@
             db = firebase.firestore();
         } catch(e) { console.error("Firebase Init Error", e); }
 
-        // --- SVG ICON LIBRARY ---
         const ICONS = {
             plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
             jet: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12,2 L14,10 L22,14 L22,16 L14,15 L14,19 L16,21 L16,22 L12,21 L8,22 L8,21 L10,19 L10,15 L2,16 L2,14 L10,10 Z"/></svg>`,
@@ -477,7 +493,6 @@
             takeoff: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M2.5 19h19v2h-19zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 1.82 3.16.77 1.33 1.6-.43 5.31-1.42 4.35-1.16L21 11.49c.81-.23 1.28-1.05 1.07-1.85z"/></svg>`
         };
 
-        // --- PLANES DATA ---
         const AIRCRAFT_DATA = {
             standard: [
                 { type: 'image', image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
@@ -513,6 +528,7 @@
             currentFuel: STARTING_GLOBAL_FUEL,
             levels: [],
             hasSmartBomb: true,
+            hasSeenTakeoffTutorial: false,
             world1Complete: false,
             world2Complete: false
         };
@@ -525,6 +541,7 @@
         const restartOverlay = document.getElementById('restart-overlay');
         const refuelOverlay = document.getElementById('refuel-overlay');
         const gameOverOverlay = document.getElementById('game-over-overlay');
+        const takeoffTutorialOverlay = document.getElementById('takeoff-tutorial-overlay');
         const pilotGreeting = document.getElementById('pilot-greeting');
         const bombBtn = document.getElementById('smart-bomb-btn');
         
@@ -539,7 +556,6 @@
                 if (isAllWorldsComplete()) syncScoreToCloud();
             }
             
-            // Allow Enter key to submit login
             document.getElementById('callsign-input').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
                     this.blur();
@@ -550,7 +566,6 @@
             document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             document.getElementById('enter-btn').onclick = checkAnswer;
             
-            // --- POINTER EVENTS FIX FOR MOBILE HOLD ---
             const tkBtn = document.getElementById('takeoff-btn');
             
             const startPress = (e) => { 
@@ -579,11 +594,12 @@
             let h2 = pool.slice(4, 7).map(p => ({ ...p, hangar: 2, isClassified: false, revealedTiles: [], completed: false }));
             let h3 = classPool.map(p => ({ ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false }));
 
-            // Force Takeoff into Hangar 1
+            // Hangar 1 gets Takeoff + 1 Trivia
             h1.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 1, isClassified: false, completed: false });
+            h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
             
-            h2.push({ ...tPool[0], hangar: 2, isClassified: false, completed: false });
-            h3.push({ ...tPool[1], hangar: 3, isClassified: true, completed: false }); 
+            h2.push({ ...tPool[1], hangar: 2, isClassified: false, completed: false });
+            h3.push({ ...tPool[2], hangar: 3, isClassified: true, completed: false }); 
 
             h1 = h1.sort(() => Math.random() - 0.5);
             h2 = h2.sort(() => Math.random() - 0.5);
@@ -636,21 +652,23 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v36'); // Ver bump 
+            const saved = localStorage.getItem('fuelQuizState_v38'); // Version Bump for Tutorial 
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
                     globalState.levels = generateGameLevels();
                 }
                 if(globalState.hasSmartBomb === undefined) globalState.hasSmartBomb = true;
+                if(globalState.hasSeenTakeoffTutorial === undefined) globalState.hasSeenTakeoffTutorial = false;
             } else {
                 globalState.currentFuel = STARTING_GLOBAL_FUEL;
                 globalState.levels = generateGameLevels();
                 globalState.hasSmartBomb = true;
+                globalState.hasSeenTakeoffTutorial = false;
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v36', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v38', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -863,7 +881,12 @@
                 bombBtn.style.display = "none";
                 
                 if (!lState.completed) {
-                    startTakeoff();
+                    // Check if they need the tutorial
+                    if (!globalState.hasSeenTakeoffTutorial) {
+                        takeoffTutorialOverlay.style.display = 'flex';
+                    } else {
+                        startTakeoff();
+                    }
                 } else {
                     document.getElementById('tk-plane').style.transform = `translateY(-80px) rotate(-12deg)`;
                     document.getElementById('tk-needle').style.bottom = `40%`;
@@ -876,7 +899,15 @@
             }
         }
 
-        // --- NEW PHYSICS TAKEOFF MINI GAME ---
+        // --- TAKEOFF MINI GAME LOGIC (EXTENDED & PHYSICS IMPROVED) ---
+        
+        function startTakeoffFromTutorial() {
+            globalState.hasSeenTakeoffTutorial = true;
+            saveState();
+            takeoffTutorialOverlay.style.display = 'none';
+            startTakeoff();
+        }
+
         let tkState = { 
             active: false, 
             pitch: 0, 
@@ -914,7 +945,8 @@
             // 1. Forward Acceleration & Drag
             let acceleration = 1.0;
             if (tkState.pitch > 0) {
-                acceleration -= (tkState.pitch * 0.05); // Pitching up early causes massive drag!
+                // Pitching up early causes massive aerodynamic drag
+                acceleration -= (tkState.pitch * 0.05); 
             }
             tkState.speed += acceleration;
             tkState.speed = Math.max(0, Math.min(220, tkState.speed));
@@ -923,27 +955,28 @@
             if (tkState.pressing) {
                 tkState.pitchVelocity += 0.04; 
             } else {
-                tkState.pitchVelocity -= 0.02; // Slow gravity
+                tkState.pitchVelocity -= 0.02; // Gravity pulling nose down
             }
             
-            tkState.pitchVelocity *= 0.95; // Friction/damping
+            tkState.pitchVelocity *= 0.95; // Friction/damping gives it weight
             tkState.pitchVelocity = Math.max(-0.6, Math.min(0.8, tkState.pitchVelocity)); 
             
             tkState.pitch += tkState.pitchVelocity;
             
-            // Hard clamp between 0 (ground) and 30 degrees
+            // Hard clamp 
             tkState.pitch = Math.max(0, Math.min(30, tkState.pitch));
             if(tkState.pitch === 30 || tkState.pitch === 0) tkState.pitchVelocity = 0;
 
-            // 3. Lift accumulation (Target: 10 to 15 degrees AND Speed >= 140)
-            if (tkState.speed >= 140 && tkState.pitch >= 10 && tkState.pitch <= 15) {
-                tkState.lift += 0.8; 
+            // 3. Lift accumulation 
+            // Target: 7 to 18 degrees AND Speed >= 140
+            if (tkState.speed >= 140 && tkState.pitch >= 7 && tkState.pitch <= 18) {
+                tkState.lift += 0.5; // Slightly slower fill to match longer runway
             } else {
-                tkState.lift = Math.max(0, tkState.lift - 0.4); 
+                tkState.lift = Math.max(0, tkState.lift - 0.2); 
             }
 
-            // 4. UI Visual Updates
-            const liftY = (tkState.lift / 100) * 80; // Plane visually rises off ground up to 80px
+            // 4. Visual updates
+            const liftY = (tkState.lift / 100) * 80; // Levitate off the ground visually
             const planeEl = document.getElementById('tk-plane');
             planeEl.style.transform = `translateY(-${liftY}px) rotate(-${tkState.pitch}deg)`;
 
@@ -955,8 +988,8 @@
             if (tkState.speed >= 140) speedEl.style.color = "var(--gauge-green)";
             else speedEl.style.color = "var(--brand-red)";
 
-            // 5. Distance Calculation (Runway takes ~8 seconds to cross)
-            tkState.distance -= (tkState.speed / 450); 
+            // 5. Distance Calculation (Slower drain = longer runway)
+            tkState.distance -= (tkState.speed / 1200); 
 
             document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%';
             document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';

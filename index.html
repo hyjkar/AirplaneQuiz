@@ -236,7 +236,8 @@
             position: absolute; right: 10px; top: 10px; bottom: 30px; width: 20px;
             background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px solid rgba(255,255,255,0.5); z-index: 5;
         }
-        #tk-target-zone { position: absolute; left: 0; right: 0; bottom: 23%; height: 37%; background: var(--gauge-green); border-radius: 2px; }
+        /* UPDATED TARGET ZONE: 9 to 16 degrees (approx 30% to 53% up the gauge) */
+        #tk-target-zone { position: absolute; left: 0; right: 0; bottom: 30%; height: 23%; background: var(--gauge-green); border-radius: 2px; }
         #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); border-radius: 2px; transition: bottom 0.05s linear; }
 
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 25px; background: #444; border-top: 2px solid #666; z-index: 3;}
@@ -652,7 +653,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v38'); // Version Bump for Tutorial 
+            const saved = localStorage.getItem('fuelQuizState_v39'); // Ver Bump for target zone fix
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -668,7 +669,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v38', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v39', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -968,8 +969,8 @@
             if(tkState.pitch === 30 || tkState.pitch === 0) tkState.pitchVelocity = 0;
 
             // 3. Lift accumulation 
-            // Target: 7 to 18 degrees AND Speed >= 140
-            if (tkState.speed >= 140 && tkState.pitch >= 7 && tkState.pitch <= 18) {
+            // Target: 9 to 16 degrees AND Speed >= 140
+            if (tkState.speed >= 140 && tkState.pitch >= 9 && tkState.pitch <= 16) {
                 tkState.lift += 0.5; // Slightly slower fill to match longer runway
             } else {
                 tkState.lift = Math.max(0, tkState.lift - 0.2); 
@@ -1075,7 +1076,7 @@
                 const rot = (Math.random() - 0.5) * 720; 
                 
                 p.classList.add('exploded');
-                void p.offsetWidth; 
+                void p.offsetWidth; // Reflow
                 
                 p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s';
                 p.style.pointerEvents = 'none';

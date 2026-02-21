@@ -41,7 +41,9 @@
             width: 100%;
             
             display: flex; flex-direction: column; align-items: center;
-            overflow: hidden; user-select: none; 
+            overflow: hidden; 
+            user-select: none; 
+            -webkit-user-select: none;
         }
 
         /* --- OVERLAYS --- */
@@ -169,7 +171,8 @@
         #smart-bomb-btn {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: #fff; border: 1px solid #ff9b9b; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
-            padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; text-transform: uppercase;
+            padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; 
+            text-transform: uppercase;
         }
 
         /* --- IMAGE MODE --- */
@@ -199,7 +202,14 @@
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
         
         #input-area { display: flex; flex-direction: column; gap: 5px; width: 100%; flex-shrink: 0; margin-bottom: 0px; }
-        input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; }
+        
+        /* CRITICAL MOBILE FIX: Allows user to type into inputs */
+        input[type="text"] { 
+            width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; 
+            text-align: center; background: white; color: #333; 
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
         input[type="text"]:focus { border-color: var(--brand-gold); }
         #enter-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
 
@@ -224,12 +234,10 @@
             border: 2px solid #ccc; border-radius: 8px; overflow: hidden; margin-bottom: 10px;
         }
         
-        /* The Gauge */
         #tk-gauge-container {
             position: absolute; right: 10px; top: 10px; bottom: 30px; width: 20px;
             background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px solid rgba(255,255,255,0.5); z-index: 5;
         }
-        /* Target zone: 10 to 15 degrees out of 30 degree max -> 33% to 50% from bottom */
         #tk-target-zone { position: absolute; left: 0; right: 0; bottom: 33.3%; height: 16.6%; background: var(--gauge-green); border-radius: 2px; }
         #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); border-radius: 2px; transition: bottom 0.1s linear; }
 
@@ -243,13 +251,19 @@
 
         #tk-plane {
             position: absolute; left: 20px; bottom: 25px; width: 120px; height: 40px;
-            transform-origin: 80% 90%; /* Rotate around rear wheels */
+            transform-origin: 80% 90%; 
             z-index: 4; transition: transform 0.1s linear;
         }
         
-        #takeoff-btn { flex-shrink: 0; font-size: 1.2rem; padding: 15px; margin-bottom: 0;}
+        /* CRITICAL MOBILE FIX: Prevents text selection / popups while holding the button */
+        #takeoff-btn { 
+            flex-shrink: 0; font-size: 1.2rem; padding: 15px; margin-bottom: 0;
+            touch-action: none; 
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
 
-        /* Messages */
         #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
@@ -278,10 +292,6 @@
         .lb-name { flex-grow: 1; font-weight: 500;}
         .lb-fuel { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--brand-dark); }
         .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
-
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .float-text { position: fixed; color: var(--brand-red); font-weight: bold; font-size: 1.5rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 999; text-shadow: 0 2px 4px rgba(255,255,255,0.8); }
     </style>
 </head>
 <body>
@@ -486,16 +496,17 @@
             ],
             classified: [
                 { type: 'image', image: "f22.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
-                { type: 'image', image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
+                { type: 'image', image: "sr71.jpg", answers: ["sr71", "sr71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
                 { type: 'image', image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
                 { type: 'image', image: "p51.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" }
             ]
         };
 
-        const SPECIAL_EVENTS = [
+        const TRIVIA_DATA = [
             { type: 'trivia', question: "What caused the 1977 Tenerife airport disaster, the deadliest accident in aviation history?", options: ["A runway collision in thick fog", "A mid-air collision over the Atlantic", "Dual engine failure due to volcanic ash"], correctIdx: 0, name: "Tenerife Disaster" },
             { type: 'trivia', question: "What forced US Airways Flight 1549 (the 'Miracle on the Hudson') to ditch into the river?", options: ["Complete loss of hydraulic fluid", "A flock of geese struck both engines", "Fuel starvation due to a leak"], correctIdx: 1, name: "Hudson River Ditching" },
-            { type: 'takeoff', name: "Takeoff Calibration" } // NEW MINI GAME
+            { type: 'trivia', question: "Why did Air Canada Flight 143 (the 'Gimli Glider') run out of fuel mid-flight?", options: ["The fuel tanks were punctured", "A mix-up between pounds and kilograms", "The pilots forgot to switch fuel tanks"], correctIdx: 1, name: "Gimli Glider Incident" },
+            { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
         ];
 
         const STARTING_GLOBAL_FUEL = 4000;
@@ -533,34 +544,56 @@
                 renderDashboard();
                 if (isAllWorldsComplete()) syncScoreToCloud();
             }
+            
+            // Allow Enter key to submit login
+            document.getElementById('callsign-input').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    this.blur(); // Hide mobile keyboard
+                    registerPilot();
+                }
+            });
+            
             document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             document.getElementById('enter-btn').onclick = checkAnswer;
             
-            // Init Takeoff Listeners
+            // INIT TAKEOFF LISTENERS (WITH MOBILE FIXES)
             const tkBtn = document.getElementById('takeoff-btn');
-            const startPress = (e) => { e.preventDefault(); tkState.pressing = true; tkBtn.style.backgroundColor = "var(--brand-red)"; };
-            const endPress = (e) => { e.preventDefault(); tkState.pressing = false; tkBtn.style.backgroundColor = "var(--brand-gold)"; };
+            
+            const startPress = (e) => { 
+                if(e.cancelable) e.preventDefault(); // Prevents double firing
+                tkState.pressing = true; 
+                tkBtn.style.backgroundColor = "var(--brand-red)"; 
+            };
+            
+            const endPress = (e) => { 
+                tkState.pressing = false; 
+                tkBtn.style.backgroundColor = "var(--brand-gold)"; 
+            };
             
             tkBtn.addEventListener('mousedown', startPress);
             tkBtn.addEventListener('touchstart', startPress, {passive: false});
-            document.addEventListener('mouseup', endPress);
-            document.addEventListener('touchend', endPress);
+            
+            // Bind to window so if finger slides off the button, it still releases properly
+            window.addEventListener('mouseup', endPress);
+            window.addEventListener('touchend', endPress);
+            window.addEventListener('touchcancel', endPress); // Critical for iOS
         };
 
         function generateGameLevels() {
             let pool = [...AIRCRAFT_DATA.standard].sort(() => Math.random() - 0.5);
             let classPool = [...AIRCRAFT_DATA.classified].sort(() => Math.random() - 0.5);
-            
-            // Distribute 1 Takeoff and 2 Trivias randomly to the 3 hangars
-            let eventsPool = [...SPECIAL_EVENTS].sort(() => Math.random() - 0.5);
+            let tPool = [...TRIVIA_DATA].sort(() => Math.random() - 0.5);
 
             let h1 = pool.slice(0, 4).map(p => ({ ...p, hangar: 1, isClassified: false, revealedTiles: [], completed: false }));
             let h2 = pool.slice(4, 7).map(p => ({ ...p, hangar: 2, isClassified: false, revealedTiles: [], completed: false }));
             let h3 = classPool.map(p => ({ ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false }));
 
-            h1.push({ ...eventsPool[0], hangar: 1, isClassified: false, completed: false });
-            h2.push({ ...eventsPool[1], hangar: 2, isClassified: false, completed: false });
-            h3.push({ ...eventsPool[2], hangar: 3, isClassified: true, completed: false }); 
+            // Force Takeoff into Hangar 1
+            h1.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 1, isClassified: false, completed: false });
+            
+            // Random Trivia into Hangar 2 and 3
+            h2.push({ ...tPool[0], hangar: 2, isClassified: false, completed: false });
+            h3.push({ ...tPool[1], hangar: 3, isClassified: true, completed: false }); 
 
             h1 = h1.sort(() => Math.random() - 0.5);
             h2 = h2.sort(() => Math.random() - 0.5);
@@ -613,7 +646,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v31'); 
+            const saved = localStorage.getItem('fuelQuizState_v33'); 
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -627,7 +660,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v31', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v33', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -786,7 +819,6 @@
             triviaArea.style.display = 'none';
             takeoffArea.style.display = 'none';
 
-            // Reset Game Loops
             if(tkState.frameId) { cancelAnimationFrame(tkState.frameId); tkState.active = false; }
 
             if (lState.type === 'image') {
@@ -853,9 +885,7 @@
         }
 
         // --- TAKEOFF MINI GAME LOGIC ---
-        let tkState = {
-            active: false, pitch: 0, lift: 0, distance: 100, pressing: false, frameId: null
-        };
+        let tkState = { active: false, pitch: 0, lift: 0, distance: 100, pressing: false, frameId: null };
 
         function startTakeoff() {
             tkState.active = true;
@@ -876,9 +906,8 @@
         function takeoffLoop() {
             if (!tkState.active) return;
 
-            // Physics
-            if (tkState.pressing) tkState.pitch += 0.6; // Rotate up
-            else tkState.pitch -= 0.4; // Gravity nose down
+            if (tkState.pressing) tkState.pitch += 0.6; 
+            else tkState.pitch -= 0.4; 
 
             const planeEl = document.getElementById('tk-plane');
             planeEl.style.transform = `rotate(-${tkState.pitch}deg)`;
@@ -886,18 +915,12 @@
             const needle = document.getElementById('tk-needle');
             needle.style.bottom = `${Math.max(0, Math.min(100, (tkState.pitch / 30) * 100))}%`;
 
-            // Fail bounds
             if (tkState.pitch > 22) return failTakeoff("TAIL STRIKE");
             if (tkState.pitch < -5) return failTakeoff("NOSE DIVE");
 
-            // Lift accumulation (Target: 10 to 15 degrees)
-            if (tkState.pitch >= 10 && tkState.pitch <= 15) {
-                tkState.lift += 0.6; 
-            } else {
-                tkState.lift = Math.max(0, tkState.lift - 0.2); 
-            }
+            if (tkState.pitch >= 10 && tkState.pitch <= 15) tkState.lift += 0.6; 
+            else tkState.lift = Math.max(0, tkState.lift - 0.2); 
 
-            // Distance decreases (~5 seconds)
             tkState.distance -= 0.35; 
 
             document.getElementById('tk-runway-fill').style.width = tkState.distance + '%';
@@ -1000,7 +1023,6 @@
             bombBtn.style.display = "none";
         }
 
-        // --- STANDARD LOGIC ---
         function handleInteraction(e) {
             const lState = globalState.levels[activeLevelIdx];
             if (lState.completed || globalState.currentFuel <= 0) return;
@@ -1045,6 +1067,28 @@
             }
         }
 
+        function submitTrivia(selectedIndex) {
+            const lState = globalState.levels[activeLevelIdx];
+            if(lState.completed || globalState.currentFuel <= 0) return;
+
+            if(selectedIndex === lState.correctIdx) {
+                const btn = document.getElementById('btn-opt-' + selectedIndex);
+                btn.style.backgroundColor = "var(--gauge-green)";
+                btn.style.color = "white";
+                endGame(true, "Analysis Correct");
+            } else {
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
+                saveState();
+                updateMiniFuelUI();
+                
+                const btn = document.getElementById('btn-opt-' + selectedIndex);
+                btn.classList.add('wrong-flash');
+                setTimeout(() => btn.classList.remove('wrong-flash'), 500);
+
+                if (globalState.currentFuel <= 0) triggerGameOver();
+            }
+        }
+
         function endGame(win, msg) {
             document.getElementById('message').textContent = msg;
             if (win) {
@@ -1077,14 +1121,13 @@
         function closeRefuel() { refuelOverlay.style.display = 'none'; saveAndExit(); }
         function updateMiniFuelUI() {
             const el = document.getElementById('current-fuel-display');
-            // update inside the span, not the whole div so we keep the SVG
             el.querySelector('span').textContent = globalState.currentFuel;
             if (globalState.currentFuel <= 200) el.classList.add('danger');
             else el.classList.remove('danger');
         }
 
         function saveAndExit() { 
-            tkState.active = false; // Stop loop if active
+            tkState.active = false; 
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
             renderDashboard(); 
             gameView.classList.remove('active'); 

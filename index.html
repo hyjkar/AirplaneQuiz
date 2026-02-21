@@ -27,7 +27,6 @@
         }
         * { box-sizing: border-box; }
         
-        /* --- LAYOUT FIX: LOCKED VIEWPORT --- */
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--bg-sand);
@@ -37,7 +36,6 @@
             padding-bottom: max(15px, env(safe-area-inset-bottom));
             box-sizing: border-box;
             
-            /* Locks the body perfectly to the screen bounds preventing any scroll pushing */
             position: fixed; 
             top: 0; left: 0; right: 0; bottom: 0;
             width: 100%;
@@ -67,9 +65,9 @@
 
         .view-section { 
             width: 100%; max-width: 500px; 
-            height: 100%; /* Flexes perfectly inside the fixed body */
+            height: 100%; 
             display: none; flex-direction: column; align-items: center; 
-            min-height: 0; /* Crucial: allows internal scrolling instead of pushing bottom out */
+            min-height: 0; 
             transition: filter 2s ease;
         }
         .view-section.active { display: flex; }
@@ -123,7 +121,6 @@
         .world-content { display: none; flex-direction: column; gap: 8px; padding: 10px; background: #fff; }
         .world-folder.open .world-content { display: flex; }
 
-        /* FLIGHT STRIPS */
         .level-strip {
             background: white; border: 1px solid #eee; border-radius: 6px; 
             padding: 12px; width: 100%; min-height: 60px;
@@ -132,7 +129,7 @@
         }
         .level-strip:active { transform: scale(0.98); background-color: #f9f9f9; }
         .level-strip.classified { border: 1px solid var(--brand-red); background: #fff5f5; }
-        .level-strip.trivia { border: 1px solid #3498db; background: #f4f9fd; }
+        .level-strip.special { border: 1px solid #3498db; background: #f4f9fd; }
         
         .strip-icon { display: flex; align-items: center; justify-content: center; width: 30px; margin-right: 12px; }
         .strip-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
@@ -154,6 +151,7 @@
         button { 
             width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; 
             cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px;
+            user-select: none; -webkit-tap-highlight-color: transparent;
         }
         .primary-btn { background-color: var(--brand-red); color: white; }
         .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
@@ -171,16 +169,14 @@
         #smart-bomb-btn {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: #fff; border: 1px solid #ff9b9b; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
-            padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; 
-            text-transform: uppercase;
+            padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; text-transform: uppercase;
         }
 
         /* --- IMAGE MODE --- */
         #image-game-area { width: 100%; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
         #game-wrapper {
             background: transparent; box-shadow: none; border-radius: 0; padding: 0;
-            width: 100%; margin-bottom: 10px; position: relative;
-            flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center;
+            width: 100%; margin-bottom: 10px; position: relative; flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center;
         }
         #game-container { 
             position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; 
@@ -188,43 +184,19 @@
         }
         #game-container img { object-fit: cover; width: 100%; height: 100%; }
         #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-        #cover-grid { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; 
-        }
-
-        /* ARMORED FC TILES */
-        .grid-piece { 
-            background: linear-gradient(135deg, #2a2a2a 0%, #151515 100%);
-            border: 1px solid #333;
-            border-top-color: #444; border-left-color: #444;
-            display: flex; justify-content: center; align-items: center;
-            position: relative; transition: opacity 0.3s ease; 
-        }
-        .grid-piece::after {
-            content: 'FC';
-            font-family: 'Share Tech Mono', monospace;
-            color: rgba(207, 168, 110, 0.15);
-            font-size: 14px; font-weight: bold;
-        }
-        .grid-piece.revealed { opacity: 0; pointer-events: none; }
+        #cover-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; }
         
-        /* EXPLODING TILES (SMART BOMB) */
-        .grid-piece.exploded {
-            z-index: 9999 !important; 
-            border: 2px solid var(--gauge-orange) !important;
-            box-shadow: 0 0 20px var(--brand-red) !important;
-            background: var(--brand-red) !important;
+        .grid-piece { 
+            background: linear-gradient(135deg, #2a2a2a 0%, #151515 100%); border: 1px solid #333; border-top-color: #444; border-left-color: #444;
+            display: flex; justify-content: center; align-items: center; position: relative; transition: opacity 0.3s ease; 
         }
+        .grid-piece::after { content: 'FC'; font-family: 'Share Tech Mono', monospace; color: rgba(207, 168, 110, 0.15); font-size: 14px; font-weight: bold; }
+        .grid-piece.revealed { opacity: 0; pointer-events: none; }
+        .grid-piece.exploded { z-index: 9999 !important; border: 2px solid var(--gauge-orange) !important; box-shadow: 0 0 20px var(--brand-red) !important; background: var(--brand-red) !important; }
         .grid-piece.exploded::after { color: #fff; }
 
-        /* SCREEN FLASH FX */
         .flash-screen { animation: whiteFlash 0.6s ease-out; }
-        @keyframes whiteFlash {
-            0% { filter: brightness(1); }
-            10% { filter: brightness(4) contrast(1.5); }
-            100% { filter: brightness(1); }
-        }
+        @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
         
         #input-area { display: flex; flex-direction: column; gap: 5px; width: 100%; flex-shrink: 0; margin-bottom: 0px; }
         input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; }
@@ -236,15 +208,48 @@
         .trivia-dossier { background: #fff; border: 2px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .trivia-title { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: #888; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
         #trivia-question { font-size: 1.2rem; font-weight: 500; color: var(--brand-dark); margin-bottom: 20px; line-height: 1.4; }
-        
-        .trivia-option {
-            background: #f8f8f8; border: 2px solid #eee; color: #333; 
-            padding: 15px; text-align: left; font-size: 1rem; border-radius: 8px; margin-bottom: 10px;
-            transition: all 0.2s;
-        }
+        .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; text-align: left; font-size: 1rem; border-radius: 8px; margin-bottom: 10px; transition: all 0.2s; }
         .trivia-option:active { transform: scale(0.98); background: #eee; }
         .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
 
+        /* --- TAKEOFF MINI GAME --- */
+        #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; min-height: 0; }
+        .takeoff-hud { display: flex; justify-content: space-between; font-family: 'Share Tech Mono', monospace; font-size: 1rem; color: #333; margin-bottom: 5px; flex-shrink: 0;}
+        .tk-bar-bg { width: 100px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
+        .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
+        
+        #takeoff-viewport { 
+            position: relative; width: 100%; flex-grow: 1; min-height: 200px; 
+            background: linear-gradient(to bottom, #87CEEB 0%, #e0f6ff 100%); 
+            border: 2px solid #ccc; border-radius: 8px; overflow: hidden; margin-bottom: 10px;
+        }
+        
+        /* The Gauge */
+        #tk-gauge-container {
+            position: absolute; right: 10px; top: 10px; bottom: 30px; width: 20px;
+            background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px solid rgba(255,255,255,0.5); z-index: 5;
+        }
+        /* Target zone: 10 to 15 degrees out of 30 degree max -> 33% to 50% from bottom */
+        #tk-target-zone { position: absolute; left: 0; right: 0; bottom: 33.3%; height: 16.6%; background: var(--gauge-green); border-radius: 2px; }
+        #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); border-radius: 2px; transition: bottom 0.1s linear; }
+
+        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 25px; background: #444; border-top: 2px solid #666; z-index: 3;}
+        .runway-lines { 
+            width: 200%; height: 4px; background: repeating-linear-gradient(90deg, transparent, transparent 40px, #fff 40px, #fff 80px);
+            position: absolute; top: 10px; left: 0; 
+        }
+        .rolling .runway-lines { animation: scrollRunway 0.4s linear infinite; }
+        @keyframes scrollRunway { 0% { transform: translateX(0); } 100% { transform: translateX(-80px); } }
+
+        #tk-plane {
+            position: absolute; left: 20px; bottom: 25px; width: 120px; height: 40px;
+            transform-origin: 80% 90%; /* Rotate around rear wheels */
+            z-index: 4; transition: transform 0.1s linear;
+        }
+        
+        #takeoff-btn { flex-shrink: 0; font-size: 1.2rem; padding: 15px; margin-bottom: 0;}
+
+        /* Messages */
         #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
@@ -274,6 +279,9 @@
         .lb-fuel { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--brand-dark); }
         .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
 
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .float-text { position: fixed; color: var(--brand-red); font-weight: bold; font-size: 1.5rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 999; text-shadow: 0 2px 4px rgba(255,255,255,0.8); }
     </style>
 </head>
 <body>
@@ -360,7 +368,7 @@
         
         <div id="bomb-wrapper">
             <button id="smart-bomb-btn" onclick="triggerSmartBomb()">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg> 
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="vertical-align: text-bottom; margin-right: 5px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg> 
                 DETONATE SMART BOMB
             </button>
         </div>
@@ -388,6 +396,35 @@
                     <button class="trivia-option" id="btn-opt-2" onclick="submitTrivia(2)">C</button>
                 </div>
             </div>
+        </div>
+
+        <div id="takeoff-game-area">
+            <div class="takeoff-hud">
+                <div>Dist: <div class="tk-bar-bg"><div class="tk-bar-fill" id="tk-runway-fill" style="background:#f39c12"></div></div></div>
+                <div>Lift: <div class="tk-bar-bg"><div class="tk-bar-fill" id="tk-lift-fill"></div></div></div>
+            </div>
+            
+            <div id="takeoff-viewport">
+                <div id="tk-gauge-container">
+                    <div id="tk-target-zone"></div>
+                    <div id="tk-needle"></div>
+                </div>
+                
+                <div id="tk-plane">
+                    <svg viewBox="0 0 120 40" width="100%" height="100%">
+                        <path d="M10,20 Q30,15 50,15 L100,15 Q115,15 115,25 Q115,30 100,30 L10,30 Q5,30 5,25 Q5,20 10,20 Z" fill="#fff" />
+                        <path d="M15,18 L30,2 L40,2 L30,18 Z" fill="var(--brand-red)" />
+                        <path d="M50,25 L75,40 L60,40 L45,25 Z" fill="#bbb" />
+                        <path d="M95,17 Q105,17 110,22 L95,22 Z" fill="#1a1a1a" />
+                    </svg>
+                </div>
+                
+                <div id="tk-runway">
+                    <div class="runway-lines"></div>
+                </div>
+            </div>
+            
+            <button id="takeoff-btn" class="gold-btn">HOLD TO PITCH UP</button>
         </div>
 
         <div id="message"></div>
@@ -432,7 +469,8 @@
             folder: `<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`,
             lock: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="vertical-align: text-bottom; margin-right: 2px;"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>`,
             star: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
-            fuel: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>`
+            fuel: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>`,
+            takeoff: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M2.5 19h19v2h-19zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 1.82 3.16.77 1.33 1.6-.43 5.31-1.42 4.35-1.16L21 11.49c.81-.23 1.28-1.05 1.07-1.85z"/></svg>`
         };
 
         // --- PLANES DATA ---
@@ -454,11 +492,10 @@
             ]
         };
 
-        const TRIVIA_DATA = [
+        const SPECIAL_EVENTS = [
             { type: 'trivia', question: "What caused the 1977 Tenerife airport disaster, the deadliest accident in aviation history?", options: ["A runway collision in thick fog", "A mid-air collision over the Atlantic", "Dual engine failure due to volcanic ash"], correctIdx: 0, name: "Tenerife Disaster" },
             { type: 'trivia', question: "What forced US Airways Flight 1549 (the 'Miracle on the Hudson') to ditch into the river?", options: ["Complete loss of hydraulic fluid", "A flock of geese struck both engines", "Fuel starvation due to a leak"], correctIdx: 1, name: "Hudson River Ditching" },
-            { type: 'trivia', question: "Why did Air Canada Flight 143 (the 'Gimli Glider') run out of fuel mid-flight?", options: ["The fuel tanks were punctured", "A mix-up between pounds and kilograms", "The pilots forgot to switch fuel tanks"], correctIdx: 1, name: "Gimli Glider Incident" },
-            { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
+            { type: 'takeoff', name: "Takeoff Calibration" } // NEW MINI GAME
         ];
 
         const STARTING_GLOBAL_FUEL = 4000;
@@ -498,20 +535,32 @@
             }
             document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             document.getElementById('enter-btn').onclick = checkAnswer;
+            
+            // Init Takeoff Listeners
+            const tkBtn = document.getElementById('takeoff-btn');
+            const startPress = (e) => { e.preventDefault(); tkState.pressing = true; tkBtn.style.backgroundColor = "var(--brand-red)"; };
+            const endPress = (e) => { e.preventDefault(); tkState.pressing = false; tkBtn.style.backgroundColor = "var(--brand-gold)"; };
+            
+            tkBtn.addEventListener('mousedown', startPress);
+            tkBtn.addEventListener('touchstart', startPress, {passive: false});
+            document.addEventListener('mouseup', endPress);
+            document.addEventListener('touchend', endPress);
         };
 
         function generateGameLevels() {
             let pool = [...AIRCRAFT_DATA.standard].sort(() => Math.random() - 0.5);
             let classPool = [...AIRCRAFT_DATA.classified].sort(() => Math.random() - 0.5);
-            let tPool = [...TRIVIA_DATA].sort(() => Math.random() - 0.5);
+            
+            // Distribute 1 Takeoff and 2 Trivias randomly to the 3 hangars
+            let eventsPool = [...SPECIAL_EVENTS].sort(() => Math.random() - 0.5);
 
             let h1 = pool.slice(0, 4).map(p => ({ ...p, hangar: 1, isClassified: false, revealedTiles: [], completed: false }));
             let h2 = pool.slice(4, 7).map(p => ({ ...p, hangar: 2, isClassified: false, revealedTiles: [], completed: false }));
             let h3 = classPool.map(p => ({ ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false }));
 
-            h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
-            h2.push({ ...tPool[1], hangar: 2, isClassified: false, completed: false });
-            h3.push({ ...tPool[2], hangar: 3, isClassified: true, completed: false }); 
+            h1.push({ ...eventsPool[0], hangar: 1, isClassified: false, completed: false });
+            h2.push({ ...eventsPool[1], hangar: 2, isClassified: false, completed: false });
+            h3.push({ ...eventsPool[2], hangar: 3, isClassified: true, completed: false }); 
 
             h1 = h1.sort(() => Math.random() - 0.5);
             h2 = h2.sort(() => Math.random() - 0.5);
@@ -564,7 +613,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v30'); 
+            const saved = localStorage.getItem('fuelQuizState_v31'); 
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -578,7 +627,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v30', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v31', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -648,7 +697,7 @@
                     const idx = levelData.originalIndex;
                     const card = document.createElement('div');
                     
-                    if (levelData.type === 'trivia') card.className = "level-strip trivia";
+                    if (levelData.type === 'trivia' || levelData.type === 'takeoff') card.className = "level-strip special";
                     else if (levelData.isClassified) card.className = "level-strip classified";
                     else card.className = "level-strip";
 
@@ -660,6 +709,10 @@
                         iconSvg = ICONS.folder; 
                         iconColor = "#3498db";
                         title = "Incident Report"; 
+                    } else if (levelData.type === 'takeoff') {
+                        iconSvg = ICONS.takeoff; 
+                        iconColor = "#3498db";
+                        title = "Takeoff Calibration";
                     }
                     else if (levelData.isClassified) { 
                         iconSvg = ICONS.jet; 
@@ -716,6 +769,7 @@
 
             let title = `Flight ${idx+1}`;
             if (lState.type === 'trivia') title = "Incident Report";
+            else if (lState.type === 'takeoff') title = "Takeoff Calibration";
             else if (lState.isClassified) title = "Classified";
             
             if (lState.completed) title = lState.name;
@@ -725,12 +779,18 @@
 
             const imgArea = document.getElementById('image-game-area');
             const triviaArea = document.getElementById('trivia-game-area');
+            const takeoffArea = document.getElementById('takeoff-game-area');
             const container = document.getElementById('game-container');
+            
+            imgArea.style.display = 'none';
+            triviaArea.style.display = 'none';
+            takeoffArea.style.display = 'none';
+
+            // Reset Game Loops
+            if(tkState.frameId) { cancelAnimationFrame(tkState.frameId); tkState.active = false; }
 
             if (lState.type === 'image') {
                 imgArea.style.display = 'flex';
-                triviaArea.style.display = 'none';
-
                 container.style.overflow = 'hidden';
 
                 document.getElementById('mystery-image').src = lState.image;
@@ -759,7 +819,6 @@
                     grid.onmousedown = null; grid.ontouchstart = null;
                 }
             } else if (lState.type === 'trivia') {
-                imgArea.style.display = 'none';
                 triviaArea.style.display = 'flex';
                 bombBtn.style.display = "none";
 
@@ -777,10 +836,112 @@
                         btn.style.color = "white";
                     }
                 });
+            } else if (lState.type === 'takeoff') {
+                takeoffArea.style.display = 'flex';
+                bombBtn.style.display = "none";
+                
+                if (!lState.completed) {
+                    startTakeoff();
+                } else {
+                    document.getElementById('tk-plane').style.transform = `rotate(-12deg)`;
+                    document.getElementById('tk-needle').style.bottom = `40%`;
+                    document.getElementById('tk-runway-fill').style.width = '0%';
+                    document.getElementById('tk-lift-fill').style.width = '100%';
+                    document.getElementById('takeoff-viewport').classList.remove('rolling');
+                }
             }
         }
 
-        // --- NEW SLOWER EXPLOSION LOGIC ---
+        // --- TAKEOFF MINI GAME LOGIC ---
+        let tkState = {
+            active: false, pitch: 0, lift: 0, distance: 100, pressing: false, frameId: null
+        };
+
+        function startTakeoff() {
+            tkState.active = true;
+            tkState.pitch = 0;
+            tkState.lift = 0;
+            tkState.distance = 100;
+            tkState.pressing = false;
+            
+            document.getElementById('tk-plane').style.transform = `rotate(0deg)`;
+            document.getElementById('tk-needle').style.bottom = `0%`;
+            document.getElementById('tk-runway-fill').style.width = '100%';
+            document.getElementById('tk-lift-fill').style.width = '0%';
+            document.getElementById('takeoff-viewport').classList.add('rolling');
+            
+            tkState.frameId = requestAnimationFrame(takeoffLoop);
+        }
+
+        function takeoffLoop() {
+            if (!tkState.active) return;
+
+            // Physics
+            if (tkState.pressing) tkState.pitch += 0.6; // Rotate up
+            else tkState.pitch -= 0.4; // Gravity nose down
+
+            const planeEl = document.getElementById('tk-plane');
+            planeEl.style.transform = `rotate(-${tkState.pitch}deg)`;
+
+            const needle = document.getElementById('tk-needle');
+            needle.style.bottom = `${Math.max(0, Math.min(100, (tkState.pitch / 30) * 100))}%`;
+
+            // Fail bounds
+            if (tkState.pitch > 22) return failTakeoff("TAIL STRIKE");
+            if (tkState.pitch < -5) return failTakeoff("NOSE DIVE");
+
+            // Lift accumulation (Target: 10 to 15 degrees)
+            if (tkState.pitch >= 10 && tkState.pitch <= 15) {
+                tkState.lift += 0.6; 
+            } else {
+                tkState.lift = Math.max(0, tkState.lift - 0.2); 
+            }
+
+            // Distance decreases (~5 seconds)
+            tkState.distance -= 0.35; 
+
+            document.getElementById('tk-runway-fill').style.width = tkState.distance + '%';
+            document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
+
+            if (tkState.lift >= 100) return winTakeoff();
+            if (tkState.distance <= 0) return failTakeoff("RAN OUT OF RUNWAY");
+
+            tkState.frameId = requestAnimationFrame(takeoffLoop);
+        }
+
+        function failTakeoff(reason) {
+            tkState.active = false;
+            document.getElementById('takeoff-viewport').classList.remove('rolling');
+            
+            globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
+            saveState();
+            updateMiniFuelUI();
+            
+            const wrapper = document.getElementById('takeoff-viewport');
+            wrapper.classList.add('wrong-flash');
+            setTimeout(() => wrapper.classList.remove('wrong-flash'), 500);
+
+            if (globalState.currentFuel <= 0) {
+                triggerGameOver();
+            } else {
+                document.getElementById('message').textContent = reason + " - RETRYING (-200L)";
+                document.getElementById('message').className = "fail";
+                setTimeout(() => {
+                    if(!globalState.levels[activeLevelIdx].completed && globalState.currentFuel > 0 && document.getElementById('takeoff-game-area').style.display !== 'none') {
+                        document.getElementById('message').textContent = "";
+                        startTakeoff();
+                    }
+                }, 1500);
+            }
+        }
+
+        function winTakeoff() {
+            tkState.active = false;
+            document.getElementById('takeoff-viewport').classList.remove('rolling');
+            endGame(true, "PERFECT ROTATION!");
+        }
+
+        // --- SMART BOMB LOGIC ---
         function triggerSmartBomb() {
             if (!globalState.hasSmartBomb) return;
             
@@ -789,7 +950,6 @@
             
             wrapper.classList.add('shake-it');
             wrapper.classList.add('flash-screen');
-            
             container.style.overflow = 'visible';
             
             setTimeout(() => {
@@ -812,7 +972,6 @@
                 
                 let dx = tileCX - centerX;
                 let dy = tileCY - centerY;
-                
                 dx += (Math.random() - 0.5) * 50;
                 dy += (Math.random() - 0.5) * 50;
 
@@ -824,8 +983,7 @@
                 const rot = (Math.random() - 0.5) * 720; 
                 
                 p.classList.add('exploded');
-                
-                void p.offsetWidth;
+                void p.offsetWidth; // Reflow
                 
                 p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s';
                 p.style.pointerEvents = 'none';
@@ -842,6 +1000,7 @@
             bombBtn.style.display = "none";
         }
 
+        // --- STANDARD LOGIC ---
         function handleInteraction(e) {
             const lState = globalState.levels[activeLevelIdx];
             if (lState.completed || globalState.currentFuel <= 0) return;
@@ -886,28 +1045,6 @@
             }
         }
 
-        function submitTrivia(selectedIndex) {
-            const lState = globalState.levels[activeLevelIdx];
-            if(lState.completed || globalState.currentFuel <= 0) return;
-
-            if(selectedIndex === lState.correctIdx) {
-                const btn = document.getElementById('btn-opt-' + selectedIndex);
-                btn.style.backgroundColor = "var(--gauge-green)";
-                btn.style.color = "white";
-                endGame(true, "Analysis Correct");
-            } else {
-                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
-                saveState();
-                updateMiniFuelUI();
-                
-                const btn = document.getElementById('btn-opt-' + selectedIndex);
-                btn.classList.add('wrong-flash');
-                setTimeout(() => btn.classList.remove('wrong-flash'), 500);
-
-                if (globalState.currentFuel <= 0) triggerGameOver();
-            }
-        }
-
         function endGame(win, msg) {
             document.getElementById('message').textContent = msg;
             if (win) {
@@ -940,12 +1077,20 @@
         function closeRefuel() { refuelOverlay.style.display = 'none'; saveAndExit(); }
         function updateMiniFuelUI() {
             const el = document.getElementById('current-fuel-display');
-            el.textContent = globalState.currentFuel;
+            // update inside the span, not the whole div so we keep the SVG
+            el.querySelector('span').textContent = globalState.currentFuel;
             if (globalState.currentFuel <= 200) el.classList.add('danger');
             else el.classList.remove('danger');
         }
 
-        function saveAndExit() { renderDashboard(); gameView.classList.remove('active'); selectorView.classList.add('active'); }
+        function saveAndExit() { 
+            tkState.active = false; // Stop loop if active
+            if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
+            renderDashboard(); 
+            gameView.classList.remove('active'); 
+            selectorView.classList.add('active'); 
+        }
+        
         function triggerResetUI() { restartOverlay.style.display = 'flex'; }
         function cancelReset() { restartOverlay.style.display = 'none'; }
         function confirmReset() { localStorage.clear(); location.reload(); }

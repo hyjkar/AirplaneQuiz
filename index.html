@@ -203,7 +203,6 @@
         
         #input-area { display: flex; flex-direction: column; gap: 5px; width: 100%; flex-shrink: 0; margin-bottom: 0px; }
         
-        /* Mobile Input Fix */
         input[type="text"] { 
             width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; 
             text-align: center; background: white; color: #333; 
@@ -238,9 +237,9 @@
             position: absolute; right: 10px; top: 10px; bottom: 30px; width: 20px;
             background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px solid rgba(255,255,255,0.5); z-index: 5;
         }
-        /* Adjusted Target zone: 30% to 53% */
-        #tk-target-zone { position: absolute; left: 0; right: 0; bottom: 30%; height: 23%; background: var(--gauge-green); border-radius: 2px; }
-        #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); border-radius: 2px; transition: bottom 0.1s linear; }
+        /* ENLARGED TARGET ZONE: 7 to 18 degrees (out of 30 max) */
+        #tk-target-zone { position: absolute; left: 0; right: 0; bottom: 23%; height: 37%; background: var(--gauge-green); border-radius: 2px; }
+        #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); border-radius: 2px; transition: bottom 0.05s linear; }
 
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 25px; background: #444; border-top: 2px solid #666; z-index: 3;}
         .runway-lines { 
@@ -253,14 +252,16 @@
         #tk-plane {
             position: absolute; left: 20px; bottom: 25px; width: 120px; height: 40px;
             transform-origin: 80% 90%; 
-            z-index: 4; transition: transform 0.1s linear;
+            z-index: 4; 
+            /* Will be animated heavily by JS, no transitions here to prevent lag */
         }
         
-        /* Mobile Interaction Safe Button */
         #takeoff-btn { 
             flex-shrink: 0; font-size: 1.2rem; padding: 15px; margin-bottom: 0;
-            touch-action: none; /* Prevents scroll/zoom on touch */
-            -webkit-touch-callout: none; /* Prevents iOS magnifying glass */
+            touch-action: none; 
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
@@ -543,7 +544,7 @@
                 if (isAllWorldsComplete()) syncScoreToCloud();
             }
             
-            // Allow Enter key to submit login
+            // Login enter fix
             document.getElementById('callsign-input').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
                     this.blur();
@@ -554,7 +555,7 @@
             document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             document.getElementById('enter-btn').onclick = checkAnswer;
             
-            // --- NEW: BULLETPROOF POINTER EVENTS FOR MOBILE HOLD ---
+            // --- POINTER EVENTS FIX FOR MOBILE HOLD ---
             const tkBtn = document.getElementById('takeoff-btn');
             
             const startPress = (e) => { 
@@ -564,15 +565,11 @@
             };
             
             const endPress = (e) => { 
-                e.preventDefault();
                 tkState.pressing = false; 
                 tkBtn.style.backgroundColor = "var(--brand-gold)"; 
             };
             
-            // pointerdown covers mouse click, touch tap, and pen tap
             tkBtn.addEventListener('pointerdown', startPress);
-            
-            // Bind release events to window so it catches if finger slides off button
             window.addEventListener('pointerup', endPress);
             window.addEventListener('pointercancel', endPress);
         };
@@ -589,7 +586,6 @@
             // Force Takeoff into Hangar 1
             h1.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 1, isClassified: false, completed: false });
             
-            // Random Trivia into Hangar 2 and 3
             h2.push({ ...tPool[0], hangar: 2, isClassified: false, completed: false });
             h3.push({ ...tPool[1], hangar: 3, isClassified: true, completed: false }); 
 
@@ -644,7 +640,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v34'); // Ver bump for fix
+            const saved = localStorage.getItem('fuelQuizState_v35'); // Ver bump for physics fix
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -658,7 +654,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v34', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v35', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -873,7 +869,7 @@
                 if (!lState.completed) {
                     startTakeoff();
                 } else {
-                    document.getElementById('tk-plane').style.transform = `rotate(-12deg)`;
+                    document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-12deg)`;
                     document.getElementById('tk-needle').style.bottom = `40%`;
                     document.getElementById('tk-runway-fill').style.width = '0%';
                     document.getElementById('tk-lift-fill').style.width = '100%';
@@ -882,17 +878,26 @@
             }
         }
 
-        // --- SIMPLIFIED TAKEOFF MINI GAME LOGIC ---
-        let tkState = { active: false, pitch: 0, lift: 0, distance: 100, pressing: false, frameId: null };
+        // --- TAKEOFF MINI GAME LOGIC (FIXED PHYSICS) ---
+        let tkState = { 
+            active: false, 
+            pitch: 0, 
+            pitchVelocity: 0, 
+            lift: 0, 
+            distance: 100, 
+            pressing: false, 
+            frameId: null 
+        };
 
         function startTakeoff() {
             tkState.active = true;
             tkState.pitch = 0;
+            tkState.pitchVelocity = 0;
             tkState.lift = 0;
             tkState.distance = 100;
             tkState.pressing = false;
             
-            document.getElementById('tk-plane').style.transform = `rotate(0deg)`;
+            document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`;
             document.getElementById('tk-needle').style.bottom = `0%`;
             document.getElementById('tk-runway-fill').style.width = '100%';
             document.getElementById('tk-lift-fill').style.width = '0%';
@@ -904,37 +909,45 @@
         function takeoffLoop() {
             if (!tkState.active) return;
 
-            // Adjust pitch based on button hold
-            if (tkState.pressing) tkState.pitch += 0.8; 
-            else tkState.pitch -= 0.6; 
-
-            // SIMPLIFIED: No instant crashing. Just clamp the visual limits of the plane
+            // Smooth momentum physics
+            if (tkState.pressing) {
+                tkState.pitchVelocity += 0.04; 
+            } else {
+                tkState.pitchVelocity -= 0.02; 
+            }
+            
+            tkState.pitchVelocity *= 0.95; // Friction/damping
+            tkState.pitchVelocity = Math.max(-0.6, Math.min(0.8, tkState.pitchVelocity)); // Speed limit
+            
+            tkState.pitch += tkState.pitchVelocity;
+            
+            // Hard clamp visually
             tkState.pitch = Math.max(-5, Math.min(30, tkState.pitch));
+            if(tkState.pitch === 30 || tkState.pitch === -5) tkState.pitchVelocity = 0;
 
+            // Lift accumulation (Target: 7 to 18 degrees)
+            if (tkState.pitch >= 7 && tkState.pitch <= 18) {
+                tkState.lift += 0.35; 
+            } else {
+                tkState.lift = Math.max(0, tkState.lift - 0.2); 
+            }
+
+            // Visual updates
+            const liftY = (tkState.lift / 100) * 80; // Plane rises up to 80px
             const planeEl = document.getElementById('tk-plane');
-            planeEl.style.transform = `rotate(-${tkState.pitch}deg)`;
+            planeEl.style.transform = `translateY(-${liftY}px) rotate(-${tkState.pitch}deg)`;
 
             const needle = document.getElementById('tk-needle');
             needle.style.bottom = `${Math.max(0, Math.min(100, (tkState.pitch / 30) * 100))}%`;
 
-            // Lift accumulation (Target zone widened slightly for mobile forgiveness: 9 to 16 degrees)
-            if (tkState.pitch >= 9 && tkState.pitch <= 16) {
-                tkState.lift += 0.8; 
-            } else {
-                tkState.lift = Math.max(0, tkState.lift - 0.3); 
-            }
-
-            // Distance decreases
-            tkState.distance -= 0.35; 
+            // Distance decreases slower (~8 seconds to cross runway)
+            tkState.distance -= 0.2; 
 
             document.getElementById('tk-runway-fill').style.width = tkState.distance + '%';
             document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
 
-            // Win if lift bar fills up completely
             if (tkState.lift >= 100) return winTakeoff();
-            
-            // Fail if runway ends and lift isn't full
-            if (tkState.distance <= 0) return failTakeoff("INCORRECT ANGLE - NO LIFT");
+            if (tkState.distance <= 0) return failTakeoff("NO LIFT - END OF RUNWAY");
 
             tkState.frameId = requestAnimationFrame(takeoffLoop);
         }
@@ -954,7 +967,7 @@
             if (globalState.currentFuel <= 0) {
                 triggerGameOver();
             } else {
-                document.getElementById('message').textContent = reason + " - RETRYING (-200L)";
+                document.getElementById('message').textContent = reason + " (-200L)";
                 document.getElementById('message').className = "fail";
                 setTimeout(() => {
                     if(!globalState.levels[activeLevelIdx].completed && globalState.currentFuel > 0 && document.getElementById('takeoff-game-area').style.display !== 'none') {
@@ -1013,7 +1026,7 @@
                 const rot = (Math.random() - 0.5) * 720; 
                 
                 p.classList.add('exploded');
-                void p.offsetWidth; // Reflow
+                void p.offsetWidth; 
                 
                 p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s';
                 p.style.pointerEvents = 'none';

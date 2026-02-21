@@ -58,11 +58,9 @@
 
         .view-section { 
             width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; 
-            padding-bottom: 20px; 
-            transition: filter 2s ease;
+            padding-bottom: 10px; transition: filter 2s ease;
         }
         .view-section.active { display: flex; }
-        
         .gray-out { filter: grayscale(100%) contrast(1.2); }
 
         .modal-box {
@@ -85,7 +83,7 @@
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
 
-        /* --- LIST VIEW --- */
+        /* --- HANGAR LIST --- */
         #level-list-container {
             display: flex; flex-direction: column; gap: 8px; width: 100%;
             margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; 
@@ -101,7 +99,7 @@
         .world-folder.locked-world { opacity: 0.6; pointer-events: none; background: #f0f0f0; }
         
         .world-header {
-            padding: 12px 15px; background: #f8f8f8; cursor: pointer;
+            padding: 15px 15px; background: #f8f8f8; cursor: pointer;
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid transparent; transition: all 0.2s;
         }
@@ -114,6 +112,7 @@
         .world-content { display: none; flex-direction: column; gap: 8px; padding: 10px; background: #fff; }
         .world-folder.open .world-content { display: flex; }
 
+        /* FLIGHT STRIPS */
         .level-strip {
             background: white; border: 1px solid #eee; border-radius: 6px; 
             padding: 12px; width: 100%; min-height: 60px;
@@ -122,6 +121,8 @@
         }
         .level-strip:active { transform: scale(0.98); background-color: #f9f9f9; }
         .level-strip.classified { border: 1px solid var(--brand-red); background: #fff5f5; }
+        .level-strip.trivia { border: 1px solid #3498db; background: #f4f9fd; }
+        
         .strip-icon { font-size: 1.4rem; width: 30px; text-align: center; margin-right: 10px; }
         .strip-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         .strip-title { font-size: 0.95rem; color: var(--brand-dark); font-weight: bold; margin: 0; }
@@ -148,11 +149,20 @@
         .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
         .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
 
-        /* --- GAMEPLAY --- */
+        /* --- GAMEPLAY (Shared) --- */
         .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; }
         .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
         
+        #bomb-wrapper { margin-bottom: 5px; width: 100%; text-align: center; }
+        #smart-bomb-btn {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: #fff; border: 1px solid #fff; box-shadow: 0 0 10px rgba(142, 68, 173, 0.4);
+            padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; 
+        }
+
+        /* --- IMAGE MODE --- */
+        #image-game-area { width: 100%; display: flex; flex-direction: column; flex-grow: 1; }
         #game-wrapper {
             background: transparent; box-shadow: none; border-radius: 0; padding: 0;
             width: 100%; margin-bottom: 10px; position: relative;
@@ -164,7 +174,6 @@
         }
         #game-container img { object-fit: cover; width: 100%; height: 100%; }
         #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-        
         #cover-grid { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; 
@@ -172,16 +181,28 @@
         .grid-piece { background-color: var(--piece-color); border: 1px solid #3a3a3a; transition: opacity 0.3s; }
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
         
-        /* BOMB BUTTON */
-        #bomb-wrapper { margin-bottom: 5px; width: 100%; text-align: center; }
-        #smart-bomb-btn {
-            background: linear-gradient(135deg, #8e44ad, #9b59b6);
-            color: #fff; border: 1px solid #fff; box-shadow: 0 0 10px rgba(142, 68, 173, 0.4);
-            padding: 8px; font-size: 0.9rem; letter-spacing: 1px;
-            display: none; /* Hidden by default */
-        }
+        #input-area { display: flex; flex-direction: column; gap: 5px; width: 100%; flex-shrink: 0; margin-bottom: 0px; }
+        input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; }
+        input[type="text"]:focus { border-color: var(--brand-gold); }
+        #enter-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
+
+        /* --- TRIVIA MODE --- */
+        #trivia-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; justify-content: center; gap: 15px;}
+        .trivia-dossier { background: #fff; border: 2px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .trivia-title { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: #888; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        #trivia-question { font-size: 1.2rem; font-weight: 500; color: var(--brand-dark); margin-bottom: 20px; line-height: 1.4; }
         
-        /* SHAKE ANIMATION */
+        .trivia-option {
+            background: #f8f8f8; border: 2px solid #eee; color: #333; 
+            padding: 15px; text-align: left; font-size: 1rem; border-radius: 8px; margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+        .trivia-option:active { transform: scale(0.98); background: #eee; }
+        .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
+
+        #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
+        .success { color: #27ae60; } .fail { color: var(--brand-red); }
+
         .shake-it { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
@@ -189,14 +210,6 @@
             30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
             40%, 60% { transform: translate3d(4px, 0, 0); }
         }
-
-        #input-area { display: flex; flex-direction: column; gap: 5px; width: 100%; flex-shrink: 0; margin-bottom: 0px; }
-        input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; }
-        input[type="text"]:focus { border-color: var(--brand-gold); }
-        #enter-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
-        
-        #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
-        .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
         @media (max-height: 500px) {
             .game-header { display: none !important; }
@@ -298,18 +311,33 @@
             <button id="smart-bomb-btn" onclick="triggerSmartBomb()">💣 SMART BOMB (1 LEFT)</button>
         </div>
 
-        <div id="game-wrapper">
-            <div id="game-container">
-                <img id="mystery-image" src="" alt="Mystery Airplane">
-                <div id="cover-grid"></div>
+        <div id="image-game-area">
+            <div id="game-wrapper">
+                <div id="game-container">
+                    <img id="mystery-image" src="" alt="Mystery Airplane">
+                    <div id="cover-grid"></div>
+                </div>
+            </div>
+            <div id="input-area">
+                <input type="text" id="guess-input" placeholder="Identify aircraft..." autocomplete="off">
+                <button id="enter-btn">ENTER</button>
             </div>
         </div>
-        <div id="input-area">
-            <input type="text" id="guess-input" placeholder="Identify aircraft..." autocomplete="off">
-            <button id="enter-btn">ENTER</button>
-            <button class="outline-btn" onclick="saveAndExit()">Continue Later</button>
+
+        <div id="trivia-game-area">
+            <div class="trivia-dossier">
+                <div class="trivia-title">Incident Analysis Report</div>
+                <div id="trivia-question">Question text goes here?</div>
+                <div id="trivia-options-container">
+                    <button class="trivia-option" id="btn-opt-0" onclick="submitTrivia(0)">A</button>
+                    <button class="trivia-option" id="btn-opt-1" onclick="submitTrivia(1)">B</button>
+                    <button class="trivia-option" id="btn-opt-2" onclick="submitTrivia(2)">C</button>
+                </div>
+            </div>
         </div>
+
         <div id="message"></div>
+        <button class="outline-btn" onclick="saveAndExit()" style="margin-top:auto; flex-shrink:0;">Continue Later</button>
     </div>
 
     <div id="leaderboard-view" class="view-section">
@@ -340,42 +368,48 @@
             db = firebase.firestore();
         } catch(e) { console.error("Firebase Init Error", e); }
 
-        // --- PLANES DATA (Randomized Pools) ---
+        // --- PLANES DATA ---
         const AIRCRAFT_DATA = {
             standard: [
-                { image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
-                { image: "a380.jpg", answers: ["airbus a380", "a380", "super jumbo", "380"], name: "Airbus A380" },
-                { image: "787.jpg", answers: ["787", "boeing 787", "dreamliner", "b787"], name: "Boeing 787" },
-                { image: "e175.jpg", answers: ["e175", "embraer 175", "embraer e175", "e-175"], name: "Embraer E175" },
-                { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
-                { image: "antonov.jpg", answers: ["an225", "an-225", "mriya", "antonov 225"], name: "Antonov An-225" },
-                { image: "a350.jpg", answers: ["a350", "airbus a350", "350"], name: "Airbus A350" }
+                { type: 'image', image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
+                { type: 'image', image: "a380.jpg", answers: ["airbus a380", "a380", "super jumbo", "380"], name: "Airbus A380" },
+                { type: 'image', image: "787.jpg", answers: ["787", "boeing 787", "dreamliner", "b787"], name: "Boeing 787" },
+                { type: 'image', image: "e175.jpg", answers: ["e175", "embraer 175", "embraer e175", "e-175"], name: "Embraer E175" },
+                { type: 'image', image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
+                { type: 'image', image: "antonov.jpg", answers: ["an225", "an-225", "mriya", "antonov 225"], name: "Antonov An-225" },
+                { type: 'image', image: "a350.jpg", answers: ["a350", "airbus a350", "350"], name: "Airbus A350" }
             ],
             classified: [
-                { image: "f22.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
-                { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
-                { image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
-                { image: "p51.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" }
+                { type: 'image', image: "f22.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
+                { type: 'image', image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
+                { type: 'image', image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
+                { type: 'image', image: "p51.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" }
             ]
         };
+
+        // --- TRIVIA DATA ---
+        const TRIVIA_DATA = [
+            { type: 'trivia', question: "What caused the 1977 Tenerife airport disaster, the deadliest accident in aviation history?", options: ["A runway collision in thick fog", "A mid-air collision over the Atlantic", "Dual engine failure due to volcanic ash"], correctIdx: 0, name: "Tenerife Disaster" },
+            { type: 'trivia', question: "What forced US Airways Flight 1549 (the 'Miracle on the Hudson') to ditch into the river?", options: ["Complete loss of hydraulic fluid", "A flock of geese struck both engines", "Fuel starvation due to a leak"], correctIdx: 1, name: "Hudson River Ditching" },
+            { type: 'trivia', question: "Why did Air Canada Flight 143 (the 'Gimli Glider') run out of fuel mid-flight?", options: ["The fuel tanks were punctured", "A mix-up between pounds and kilograms", "The pilots forgot to switch fuel tanks"], correctIdx: 1, name: "Gimli Glider Incident" },
+            { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
+        ];
 
         const STARTING_GLOBAL_FUEL = 4000;
         const REFUEL_AMOUNT = 2000; 
         const TILE_COST = 15;
         const WRONG_GUESS_PENALTY = 200;
 
-        // --- STATE ---
         let globalState = {
             username: null,
             currentFuel: STARTING_GLOBAL_FUEL,
             levels: [],
-            hasSmartBomb: true, // NEW
+            hasSmartBomb: true,
             world1Complete: false,
             world2Complete: false
         };
         let activeLevelIdx = 0;
 
-        // --- DOM ---
         const selectorView = document.getElementById('selector-view');
         const gameView = document.getElementById('game-view');
         const lbView = document.getElementById('leaderboard-view');
@@ -386,7 +420,6 @@
         const pilotGreeting = document.getElementById('pilot-greeting');
         const bombBtn = document.getElementById('smart-bomb-btn');
         
-        // --- INIT ---
         window.onload = function() {
             loadState();
             if (!globalState.username) {
@@ -401,25 +434,31 @@
             document.getElementById('enter-btn').onclick = checkAnswer;
         };
 
-        // --- GENERATOR ---
         function generateGameLevels() {
-            let levels = [];
-            // Shuffle Standard Planes
+            // Shuffle Planes
             let pool = [...AIRCRAFT_DATA.standard].sort(() => Math.random() - 0.5);
+            let classPool = [...AIRCRAFT_DATA.classified].sort(() => Math.random() - 0.5);
             
-            // Hangar 1: 4 Random Planes
-            pool.slice(0, 4).forEach(p => levels.push({ ...p, hangar: 1, isClassified: false, revealedTiles: [], completed: false }));
-            
-            // Hangar 2: Remaining 3 Planes
-            pool.slice(4, 7).forEach(p => levels.push({ ...p, hangar: 2, isClassified: false, revealedTiles: [], completed: false }));
-            
-            // Hangar 3: Fixed Classified Planes
-            AIRCRAFT_DATA.classified.forEach(p => levels.push({ ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false }));
-            
-            return levels;
+            // Shuffle Trivia
+            let tPool = [...TRIVIA_DATA].sort(() => Math.random() - 0.5);
+
+            let h1 = pool.slice(0, 4).map(p => ({ ...p, hangar: 1, isClassified: false, revealedTiles: [], completed: false }));
+            let h2 = pool.slice(4, 7).map(p => ({ ...p, hangar: 2, isClassified: false, revealedTiles: [], completed: false }));
+            let h3 = classPool.map(p => ({ ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false }));
+
+            // Inject 1 Trivia into each hangar
+            h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
+            h2.push({ ...tPool[1], hangar: 2, isClassified: false, completed: false });
+            h3.push({ ...tPool[2], hangar: 3, isClassified: true, completed: false }); // Locked via hangar 3 logic
+
+            // Shuffle each hangar so trivia is randomly placed
+            h1 = h1.sort(() => Math.random() - 0.5);
+            h2 = h2.sort(() => Math.random() - 0.5);
+            h3 = h3.sort(() => Math.random() - 0.5);
+
+            return [...h1, ...h2, ...h3];
         }
 
-        // --- LOGIC ---
         function registerPilot() {
             const name = document.getElementById('callsign-input').value.trim();
             if (name.length < 2) { alert("Callsign too short."); return; }
@@ -433,7 +472,7 @@
 
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
-            db.collection("fuel_command_v2").doc(globalState.username).set({
+            db.collection("fuel_command_v5").doc(globalState.username).set({
                 name: globalState.username,
                 score: globalState.currentFuel,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -447,7 +486,7 @@
             list.innerHTML = "Fetching Data...";
             if(!db) { list.innerHTML = "⚠️ Database not connected."; return; }
 
-            db.collection("fuel_command_v2").orderBy("score", "desc").limit(20).get()
+            db.collection("fuel_command_v5").orderBy("score", "desc").limit(20).get()
             .then((querySnapshot) => {
                 let html = "";
                 let rank = 1;
@@ -464,13 +503,13 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v23'); // Version bump for Bomb
+            const saved = localStorage.getItem('fuelQuizState_v24'); 
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
                     globalState.levels = generateGameLevels();
                 }
-                if(globalState.hasSmartBomb === undefined) globalState.hasSmartBomb = true; // migration
+                if(globalState.hasSmartBomb === undefined) globalState.hasSmartBomb = true;
             } else {
                 globalState.currentFuel = STARTING_GLOBAL_FUEL;
                 globalState.levels = generateGameLevels();
@@ -478,7 +517,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v23', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v24', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -539,9 +578,7 @@
                     <div class="world-title-group"><h3>${lockIcon}Hangar ${hNum}</h3></div>
                     <div class="arrow">▼</div>
                 `;
-                if (!isFolderLocked) {
-                    header.onclick = () => folder.classList.toggle('open');
-                }
+                if (!isFolderLocked) header.onclick = () => folder.classList.toggle('open');
 
                 const content = document.createElement('div');
                 content.className = 'world-content';
@@ -550,33 +587,40 @@
                     const idx = levelData.originalIndex;
                     const card = document.createElement('div');
                     
-                    if (levelData.isClassified) {
-                        card.className = "level-strip classified";
-                    } else {
-                        card.className = "level-strip";
-                    }
+                    if (levelData.type === 'trivia') card.className = "level-strip trivia";
+                    else if (levelData.isClassified) card.className = "level-strip classified";
+                    else card.className = "level-strip";
 
                     let icon = "✈️";
                     let title = `Flight ${idx + 1}`;
-                    if(levelData.isClassified) { icon = "🚀"; title = "Classified"; }
+                    
+                    if(levelData.type === 'trivia') { icon = "📁"; title = "Incident Report"; }
+                    else if(levelData.isClassified) { icon = "🚀"; title = "Classified"; }
 
                     let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
                     
                     if (levelData.completed) {
-                        title = levelData.name; icon = "★"; statusHtml = `<div class="strip-status status-done">Identified</div>`;
-                    } else if (levelData.revealedTiles.length > 0) {
+                        title = levelData.name; icon = "★"; statusHtml = `<div class="strip-status status-done">Cleared</div>`;
+                    } else if (levelData.type === 'image' && levelData.revealedTiles.length > 0) {
                         statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
                     }
 
-                    if (globalState.currentFuel <= 0 && !levelData.completed) {
+                    // For Classified levels, require 1000L minimum fuel to enter
+                    let isFuelLocked = false;
+                    if (hNum === 3 && globalState.currentFuel < 1000 && !levelData.completed) isFuelLocked = true;
+
+                    if (isFuelLocked) {
+                        card.className = "level-strip locked";
+                        card.innerHTML = `<div class="strip-icon">⛽</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
+                    } else if (globalState.currentFuel <= 0 && !levelData.completed) {
                          card.className += " locked";
                          statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
                          card.onclick = () => triggerGameOver();
+                         card.innerHTML = `<div class="strip-icon">${icon}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                     } else {
                         card.onclick = () => launchLevel(idx);
+                        card.innerHTML = `<div class="strip-icon">${icon}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                     }
-                    card.innerHTML = `<div class="strip-icon">${icon}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
-                    
                     content.appendChild(card);
                 });
 
@@ -599,61 +643,102 @@
             gameView.classList.add('active');
 
             let title = `Flight ${idx+1}`;
-            if (lState.completed) title = lState.name;
+            if (lState.type === 'trivia') title = "Incident Report";
             else if (lState.isClassified) title = "Classified";
             
+            if (lState.completed) title = lState.name;
             document.getElementById('level-title').textContent = title;
-            document.getElementById('mystery-image').src = lState.image;
-            document.getElementById('guess-input').value = "";
-            document.getElementById('guess-input').disabled = lState.completed; 
-            document.getElementById('enter-btn').disabled = lState.completed;
-            document.getElementById('message').textContent = lState.completed ? "Identified" : "";
-            
-            // SHOW/HIDE BOMB
-            if (globalState.hasSmartBomb && !lState.completed) {
-                bombBtn.style.display = "inline-block";
-            } else {
-                bombBtn.style.display = "none";
-            }
-            
+            document.getElementById('message').textContent = lState.completed ? "Cleared" : "";
             updateMiniFuelUI();
 
-            const grid = document.getElementById('cover-grid');
-            grid.innerHTML = "";
-            for (let i = 0; i < 100; i++) {
-                const tile = document.createElement('div');
-                tile.className = 'grid-piece';
-                if (lState.revealedTiles.includes(i) || lState.completed) tile.classList.add('revealed');
-                grid.appendChild(tile);
-            }
+            const imgArea = document.getElementById('image-game-area');
+            const triviaArea = document.getElementById('trivia-game-area');
 
-            if (!lState.completed && globalState.currentFuel > 0) {
-                grid.onmousedown = handleInteraction;
-                grid.ontouchstart = (e) => { e.preventDefault(); handleInteraction(e); };
-            } else {
-                grid.onmousedown = null; grid.ontouchstart = null;
+            if (lState.type === 'image') {
+                imgArea.style.display = 'flex';
+                triviaArea.style.display = 'none';
+
+                document.getElementById('mystery-image').src = lState.image;
+                document.getElementById('guess-input').value = "";
+                document.getElementById('guess-input').disabled = lState.completed; 
+                document.getElementById('enter-btn').disabled = lState.completed;
+                
+                if (globalState.hasSmartBomb && !lState.completed) bombBtn.style.display = "inline-block";
+                else bombBtn.style.display = "none";
+
+                const grid = document.getElementById('cover-grid');
+                grid.innerHTML = "";
+                for (let i = 0; i < 100; i++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'grid-piece';
+                    if (lState.revealedTiles.includes(i) || lState.completed) tile.classList.add('revealed');
+                    grid.appendChild(tile);
+                }
+
+                if (!lState.completed && globalState.currentFuel > 0) {
+                    grid.onmousedown = handleInteraction;
+                    grid.ontouchstart = (e) => { e.preventDefault(); handleInteraction(e); };
+                } else {
+                    grid.onmousedown = null; grid.ontouchstart = null;
+                }
+            } else if (lState.type === 'trivia') {
+                imgArea.style.display = 'none';
+                triviaArea.style.display = 'flex';
+                bombBtn.style.display = "none"; // No bombs for trivia
+
+                document.getElementById('trivia-question').textContent = lState.question;
+                
+                // Populate options
+                lState.options.forEach((optText, i) => {
+                    const btn = document.getElementById('btn-opt-' + i);
+                    btn.textContent = String.fromCharCode(65 + i) + ". " + optText;
+                    btn.disabled = lState.completed;
+                    btn.style.backgroundColor = ""; // reset
+                    btn.style.color = ""; // reset
+                    
+                    if(lState.completed && i === lState.correctIdx) {
+                        btn.style.backgroundColor = "var(--gauge-green)";
+                        btn.style.color = "white";
+                    }
+                });
             }
         }
 
-        // --- BOMB LOGIC ---
+        // --- TRIVIA LOGIC ---
+        function submitTrivia(selectedIndex) {
+            const lState = globalState.levels[activeLevelIdx];
+            if(lState.completed || globalState.currentFuel <= 0) return;
+
+            if(selectedIndex === lState.correctIdx) {
+                const btn = document.getElementById('btn-opt-' + selectedIndex);
+                btn.style.backgroundColor = "var(--gauge-green)";
+                btn.style.color = "white";
+                endGame(true, "Analysis Correct");
+            } else {
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
+                saveState();
+                updateMiniFuelUI();
+                
+                const btn = document.getElementById('btn-opt-' + selectedIndex);
+                btn.classList.add('wrong-flash');
+                setTimeout(() => btn.classList.remove('wrong-flash'), 500);
+
+                if (globalState.currentFuel <= 0) triggerGameOver();
+            }
+        }
+
+        // --- IMAGE BOMB LOGIC ---
         function triggerSmartBomb() {
             if (!globalState.hasSmartBomb) return;
-            
-            // Visuals
             const wrapper = document.getElementById('game-wrapper');
             wrapper.classList.add('shake-it');
             setTimeout(() => wrapper.classList.remove('shake-it'), 500);
             
-            // Logic
             document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
-            
-            // Update State
             globalState.hasSmartBomb = false;
-            // Mark all tiles as revealed for this specific level
             globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()];
-            
             saveState();
-            bombBtn.style.display = "none"; // Hide button
+            bombBtn.style.display = "none";
         }
 
         function handleInteraction(e) {
@@ -706,14 +791,17 @@
                 document.getElementById('message').className = "success";
                 const lState = globalState.levels[activeLevelIdx];
                 lState.completed = true;
-                document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+                
+                if (lState.type === 'image') {
+                    document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+                }
+                
                 triggerConfetti();
-                
                 document.getElementById('level-title').textContent = lState.name;
-                bombBtn.style.display = "none"; // Hide bomb on win
+                bombBtn.style.display = "none";
                 saveState();
-                if (isAllWorldsComplete()) syncScoreToCloud();
                 
+                if (isAllWorldsComplete()) syncScoreToCloud();
                 setTimeout(saveAndExit, 2000);
             } else {
                 document.getElementById('message').className = "fail";

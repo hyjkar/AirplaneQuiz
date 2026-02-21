@@ -27,18 +27,14 @@
         }
         * { box-sizing: border-box; }
         
-        /* --- CORE LAYOUT FIX --- */
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--bg-sand);
             color: var(--brand-dark);
-            margin: 0; 
-            /* Strict padding to handle safe areas on mobile, preventing bottom cropping */
-            padding: 15px; 
+            margin: 0; padding: 15px; 
             padding-bottom: max(15px, env(safe-area-inset-bottom));
             box-sizing: border-box;
-            height: 100vh; /* fallback */
-            height: 100dvh; 
+            height: 100vh; height: 100dvh; 
             display: flex; flex-direction: column; align-items: center;
             overflow: hidden; user-select: none; 
         }
@@ -64,8 +60,7 @@
 
         .view-section { 
             width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; 
-            min-height: 0; /* CRITICAL for flexbox scrolling */
-            transition: filter 2s ease;
+            min-height: 0; transition: filter 2s ease;
         }
         .view-section.active { display: flex; }
         .gray-out { filter: grayscale(100%) contrast(1.2); }
@@ -112,6 +107,7 @@
         .world-folder.open .world-header { background: var(--brand-dark); color: white; border-bottom: 1px solid #444; }
         .world-folder.open .world-header h3 { color: var(--brand-gold); }
         .world-folder.open .arrow { transform: rotate(180deg); }
+        .world-title-group { display: flex; align-items: center; gap: 8px; }
         .world-title-group h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-dark); }
         .arrow { transition: transform 0.3s ease; font-size: 1.2rem; color: #888; }
         .world-content { display: none; flex-direction: column; gap: 8px; padding: 10px; background: #fff; }
@@ -128,7 +124,7 @@
         .level-strip.classified { border: 1px solid var(--brand-red); background: #fff5f5; }
         .level-strip.trivia { border: 1px solid #3498db; background: #f4f9fd; }
         
-        .strip-icon { font-size: 1.4rem; width: 30px; text-align: center; margin-right: 10px; }
+        .strip-icon { display: flex; align-items: center; justify-content: center; width: 30px; margin-right: 12px; }
         .strip-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         .strip-title { font-size: 0.95rem; color: var(--brand-dark); font-weight: bold; margin: 0; }
         .strip-status { font-size: 0.7rem; font-weight: bold; color: #888; text-align: right; min-width: 70px; }
@@ -137,7 +133,7 @@
         .status-locked { color: #bbb; }
         .level-strip.locked { background: #f9f9f9; border-color: #eee; cursor: not-allowed; opacity: 0.7; }
         .level-strip.locked .strip-title { color: #aaa; }
-        .level-strip.locked .strip-icon { color: #ccc; }
+        .level-strip.locked .strip-icon { color: #ccc !important; }
 
         /* --- BUTTONS --- */
         .footer-buttons { 
@@ -145,7 +141,10 @@
             gap: 8px; margin-top: auto; border-top: 1px solid #eee; padding-top: 10px;
         }
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
+        button { 
+            width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; 
+            cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
         .primary-btn { background-color: var(--brand-red); color: white; }
         .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
         .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
@@ -155,7 +154,7 @@
 
         /* --- GAMEPLAY (Shared) --- */
         .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; }
-        .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; }
+        .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; display: flex; align-items: center; gap: 6px; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
         
         #bomb-wrapper { margin-bottom: 5px; width: 100%; text-align: center; }
@@ -175,7 +174,7 @@
         }
         #game-container { 
             position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; 
-            background-color: #000; overflow: hidden; border: 2px solid #ccc; cursor: pointer; 
+            background-color: #000; border: 2px solid #ccc; cursor: pointer; overflow: hidden; 
         }
         #game-container img { object-fit: cover; width: 100%; height: 100%; }
         #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
@@ -195,10 +194,9 @@
         .grid-piece::after {
             content: 'FC';
             font-family: 'Share Tech Mono', monospace;
-            color: rgba(207, 168, 110, 0.15); /* Faint gold watermark */
+            color: rgba(207, 168, 110, 0.15);
             font-size: 14px; font-weight: bold;
         }
-        
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
         
         /* EXPLODING TILES (SMART BOMB) */
@@ -208,7 +206,7 @@
             box-shadow: 0 0 20px var(--brand-red) !important;
             background: var(--brand-red) !important;
         }
-        .grid-piece.exploded::after { color: #fff; } /* Flash logo white */
+        .grid-piece.exploded::after { color: #fff; }
 
         /* SCREEN FLASH FX */
         .flash-screen { animation: whiteFlash 0.6s ease-out; }
@@ -265,12 +263,13 @@
         .lb-name { flex-grow: 1; font-weight: 500;}
         .lb-fuel { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--brand-dark); }
         .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
+
     </style>
 </head>
 <body>
 
     <div id="orientation-lock">
-        <div style="font-size: 4rem; margin-bottom: 20px;">↻</div>
+        <svg viewBox="0 0 24 24" width="60" height="60" fill="currentColor" style="margin-bottom:20px;"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.25-.77c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.46L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zm-7.31.29C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
         <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2>
         <p>This mission requires Portrait Mode.</p>
     </div>
@@ -296,7 +295,9 @@
 
     <div id="refuel-overlay">
         <div class="modal-box success">
-            <div style="font-size: 3rem;">⛽</div>
+            <div style="color: var(--gauge-green); margin-bottom: 10px;">
+                <svg viewBox="0 0 24 24" width="80" height="80" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>
+            </div>
             <h1 style="color: var(--gauge-green); margin-bottom: 10px;">SUPPLY DROP</h1>
             <p style="margin-bottom: 10px; color: #fff; font-size: 1.1rem;">
                 Hangar Completed.<br>
@@ -329,7 +330,10 @@
         <div id="level-list-container"></div>
         
         <div class="footer-buttons">
-            <button class="outline-btn" onclick="openLeaderboard()">🏆 Global Leaderboard</button>
+            <button class="outline-btn" onclick="openLeaderboard()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 3h-2V1h-2v2H9V1H7v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zm0-12H5V5h14v2zm-7 4H7v5h5v-5z"/></svg> 
+                Global Leaderboard
+            </button>
             <button id="install-btn" class="dark-btn">📲 Install App</button>
             <button class="outline-btn" onclick="triggerResetUI()">Restart Game</button>
         </div>
@@ -338,11 +342,17 @@
     <div id="game-view" class="view-section">
         <div class="game-header">
             <div id="level-title" style="font-weight:bold;">Flight 1</div>
-            <div class="mini-fuel" id="current-fuel-display">4000</div>
+            <div class="mini-fuel" id="current-fuel-display">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>
+                <span>4000</span>
+            </div>
         </div>
         
         <div id="bomb-wrapper">
-            <button id="smart-bomb-btn" onclick="triggerSmartBomb()">💣 DETONATE SMART BOMB</button>
+            <button id="smart-bomb-btn" onclick="triggerSmartBomb()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="vertical-align: text-bottom; margin-right: 5px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg> 
+                DETONATE SMART BOMB
+            </button>
         </div>
 
         <div id="image-game-area">
@@ -372,7 +382,7 @@
 
         <div id="message"></div>
         
-        <div class="footer-buttons">
+        <div class="footer-buttons" style="margin-top: 0; padding-top: 5px; padding-bottom: 0; border: none;">
              <button class="outline-btn" onclick="saveAndExit()">Continue Later</button>
         </div>
     </div>
@@ -404,6 +414,16 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
         } catch(e) { console.error("Firebase Init Error", e); }
+
+        // --- SVG ICON LIBRARY ---
+        const ICONS = {
+            plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
+            jet: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12,2 L14,10 L22,14 L22,16 L14,15 L14,19 L16,21 L16,22 L12,21 L8,22 L8,21 L10,19 L10,15 L2,16 L2,14 L10,10 Z"/></svg>`,
+            folder: `<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`,
+            lock: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="vertical-align: text-bottom; margin-right: 2px;"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>`,
+            star: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
+            fuel: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>`
+        };
 
         // --- PLANES DATA ---
         const AIRCRAFT_DATA = {
@@ -503,7 +523,7 @@
 
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
-            db.collection("fuel_command_v5").doc(globalState.username).set({
+            db.collection("fuel_command_v6").doc(globalState.username).set({
                 name: globalState.username,
                 score: globalState.currentFuel,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -517,7 +537,7 @@
             list.innerHTML = "Fetching Data...";
             if(!db) { list.innerHTML = "⚠️ Database not connected."; return; }
 
-            db.collection("fuel_command_v5").orderBy("score", "desc").limit(20).get()
+            db.collection("fuel_command_v6").orderBy("score", "desc").limit(20).get()
             .then((querySnapshot) => {
                 let html = "";
                 let rank = 1;
@@ -534,7 +554,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v29'); // Ver bump for UI Fix
+            const saved = localStorage.getItem('fuelQuizState_v30'); 
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -548,7 +568,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v29', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v30', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -604,9 +624,9 @@
                 
                 const header = document.createElement('div');
                 header.className = 'world-header';
-                let lockIcon = isFolderLocked ? '🔒 ' : '';
+                let lockSVG = isFolderLocked ? ICONS.lock : '';
                 header.innerHTML = `
-                    <div class="world-title-group"><h3>${lockIcon}Hangar ${hNum}</h3></div>
+                    <div class="world-title-group"><h3>${lockSVG}Hangar ${hNum}</h3></div>
                     <div class="arrow">▼</div>
                 `;
                 if (!isFolderLocked) header.onclick = () => folder.classList.toggle('open');
@@ -622,16 +642,28 @@
                     else if (levelData.isClassified) card.className = "level-strip classified";
                     else card.className = "level-strip";
 
-                    let icon = "✈️";
+                    let iconSvg = ICONS.plane;
+                    let iconColor = "var(--brand-dark)";
                     let title = `Flight ${idx + 1}`;
                     
-                    if(levelData.type === 'trivia') { icon = "📁"; title = "Incident Report"; }
-                    else if(levelData.isClassified) { icon = "🚀"; title = "Classified"; }
+                    if (levelData.type === 'trivia') { 
+                        iconSvg = ICONS.folder; 
+                        iconColor = "#3498db";
+                        title = "Incident Report"; 
+                    }
+                    else if (levelData.isClassified) { 
+                        iconSvg = ICONS.jet; 
+                        iconColor = "var(--brand-red)";
+                        title = "Classified"; 
+                    }
 
                     let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
                     
                     if (levelData.completed) {
-                        title = levelData.name; icon = "★"; statusHtml = `<div class="strip-status status-done">Cleared</div>`;
+                        title = levelData.name; 
+                        iconSvg = ICONS.star; 
+                        iconColor = "var(--brand-gold)";
+                        statusHtml = `<div class="strip-status status-done">Cleared</div>`;
                     } else if (levelData.type === 'image' && levelData.revealedTiles.length > 0) {
                         statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
                     }
@@ -641,15 +673,15 @@
 
                     if (isFuelLocked) {
                         card.className = "level-strip locked";
-                        card.innerHTML = `<div class="strip-icon">⛽</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
+                        card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${ICONS.fuel}</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
                     } else if (globalState.currentFuel <= 0 && !levelData.completed) {
                          card.className += " locked";
                          statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
                          card.onclick = () => triggerGameOver();
-                         card.innerHTML = `<div class="strip-icon">${icon}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
+                         card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                     } else {
                         card.onclick = () => launchLevel(idx);
-                        card.innerHTML = `<div class="strip-icon">${icon}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
+                        card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                     }
                     content.appendChild(card);
                 });
@@ -689,7 +721,6 @@
                 imgArea.style.display = 'flex';
                 triviaArea.style.display = 'none';
 
-                // Reset container overflow incase bomb left it open
                 container.style.overflow = 'hidden';
 
                 document.getElementById('mystery-image').src = lState.image;
@@ -746,18 +777,16 @@
             const wrapper = document.getElementById('game-wrapper');
             const container = document.getElementById('game-container');
             
-            // Screen shake & flash
             wrapper.classList.add('shake-it');
             wrapper.classList.add('flash-screen');
             
-            // Allow tiles to overflow out of the box
             container.style.overflow = 'visible';
             
             setTimeout(() => {
                 wrapper.classList.remove('shake-it');
                 wrapper.classList.remove('flash-screen');
                 container.style.overflow = 'hidden'; 
-            }, 3000); // Kept visible long enough for slow animation to finish
+            }, 3000); 
 
             const gridContainer = document.getElementById('cover-grid');
             const gridRect = gridContainer.getBoundingClientRect();
@@ -774,13 +803,10 @@
                 let dx = tileCX - centerX;
                 let dy = tileCY - centerY;
                 
-                // Scatter
                 dx += (Math.random() - 0.5) * 50;
                 dy += (Math.random() - 0.5) * 50;
 
                 const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-                
-                // Reduced force so they fly slower/stay on screen longer
                 const force = (Math.random() * 400) + 400; 
                 
                 const tx = (dx / dist) * force;
@@ -789,15 +815,12 @@
                 
                 p.classList.add('exploded');
                 
-                // Force Reflow
                 void p.offsetWidth;
                 
-                // Javascript transition applied directly to avoid CSS Variable bugs in Safari
-                // 2.5s to fly out, 1.5s to fade out (starting after 0.5s)
                 p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s';
                 p.style.pointerEvents = 'none';
                 
-                // Tiny timeout ensures the transition logic attaches before the transform fires
+                // Small delay to ensure browser repaints before applying transform
                 setTimeout(() => {
                     p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0.2)`;
                     p.style.opacity = '0';
@@ -884,7 +907,6 @@
                 lState.completed = true;
                 
                 if (lState.type === 'image') {
-                    // Only fade out tiles that weren't blown up
                     document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed'));
                 }
                 

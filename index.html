@@ -58,10 +58,7 @@
 
         .view-section { 
             width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; 
-            /* FIX: min-height: 0 allows flex children to shrink properly without overflowing */
-            min-height: 0; 
-            padding-bottom: max(10px, env(safe-area-inset-bottom)); 
-            transition: filter 2s ease;
+            min-height: 0; padding-bottom: max(10px, env(safe-area-inset-bottom)); transition: filter 2s ease;
         }
         .view-section.active { display: flex; }
         .gray-out { filter: grayscale(100%) contrast(1.2); }
@@ -89,23 +86,19 @@
         /* --- HANGAR LIST --- */
         #level-list-container {
             display: flex; flex-direction: column; gap: 8px; width: 100%;
-            margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; 
-            /* FIX: min-height: 0 ensures scrolling works properly instead of pushing buttons away */
-            min-height: 0; 
+            margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 0; 
         }
         #level-list-container::-webkit-scrollbar { width: 5px; }
         #level-list-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
 
         .world-folder {
             border: 1px solid #ddd; border-radius: 10px; background: white;
-            overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; 
-            transition: opacity 0.3s;
+            overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; transition: opacity 0.3s;
         }
         .world-folder.locked-world { opacity: 0.6; pointer-events: none; background: #f0f0f0; }
         
         .world-header {
-            padding: 15px 15px; background: #f8f8f8; cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 15px; background: #f8f8f8; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid transparent; transition: all 0.2s;
         }
         .world-header:active { background: #eee; }
@@ -160,9 +153,10 @@
         
         #bomb-wrapper { margin-bottom: 5px; width: 100%; text-align: center; }
         #smart-bomb-btn {
-            background: linear-gradient(135deg, #8e44ad, #9b59b6);
-            color: #fff; border: 1px solid #fff; box-shadow: 0 0 10px rgba(142, 68, 173, 0.4);
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: #fff; border: 1px solid #ff9b9b; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
             padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; 
+            text-transform: uppercase;
         }
 
         /* --- IMAGE MODE --- */
@@ -182,8 +176,46 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; 
         }
-        .grid-piece { background-color: var(--piece-color); border: 1px solid #3a3a3a; transition: opacity 0.3s; }
+
+        /* TILE STYLING WITH FC LOGO */
+        .grid-piece { 
+            background: linear-gradient(135deg, #2a2a2a 0%, #151515 100%);
+            border: 1px solid #333;
+            border-top-color: #444; border-left-color: #444;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; transition: opacity 0.3s ease; 
+        }
+        .grid-piece::after {
+            content: 'FC';
+            font-family: 'Share Tech Mono', monospace;
+            color: rgba(207, 168, 110, 0.15); /* Faint brand gold */
+            font-size: 14px; font-weight: bold;
+        }
+        
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
+        
+        /* EXPLOSION CLASSES */
+        .grid-piece.exploded {
+            transition: none !important; /* Override standard fade */
+            animation: blowUp 1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            z-index: 10;
+            border-color: var(--brand-red);
+            box-shadow: 0 0 15px rgba(215, 25, 32, 0.8);
+            background: var(--brand-dark);
+        }
+        
+        @keyframes blowUp {
+            0% { opacity: 1; transform: scale(1) translate(0, 0) rotate(0deg); filter: brightness(2); }
+            30% { opacity: 1; transform: scale(1.5) translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3)) rotate(calc(var(--rot) * 0.3)); }
+            100% { opacity: 0; transform: scale(2) translate(var(--tx), var(--ty)) rotate(var(--rot)); }
+        }
+
+        .flash-screen { animation: whiteFlash 0.6s ease-out; }
+        @keyframes whiteFlash {
+            0% { filter: brightness(1); }
+            15% { filter: brightness(3) contrast(1.5); }
+            100% { filter: brightness(1); }
+        }
         
         #input-area { display: flex; flex-direction: column; gap: 5px; width: 100%; flex-shrink: 0; margin-bottom: 0px; }
         input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; }
@@ -207,12 +239,12 @@
         #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
-        .shake-it { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        .shake-it { animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(3px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
         }
 
         @media (max-height: 500px) {
@@ -313,7 +345,7 @@
         </div>
         
         <div id="bomb-wrapper">
-            <button id="smart-bomb-btn" onclick="triggerSmartBomb()">💣 SMART BOMB (1 LEFT)</button>
+            <button id="smart-bomb-btn" onclick="triggerSmartBomb()">💣 DETONATE SMART BOMB</button>
         </div>
 
         <div id="image-game-area">
@@ -395,7 +427,6 @@
             ]
         };
 
-        // --- TRIVIA DATA ---
         const TRIVIA_DATA = [
             { type: 'trivia', question: "What caused the 1977 Tenerife airport disaster, the deadliest accident in aviation history?", options: ["A runway collision in thick fog", "A mid-air collision over the Atlantic", "Dual engine failure due to volcanic ash"], correctIdx: 0, name: "Tenerife Disaster" },
             { type: 'trivia', question: "What forced US Airways Flight 1549 (the 'Miracle on the Hudson') to ditch into the river?", options: ["Complete loss of hydraulic fluid", "A flock of geese struck both engines", "Fuel starvation due to a leak"], correctIdx: 1, name: "Hudson River Ditching" },
@@ -506,7 +537,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v25'); // Ver bump
+            const saved = localStorage.getItem('fuelQuizState_v26'); // Ver bump for animation updates
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -520,7 +551,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v25', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v26', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -705,35 +736,35 @@
             }
         }
 
-        function submitTrivia(selectedIndex) {
-            const lState = globalState.levels[activeLevelIdx];
-            if(lState.completed || globalState.currentFuel <= 0) return;
-
-            if(selectedIndex === lState.correctIdx) {
-                const btn = document.getElementById('btn-opt-' + selectedIndex);
-                btn.style.backgroundColor = "var(--gauge-green)";
-                btn.style.color = "white";
-                endGame(true, "Analysis Correct");
-            } else {
-                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
-                saveState();
-                updateMiniFuelUI();
-                
-                const btn = document.getElementById('btn-opt-' + selectedIndex);
-                btn.classList.add('wrong-flash');
-                setTimeout(() => btn.classList.remove('wrong-flash'), 500);
-
-                if (globalState.currentFuel <= 0) triggerGameOver();
-            }
-        }
-
+        // --- EXPLOSION ANIMATION ---
         function triggerSmartBomb() {
             if (!globalState.hasSmartBomb) return;
+            
+            // Screen shake & flash
             const wrapper = document.getElementById('game-wrapper');
             wrapper.classList.add('shake-it');
-            setTimeout(() => wrapper.classList.remove('shake-it'), 500);
+            wrapper.classList.add('flash-screen');
+            setTimeout(() => {
+                wrapper.classList.remove('shake-it');
+                wrapper.classList.remove('flash-screen');
+            }, 600);
             
-            document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+            // Tile explosions
+            const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
+            hiddenTiles.forEach(p => {
+                // Randomize trajectory
+                const tx = (Math.random() - 0.5) * 600 + 'px';
+                const ty = (Math.random() - 0.5) * 600 + 'px';
+                const rot = (Math.random() - 0.5) * 720 + 'deg';
+                
+                p.style.setProperty('--tx', tx);
+                p.style.setProperty('--ty', ty);
+                p.style.setProperty('--rot', rot);
+                
+                p.classList.add('exploded');
+                p.classList.add('revealed'); 
+            });
+            
             globalState.hasSmartBomb = false;
             globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()];
             saveState();
@@ -784,6 +815,28 @@
             }
         }
 
+        function submitTrivia(selectedIndex) {
+            const lState = globalState.levels[activeLevelIdx];
+            if(lState.completed || globalState.currentFuel <= 0) return;
+
+            if(selectedIndex === lState.correctIdx) {
+                const btn = document.getElementById('btn-opt-' + selectedIndex);
+                btn.style.backgroundColor = "var(--gauge-green)";
+                btn.style.color = "white";
+                endGame(true, "Analysis Correct");
+            } else {
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
+                saveState();
+                updateMiniFuelUI();
+                
+                const btn = document.getElementById('btn-opt-' + selectedIndex);
+                btn.classList.add('wrong-flash');
+                setTimeout(() => btn.classList.remove('wrong-flash'), 500);
+
+                if (globalState.currentFuel <= 0) triggerGameOver();
+            }
+        }
+
         function endGame(win, msg) {
             document.getElementById('message').textContent = msg;
             if (win) {
@@ -792,7 +845,8 @@
                 lState.completed = true;
                 
                 if (lState.type === 'image') {
-                    document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+                    // Only do standard reveal if bomb wasn't used to clear the very last tile
+                    document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed'));
                 }
                 
                 triggerConfetti();

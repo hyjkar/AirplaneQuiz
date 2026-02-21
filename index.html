@@ -27,12 +27,18 @@
         }
         * { box-sizing: border-box; }
         
+        /* --- CORE LAYOUT FIX --- */
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--bg-sand);
             color: var(--brand-dark);
-            margin: 0; padding: 10px; 
-            height: 100vh; height: 100dvh; 
+            margin: 0; 
+            /* Strict padding to handle safe areas on mobile, preventing bottom cropping */
+            padding: 15px; 
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            box-sizing: border-box;
+            height: 100vh; /* fallback */
+            height: 100dvh; 
             display: flex; flex-direction: column; align-items: center;
             overflow: hidden; user-select: none; 
         }
@@ -58,7 +64,8 @@
 
         .view-section { 
             width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; 
-            min-height: 0; padding-bottom: max(10px, env(safe-area-inset-bottom)); transition: filter 2s ease;
+            min-height: 0; /* CRITICAL for flexbox scrolling */
+            transition: filter 2s ease;
         }
         .view-section.active { display: flex; }
         .gray-out { filter: grayscale(100%) contrast(1.2); }
@@ -135,7 +142,7 @@
         /* --- BUTTONS --- */
         .footer-buttons { 
             width: 100%; flex-shrink: 0; display: flex; flex-direction: column; 
-            gap: 8px; margin-top: auto; padding-top: 10px; border-top: 1px solid #eee; 
+            gap: 8px; margin-top: auto; border-top: 1px solid #eee; padding-top: 10px;
         }
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
         button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
@@ -166,14 +173,10 @@
             width: 100%; margin-bottom: 10px; position: relative;
             flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center;
         }
-        
         #game-container { 
             position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; 
-            background-color: #000; border: 2px solid #ccc; cursor: pointer; 
-            /* REMOVED OVERFLOW HIDDEN SO TILES CAN FLY OUT */
-            overflow: hidden; 
+            background-color: #000; overflow: hidden; border: 2px solid #ccc; cursor: pointer; 
         }
-        
         #game-container img { object-fit: cover; width: 100%; height: 100%; }
         #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
         #cover-grid { 
@@ -200,7 +203,6 @@
         
         /* EXPLODING TILES (SMART BOMB) */
         .grid-piece.exploded {
-            /* Z-index high so they fly over the input boxes and text */
             z-index: 9999 !important; 
             border: 2px solid var(--gauge-orange) !important;
             box-shadow: 0 0 20px var(--brand-red) !important;
@@ -263,10 +265,6 @@
         .lb-name { flex-grow: 1; font-weight: 500;}
         .lb-fuel { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--brand-dark); }
         .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
-
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .float-text { position: fixed; color: var(--brand-red); font-weight: bold; font-size: 1.5rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 999; text-shadow: 0 2px 4px rgba(255,255,255,0.8); }
     </style>
 </head>
 <body>
@@ -374,7 +372,7 @@
 
         <div id="message"></div>
         
-        <div class="footer-buttons" style="margin-top: 0; padding-top: 5px; padding-bottom: 0;">
+        <div class="footer-buttons">
              <button class="outline-btn" onclick="saveAndExit()">Continue Later</button>
         </div>
     </div>
@@ -536,7 +534,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v28'); // Ver bump for explosion physics
+            const saved = localStorage.getItem('fuelQuizState_v29'); // Ver bump for UI Fix
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -550,7 +548,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v28', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v29', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -685,10 +683,14 @@
 
             const imgArea = document.getElementById('image-game-area');
             const triviaArea = document.getElementById('trivia-game-area');
+            const container = document.getElementById('game-container');
 
             if (lState.type === 'image') {
                 imgArea.style.display = 'flex';
                 triviaArea.style.display = 'none';
+
+                // Reset container overflow incase bomb left it open
+                container.style.overflow = 'hidden';
 
                 document.getElementById('mystery-image').src = lState.image;
                 document.getElementById('guess-input').value = "";
@@ -697,9 +699,6 @@
                 
                 if (globalState.hasSmartBomb && !lState.completed) bombBtn.style.display = "inline-block";
                 else bombBtn.style.display = "none";
-
-                // CRITICAL FIX: Reset overflow in case it was left open by previous bomb
-                document.getElementById('game-container').style.overflow = "hidden";
 
                 const grid = document.getElementById('cover-grid');
                 grid.innerHTML = "";
@@ -740,24 +739,25 @@
             }
         }
 
-        // --- FIXED SHRAPNEL BOMB PHYSICS ---
+        // --- NEW SLOWER EXPLOSION LOGIC ---
         function triggerSmartBomb() {
             if (!globalState.hasSmartBomb) return;
             
             const wrapper = document.getElementById('game-wrapper');
             const container = document.getElementById('game-container');
             
+            // Screen shake & flash
             wrapper.classList.add('shake-it');
             wrapper.classList.add('flash-screen');
             
-            // 1. Disable clipping temporarily so tiles can fly off screen
+            // Allow tiles to overflow out of the box
             container.style.overflow = 'visible';
             
             setTimeout(() => {
                 wrapper.classList.remove('shake-it');
                 wrapper.classList.remove('flash-screen');
-                container.style.overflow = 'hidden'; // Restore clipping
-            }, 1500);
+                container.style.overflow = 'hidden'; 
+            }, 3000); // Kept visible long enough for slow animation to finish
 
             const gridContainer = document.getElementById('cover-grid');
             const gridRect = gridContainer.getBoundingClientRect();
@@ -774,28 +774,34 @@
                 let dx = tileCX - centerX;
                 let dy = tileCY - centerY;
                 
-                // Add minor scatter variance
+                // Scatter
                 dx += (Math.random() - 0.5) * 50;
                 dy += (Math.random() - 0.5) * 50;
 
                 const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-                // Blast vector force (pixels)
-                const force = (Math.random() * 800) + 1000; 
+                
+                // Reduced force so they fly slower/stay on screen longer
+                const force = (Math.random() * 400) + 400; 
                 
                 const tx = (dx / dist) * force;
                 const ty = (dy / dist) * force;
-                const rot = (Math.random() - 0.5) * 1440; 
+                const rot = (Math.random() - 0.5) * 720; 
                 
                 p.classList.add('exploded');
                 
-                // 2. Use Javascript inline transitions (bypasses CSS variable keyframe bugs in Safari)
-                // Force a reflow before applying transition
+                // Force Reflow
                 void p.offsetWidth;
                 
-                p.style.transition = 'transform 1s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.8s cubic-bezier(0.7, 0, 1, 1)';
-                p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0.5)`;
-                p.style.opacity = '0';
+                // Javascript transition applied directly to avoid CSS Variable bugs in Safari
+                // 2.5s to fly out, 1.5s to fade out (starting after 0.5s)
+                p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s';
                 p.style.pointerEvents = 'none';
+                
+                // Tiny timeout ensures the transition logic attaches before the transform fires
+                setTimeout(() => {
+                    p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0.2)`;
+                    p.style.opacity = '0';
+                }, 50);
             });
             
             globalState.hasSmartBomb = false;

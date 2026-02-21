@@ -203,7 +203,7 @@
         
         #input-area { display: flex; flex-direction: column; gap: 5px; width: 100%; flex-shrink: 0; margin-bottom: 0px; }
         
-        /* CRITICAL MOBILE FIX: Allows user to type into inputs */
+        /* Mobile Input Fix */
         input[type="text"] { 
             width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; 
             text-align: center; background: white; color: #333; 
@@ -238,7 +238,8 @@
             position: absolute; right: 10px; top: 10px; bottom: 30px; width: 20px;
             background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px solid rgba(255,255,255,0.5); z-index: 5;
         }
-        #tk-target-zone { position: absolute; left: 0; right: 0; bottom: 33.3%; height: 16.6%; background: var(--gauge-green); border-radius: 2px; }
+        /* Adjusted Target zone: 30% to 53% */
+        #tk-target-zone { position: absolute; left: 0; right: 0; bottom: 30%; height: 23%; background: var(--gauge-green); border-radius: 2px; }
         #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); border-radius: 2px; transition: bottom 0.1s linear; }
 
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 25px; background: #444; border-top: 2px solid #666; z-index: 3;}
@@ -255,13 +256,11 @@
             z-index: 4; transition: transform 0.1s linear;
         }
         
-        /* CRITICAL MOBILE FIX: Prevents text selection / popups while holding the button */
+        /* Mobile Interaction Safe Button */
         #takeoff-btn { 
             flex-shrink: 0; font-size: 1.2rem; padding: 15px; margin-bottom: 0;
-            touch-action: none; 
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
+            touch-action: none; /* Prevents scroll/zoom on touch */
+            -webkit-touch-callout: none; /* Prevents iOS magnifying glass */
         }
 
         #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
@@ -284,8 +283,7 @@
         /* --- LEADERBOARD --- */
         #leaderboard-list {
             width: 100%; flex-grow: 1; overflow-y: auto; text-align: left;
-            background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px;
-            min-height: 0;
+            background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; min-height: 0;
         }
         .lb-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; align-items: center; }
         .lb-rank { font-weight: bold; width: 30px; color: var(--brand-red); }
@@ -338,7 +336,7 @@
     <div id="login-overlay">
         <div class="modal-box">
             <h1 style="color: var(--brand-gold); margin-bottom: 10px;">IDENTIFY PILOT</h1>
-            <input type="text" id="callsign-input" placeholder="Callsign" maxlength="12" style="margin-bottom: 15px;">
+            <input type="text" id="callsign-input" placeholder="Callsign" maxlength="12" style="margin-bottom: 15px;" autocomplete="off">
             <button class="gold-btn" onclick="registerPilot()">CONFIRM IDENTITY</button>
         </div>
     </div>
@@ -434,7 +432,7 @@
                 </div>
             </div>
             
-            <button id="takeoff-btn" class="gold-btn">HOLD TO PITCH UP</button>
+            <button id="takeoff-btn" class="gold-btn" oncontextmenu="return false;">HOLD TO PITCH UP</button>
         </div>
 
         <div id="message"></div>
@@ -548,7 +546,7 @@
             // Allow Enter key to submit login
             document.getElementById('callsign-input').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
-                    this.blur(); // Hide mobile keyboard
+                    this.blur();
                     registerPilot();
                 }
             });
@@ -556,27 +554,27 @@
             document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             document.getElementById('enter-btn').onclick = checkAnswer;
             
-            // INIT TAKEOFF LISTENERS (WITH MOBILE FIXES)
+            // --- NEW: BULLETPROOF POINTER EVENTS FOR MOBILE HOLD ---
             const tkBtn = document.getElementById('takeoff-btn');
             
             const startPress = (e) => { 
-                if(e.cancelable) e.preventDefault(); // Prevents double firing
+                e.preventDefault(); 
                 tkState.pressing = true; 
                 tkBtn.style.backgroundColor = "var(--brand-red)"; 
             };
             
             const endPress = (e) => { 
+                e.preventDefault();
                 tkState.pressing = false; 
                 tkBtn.style.backgroundColor = "var(--brand-gold)"; 
             };
             
-            tkBtn.addEventListener('mousedown', startPress);
-            tkBtn.addEventListener('touchstart', startPress, {passive: false});
+            // pointerdown covers mouse click, touch tap, and pen tap
+            tkBtn.addEventListener('pointerdown', startPress);
             
-            // Bind to window so if finger slides off the button, it still releases properly
-            window.addEventListener('mouseup', endPress);
-            window.addEventListener('touchend', endPress);
-            window.addEventListener('touchcancel', endPress); // Critical for iOS
+            // Bind release events to window so it catches if finger slides off button
+            window.addEventListener('pointerup', endPress);
+            window.addEventListener('pointercancel', endPress);
         };
 
         function generateGameLevels() {
@@ -646,7 +644,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v33'); 
+            const saved = localStorage.getItem('fuelQuizState_v34'); // Ver bump for fix
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -660,7 +658,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v33', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v34', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -884,7 +882,7 @@
             }
         }
 
-        // --- TAKEOFF MINI GAME LOGIC ---
+        // --- SIMPLIFIED TAKEOFF MINI GAME LOGIC ---
         let tkState = { active: false, pitch: 0, lift: 0, distance: 100, pressing: false, frameId: null };
 
         function startTakeoff() {
@@ -906,8 +904,12 @@
         function takeoffLoop() {
             if (!tkState.active) return;
 
-            if (tkState.pressing) tkState.pitch += 0.6; 
-            else tkState.pitch -= 0.4; 
+            // Adjust pitch based on button hold
+            if (tkState.pressing) tkState.pitch += 0.8; 
+            else tkState.pitch -= 0.6; 
+
+            // SIMPLIFIED: No instant crashing. Just clamp the visual limits of the plane
+            tkState.pitch = Math.max(-5, Math.min(30, tkState.pitch));
 
             const planeEl = document.getElementById('tk-plane');
             planeEl.style.transform = `rotate(-${tkState.pitch}deg)`;
@@ -915,19 +917,24 @@
             const needle = document.getElementById('tk-needle');
             needle.style.bottom = `${Math.max(0, Math.min(100, (tkState.pitch / 30) * 100))}%`;
 
-            if (tkState.pitch > 22) return failTakeoff("TAIL STRIKE");
-            if (tkState.pitch < -5) return failTakeoff("NOSE DIVE");
+            // Lift accumulation (Target zone widened slightly for mobile forgiveness: 9 to 16 degrees)
+            if (tkState.pitch >= 9 && tkState.pitch <= 16) {
+                tkState.lift += 0.8; 
+            } else {
+                tkState.lift = Math.max(0, tkState.lift - 0.3); 
+            }
 
-            if (tkState.pitch >= 10 && tkState.pitch <= 15) tkState.lift += 0.6; 
-            else tkState.lift = Math.max(0, tkState.lift - 0.2); 
-
+            // Distance decreases
             tkState.distance -= 0.35; 
 
             document.getElementById('tk-runway-fill').style.width = tkState.distance + '%';
             document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
 
+            // Win if lift bar fills up completely
             if (tkState.lift >= 100) return winTakeoff();
-            if (tkState.distance <= 0) return failTakeoff("RAN OUT OF RUNWAY");
+            
+            // Fail if runway ends and lift isn't full
+            if (tkState.distance <= 0) return failTakeoff("INCORRECT ANGLE - NO LIFT");
 
             tkState.frameId = requestAnimationFrame(takeoffLoop);
         }

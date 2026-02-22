@@ -172,8 +172,7 @@
         #smart-bomb-btn {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: #fff; border: 1px solid #ff9b9b; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
-            padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; 
-            text-transform: uppercase;
+            padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; text-transform: uppercase;
         }
 
         /* --- IMAGE MODE --- */
@@ -220,7 +219,7 @@
         .trivia-option:active { transform: scale(0.98); background: #eee; }
         .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
 
-        /* --- TAKEOFF MINI GAME --- */
+        /* --- TAKEOFF MINI GAME (8-BIT PARALLAX EDITION) --- */
         #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; min-height: 0; }
         .takeoff-hud { display: flex; justify-content: space-between; align-items: center; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #333; margin-bottom: 5px; flex-shrink: 0;}
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
@@ -228,21 +227,32 @@
         
         #takeoff-viewport { 
             position: relative; width: 100%; flex-grow: 1; min-height: 200px; 
-            border: 2px solid #ccc; border-radius: 8px; overflow: hidden; margin-bottom: 10px;
+            border: 4px solid #222; border-radius: 4px; overflow: hidden; margin-bottom: 10px;
+            /* Force hard pixel edges */
+            image-rendering: pixelated; 
+            background-color: #87CEEB; /* Fallback */
         }
 
-        /* WEATHER THEMES */
-        .theme-day { background: linear-gradient(to bottom, #87CEEB 0%, #e0f6ff 100%); }
-        .theme-rainy { background: linear-gradient(to bottom, #4a5d6a 0%, #7c8e9b 100%); }
-        .theme-night { background: linear-gradient(to bottom, #0f1722 0%, #1c2b3d 100%); }
-
-        #tk-weather-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 5; }
+        /* 8-Bit Parallax Layers */
+        .parallax-layer {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 25px; /* sit above runway */
+            background-repeat: repeat-x;
+            background-position: 0px bottom;
+        }
         
+        #tk-bg-sky { background-size: 128px 100%; z-index: 0; }
+        #tk-bg-city { background-size: 128px 100%; z-index: 1; }
+        #tk-bg-ground { background-size: 64px 100%; z-index: 2; }
+        
+        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 25px; z-index: 3;}
+        #tk-runway-surface { width: 100%; height: 100%; background-repeat: repeat-x; background-size: 40px 25px; }
+
+        /* Weather Overlays */
+        #tk-weather-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 5; }
         .weather-rain {
             width: 150%; height: 150%; top: -25%; left: -25%;
             background-image: repeating-linear-gradient(-15deg, transparent, transparent 15px, rgba(255,255,255,0.4) 16px, transparent 17px);
-            background-size: 100px 100%;
-            animation: rainFall 0.3s linear infinite;
+            background-size: 100px 100%; animation: rainFall 0.3s linear infinite;
         }
         @keyframes rainFall { from { transform: translateY(-50px) translateX(10px); } to { transform: translateY(50px) translateX(-10px); } }
 
@@ -250,26 +260,18 @@
             width: 200%; height: 100%; top: 0; left: -50%;
             background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 60%);
             background-size: 50% 100%; background-repeat: repeat-x;
-            animation: fogDrift 5s linear infinite alternate;
-            filter: blur(8px); opacity: 0.8;
+            animation: fogDrift 5s linear infinite alternate; filter: blur(8px); opacity: 0.8;
         }
         @keyframes fogDrift { from { transform: translateX(-15%); } to { transform: translateX(15%); } }
         
         #tk-gauge-container {
             position: absolute; right: 10px; top: 10px; bottom: 30px; width: 20px;
-            background: rgba(0,0,0,0.5); border-radius: 10px; border: 1px solid rgba(255,255,255,0.5); z-index: 6;
+            background: rgba(0,0,0,0.5); border-radius: 4px; border: 2px solid #fff; z-index: 6;
         }
-        #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); border-radius: 2px; }
-        #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); border-radius: 2px; transition: bottom 0.05s linear; }
+        #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); }
+        #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; }
 
-        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 25px; background: #333; border-top: 2px solid #555; z-index: 3;}
-        .runway-lines { 
-            width: 200%; height: 4px; background: repeating-linear-gradient(90deg, transparent, transparent 40px, #fff 40px, #fff 80px);
-            position: absolute; top: 10px; left: 0; 
-        }
-        .rolling .runway-lines { animation: scrollRunway 0.3s linear infinite; }
-        @keyframes scrollRunway { 0% { transform: translateX(0); } 100% { transform: translateX(-80px); } }
-
+        /* 8-Bit Plane */
         #tk-plane {
             position: absolute; left: 20px; bottom: 25px; width: 120px; height: 40px;
             transform-origin: 80% 90%; 
@@ -279,6 +281,7 @@
         #takeoff-btn { 
             flex-shrink: 0; font-size: 1.2rem; padding: 15px; margin-bottom: 0;
             touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+            border-radius: 4px; font-family: 'Share Tech Mono', monospace; border: 4px solid #000;
         }
 
         #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
@@ -309,9 +312,7 @@
         .lb-fuel { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--brand-dark); }
         .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
         
-        .tutorial-text {
-            color: #ccc; font-size: 1rem; margin-bottom: 20px; text-align: left; line-height: 1.5;
-        }
+        .tutorial-text { color: #ccc; font-size: 1rem; margin-bottom: 20px; text-align: left; line-height: 1.5; }
         .tutorial-text strong { color: #fff; }
     </style>
 </head>
@@ -450,6 +451,10 @@
             </div>
             
             <div id="takeoff-viewport">
+                <div id="tk-bg-sky" class="parallax-layer"></div>
+                <div id="tk-bg-city" class="parallax-layer"></div>
+                <div id="tk-bg-ground" class="parallax-layer"></div>
+                
                 <div id="tk-weather-overlay"></div>
                 
                 <div id="tk-gauge-container">
@@ -458,16 +463,41 @@
                 </div>
                 
                 <div id="tk-plane">
-                    <svg viewBox="0 0 120 40" width="100%" height="100%">
-                        <path d="M10,20 Q30,15 50,15 L100,15 Q115,15 115,25 Q115,30 100,30 L10,30 Q5,30 5,25 Q5,20 10,20 Z" fill="#fff" />
-                        <path d="M15,18 L30,2 L40,2 L30,18 Z" fill="var(--brand-red)" />
-                        <path d="M50,25 L75,40 L60,40 L45,25 Z" fill="#bbb" />
-                        <path d="M95,17 Q105,17 110,22 L95,22 Z" fill="#1a1a1a" />
+                    <svg viewBox="0 0 80 30" width="100%" height="100%" shape-rendering="crispEdges">
+                        <rect x="68" y="2" width="6" height="12" fill="var(--brand-red)" />
+                        <rect x="64" y="6" width="4" height="8" fill="var(--brand-red)" />
+                        <rect x="74" y="10" width="2" height="4" fill="var(--brand-red)" />
+                        <rect x="10" y="12" width="66" height="8" fill="#fff" />
+                        <rect x="12" y="20" width="60" height="2" fill="#e0e0e0" /> <rect x="4" y="14" width="6" height="6" fill="#fff" />
+                        <rect x="2" y="16" width="2" height="4" fill="#fff" />
+                        <rect x="6" y="14" width="4" height="2" fill="#1a1a1a" />
+                        <rect x="16" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="20" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="24" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="28" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="40" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="44" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="48" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="52" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="56" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="60" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="12" y="14" width="2" height="4" fill="var(--brand-red)" />
+                        <rect x="64" y="14" width="2" height="4" fill="var(--brand-red)" />
+                        <rect x="34" y="15" width="2" height="3" fill="var(--brand-red)" />
+                        <rect x="26" y="18" width="16" height="4" fill="#a0a0a0" />
+                        <rect x="30" y="22" width="12" height="2" fill="#808080" />
+                        <rect x="24" y="20" width="8" height="4" fill="#333" />
+                        <rect x="22" y="20" width="2" height="4" fill="#555" />
+                        <rect x="32" y="21" width="2" height="2" fill="#111" />
+                        <rect x="12" y="22" width="2" height="4" fill="#555" />
+                        <rect x="11" y="26" width="4" height="2" fill="#111" />
+                        <rect x="38" y="24" width="2" height="2" fill="#555" />
+                        <rect x="36" y="26" width="6" height="2" fill="#111" />
                     </svg>
                 </div>
                 
                 <div id="tk-runway">
-                    <div class="runway-lines"></div>
+                    <div id="tk-runway-surface"></div>
                 </div>
             </div>
             
@@ -545,6 +575,28 @@
             { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
         ];
 
+        // --- 8-BIT BACKGROUND GENERATOR ---
+        function getSvgUri(svgStr) { return `url("data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}")`; }
+
+        const THEMES = {
+            1: { // Day
+                sky: `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="64" height="64" fill="#87CEEB"/><rect x="10" y="10" width="20" height="4" fill="#fff"/><rect x="14" y="6" width="12" height="4" fill="#fff"/><rect x="40" y="30" width="16" height="4" fill="#fff"/><rect x="44" y="28" width="8" height="2" fill="#fff"/></svg>`,
+                city: `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="40" width="12" height="24" fill="#5a6988"/><rect x="12" y="30" width="16" height="34" fill="#4a5875"/><rect x="28" y="45" width="10" height="19" fill="#6b7b9e"/><rect x="38" y="20" width="14" height="44" fill="#3a465d"/><rect x="52" y="35" width="12" height="29" fill="#4a5875"/></svg>`,
+                ground: `<svg width="32" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="20" width="32" height="12" fill="#2d4c1e"/><rect x="4" y="12" width="8" height="8" fill="#1e3b12"/><rect x="6" y="8" width="4" height="4" fill="#1e3b12"/><rect x="20" y="16" width="8" height="4" fill="#385e26"/></svg>`
+            },
+            2: { // Rainy
+                sky: `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="64" height="64" fill="#4a5d6a"/><rect x="10" y="10" width="20" height="4" fill="#687d8c"/><rect x="14" y="6" width="12" height="4" fill="#687d8c"/><rect x="40" y="30" width="16" height="4" fill="#687d8c"/><rect x="44" y="28" width="8" height="2" fill="#687d8c"/></svg>`,
+                city: `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="40" width="12" height="24" fill="#3d4955"/><rect x="12" y="30" width="16" height="34" fill="#323d47"/><rect x="28" y="45" width="10" height="19" fill="#485664"/><rect x="38" y="20" width="14" height="44" fill="#28313a"/><rect x="52" y="35" width="12" height="29" fill="#323d47"/></svg>`,
+                ground: `<svg width="32" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="20" width="32" height="12" fill="#2b3626"/><rect x="4" y="12" width="8" height="8" fill="#1d251a"/><rect x="6" y="8" width="4" height="4" fill="#1d251a"/><rect x="20" y="16" width="8" height="4" fill="#34422e"/></svg>`
+            },
+            3: { // Night
+                sky: `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="64" height="64" fill="#0f1722"/><rect x="10" y="10" width="20" height="4" fill="#1c2b3d"/><rect x="14" y="6" width="12" height="4" fill="#1c2b3d"/><rect x="40" y="30" width="16" height="4" fill="#1c2b3d"/><rect x="44" y="28" width="8" height="2" fill="#1c2b3d"/></svg>`,
+                city: `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="40" width="12" height="24" fill="#151e2b"/><rect x="12" y="30" width="16" height="34" fill="#101722"/><rect x="28" y="45" width="10" height="19" fill="#1c2838"/><rect x="38" y="20" width="14" height="44" fill="#0a0f16"/><rect x="52" y="35" width="12" height="29" fill="#101722"/><rect x="14" y="34" width="2" height="2" fill="#f1c40f"/><rect x="18" y="34" width="2" height="2" fill="#f1c40f"/><rect x="14" y="40" width="2" height="2" fill="#f1c40f"/><rect x="40" y="25" width="2" height="2" fill="#f1c40f"/><rect x="46" y="35" width="2" height="2" fill="#f1c40f"/><rect x="54" y="40" width="2" height="2" fill="#f1c40f"/></svg>`,
+                ground: `<svg width="32" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="20" width="32" height="12" fill="#111a11"/><rect x="4" y="12" width="8" height="8" fill="#0a100a"/><rect x="6" y="8" width="4" height="4" fill="#0a100a"/><rect x="20" y="16" width="8" height="4" fill="#162116"/></svg>`
+            }
+        };
+        const RUNWAY_SVG = `<svg width="40" height="25" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="40" height="25" fill="#333"/><rect x="0" y="10" width="20" height="5" fill="#ddd"/></svg>`;
+
         const STARTING_GLOBAL_FUEL = 4000;
         const REFUEL_AMOUNT = 2000; 
         const TILE_COST = 15;
@@ -594,21 +646,16 @@
             document.getElementById('enter-btn').onclick = checkAnswer;
             
             const tkBtn = document.getElementById('takeoff-btn');
-            
             const startPress = (e) => { 
                 e.preventDefault();
-                
-                // INSTANT EARLY ROTATION FAIL LOGIC
                 if (tkState.active && tkState.speed < 140) {
-                    tkState.pressing = false; // Prevent logic getting stuck
+                    tkState.pressing = false; 
                     failTakeoff("ROTATED TOO EARLY");
                     return;
                 }
-                
                 tkState.pressing = true; 
                 tkBtn.style.backgroundColor = "var(--brand-red)"; 
             };
-            
             const endPress = (e) => { 
                 if (e && e.cancelable) e.preventDefault();
                 tkState.pressing = false; 
@@ -629,7 +676,6 @@
             let h2 = pool.slice(4, 7).map(p => ({ ...p, hangar: 2, isClassified: false, revealedTiles: [], completed: false }));
             let h3 = classPool.map(p => ({ ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false }));
 
-            // Insert 1 Takeoff & 1 Trivia per Hangar
             h1.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 1, isClassified: false, completed: false, failed: false, attempts: 0 });
             h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
             
@@ -690,7 +736,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v41'); // Version bump for early fail rule
+            const saved = localStorage.getItem('fuelQuizState_v42'); // Ver bump for 8-bit theme
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -706,7 +752,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v41', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v42', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -829,7 +875,7 @@
                          card.onclick = () => triggerGameOver();
                          card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                     } else if (levelData.failed) {
-                        card.className = "level-strip locked"; // Disable click
+                        card.className = "level-strip locked";
                         card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                     } else {
                         card.onclick = () => launchLevel(idx);
@@ -928,22 +974,32 @@
                 takeoffArea.style.display = 'flex';
                 bombBtn.style.display = "none";
                 
-                // Set Theme based on Hangar
-                const vp = document.getElementById('takeoff-viewport');
+                // --- 8-BIT THEME INJECTION ---
+                const sky = document.getElementById('tk-bg-sky');
+                const city = document.getElementById('tk-bg-city');
+                const ground = document.getElementById('tk-bg-ground');
+                const runwaySurf = document.getElementById('tk-runway-surface');
+                
                 const weather = document.getElementById('tk-weather-overlay');
                 const zone = document.getElementById('tk-target-zone');
                 
-                vp.className = ''; weather.className = '';
+                weather.className = '';
+                runwaySurf.style.backgroundImage = getSvgUri(RUNWAY_SVG);
+
+                const th = THEMES[lState.hangar];
+                sky.style.backgroundImage = getSvgUri(th.sky);
+                city.style.backgroundImage = getSvgUri(th.city);
+                ground.style.backgroundImage = getSvgUri(th.ground);
+
                 if (lState.hangar === 1) {
-                    vp.classList.add('theme-day');
                     tkState.minAngle = 9; tkState.maxAngle = 16;
                     zone.style.bottom = '30%'; zone.style.height = '23.3%';
                 } else if (lState.hangar === 2) {
-                    vp.classList.add('theme-rainy'); weather.classList.add('weather-rain');
+                    weather.classList.add('weather-rain');
                     tkState.minAngle = 10; tkState.maxAngle = 15;
                     zone.style.bottom = '33.3%'; zone.style.height = '16.6%';
                 } else {
-                    vp.classList.add('theme-night'); weather.classList.add('weather-fog');
+                    weather.classList.add('weather-fog');
                     tkState.minAngle = 11; tkState.maxAngle = 14;
                     zone.style.bottom = '36.6%'; zone.style.height = '10%';
                 }
@@ -961,12 +1017,11 @@
                     document.getElementById('tk-lift-fill').style.width = '100%';
                     document.getElementById('tk-speed-val').textContent = "150";
                     document.getElementById('tk-speed-val').style.color = "var(--gauge-green)";
-                    document.getElementById('takeoff-viewport').classList.remove('rolling');
                 }
             }
         }
 
-        // --- TAKEOFF MINI GAME LOGIC (DYNAMIC DIFFICULTY) ---
+        // --- TAKEOFF MINI GAME LOGIC (PARALLAX + PHYSICS) ---
         function startTakeoffFromTutorial() {
             globalState.hasSeenTakeoffTutorial = true;
             saveState();
@@ -977,13 +1032,15 @@
         let tkState = { 
             active: false, pitch: 0, pitchVelocity: 0, lift: 0, 
             distance: 100, speed: 0, pressing: false, frameId: null,
-            minAngle: 9, maxAngle: 16
+            minAngle: 9, maxAngle: 16,
+            bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0
         };
 
         function startTakeoff() {
             tkState.active = true;
             tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0;
             tkState.distance = 100; tkState.speed = 0; tkState.pressing = false;
+            tkState.bgPosSky = 0; tkState.bgPosCity = 0; tkState.bgPosGround = 0; tkState.bgPosRunway = 0;
             
             document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`;
             document.getElementById('tk-needle').style.bottom = `0%`;
@@ -991,7 +1048,12 @@
             document.getElementById('tk-lift-fill').style.width = '0%';
             document.getElementById('tk-speed-val').textContent = "0";
             document.getElementById('tk-speed-val').style.color = "var(--brand-red)";
-            document.getElementById('takeoff-viewport').classList.add('rolling');
+            
+            // Reset backgrounds
+            document.getElementById('tk-bg-sky').style.backgroundPositionX = '0px';
+            document.getElementById('tk-bg-city').style.backgroundPositionX = '0px';
+            document.getElementById('tk-bg-ground').style.backgroundPositionX = '0px';
+            document.getElementById('tk-runway-surface').style.backgroundPositionX = '0px';
             
             tkState.frameId = requestAnimationFrame(takeoffLoop);
         }
@@ -1014,7 +1076,6 @@
             tkState.pitch = Math.max(0, Math.min(30, tkState.pitch));
             if(tkState.pitch === 30 || tkState.pitch === 0) tkState.pitchVelocity = 0;
 
-            // Lift accumulation using dynamic sweet spot
             if (tkState.speed >= 140 && tkState.pitch >= tkState.minAngle && tkState.pitch <= tkState.maxAngle) {
                 tkState.lift += 0.5; 
             } else {
@@ -1034,9 +1095,19 @@
             else speedEl.style.color = "var(--brand-red)";
 
             tkState.distance -= (tkState.speed / 1200); 
-
             document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%';
             document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
+
+            // PARALLAX ANIMATION LOGIC
+            tkState.bgPosSky -= tkState.speed * 0.002;
+            tkState.bgPosCity -= tkState.speed * 0.008;
+            tkState.bgPosGround -= tkState.speed * 0.025;
+            tkState.bgPosRunway -= tkState.speed * 0.08;
+
+            document.getElementById('tk-bg-sky').style.backgroundPositionX = tkState.bgPosSky + 'px';
+            document.getElementById('tk-bg-city').style.backgroundPositionX = tkState.bgPosCity + 'px';
+            document.getElementById('tk-bg-ground').style.backgroundPositionX = tkState.bgPosGround + 'px';
+            document.getElementById('tk-runway-surface').style.backgroundPositionX = tkState.bgPosRunway + 'px';
 
             if (tkState.lift >= 100) return winTakeoff();
             if (tkState.distance <= 0) return failTakeoff("RAN OUT OF RUNWAY");
@@ -1046,7 +1117,6 @@
 
         function failTakeoff(reason) {
             tkState.active = false;
-            document.getElementById('takeoff-viewport').classList.remove('rolling');
             
             const lState = globalState.levels[activeLevelIdx];
             lState.attempts = (lState.attempts || 0) + 1;
@@ -1061,7 +1131,7 @@
 
             if (lState.attempts >= 3) {
                 lState.failed = true;
-                lState.completed = true; // Mark done so they aren't stuck in the hangar
+                lState.completed = true; 
                 saveState();
                 
                 document.getElementById('message').textContent = "SYSTEM LOCKED - MAX ATTEMPTS FAILED (-200L)";
@@ -1088,10 +1158,9 @@
 
         function winTakeoff() {
             tkState.active = false;
-            document.getElementById('takeoff-viewport').classList.remove('rolling');
             
             const bonus = 500;
-            globalState.currentFuel += bonus; // Give massive bonus
+            globalState.currentFuel += bonus; 
             updateMiniFuelUI();
             
             const lState = globalState.levels[activeLevelIdx];

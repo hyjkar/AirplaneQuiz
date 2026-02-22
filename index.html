@@ -172,7 +172,8 @@
         #smart-bomb-btn {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: #fff; border: 1px solid #ff9b9b; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
-            padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; text-transform: uppercase;
+            padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; 
+            text-transform: uppercase;
         }
 
         /* --- IMAGE MODE --- */
@@ -219,7 +220,7 @@
         .trivia-option:active { transform: scale(0.98); background: #eee; }
         .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
 
-        /* --- TAKEOFF MINI GAME (8-BIT PARALLAX EDITION) --- */
+        /* --- TAKEOFF MINI GAME (8-BIT PARALLAX) --- */
         #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; min-height: 0; }
         .takeoff-hud { display: flex; justify-content: space-between; align-items: center; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #333; margin-bottom: 5px; flex-shrink: 0;}
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
@@ -228,27 +229,24 @@
         #takeoff-viewport { 
             position: relative; width: 100%; flex-grow: 1; min-height: 200px; 
             border: 4px solid #222; border-radius: 4px; overflow: hidden; margin-bottom: 10px;
-            /* Force hard pixel edges */
             image-rendering: pixelated; 
-            background-color: #87CEEB; /* Fallback */
+            background-color: #87CEEB; 
         }
 
-        /* 8-Bit Parallax Layers */
+        /* Parallax Layers */
         .parallax-layer {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 25px; /* sit above runway */
-            background-repeat: repeat-x;
-            background-position: 0px bottom;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 32px; 
+            background-repeat: repeat-x; background-position: 0px bottom;
         }
+        #tk-bg-sky { background-size: 256px 100%; z-index: 0; }
+        #tk-bg-city { background-size: 256px 100%; z-index: 1; }
+        #tk-bg-ground { background-size: 256px 100%; z-index: 2; }
         
-        #tk-bg-sky { background-size: 128px 100%; z-index: 0; }
-        #tk-bg-city { background-size: 128px 100%; z-index: 1; }
-        #tk-bg-ground { background-size: 64px 100%; z-index: 2; }
-        
-        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 25px; z-index: 3;}
-        #tk-runway-surface { width: 100%; height: 100%; background-repeat: repeat-x; background-size: 40px 25px; }
+        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 32px; z-index: 3;}
+        #tk-runway-surface { width: 100%; height: 100%; background-repeat: repeat-x; background-size: 128px 32px; }
 
-        /* Weather Overlays */
         #tk-weather-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 5; }
+        
         .weather-rain {
             width: 150%; height: 150%; top: -25%; left: -25%;
             background-image: repeating-linear-gradient(-15deg, transparent, transparent 15px, rgba(255,255,255,0.4) 16px, transparent 17px);
@@ -265,16 +263,16 @@
         @keyframes fogDrift { from { transform: translateX(-15%); } to { transform: translateX(15%); } }
         
         #tk-gauge-container {
-            position: absolute; right: 10px; top: 10px; bottom: 30px; width: 20px;
+            position: absolute; right: 10px; top: 10px; bottom: 40px; width: 20px;
             background: rgba(0,0,0,0.5); border-radius: 4px; border: 2px solid #fff; z-index: 6;
         }
         #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); }
         #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; }
 
-        /* 8-Bit Plane */
+        /* Detailed Pixel Art Plane */
         #tk-plane {
-            position: absolute; left: 20px; bottom: 25px; width: 120px; height: 40px;
-            transform-origin: 80% 90%; 
+            position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px;
+            transform-origin: 50% 90%; 
             z-index: 4; 
         }
         
@@ -464,35 +462,35 @@
                 
                 <div id="tk-plane">
                     <svg viewBox="0 0 80 30" width="100%" height="100%" shape-rendering="crispEdges">
-                        <rect x="68" y="2" width="6" height="12" fill="var(--brand-red)" />
-                        <rect x="64" y="6" width="4" height="8" fill="var(--brand-red)" />
-                        <rect x="74" y="10" width="2" height="4" fill="var(--brand-red)" />
-                        <rect x="10" y="12" width="66" height="8" fill="#fff" />
-                        <rect x="12" y="20" width="60" height="2" fill="#e0e0e0" /> <rect x="4" y="14" width="6" height="6" fill="#fff" />
-                        <rect x="2" y="16" width="2" height="4" fill="#fff" />
-                        <rect x="6" y="14" width="4" height="2" fill="#1a1a1a" />
-                        <rect x="16" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="20" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="24" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="28" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="40" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="44" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="48" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="52" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="56" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="60" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="12" y="14" width="2" height="4" fill="var(--brand-red)" />
-                        <rect x="64" y="14" width="2" height="4" fill="var(--brand-red)" />
-                        <rect x="34" y="15" width="2" height="3" fill="var(--brand-red)" />
-                        <rect x="26" y="18" width="16" height="4" fill="#a0a0a0" />
-                        <rect x="30" y="22" width="12" height="2" fill="#808080" />
-                        <rect x="24" y="20" width="8" height="4" fill="#333" />
-                        <rect x="22" y="20" width="2" height="4" fill="#555" />
-                        <rect x="32" y="21" width="2" height="2" fill="#111" />
-                        <rect x="12" y="22" width="2" height="4" fill="#555" />
-                        <rect x="11" y="26" width="4" height="2" fill="#111" />
-                        <rect x="38" y="24" width="2" height="2" fill="#555" />
-                        <rect x="36" y="26" width="6" height="2" fill="#111" />
+                        <rect x="6" y="2" width="6" height="12" fill="var(--brand-red)" />
+                        <rect x="12" y="6" width="4" height="8" fill="var(--brand-red)" />
+                        <rect x="4" y="10" width="2" height="4" fill="var(--brand-red)" />
+                        <rect x="4" y="12" width="66" height="8" fill="#fff" />
+                        <rect x="8" y="20" width="60" height="2" fill="#e0e0e0" /> <rect x="70" y="14" width="6" height="6" fill="#fff" />
+                        <rect x="76" y="16" width="2" height="4" fill="#fff" />
+                        <rect x="70" y="14" width="4" height="2" fill="#1a1a1a" />
+                        <rect x="62" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="58" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="54" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="50" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="38" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="34" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="30" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="26" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="22" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="18" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="66" y="14" width="2" height="4" fill="var(--brand-red)" />
+                        <rect x="14" y="14" width="2" height="4" fill="var(--brand-red)" />
+                        <rect x="44" y="15" width="2" height="3" fill="var(--brand-red)" />
+                        <rect x="38" y="18" width="16" height="4" fill="#a0a0a0" />
+                        <rect x="38" y="22" width="12" height="2" fill="#808080" />
+                        <rect x="48" y="20" width="8" height="4" fill="#333" />
+                        <rect x="46" y="21" width="2" height="2" fill="#111" />
+                        <rect x="56" y="20" width="2" height="4" fill="#555" />
+                        <rect x="66" y="22" width="2" height="4" fill="#555" />
+                        <rect x="65" y="26" width="4" height="2" fill="#111" />
+                        <rect x="40" y="24" width="2" height="2" fill="#555" />
+                        <rect x="38" y="26" width="6" height="2" fill="#111" />
                     </svg>
                 </div>
                 
@@ -562,7 +560,7 @@
             ],
             classified: [
                 { type: 'image', image: "f22.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
-                { type: 'image', image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
+                { type: 'image', image: "sr71.jpg", answers: ["sr71", "sr71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
                 { type: 'image', image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
                 { type: 'image', image: "p51.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" }
             ]
@@ -576,26 +574,27 @@
         ];
 
         // --- 8-BIT BACKGROUND GENERATOR ---
-        function getSvgUri(svgStr) { return `url("data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}")`; }
+        function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
 
         const THEMES = {
             1: { // Day
-                sky: `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="64" height="64" fill="#87CEEB"/><rect x="10" y="10" width="20" height="4" fill="#fff"/><rect x="14" y="6" width="12" height="4" fill="#fff"/><rect x="40" y="30" width="16" height="4" fill="#fff"/><rect x="44" y="28" width="8" height="2" fill="#fff"/></svg>`,
-                city: `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="40" width="12" height="24" fill="#5a6988"/><rect x="12" y="30" width="16" height="34" fill="#4a5875"/><rect x="28" y="45" width="10" height="19" fill="#6b7b9e"/><rect x="38" y="20" width="14" height="44" fill="#3a465d"/><rect x="52" y="35" width="12" height="29" fill="#4a5875"/></svg>`,
-                ground: `<svg width="32" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="20" width="32" height="12" fill="#2d4c1e"/><rect x="4" y="12" width="8" height="8" fill="#1e3b12"/><rect x="6" y="8" width="4" height="4" fill="#1e3b12"/><rect x="20" y="16" width="8" height="4" fill="#385e26"/></svg>`
+                sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#87CEEB"/><rect y="32" width="256" height="32" fill="#99D9F0"/><path d="M20,20 h20 v-4 h-10 v-4 h-20 v4 h-10 v4 Z M20,20 h20 v4 h-30 Z" fill="#fff"/><path d="M30,20 h10 v4 h-10 Z M10,20 h10 v4 h-10 Z" fill="#e0e0e0"/><path d="M100,10 h30 v-6 h-15 v-4 h-20 v4 h-10 v6 Z M100,10 h30 v4 h-45 Z" fill="#fff"/><path d="M115,10 h15 v4 h-15 Z M85,10 h15 v4 h-15 Z" fill="#e0e0e0"/><path d="M200,25 h25 v-4 h-10 v-4 h-15 v4 h-10 v4 Z" fill="#fff"/></svg>`,
+                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#8ca1cc"/><rect x="50" y="10" width="40" height="54" fill="#8ca1cc"/><rect x="120" y="25" width="35" height="39" fill="#8ca1cc"/><rect x="180" y="15" width="25" height="49" fill="#8ca1cc"/><rect x="220" y="30" width="30" height="34" fill="#8ca1cc"/><rect x="0" y="35" width="25" height="29" fill="#5a6988"/><rect x="35" y="25" width="30" height="39" fill="#5a6988"/><rect x="80" y="40" width="50" height="24" fill="#5a6988"/><rect x="140" y="20" width="45" height="44" fill="#5a6988"/><rect x="200" y="35" width="40" height="29" fill="#5a6988"/><rect x="20" y="45" width="40" height="19" fill="#4a5875"/><rect x="70" y="30" width="35" height="34" fill="#4a5875"/><rect x="110" y="50" width="40" height="14" fill="#4a5875"/><rect x="160" y="40" width="30" height="24" fill="#4a5875"/><rect x="230" y="45" width="26" height="19" fill="#4a5875"/><path d="M 40 30 h 4 v 4 h -4 Z M 48 30 h 4 v 4 h -4 Z M 40 38 h 4 v 4 h -4 Z M 48 38 h 4 v 4 h -4 Z M 75 35 h 4 v 4 h -4 Z M 75 45 h 4 v 4 h -4 Z M 85 35 h 4 v 4 h -4 Z M 85 45 h 4 v 4 h -4 Z M 145 25 h 4 v 4 h -4 Z M 155 25 h 4 v 4 h -4 Z M 165 25 h 4 v 4 h -4 Z M 145 35 h 4 v 4 h -4 Z M 155 35 h 4 v 4 h -4 Z M 165 35 h 4 v 4 h -4 Z M 205 40 h 4 v 4 h -4 Z M 215 40 h 4 v 4 h -4 Z" fill="#7585a5"/></svg>`,
+                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><path d="M0,32 L0,20 L10,16 L20,18 L30,12 L45,18 L60,10 L80,20 L100,14 L120,22 L140,12 L160,20 L180,14 L200,18 L220,10 L240,16 L256,12 L256,32 Z" fill="#2d4c1e"/><path d="M10,32 L10,24 L15,20 L25,22 L35,16 L50,26 L65,18 L80,28 L95,22 L110,26 L125,18 L145,28 L160,22 L175,26 L190,16 L210,28 L230,22 L245,26 L256,20 L256,32 Z" fill="#1e3b12"/><path d="M15,26 h4 v4 h-4 Z M40,22 h4 v4 h-4 Z M90,26 h4 v4 h-4 Z M130,24 h4 v4 h-4 Z M180,22 h4 v4 h-4 Z M220,26 h4 v4 h-4 Z" fill="#385e26"/></svg>`
             },
             2: { // Rainy
-                sky: `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="64" height="64" fill="#4a5d6a"/><rect x="10" y="10" width="20" height="4" fill="#687d8c"/><rect x="14" y="6" width="12" height="4" fill="#687d8c"/><rect x="40" y="30" width="16" height="4" fill="#687d8c"/><rect x="44" y="28" width="8" height="2" fill="#687d8c"/></svg>`,
-                city: `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="40" width="12" height="24" fill="#3d4955"/><rect x="12" y="30" width="16" height="34" fill="#323d47"/><rect x="28" y="45" width="10" height="19" fill="#485664"/><rect x="38" y="20" width="14" height="44" fill="#28313a"/><rect x="52" y="35" width="12" height="29" fill="#323d47"/></svg>`,
-                ground: `<svg width="32" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="20" width="32" height="12" fill="#2b3626"/><rect x="4" y="12" width="8" height="8" fill="#1d251a"/><rect x="6" y="8" width="4" height="4" fill="#1d251a"/><rect x="20" y="16" width="8" height="4" fill="#34422e"/></svg>`
+                sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#4a5d6a"/><rect y="32" width="256" height="32" fill="#5a6d7a"/><path d="M20,20 h20 v-4 h-10 v-4 h-20 v4 h-10 v4 Z M20,20 h20 v4 h-30 Z" fill="#687d8c"/><path d="M30,20 h10 v4 h-10 Z M10,20 h10 v4 h-10 Z" fill="#586b78"/><path d="M100,10 h30 v-6 h-15 v-4 h-20 v4 h-10 v6 Z M100,10 h30 v4 h-45 Z" fill="#687d8c"/><path d="M115,10 h15 v4 h-15 Z M85,10 h15 v4 h-15 Z" fill="#586b78"/><path d="M200,25 h25 v-4 h-10 v-4 h-15 v4 h-10 v4 Z" fill="#687d8c"/></svg>`,
+                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#3d4955"/><rect x="50" y="10" width="40" height="54" fill="#3d4955"/><rect x="120" y="25" width="35" height="39" fill="#3d4955"/><rect x="180" y="15" width="25" height="49" fill="#3d4955"/><rect x="220" y="30" width="30" height="34" fill="#3d4955"/><rect x="0" y="35" width="25" height="29" fill="#323d47"/><rect x="35" y="25" width="30" height="39" fill="#323d47"/><rect x="80" y="40" width="50" height="24" fill="#323d47"/><rect x="140" y="20" width="45" height="44" fill="#323d47"/><rect x="200" y="35" width="40" height="29" fill="#323d47"/><rect x="20" y="45" width="40" height="19" fill="#28313a"/><rect x="70" y="30" width="35" height="34" fill="#28313a"/><rect x="110" y="50" width="40" height="14" fill="#28313a"/><rect x="160" y="40" width="30" height="24" fill="#28313a"/><rect x="230" y="45" width="26" height="19" fill="#28313a"/></svg>`,
+                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><path d="M0,32 L0,20 L10,16 L20,18 L30,12 L45,18 L60,10 L80,20 L100,14 L120,22 L140,12 L160,20 L180,14 L200,18 L220,10 L240,16 L256,12 L256,32 Z" fill="#2b3626"/><path d="M10,32 L10,24 L15,20 L25,22 L35,16 L50,26 L65,18 L80,28 L95,22 L110,26 L125,18 L145,28 L160,22 L175,26 L190,16 L210,28 L230,22 L245,26 L256,20 L256,32 Z" fill="#1d251a"/><path d="M15,26 h4 v4 h-4 Z M40,22 h4 v4 h-4 Z M90,26 h4 v4 h-4 Z M130,24 h4 v4 h-4 Z M180,22 h4 v4 h-4 Z M220,26 h4 v4 h-4 Z" fill="#34422e"/></svg>`
             },
             3: { // Night
-                sky: `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="64" height="64" fill="#0f1722"/><rect x="10" y="10" width="20" height="4" fill="#1c2b3d"/><rect x="14" y="6" width="12" height="4" fill="#1c2b3d"/><rect x="40" y="30" width="16" height="4" fill="#1c2b3d"/><rect x="44" y="28" width="8" height="2" fill="#1c2b3d"/></svg>`,
-                city: `<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="40" width="12" height="24" fill="#151e2b"/><rect x="12" y="30" width="16" height="34" fill="#101722"/><rect x="28" y="45" width="10" height="19" fill="#1c2838"/><rect x="38" y="20" width="14" height="44" fill="#0a0f16"/><rect x="52" y="35" width="12" height="29" fill="#101722"/><rect x="14" y="34" width="2" height="2" fill="#f1c40f"/><rect x="18" y="34" width="2" height="2" fill="#f1c40f"/><rect x="14" y="40" width="2" height="2" fill="#f1c40f"/><rect x="40" y="25" width="2" height="2" fill="#f1c40f"/><rect x="46" y="35" width="2" height="2" fill="#f1c40f"/><rect x="54" y="40" width="2" height="2" fill="#f1c40f"/></svg>`,
-                ground: `<svg width="32" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="20" width="32" height="12" fill="#111a11"/><rect x="4" y="12" width="8" height="8" fill="#0a100a"/><rect x="6" y="8" width="4" height="4" fill="#0a100a"/><rect x="20" y="16" width="8" height="4" fill="#162116"/></svg>`
+                sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#0f1722"/><path d="M20,15 h2 v2 h-2 Z M50,30 h2 v2 h-2 Z M100,10 h2 v2 h-2 Z M150,25 h2 v2 h-2 Z M200,15 h2 v2 h-2 Z M240,20 h2 v2 h-2 Z" fill="#fff"/></svg>`,
+                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#151e2b"/><rect x="50" y="10" width="40" height="54" fill="#151e2b"/><rect x="120" y="25" width="35" height="39" fill="#151e2b"/><rect x="180" y="15" width="25" height="49" fill="#151e2b"/><rect x="220" y="30" width="30" height="34" fill="#151e2b"/><rect x="0" y="35" width="25" height="29" fill="#101722"/><rect x="35" y="25" width="30" height="39" fill="#101722"/><rect x="80" y="40" width="50" height="24" fill="#101722"/><rect x="140" y="20" width="45" height="44" fill="#101722"/><rect x="200" y="35" width="40" height="29" fill="#101722"/><rect x="20" y="45" width="40" height="19" fill="#0a0f16"/><rect x="70" y="30" width="35" height="34" fill="#0a0f16"/><rect x="110" y="50" width="40" height="14" fill="#0a0f16"/><rect x="160" y="40" width="30" height="24" fill="#0a0f16"/><rect x="230" y="45" width="26" height="19" fill="#0a0f16"/><path d="M 40 30 h 4 v 4 h -4 Z M 48 30 h 4 v 4 h -4 Z M 75 35 h 4 v 4 h -4 Z M 85 45 h 4 v 4 h -4 Z M 145 25 h 4 v 4 h -4 Z M 165 35 h 4 v 4 h -4 Z M 205 40 h 4 v 4 h -4 Z" fill="#f1c40f"/><path d="M 40 38 h 4 v 4 h -4 Z M 75 45 h 4 v 4 h -4 Z M 155 35 h 4 v 4 h -4 Z M 215 40 h 4 v 4 h -4 Z" fill="#e67e22"/></svg>`,
+                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><path d="M0,32 L0,20 L10,16 L20,18 L30,12 L45,18 L60,10 L80,20 L100,14 L120,22 L140,12 L160,20 L180,14 L200,18 L220,10 L240,16 L256,12 L256,32 Z" fill="#111a11"/><path d="M10,32 L10,24 L15,20 L25,22 L35,16 L50,26 L65,18 L80,28 L95,22 L110,26 L125,18 L145,28 L160,22 L175,26 L190,16 L210,28 L230,22 L245,26 L256,20 L256,32 Z" fill="#0a100a"/></svg>`
             }
         };
-        const RUNWAY_SVG = `<svg width="40" height="25" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="40" height="25" fill="#333"/><rect x="0" y="10" width="20" height="5" fill="#ddd"/></svg>`;
+
+        const RUNWAY_SVG = `<svg width="128" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="128" height="32" fill="#3b3b3b"/><rect width="128" height="2" fill="#385e26"/><rect y="2" width="128" height="2" fill="#4a4a4a"/><rect x="0" y="14" width="32" height="4" fill="#ddd"/><rect x="64" y="14" width="32" height="4" fill="#ddd"/><rect x="0" y="4" width="128" height="2" fill="#fff"/><rect x="0" y="26" width="128" height="2" fill="#fff"/><rect x="10" y="10" width="16" height="2" fill="#222"/><rect x="40" y="18" width="24" height="2" fill="#222"/><rect x="80" y="12" width="12" height="2" fill="#222"/><rect x="100" y="20" width="16" height="2" fill="#222"/></svg>`;
 
         const STARTING_GLOBAL_FUEL = 4000;
         const REFUEL_AMOUNT = 2000; 
@@ -646,16 +645,20 @@
             document.getElementById('enter-btn').onclick = checkAnswer;
             
             const tkBtn = document.getElementById('takeoff-btn');
+            
             const startPress = (e) => { 
                 e.preventDefault();
+                
                 if (tkState.active && tkState.speed < 140) {
                     tkState.pressing = false; 
                     failTakeoff("ROTATED TOO EARLY");
                     return;
                 }
+                
                 tkState.pressing = true; 
                 tkBtn.style.backgroundColor = "var(--brand-red)"; 
             };
+            
             const endPress = (e) => { 
                 if (e && e.cancelable) e.preventDefault();
                 tkState.pressing = false; 
@@ -736,7 +739,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v42'); // Ver bump for 8-bit theme
+            const saved = localStorage.getItem('fuelQuizState_v43'); // Ver bump for Pixel Art Update
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -752,7 +755,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v42', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v43', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -974,7 +977,6 @@
                 takeoffArea.style.display = 'flex';
                 bombBtn.style.display = "none";
                 
-                // --- 8-BIT THEME INJECTION ---
                 const sky = document.getElementById('tk-bg-sky');
                 const city = document.getElementById('tk-bg-city');
                 const ground = document.getElementById('tk-bg-ground');
@@ -1021,7 +1023,6 @@
             }
         }
 
-        // --- TAKEOFF MINI GAME LOGIC (PARALLAX + PHYSICS) ---
         function startTakeoffFromTutorial() {
             globalState.hasSeenTakeoffTutorial = true;
             saveState();
@@ -1049,7 +1050,6 @@
             document.getElementById('tk-speed-val').textContent = "0";
             document.getElementById('tk-speed-val').style.color = "var(--brand-red)";
             
-            // Reset backgrounds
             document.getElementById('tk-bg-sky').style.backgroundPositionX = '0px';
             document.getElementById('tk-bg-city').style.backgroundPositionX = '0px';
             document.getElementById('tk-bg-ground').style.backgroundPositionX = '0px';
@@ -1095,10 +1095,8 @@
             else speedEl.style.color = "var(--brand-red)";
 
             tkState.distance -= (tkState.speed / 1200); 
-            document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%';
-            document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
 
-            // PARALLAX ANIMATION LOGIC
+            // Parallax Scroll
             tkState.bgPosSky -= tkState.speed * 0.002;
             tkState.bgPosCity -= tkState.speed * 0.008;
             tkState.bgPosGround -= tkState.speed * 0.025;
@@ -1108,6 +1106,9 @@
             document.getElementById('tk-bg-city').style.backgroundPositionX = tkState.bgPosCity + 'px';
             document.getElementById('tk-bg-ground').style.backgroundPositionX = tkState.bgPosGround + 'px';
             document.getElementById('tk-runway-surface').style.backgroundPositionX = tkState.bgPosRunway + 'px';
+
+            document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%';
+            document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
 
             if (tkState.lift >= 100) return winTakeoff();
             if (tkState.distance <= 0) return failTakeoff("RAN OUT OF RUNWAY");

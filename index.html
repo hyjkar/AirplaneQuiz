@@ -172,8 +172,7 @@
         #smart-bomb-btn {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: #fff; border: 1px solid #ff9b9b; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
-            padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; 
-            text-transform: uppercase;
+            padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; text-transform: uppercase;
         }
 
         /* --- IMAGE MODE --- */
@@ -220,20 +219,19 @@
         .trivia-option:active { transform: scale(0.98); background: #eee; }
         .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
 
-        /* --- TAKEOFF MINI GAME (8-BIT PARALLAX) --- */
-        #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; min-height: 0; }
-        .takeoff-hud { display: flex; justify-content: space-between; align-items: center; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #333; margin-bottom: 5px; flex-shrink: 0;}
+        /* --- TAKEOFF MINI GAME (8-BIT PARALLAX PURE PIXEL) --- */
+        #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; min-height: 0; align-items: center; }
+        .takeoff-hud { display: flex; justify-content: space-between; align-items: center; width: 100%; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #333; margin-bottom: 5px; flex-shrink: 0;}
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
         .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
         
         #takeoff-viewport { 
-            position: relative; width: 100%; flex-grow: 1; min-height: 200px; 
+            position: relative; width: 100%; flex-grow: 1; 
+            min-height: 160px; max-height: 250px; /* Reduced to make room for big button */
             border: 4px solid #222; border-radius: 4px; overflow: hidden; margin-bottom: 10px;
-            image-rendering: pixelated; 
-            background-color: #87CEEB; 
+            image-rendering: pixelated; background-color: #87CEEB; 
         }
 
-        /* Parallax Layers */
         .parallax-layer {
             position: absolute; top: 0; left: 0; right: 0; bottom: 32px; 
             background-repeat: repeat-x; background-position: 0px bottom;
@@ -244,6 +242,11 @@
         
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 32px; z-index: 3;}
         #tk-runway-surface { width: 100%; height: 100%; background-repeat: repeat-x; background-size: 128px 32px; }
+
+        /* Mountain Obstacle */
+        #tk-mountain {
+            position: absolute; bottom: 32px; left: 100%; width: 120px; height: 120px; z-index: 3; display: none;
+        }
 
         #tk-weather-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 5; }
         
@@ -269,17 +272,28 @@
         #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); }
         #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; }
 
-        /* Detailed Pixel Art Plane */
         #tk-plane {
             position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px;
-            transform-origin: 50% 90%; 
-            z-index: 4; 
+            transform-origin: 50% 90%; z-index: 4; 
         }
+
+        /* Pixel explosion particles */
+        .pixel-particle { position: absolute; width: 6px; height: 6px; z-index: 10; }
         
+        /* New Arcade Round Button */
         #takeoff-btn { 
-            flex-shrink: 0; font-size: 1.2rem; padding: 15px; margin-bottom: 0;
+            flex-shrink: 0; 
+            width: 90px; height: 90px; border-radius: 50%;
+            font-size: 1.1rem; line-height: 1.1; margin-bottom: 0; padding: 0;
+            display: flex; align-items: center; justify-content: center; text-align: center;
             touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
-            border-radius: 4px; font-family: 'Share Tech Mono', monospace; border: 4px solid #000;
+            font-family: 'Share Tech Mono', monospace; border: 4px solid #111;
+            box-shadow: inset 0 -6px rgba(0,0,0,0.2), 0 5px 10px rgba(0,0,0,0.4);
+            transition: transform 0.05s, box-shadow 0.05s;
+        }
+        #takeoff-btn:active, #takeoff-btn.pressed {
+            transform: translateY(4px);
+            box-shadow: inset 0 -2px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.4);
         }
 
         #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
@@ -326,10 +340,11 @@
         <div class="modal-box">
             <h1 style="color: var(--brand-gold); margin-bottom: 15px;">FLIGHT MANUAL</h1>
             <p class="tutorial-text">
-                1. Wait for your speed to reach <strong style="color:var(--gauge-green)">140 KTS</strong>. <br>(Rotating early causes a crash!)<br><br>
-                2. <strong>HOLD</strong> the button to pull the nose up.<br><br>
+                1. Wait for your speed to reach <strong style="color:var(--gauge-green)">140 KTS</strong>. <br>
+                <span style="color:var(--brand-red); font-size:0.85rem;">(Rotating early causes a catastrophic stall!)</span><br><br>
+                2. Tap and <strong>HOLD</strong> the button to pull the nose up.<br><br>
                 3. Keep the needle in the <strong style="color:var(--gauge-green)">GREEN ZONE</strong> to gain lift before the runway ends!<br><br>
-                <span style="color:var(--brand-red); font-size:0.9rem;">⚠️ You have 3 attempts to earn a fuel bonus. If you fail, the mission is aborted.</span>
+                <span style="color:#aaa; font-size:0.9rem;">⚠️ You have 3 attempts to earn a fuel bonus. If you fail, the mission is aborted.</span>
             </p>
             <button class="gold-btn" onclick="startTakeoffFromTutorial()">START ENGINES</button>
         </div>
@@ -460,37 +475,49 @@
                     <div id="tk-needle"></div>
                 </div>
                 
+                <div id="tk-mountain">
+                    <svg viewBox="0 0 100 100" shape-rendering="crispEdges" width="100%" height="100%">
+                        <rect x="40" y="20" width="20" height="80" fill="#3a3a3a"/>
+                        <rect x="20" y="40" width="60" height="60" fill="#2d2d2d"/>
+                        <rect x="0" y="60" width="100" height="40" fill="#1f1f1f"/>
+                        <rect x="40" y="20" width="20" height="15" fill="#ddd"/>
+                        <rect x="30" y="40" width="10" height="10" fill="#ddd"/>
+                        <rect x="60" y="40" width="10" height="10" fill="#ddd"/>
+                    </svg>
+                </div>
+                
                 <div id="tk-plane">
                     <svg viewBox="0 0 80 30" width="100%" height="100%" shape-rendering="crispEdges">
-                        <rect x="6" y="2" width="6" height="12" fill="var(--brand-red)" />
-                        <rect x="12" y="6" width="4" height="8" fill="var(--brand-red)" />
-                        <rect x="4" y="10" width="2" height="4" fill="var(--brand-red)" />
-                        <rect x="4" y="12" width="66" height="8" fill="#fff" />
-                        <rect x="8" y="20" width="60" height="2" fill="#e0e0e0" /> <rect x="70" y="14" width="6" height="6" fill="#fff" />
-                        <rect x="76" y="16" width="2" height="4" fill="#fff" />
-                        <rect x="70" y="14" width="4" height="2" fill="#1a1a1a" />
-                        <rect x="62" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="58" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="54" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="50" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="38" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="34" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="30" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="26" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="22" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="18" y="15" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="66" y="14" width="2" height="4" fill="var(--brand-red)" />
-                        <rect x="14" y="14" width="2" height="4" fill="var(--brand-red)" />
-                        <rect x="44" y="15" width="2" height="3" fill="var(--brand-red)" />
-                        <rect x="38" y="18" width="16" height="4" fill="#a0a0a0" />
-                        <rect x="38" y="22" width="12" height="2" fill="#808080" />
-                        <rect x="48" y="20" width="8" height="4" fill="#333" />
-                        <rect x="46" y="21" width="2" height="2" fill="#111" />
-                        <rect x="56" y="20" width="2" height="4" fill="#555" />
-                        <rect x="66" y="22" width="2" height="4" fill="#555" />
-                        <rect x="65" y="26" width="4" height="2" fill="#111" />
-                        <rect x="40" y="24" width="2" height="2" fill="#555" />
-                        <rect x="38" y="26" width="6" height="2" fill="#111" />
+                        <rect x="68" y="2" width="6" height="12" fill="var(--brand-red)" />
+                        <rect x="64" y="6" width="4" height="8" fill="var(--brand-red)" />
+                        <rect x="74" y="10" width="2" height="4" fill="var(--brand-red)" />
+                        <rect x="10" y="12" width="66" height="8" fill="#fff" />
+                        <rect x="12" y="20" width="60" height="2" fill="#e0e0e0" />
+                        <rect x="4" y="14" width="6" height="6" fill="#fff" />
+                        <rect x="2" y="16" width="2" height="4" fill="#fff" />
+                        <rect x="6" y="14" width="4" height="2" fill="#1a1a1a" />
+                        <rect x="16" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="20" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="24" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="28" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="40" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="44" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="48" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="52" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="56" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="60" y="15" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="12" y="14" width="2" height="4" fill="var(--brand-red)" />
+                        <rect x="64" y="14" width="2" height="4" fill="var(--brand-red)" />
+                        <rect x="34" y="15" width="2" height="3" fill="var(--brand-red)" />
+                        <rect x="26" y="18" width="16" height="4" fill="#a0a0a0" />
+                        <rect x="30" y="22" width="12" height="2" fill="#808080" />
+                        <rect x="24" y="20" width="8" height="4" fill="#333" />
+                        <rect x="22" y="20" width="2" height="4" fill="#555" />
+                        <rect x="32" y="21" width="2" height="2" fill="#111" />
+                        <rect x="12" y="22" width="2" height="4" fill="#555" />
+                        <rect x="11" y="26" width="4" height="2" fill="#111" />
+                        <rect x="38" y="24" width="2" height="2" fill="#555" />
+                        <rect x="36" y="26" width="6" height="2" fill="#111" />
                     </svg>
                 </div>
                 
@@ -499,7 +526,7 @@
                 </div>
             </div>
             
-            <button id="takeoff-btn" class="gold-btn" oncontextmenu="return false;">HOLD TO PITCH UP</button>
+            <button id="takeoff-btn" class="gold-btn">PULL<br>UP</button>
         </div>
 
         <div id="message"></div>
@@ -560,7 +587,7 @@
             ],
             classified: [
                 { type: 'image', image: "f22.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
-                { type: 'image', image: "sr71.jpg", answers: ["sr71", "sr71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
+                { type: 'image', image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
                 { type: 'image', image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
                 { type: 'image', image: "p51.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" }
             ]
@@ -573,24 +600,24 @@
             { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
         ];
 
-        // --- 8-BIT BACKGROUND GENERATOR ---
+        // --- 8-BIT BACKGROUND GENERATOR (PURE RECTS) ---
         function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
 
         const THEMES = {
             1: { // Day
-                sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#87CEEB"/><rect y="32" width="256" height="32" fill="#99D9F0"/><path d="M20,20 h20 v-4 h-10 v-4 h-20 v4 h-10 v4 Z M20,20 h20 v4 h-30 Z" fill="#fff"/><path d="M30,20 h10 v4 h-10 Z M10,20 h10 v4 h-10 Z" fill="#e0e0e0"/><path d="M100,10 h30 v-6 h-15 v-4 h-20 v4 h-10 v6 Z M100,10 h30 v4 h-45 Z" fill="#fff"/><path d="M115,10 h15 v4 h-15 Z M85,10 h15 v4 h-15 Z" fill="#e0e0e0"/><path d="M200,25 h25 v-4 h-10 v-4 h-15 v4 h-10 v4 Z" fill="#fff"/></svg>`,
-                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#8ca1cc"/><rect x="50" y="10" width="40" height="54" fill="#8ca1cc"/><rect x="120" y="25" width="35" height="39" fill="#8ca1cc"/><rect x="180" y="15" width="25" height="49" fill="#8ca1cc"/><rect x="220" y="30" width="30" height="34" fill="#8ca1cc"/><rect x="0" y="35" width="25" height="29" fill="#5a6988"/><rect x="35" y="25" width="30" height="39" fill="#5a6988"/><rect x="80" y="40" width="50" height="24" fill="#5a6988"/><rect x="140" y="20" width="45" height="44" fill="#5a6988"/><rect x="200" y="35" width="40" height="29" fill="#5a6988"/><rect x="20" y="45" width="40" height="19" fill="#4a5875"/><rect x="70" y="30" width="35" height="34" fill="#4a5875"/><rect x="110" y="50" width="40" height="14" fill="#4a5875"/><rect x="160" y="40" width="30" height="24" fill="#4a5875"/><rect x="230" y="45" width="26" height="19" fill="#4a5875"/><path d="M 40 30 h 4 v 4 h -4 Z M 48 30 h 4 v 4 h -4 Z M 40 38 h 4 v 4 h -4 Z M 48 38 h 4 v 4 h -4 Z M 75 35 h 4 v 4 h -4 Z M 75 45 h 4 v 4 h -4 Z M 85 35 h 4 v 4 h -4 Z M 85 45 h 4 v 4 h -4 Z M 145 25 h 4 v 4 h -4 Z M 155 25 h 4 v 4 h -4 Z M 165 25 h 4 v 4 h -4 Z M 145 35 h 4 v 4 h -4 Z M 155 35 h 4 v 4 h -4 Z M 165 35 h 4 v 4 h -4 Z M 205 40 h 4 v 4 h -4 Z M 215 40 h 4 v 4 h -4 Z" fill="#7585a5"/></svg>`,
-                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><path d="M0,32 L0,20 L10,16 L20,18 L30,12 L45,18 L60,10 L80,20 L100,14 L120,22 L140,12 L160,20 L180,14 L200,18 L220,10 L240,16 L256,12 L256,32 Z" fill="#2d4c1e"/><path d="M10,32 L10,24 L15,20 L25,22 L35,16 L50,26 L65,18 L80,28 L95,22 L110,26 L125,18 L145,28 L160,22 L175,26 L190,16 L210,28 L230,22 L245,26 L256,20 L256,32 Z" fill="#1e3b12"/><path d="M15,26 h4 v4 h-4 Z M40,22 h4 v4 h-4 Z M90,26 h4 v4 h-4 Z M130,24 h4 v4 h-4 Z M180,22 h4 v4 h-4 Z M220,26 h4 v4 h-4 Z" fill="#385e26"/></svg>`
+                sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#87CEEB"/><rect y="32" width="256" height="32" fill="#99D9F0"/><rect x="20" y="16" width="20" height="8" fill="#fff"/><rect x="10" y="20" width="40" height="4" fill="#fff"/><rect x="30" y="24" width="10" height="4" fill="#e0e0e0"/><rect x="100" y="4" width="30" height="10" fill="#fff"/><rect x="85" y="10" width="60" height="4" fill="#fff"/><rect x="115" y="14" width="15" height="4" fill="#e0e0e0"/><rect x="200" y="21" width="25" height="8" fill="#fff"/><rect x="190" y="25" width="40" height="4" fill="#fff"/></svg>`,
+                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#8ca1cc"/><rect x="50" y="10" width="40" height="54" fill="#8ca1cc"/><rect x="120" y="25" width="35" height="39" fill="#8ca1cc"/><rect x="180" y="15" width="25" height="49" fill="#8ca1cc"/><rect x="220" y="30" width="30" height="34" fill="#8ca1cc"/><rect x="0" y="35" width="25" height="29" fill="#5a6988"/><rect x="35" y="25" width="30" height="39" fill="#5a6988"/><rect x="80" y="40" width="50" height="24" fill="#5a6988"/><rect x="140" y="20" width="45" height="44" fill="#5a6988"/><rect x="200" y="35" width="40" height="29" fill="#5a6988"/><rect x="20" y="45" width="40" height="19" fill="#4a5875"/><rect x="70" y="30" width="35" height="34" fill="#4a5875"/><rect x="110" y="50" width="40" height="14" fill="#4a5875"/><rect x="160" y="40" width="30" height="24" fill="#4a5875"/><rect x="230" y="45" width="26" height="19" fill="#4a5875"/><rect x="40" y="30" width="4" height="4" fill="#7585a5"/><rect x="48" y="30" width="4" height="4" fill="#7585a5"/><rect x="40" y="38" width="4" height="4" fill="#7585a5"/><rect x="48" y="38" width="4" height="4" fill="#7585a5"/><rect x="75" y="35" width="4" height="4" fill="#7585a5"/><rect x="75" y="45" width="4" height="4" fill="#7585a5"/><rect x="85" y="35" width="4" height="4" fill="#7585a5"/><rect x="85" y="45" width="4" height="4" fill="#7585a5"/><rect x="145" y="25" width="4" height="4" fill="#7585a5"/><rect x="155" y="25" width="4" height="4" fill="#7585a5"/><rect x="165" y="25" width="4" height="4" fill="#7585a5"/><rect x="145" y="35" width="4" height="4" fill="#7585a5"/><rect x="155" y="35" width="4" height="4" fill="#7585a5"/><rect x="165" y="35" width="4" height="4" fill="#7585a5"/><rect x="205" y="40" width="4" height="4" fill="#7585a5"/><rect x="215" y="40" width="4" height="4" fill="#7585a5"/></svg>`,
+                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#2d4c1e"/><rect x="10" y="12" width="20" height="8" fill="#2d4c1e"/><rect x="15" y="8" width="10" height="4" fill="#2d4c1e"/><rect x="50" y="10" width="30" height="10" fill="#2d4c1e"/><rect x="60" y="6" width="10" height="4" fill="#2d4c1e"/><rect x="110" y="14" width="20" height="6" fill="#2d4c1e"/><rect x="160" y="8" width="40" height="12" fill="#2d4c1e"/><rect x="175" y="4" width="10" height="4" fill="#2d4c1e"/><rect x="220" y="12" width="30" height="8" fill="#2d4c1e"/><rect x="0" y="20" width="256" height="12" fill="#1e3b12"/><rect x="15" y="16" width="10" height="4" fill="#1e3b12"/><rect x="55" y="14" width="20" height="6" fill="#1e3b12"/><rect x="120" y="18" width="10" height="4" fill="#1e3b12"/><rect x="170" y="12" width="20" height="8" fill="#1e3b12"/><rect x="230" y="16" width="15" height="4" fill="#1e3b12"/><rect x="25" y="24" width="4" height="4" fill="#385e26"/><rect x="80" y="22" width="4" height="4" fill="#385e26"/><rect x="140" y="26" width="4" height="4" fill="#385e26"/><rect x="190" y="22" width="4" height="4" fill="#385e26"/></svg>`
             },
             2: { // Rainy
-                sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#4a5d6a"/><rect y="32" width="256" height="32" fill="#5a6d7a"/><path d="M20,20 h20 v-4 h-10 v-4 h-20 v4 h-10 v4 Z M20,20 h20 v4 h-30 Z" fill="#687d8c"/><path d="M30,20 h10 v4 h-10 Z M10,20 h10 v4 h-10 Z" fill="#586b78"/><path d="M100,10 h30 v-6 h-15 v-4 h-20 v4 h-10 v6 Z M100,10 h30 v4 h-45 Z" fill="#687d8c"/><path d="M115,10 h15 v4 h-15 Z M85,10 h15 v4 h-15 Z" fill="#586b78"/><path d="M200,25 h25 v-4 h-10 v-4 h-15 v4 h-10 v4 Z" fill="#687d8c"/></svg>`,
+                sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#4a5d6a"/><rect y="32" width="256" height="32" fill="#5a6d7a"/><rect x="20" y="16" width="20" height="8" fill="#687d8c"/><rect x="10" y="20" width="40" height="4" fill="#687d8c"/><rect x="30" y="24" width="10" height="4" fill="#586b78"/><rect x="100" y="4" width="30" height="10" fill="#687d8c"/><rect x="85" y="10" width="60" height="4" fill="#687d8c"/><rect x="115" y="14" width="15" height="4" fill="#586b78"/><rect x="200" y="21" width="25" height="8" fill="#687d8c"/><rect x="190" y="25" width="40" height="4" fill="#687d8c"/></svg>`,
                 city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#3d4955"/><rect x="50" y="10" width="40" height="54" fill="#3d4955"/><rect x="120" y="25" width="35" height="39" fill="#3d4955"/><rect x="180" y="15" width="25" height="49" fill="#3d4955"/><rect x="220" y="30" width="30" height="34" fill="#3d4955"/><rect x="0" y="35" width="25" height="29" fill="#323d47"/><rect x="35" y="25" width="30" height="39" fill="#323d47"/><rect x="80" y="40" width="50" height="24" fill="#323d47"/><rect x="140" y="20" width="45" height="44" fill="#323d47"/><rect x="200" y="35" width="40" height="29" fill="#323d47"/><rect x="20" y="45" width="40" height="19" fill="#28313a"/><rect x="70" y="30" width="35" height="34" fill="#28313a"/><rect x="110" y="50" width="40" height="14" fill="#28313a"/><rect x="160" y="40" width="30" height="24" fill="#28313a"/><rect x="230" y="45" width="26" height="19" fill="#28313a"/></svg>`,
-                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><path d="M0,32 L0,20 L10,16 L20,18 L30,12 L45,18 L60,10 L80,20 L100,14 L120,22 L140,12 L160,20 L180,14 L200,18 L220,10 L240,16 L256,12 L256,32 Z" fill="#2b3626"/><path d="M10,32 L10,24 L15,20 L25,22 L35,16 L50,26 L65,18 L80,28 L95,22 L110,26 L125,18 L145,28 L160,22 L175,26 L190,16 L210,28 L230,22 L245,26 L256,20 L256,32 Z" fill="#1d251a"/><path d="M15,26 h4 v4 h-4 Z M40,22 h4 v4 h-4 Z M90,26 h4 v4 h-4 Z M130,24 h4 v4 h-4 Z M180,22 h4 v4 h-4 Z M220,26 h4 v4 h-4 Z" fill="#34422e"/></svg>`
+                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#2b3626"/><rect x="10" y="12" width="20" height="8" fill="#2b3626"/><rect x="15" y="8" width="10" height="4" fill="#2b3626"/><rect x="50" y="10" width="30" height="10" fill="#2b3626"/><rect x="60" y="6" width="10" height="4" fill="#2b3626"/><rect x="110" y="14" width="20" height="6" fill="#2b3626"/><rect x="160" y="8" width="40" height="12" fill="#2b3626"/><rect x="175" y="4" width="10" height="4" fill="#2b3626"/><rect x="220" y="12" width="30" height="8" fill="#2b3626"/><rect x="0" y="20" width="256" height="12" fill="#1d251a"/><rect x="15" y="16" width="10" height="4" fill="#1d251a"/><rect x="55" y="14" width="20" height="6" fill="#1d251a"/><rect x="120" y="18" width="10" height="4" fill="#1d251a"/><rect x="170" y="12" width="20" height="8" fill="#1d251a"/><rect x="230" y="16" width="15" height="4" fill="#1d251a"/><rect x="25" y="24" width="4" height="4" fill="#34422e"/><rect x="80" y="22" width="4" height="4" fill="#34422e"/><rect x="140" y="26" width="4" height="4" fill="#34422e"/><rect x="190" y="22" width="4" height="4" fill="#34422e"/></svg>`
             },
             3: { // Night
-                sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#0f1722"/><path d="M20,15 h2 v2 h-2 Z M50,30 h2 v2 h-2 Z M100,10 h2 v2 h-2 Z M150,25 h2 v2 h-2 Z M200,15 h2 v2 h-2 Z M240,20 h2 v2 h-2 Z" fill="#fff"/></svg>`,
-                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#151e2b"/><rect x="50" y="10" width="40" height="54" fill="#151e2b"/><rect x="120" y="25" width="35" height="39" fill="#151e2b"/><rect x="180" y="15" width="25" height="49" fill="#151e2b"/><rect x="220" y="30" width="30" height="34" fill="#151e2b"/><rect x="0" y="35" width="25" height="29" fill="#101722"/><rect x="35" y="25" width="30" height="39" fill="#101722"/><rect x="80" y="40" width="50" height="24" fill="#101722"/><rect x="140" y="20" width="45" height="44" fill="#101722"/><rect x="200" y="35" width="40" height="29" fill="#101722"/><rect x="20" y="45" width="40" height="19" fill="#0a0f16"/><rect x="70" y="30" width="35" height="34" fill="#0a0f16"/><rect x="110" y="50" width="40" height="14" fill="#0a0f16"/><rect x="160" y="40" width="30" height="24" fill="#0a0f16"/><rect x="230" y="45" width="26" height="19" fill="#0a0f16"/><path d="M 40 30 h 4 v 4 h -4 Z M 48 30 h 4 v 4 h -4 Z M 75 35 h 4 v 4 h -4 Z M 85 45 h 4 v 4 h -4 Z M 145 25 h 4 v 4 h -4 Z M 165 35 h 4 v 4 h -4 Z M 205 40 h 4 v 4 h -4 Z" fill="#f1c40f"/><path d="M 40 38 h 4 v 4 h -4 Z M 75 45 h 4 v 4 h -4 Z M 155 35 h 4 v 4 h -4 Z M 215 40 h 4 v 4 h -4 Z" fill="#e67e22"/></svg>`,
-                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><path d="M0,32 L0,20 L10,16 L20,18 L30,12 L45,18 L60,10 L80,20 L100,14 L120,22 L140,12 L160,20 L180,14 L200,18 L220,10 L240,16 L256,12 L256,32 Z" fill="#111a11"/><path d="M10,32 L10,24 L15,20 L25,22 L35,16 L50,26 L65,18 L80,28 L95,22 L110,26 L125,18 L145,28 L160,22 L175,26 L190,16 L210,28 L230,22 L245,26 L256,20 L256,32 Z" fill="#0a100a"/></svg>`
+                sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#0f1722"/><rect x="20" y="15" width="2" height="2" fill="#fff"/><rect x="50" y="30" width="2" height="2" fill="#fff"/><rect x="100" y="10" width="2" height="2" fill="#fff"/><rect x="150" y="25" width="2" height="2" fill="#fff"/><rect x="200" y="15" width="2" height="2" fill="#fff"/><rect x="240" y="20" width="2" height="2" fill="#fff"/></svg>`,
+                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#151e2b"/><rect x="50" y="10" width="40" height="54" fill="#151e2b"/><rect x="120" y="25" width="35" height="39" fill="#151e2b"/><rect x="180" y="15" width="25" height="49" fill="#151e2b"/><rect x="220" y="30" width="30" height="34" fill="#151e2b"/><rect x="0" y="35" width="25" height="29" fill="#101722"/><rect x="35" y="25" width="30" height="39" fill="#101722"/><rect x="80" y="40" width="50" height="24" fill="#101722"/><rect x="140" y="20" width="45" height="44" fill="#101722"/><rect x="200" y="35" width="40" height="29" fill="#101722"/><rect x="20" y="45" width="40" height="19" fill="#0a0f16"/><rect x="70" y="30" width="35" height="34" fill="#0a0f16"/><rect x="110" y="50" width="40" height="14" fill="#0a0f16"/><rect x="160" y="40" width="30" height="24" fill="#0a0f16"/><rect x="230" y="45" width="26" height="19" fill="#0a0f16"/><rect x="40" y="30" width="4" height="4" fill="#f1c40f"/><rect x="48" y="30" width="4" height="4" fill="#f1c40f"/><rect x="75" y="35" width="4" height="4" fill="#f1c40f"/><rect x="85" y="45" width="4" height="4" fill="#f1c40f"/><rect x="145" y="25" width="4" height="4" fill="#f1c40f"/><rect x="165" y="35" width="4" height="4" fill="#f1c40f"/><rect x="205" y="40" width="4" height="4" fill="#f1c40f"/><rect x="40" y="38" width="4" height="4" fill="#e67e22"/><rect x="75" y="45" width="4" height="4" fill="#e67e22"/><rect x="155" y="35" width="4" height="4" fill="#e67e22"/><rect x="215" y="40" width="4" height="4" fill="#e67e22"/></svg>`,
+                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#111a11"/><rect x="10" y="12" width="20" height="8" fill="#111a11"/><rect x="15" y="8" width="10" height="4" fill="#111a11"/><rect x="50" y="10" width="30" height="10" fill="#111a11"/><rect x="60" y="6" width="10" height="4" fill="#111a11"/><rect x="110" y="14" width="20" height="6" fill="#111a11"/><rect x="160" y="8" width="40" height="12" fill="#111a11"/><rect x="175" y="4" width="10" height="4" fill="#111a11"/><rect x="220" y="12" width="30" height="8" fill="#111a11"/><rect x="0" y="20" width="256" height="12" fill="#0a100a"/><rect x="15" y="16" width="10" height="4" fill="#0a100a"/><rect x="55" y="14" width="20" height="6" fill="#0a100a"/><rect x="120" y="18" width="10" height="4" fill="#0a100a"/><rect x="170" y="12" width="20" height="8" fill="#0a100a"/><rect x="230" y="16" width="15" height="4" fill="#0a100a"/></svg>`
             }
         };
 
@@ -648,19 +675,21 @@
             
             const startPress = (e) => { 
                 e.preventDefault();
+                tkBtn.classList.add('pressed');
+                tkBtn.style.backgroundColor = "var(--brand-red)"; 
                 
                 if (tkState.active && tkState.speed < 140) {
                     tkState.pressing = false; 
-                    failTakeoff("ROTATED TOO EARLY");
+                    explodePlane("ROTATED TOO EARLY");
                     return;
                 }
                 
                 tkState.pressing = true; 
-                tkBtn.style.backgroundColor = "var(--brand-red)"; 
             };
             
             const endPress = (e) => { 
                 if (e && e.cancelable) e.preventDefault();
+                tkBtn.classList.remove('pressed');
                 tkState.pressing = false; 
                 tkBtn.style.backgroundColor = "var(--brand-gold)"; 
             };
@@ -739,7 +768,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v43'); // Ver bump for Pixel Art Update
+            const saved = localStorage.getItem('fuelQuizState_v44'); 
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -755,7 +784,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v43', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v44', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -878,7 +907,7 @@
                          card.onclick = () => triggerGameOver();
                          card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                     } else if (levelData.failed) {
-                        card.className = "level-strip locked";
+                        card.className = "level-strip locked"; 
                         card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                     } else {
                         card.onclick = () => launchLevel(idx);
@@ -994,15 +1023,12 @@
                 ground.style.backgroundImage = getSvgUri(th.ground);
 
                 if (lState.hangar === 1) {
-                    tkState.minAngle = 9; tkState.maxAngle = 16;
                     zone.style.bottom = '30%'; zone.style.height = '23.3%';
                 } else if (lState.hangar === 2) {
                     weather.classList.add('weather-rain');
-                    tkState.minAngle = 10; tkState.maxAngle = 15;
                     zone.style.bottom = '33.3%'; zone.style.height = '16.6%';
                 } else {
                     weather.classList.add('weather-fog');
-                    tkState.minAngle = 11; tkState.maxAngle = 14;
                     zone.style.bottom = '36.6%'; zone.style.height = '10%';
                 }
                 
@@ -1013,7 +1039,9 @@
                         startTakeoff();
                     }
                 } else {
-                    document.getElementById('tk-plane').style.transform = `translateY(-80px) rotate(-12deg)`;
+                    document.getElementById('tk-mountain').style.display = 'none';
+                    document.getElementById('tk-plane').style.display = 'block';
+                    document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-10deg)`;
                     document.getElementById('tk-needle').style.bottom = `40%`;
                     document.getElementById('tk-runway-fill').style.width = '0%';
                     document.getElementById('tk-lift-fill').style.width = '100%';
@@ -1023,6 +1051,7 @@
             }
         }
 
+        // --- TAKEOFF MINI GAME LOGIC (PIXEL EXPLOSIONS & MOUNTAINS) ---
         function startTakeoffFromTutorial() {
             globalState.hasSeenTakeoffTutorial = true;
             saveState();
@@ -1033,17 +1062,21 @@
         let tkState = { 
             active: false, pitch: 0, pitchVelocity: 0, lift: 0, 
             distance: 100, speed: 0, pressing: false, frameId: null,
-            minAngle: 9, maxAngle: 16,
             bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0
         };
 
         function startTakeoff() {
+            // Clean up old particles
+            document.querySelectorAll('.pixel-particle').forEach(el => el.remove());
+            
             tkState.active = true;
             tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0;
             tkState.distance = 100; tkState.speed = 0; tkState.pressing = false;
             tkState.bgPosSky = 0; tkState.bgPosCity = 0; tkState.bgPosGround = 0; tkState.bgPosRunway = 0;
             
+            document.getElementById('tk-plane').style.display = 'block';
             document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`;
+            document.getElementById('tk-mountain').style.display = 'none';
             document.getElementById('tk-needle').style.bottom = `0%`;
             document.getElementById('tk-runway-fill').style.width = '100%';
             document.getElementById('tk-lift-fill').style.width = '0%';
@@ -1076,7 +1109,7 @@
             tkState.pitch = Math.max(0, Math.min(30, tkState.pitch));
             if(tkState.pitch === 30 || tkState.pitch === 0) tkState.pitchVelocity = 0;
 
-            if (tkState.speed >= 140 && tkState.pitch >= tkState.minAngle && tkState.pitch <= tkState.maxAngle) {
+            if (tkState.speed >= 140 && tkState.pitch >= 9 && tkState.pitch <= 16) {
                 tkState.lift += 0.5; 
             } else {
                 tkState.lift = Math.max(0, tkState.lift - 0.2); 
@@ -1094,7 +1127,8 @@
             if (tkState.speed >= 140) speedEl.style.color = "var(--gauge-green)";
             else speedEl.style.color = "var(--brand-red)";
 
-            tkState.distance -= (tkState.speed / 1200); 
+            // Make the runway ~2 seconds longer by dividing by 1450 instead of 1200
+            tkState.distance -= (tkState.speed / 1450); 
 
             // Parallax Scroll
             tkState.bgPosSky -= tkState.speed * 0.002;
@@ -1109,26 +1143,78 @@
 
             document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%';
             document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
+            
+            // Bring mountain in at end of runway
+            if (tkState.distance < 15) {
+                const mtn = document.getElementById('tk-mountain');
+                mtn.style.display = 'block';
+                // As distance goes 15 -> 0, mountain moves from far right -> collides with plane
+                mtn.style.left = `calc(${tkState.distance * 6}% + 100px)`; 
+            }
 
             if (tkState.lift >= 100) return winTakeoff();
-            if (tkState.distance <= 0) return failTakeoff("RAN OUT OF RUNWAY");
+            if (tkState.distance <= 0) return explodePlane("CRASHED INTO MOUNTAIN");
 
             tkState.frameId = requestAnimationFrame(takeoffLoop);
         }
 
-        function failTakeoff(reason) {
+        // Particle Explosion
+        function explodePlane(reason) {
             tkState.active = false;
+            const planeEl = document.getElementById('tk-plane');
+            planeEl.style.display = 'none'; 
             
+            const vp = document.getElementById('takeoff-viewport');
+            const colors = ['#fff', 'var(--brand-red)', '#a0a0a0', '#1a1a1a', '#555'];
+            
+            // Get approximate vertical position of plane for particles
+            const liftY = (tkState.lift / 100) * 80;
+            const baseY = vp.offsetHeight - 50 - liftY; 
+            
+            for(let i = 0; i < 40; i++) {
+                let p = document.createElement('div');
+                p.className = 'pixel-particle';
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Spread particles across the width of the plane
+                p.style.left = (30 + Math.random() * 80) + 'px'; 
+                p.style.top = baseY + 'px'; 
+                vp.appendChild(p);
+                
+                // Random velocities
+                let vx = (Math.random() - 0.5) * 15;
+                let vy = (Math.random() - 0.8) * 15;
+                
+                animateParticle(p, vx, vy);
+            }
+
+            // Flash screen
+            vp.classList.add('wrong-flash');
+            setTimeout(() => vp.classList.remove('wrong-flash'), 500);
+
+            setTimeout(() => failTakeoff(reason), 1500); 
+        }
+
+        function animateParticle(p, vx, vy) {
+            let x = parseFloat(p.style.left);
+            let y = parseFloat(p.style.top);
+            let age = 0;
+            function step() {
+                if(age++ > 40) { p.remove(); return; }
+                x += vx; y += vy; vy += 0.8; // Gravity
+                p.style.left = x + 'px'; p.style.top = y + 'px';
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function failTakeoff(reason) {
             const lState = globalState.levels[activeLevelIdx];
             lState.attempts = (lState.attempts || 0) + 1;
             
             globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
             saveState();
             updateMiniFuelUI();
-            
-            const wrapper = document.getElementById('takeoff-viewport');
-            wrapper.classList.add('wrong-flash');
-            setTimeout(() => wrapper.classList.remove('wrong-flash'), 500);
 
             if (lState.attempts >= 3) {
                 lState.failed = true;

@@ -24,6 +24,7 @@
             --gauge-green: #2ecc71;
             --gauge-orange: #f39c12;
             --gauge-red: #e74c3c;
+            --radar-green: #33ff33;
         }
         * { box-sizing: border-box; }
         
@@ -159,6 +160,8 @@
         .primary-btn { background-color: var(--brand-red); color: white; }
         .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
         .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
+        .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s;}
+        .radar-btn:active { background: var(--radar-green); color: #000; }
         .danger-btn { background-color: var(--brand-red); color: white; font-weight: bold; }
         .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
         .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
@@ -170,30 +173,19 @@
         
         #bomb-wrapper { margin-bottom: 5px; width: 100%; text-align: center; flex-shrink: 0; }
         #smart-bomb-btn {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: #fff; border: 1px solid #ff9b9b; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
-            padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; 
-            text-transform: uppercase;
+            background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; border: 1px solid #ff9b9b; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4); padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; text-transform: uppercase;
         }
 
-        /* --- IMAGE MODE --- */
         #image-game-area { width: 100%; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
         #game-wrapper {
-            background: transparent; box-shadow: none; border-radius: 0; padding: 0;
-            width: 100%; margin-bottom: 10px; position: relative; flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center;
+            background: transparent; box-shadow: none; border-radius: 0; padding: 0; width: 100%; margin-bottom: 10px; position: relative; flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center;
         }
-        #game-container { 
-            position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; 
-            background-color: #000; border: 2px solid #ccc; cursor: pointer; overflow: hidden; 
-        }
+        #game-container { position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; background-color: #000; border: 2px solid #ccc; cursor: pointer; overflow: hidden; }
         #game-container img { object-fit: cover; width: 100%; height: 100%; }
         #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
         #cover-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; }
         
-        .grid-piece { 
-            background: linear-gradient(135deg, #2a2a2a 0%, #151515 100%); border: 1px solid #333; border-top-color: #444; border-left-color: #444;
-            display: flex; justify-content: center; align-items: center; position: relative; transition: opacity 0.3s ease; 
-        }
+        .grid-piece { background: linear-gradient(135deg, #2a2a2a 0%, #151515 100%); border: 1px solid #333; border-top-color: #444; border-left-color: #444; display: flex; justify-content: center; align-items: center; position: relative; transition: opacity 0.3s ease; }
         .grid-piece::after { content: 'FC'; font-family: 'Share Tech Mono', monospace; color: rgba(207, 168, 110, 0.15); font-size: 14px; font-weight: bold; }
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
         .grid-piece.exploded { z-index: 9999 !important; border: 2px solid var(--gauge-orange) !important; box-shadow: 0 0 20px var(--brand-red) !important; background: var(--brand-red) !important; }
@@ -203,11 +195,7 @@
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
         
         #input-area { display: flex; flex-direction: column; gap: 5px; width: 100%; flex-shrink: 0; margin-bottom: 0px; }
-        input[type="text"] { 
-            width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; 
-            text-align: center; background: white; color: #333; 
-            user-select: text !important; -webkit-user-select: text !important;
-        }
+        input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; user-select: text !important; -webkit-user-select: text !important; }
         input[type="text"]:focus { border-color: var(--brand-gold); }
         #enter-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
 
@@ -225,117 +213,69 @@
         .takeoff-hud { display: flex; justify-content: space-between; align-items: center; width: 100%; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #333; margin-bottom: 5px; flex-shrink: 0;}
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
         .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
-        
-        #takeoff-viewport { 
-            position: relative; width: 100%; flex-grow: 1; 
-            min-height: 160px; max-height: 250px; 
-            border: 4px solid #222; border-radius: 4px; overflow: hidden; margin-bottom: 10px;
-            image-rendering: pixelated; background-color: #87CEEB; 
-        }
-
-        .parallax-layer {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 32px; 
-            background-repeat: repeat-x; background-position: 0px bottom;
-        }
+        #takeoff-viewport { position: relative; width: 100%; flex-grow: 1; min-height: 160px; max-height: 250px; border: 4px solid #222; border-radius: 4px; overflow: hidden; margin-bottom: 10px; image-rendering: pixelated; background-color: #87CEEB; }
+        .parallax-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 32px; background-repeat: repeat-x; background-position: 0px bottom; }
         #tk-bg-sky { background-size: 256px 100%; z-index: 0; }
         #tk-bg-city { background-size: 256px 100%; z-index: 1; }
         #tk-bg-ground { background-size: 256px 100%; z-index: 2; }
-        
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 32px; z-index: 3;}
         #tk-runway-surface { width: 100%; height: 100%; background-repeat: repeat-x; background-size: 128px 32px; }
-
-        #tk-mountain {
-            position: absolute; bottom: 32px; left: 100%; width: 120px; height: 120px; z-index: 3; display: none;
-        }
-
+        #tk-mountain { position: absolute; bottom: 32px; left: 100%; width: 120px; height: 120px; z-index: 3; display: none; }
         #tk-weather-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 5; }
-        
-        .weather-rain {
-            width: 150%; height: 150%; top: -25%; left: -25%;
-            background-image: repeating-linear-gradient(-15deg, transparent, transparent 15px, rgba(255,255,255,0.4) 16px, transparent 17px);
-            background-size: 100px 100%; animation: rainFall 0.3s linear infinite;
-        }
+        .weather-rain { width: 150%; height: 150%; top: -25%; left: -25%; background-image: repeating-linear-gradient(-15deg, transparent, transparent 15px, rgba(255,255,255,0.4) 16px, transparent 17px); background-size: 100px 100%; animation: rainFall 0.3s linear infinite; }
         @keyframes rainFall { from { transform: translateY(-50px) translateX(10px); } to { transform: translateY(50px) translateX(-10px); } }
-
-        .weather-fog {
-            width: 200%; height: 100%; top: 0; left: -50%;
-            background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 60%);
-            background-size: 50% 100%; background-repeat: repeat-x;
-            animation: fogDrift 5s linear infinite alternate; filter: blur(8px); opacity: 0.8;
-        }
+        .weather-fog { width: 200%; height: 100%; top: 0; left: -50%; background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 60%); background-size: 50% 100%; background-repeat: repeat-x; animation: fogDrift 5s linear infinite alternate; filter: blur(8px); opacity: 0.8; }
         @keyframes fogDrift { from { transform: translateX(-15%); } to { transform: translateX(15%); } }
-        
-        #tk-gauge-container {
-            position: absolute; right: 10px; top: 10px; bottom: 40px; width: 20px;
-            background: rgba(0,0,0,0.5); border-radius: 4px; border: 2px solid #fff; z-index: 6;
-        }
+        #tk-gauge-container { position: absolute; right: 10px; top: 10px; bottom: 40px; width: 20px; background: rgba(0,0,0,0.5); border-radius: 4px; border: 2px solid #fff; z-index: 6; }
         #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); }
         #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; }
-
-        #tk-plane {
-            position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px;
-            transform-origin: 50% 90%; z-index: 4; 
-        }
-
+        #tk-plane { position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px; transform-origin: 50% 90%; z-index: 4; }
         .pixel-particle { position: absolute; width: 6px; height: 6px; z-index: 10; }
-        
-        #takeoff-panel {
-            flex-shrink: 0;
-            display: flex; justify-content: center; align-items: center;
-            background: #2a2a2a; border: 4px solid #111; border-radius: 8px;
-            padding: 10px; margin-top: 5px; width: 100%; max-width: 300px;
-            box-shadow: inset 0 0 15px #000; position: relative;
-        }
-        #takeoff-panel::before, #takeoff-panel::after {
-            content: ''; position: absolute; width: 8px; height: 8px; 
-            background: #555; border-radius: 50%; box-shadow: inset 1px 1px 2px #000;
-        }
+        #takeoff-panel { flex-shrink: 0; display: flex; justify-content: center; align-items: center; background: #2a2a2a; border: 4px solid #111; border-radius: 8px; padding: 10px; margin-top: 5px; width: 100%; max-width: 300px; box-shadow: inset 0 0 15px #000; position: relative; }
+        #takeoff-panel::before, #takeoff-panel::after { content: ''; position: absolute; width: 8px; height: 8px; background: #555; border-radius: 50%; box-shadow: inset 1px 1px 2px #000; }
         #takeoff-panel::before { left: 10px; top: 10px; }
         #takeoff-panel::after { right: 10px; bottom: 10px; }
+        #takeoff-btn { width: 100px; height: 100px; border-radius: 50%; margin: 0; background: radial-gradient(circle at 30% 30%, #ff4b4b, #b30000); border: 4px solid #111; box-shadow: 0 8px 0 #5e0000, 0 15px 15px rgba(0,0,0,0.5), inset 0 4px 6px rgba(255,255,255,0.3); color: white; font-family: 'Share Tech Mono', monospace; font-size: 1.3rem; font-weight: bold; text-shadow: 1px 1px 2px #000; cursor: pointer; line-height: 1.1; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; transition: transform 0.05s, box-shadow 0.05s; }
+        #takeoff-btn.pressed { transform: translateY(8px); box-shadow: 0 0px 0 #5e0000, 0 5px 5px rgba(0,0,0,0.5), inset 0 4px 6px rgba(0,0,0,0.3); }
 
-        #takeoff-btn {
-            width: 100px; height: 100px; border-radius: 50%; margin: 0;
-            background: radial-gradient(circle at 30% 30%, #ff4b4b, #b30000);
-            border: 4px solid #111;
-            box-shadow: 0 8px 0 #5e0000, 0 15px 15px rgba(0,0,0,0.5), inset 0 4px 6px rgba(255,255,255,0.3);
-            color: white; font-family: 'Share Tech Mono', monospace; font-size: 1.3rem; font-weight: bold;
-            text-shadow: 1px 1px 2px #000; cursor: pointer; line-height: 1.1;
-            touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
-            transition: transform 0.05s, box-shadow 0.05s;
+        /* --- RADAR MODE (NEW) --- */
+        #radar-view { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: center; }
+        .radar-terminal {
+            width: 100%; max-width: 400px; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px;
+            padding: 20px; box-shadow: inset 0 0 30px rgba(51, 255, 51, 0.1), 0 5px 15px rgba(0,0,0,0.5);
+            font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
         }
-        #takeoff-btn.pressed {
-            transform: translateY(8px);
-            box-shadow: 0 0px 0 #5e0000, 0 5px 5px rgba(0,0,0,0.5), inset 0 4px 6px rgba(0,0,0,0.3);
+        /* Scanline effect */
+        .radar-terminal::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
+        .radar-header { font-size: 1.2rem; border-bottom: 2px dashed var(--radar-green); padding-bottom: 10px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        .radar-content { font-size: 1.1rem; line-height: 1.6; min-height: 150px; text-transform: uppercase; }
+        .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; }
+        .radar-input-area { margin-top: 20px; display: flex; gap: 10px; z-index: 3; position: relative;}
+        .radar-input { 
+            flex-grow: 1; background: transparent; border: 2px solid var(--radar-green); color: var(--radar-green); 
+            padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; text-transform: uppercase;
+            outline: none; user-select: text !important; -webkit-user-select: text !important;
+        }
+        .radar-input:focus { background: rgba(51, 255, 51, 0.1); }
+        .radar-btn-submit { background: var(--radar-green); color: #000; border: none; padding: 10px 20px; font-family: 'Share Tech Mono', monospace; font-weight: bold; cursor: pointer; font-size: 1.1rem;}
+        #radar-timer { font-size: 2rem; text-align: center; margin-top: 10px; font-weight: bold; }
+        .blinking-cursor { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
 
         #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
-        .shake-it { animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-2px, 0, 0); }
-            20%, 80% { transform: translate3d(3px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
-            40%, 60% { transform: translate3d(6px, 0, 0); }
-        }
-
-        @media (max-height: 500px) {
-            .game-header { display: none !important; }
-            #game-wrapper { margin-bottom: 5px; }
-            h1 { display: none; }
-        }
-
         /* --- LEADERBOARD --- */
-        #leaderboard-list {
-            width: 100%; flex-grow: 1; overflow-y: auto; text-align: left;
-            background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; min-height: 0;
-        }
+        #leaderboard-list { width: 100%; flex-grow: 1; overflow-y: auto; text-align: left; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; min-height: 0; }
         .lb-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; align-items: center; }
         .lb-rank { font-weight: bold; width: 30px; color: var(--brand-red); }
         .lb-name { flex-grow: 1; font-weight: 500;}
         .lb-fuel { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--brand-dark); }
         .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
-        
         .tutorial-text { color: #ccc; font-size: 1rem; margin-bottom: 20px; text-align: left; line-height: 1.5; }
         .tutorial-text strong { color: #fff; }
     </style>
@@ -418,11 +358,14 @@
         <div id="level-list-container"></div>
         
         <div class="footer-buttons">
+            <button class="radar-btn" onclick="openRadar()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4-8c0 2.21-1.79 4-4 4s-4-1.79-4-4 1.79-4 4-4 4 1.79 4 4z"/></svg>
+                LIVE RADAR OP
+            </button>
             <button class="outline-btn" onclick="openLeaderboard()">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 3h-2V1h-2v2H9V1H7v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zm0-12H5V5h14v2zm-7 4H7v5h5v-5z"/></svg> 
                 Global Leaderboard
             </button>
-            <button id="install-btn" class="dark-btn">📲 Install App</button>
             <button class="outline-btn" onclick="triggerResetUI()">Restart Game</button>
         </div>
     </div>
@@ -562,6 +505,25 @@
         </div>
     </div>
 
+    <div id="radar-view" class="view-section">
+        <div class="radar-terminal">
+            <div class="radar-header">ATC INTERCEPT OP</div>
+            <div class="radar-content" id="radar-screen-text">
+                ESTABLISHING UPLINK...<br>
+                SCANNING SECTOR EU-CENTRAL...<span class="blinking-cursor">_</span>
+            </div>
+            <div id="radar-timer">--</div>
+            <div class="radar-input-area" id="radar-controls" style="display:none;">
+                <input type="text" id="radar-input" class="radar-input" placeholder="CALLSIGN" autocomplete="off">
+                <button class="radar-btn-submit" onclick="submitRadar()">LOCK</button>
+            </div>
+        </div>
+        <div id="radar-message" style="margin-top:15px; font-weight:bold; height:20px; text-align:center;"></div>
+        <div class="footer-buttons" style="border: none;">
+             <button class="outline-btn" onclick="closeRadar()">Abort Operation</button>
+        </div>
+    </div>
+
     <script>
         // --- 🔥 FIREBASE CONFIGURATION 🔥 ---
         const firebaseConfig = {
@@ -602,7 +564,7 @@
             ],
             classified: [
                 { type: 'image', image: "f22.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
-                { type: 'image', image: "sr71.jpg", answers: ["sr71", "sr71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
+                { type: 'image', image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
                 { type: 'image', image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
                 { type: 'image', image: "p51.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" }
             ]
@@ -654,9 +616,15 @@
         };
         let activeLevelIdx = 0;
 
+        let radarInterval = null;
+        let radarCountdown = null;
+        let radarTime = 15;
+        let currentRadarCallsign = "";
+
         const selectorView = document.getElementById('selector-view');
         const gameView = document.getElementById('game-view');
         const lbView = document.getElementById('leaderboard-view');
+        const radarView = document.getElementById('radar-view');
         const loginOverlay = document.getElementById('login-overlay');
         const restartOverlay = document.getElementById('restart-overlay');
         const refuelOverlay = document.getElementById('refuel-overlay');
@@ -686,19 +654,19 @@
             document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             document.getElementById('enter-btn').onclick = checkAnswer;
             
+            document.getElementById('radar-input').addEventListener("keypress", (e) => { if (e.key === "Enter") submitRadar(); });
+
             const tkBtn = document.getElementById('takeoff-btn');
             
             const startPress = (e) => { 
                 e.preventDefault();
                 tkBtn.classList.add('pressed');
                 
-                // INSTANT EARLY ROTATION FAIL LOGIC
                 if (tkState.active && tkState.speed < 140) {
                     tkState.pressing = false; 
                     explodePlane("ROTATED TOO EARLY");
                     return;
                 }
-                
                 tkState.pressing = true; 
             };
             
@@ -782,7 +750,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v46'); // Ver bump for slow mo explosion
+            const saved = localStorage.getItem('fuelQuizState_v48'); // Ver bump for radar OP
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -798,7 +766,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v46', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v48', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -1145,7 +1113,6 @@
 
             tkState.distance -= (tkState.speed / 1450); 
 
-            // Parallax Scroll
             tkState.bgPosSky -= tkState.speed * 0.002;
             tkState.bgPosCity -= tkState.speed * 0.008;
             tkState.bgPosGround -= tkState.speed * 0.025;
@@ -1171,9 +1138,8 @@
             tkState.frameId = requestAnimationFrame(takeoffLoop);
         }
 
-        // --- SLOW MOTION PIXEL EXPLOSION SYSTEM ---
         function explodePlane(reason) {
-            tkState.active = false; // Freezes physics and scrolling
+            tkState.active = false; 
             const planeEl = document.getElementById('tk-plane');
             planeEl.style.display = 'none'; 
             
@@ -1187,22 +1153,17 @@
                 let p = document.createElement('div');
                 p.className = 'pixel-particle';
                 p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                
                 p.style.left = (30 + Math.random() * 80) + 'px'; 
                 p.style.top = baseY + Math.random() * 20 + 'px'; 
                 vp.appendChild(p);
                 
-                // Slow motion velocity
                 let vx = (Math.random() - 0.5) * 5;
                 let vy = (Math.random() - 0.8) * 5;
-                
                 animateParticle(p, vx, vy);
             }
 
             vp.classList.add('wrong-flash');
             setTimeout(() => vp.classList.remove('wrong-flash'), 500);
-
-            // Wait longer to watch the slow-mo explosion
             setTimeout(() => failTakeoff(reason), 3500); 
         }
 
@@ -1213,15 +1174,10 @@
             function step() {
                 age++;
                 if(age > 150) { p.remove(); return; }
-                if(age > 100) { p.style.opacity = 1 - ((age - 100) / 50); } // Fade out
+                if(age > 100) { p.style.opacity = 1 - ((age - 100) / 50); } 
                 
-                x += vx; 
-                y += vy; 
-                vy += 0.1; // Slow-mo gravity
-                vx *= 0.99; // Air resistance
-
-                p.style.left = x + 'px'; 
-                p.style.top = y + 'px';
+                x += vx; y += vy; vy += 0.1; vx *= 0.99; 
+                p.style.left = x + 'px'; p.style.top = y + 'px';
                 requestAnimationFrame(step);
             }
             requestAnimationFrame(step);
@@ -1264,7 +1220,6 @@
 
         function winTakeoff() {
             tkState.active = false;
-            
             const bonus = 500;
             globalState.currentFuel += bonus; 
             updateMiniFuelUI();
@@ -1282,6 +1237,133 @@
             setTimeout(saveAndExit, 2500);
         }
 
+        // --- RADAR LOGIC ---
+        function openRadar() {
+            if(globalState.currentFuel <= 0) { triggerGameOver(); return; }
+            
+            selectorView.classList.remove('active');
+            radarView.classList.add('active');
+            
+            const textEl = document.getElementById('radar-screen-text');
+            const msgEl = document.getElementById('radar-message');
+            const controls = document.getElementById('radar-controls');
+            const input = document.getElementById('radar-input');
+            const timerEl = document.getElementById('radar-timer');
+            
+            textEl.innerHTML = "ESTABLISHING UPLINK...<br>SCANNING SECTOR EU-CENTRAL...<span class='blinking-cursor'>_</span>";
+            msgEl.textContent = "";
+            controls.style.display = 'none';
+            timerEl.textContent = "--";
+            input.value = "";
+            currentRadarCallsign = "";
+            
+            if(radarCountdown) clearInterval(radarCountdown);
+
+            // Bounding box for Central Europe
+            fetch(`https://opensky-network.org/api/states/all?lamin=45.0&lomin=5.0&lamax=55.0&lomax=15.0`)
+            .then(res => res.json())
+            .then(data => {
+                if(!data.states || data.states.length === 0) throw new Error("Empty airspace");
+                
+                // Pick a random plane
+                const p = data.states[Math.floor(Math.random() * data.states.length)];
+                currentRadarCallsign = (p[1] || "").trim();
+                const country = p[2] || "UNKNOWN";
+                const alt = p[7] ? Math.floor(p[7]) + " M" : "UNAVAILABLE";
+                const spd = p[9] ? Math.floor(p[9] * 3.6) + " KPH" : "UNAVAILABLE"; // m/s to kph
+                
+                if(currentRadarCallsign === "") { throw new Error("Ghost plane"); }
+
+                textEl.innerHTML = `
+                    <span style="color:#fff;">[ TARGET ACQUIRED ]</span><br>
+                    ----------------------<br>
+                    ORIGIN: ${country}<br>
+                    ALT: ${alt}<br>
+                    SPD: ${spd}<br>
+                    ----------------------<br>
+                    CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><span class='blinking-cursor'>_</span>
+                `;
+                
+                startRadarTimer();
+            })
+            .catch(err => {
+                console.warn("Radar API failed, using simulation.", err);
+                // Fallback Simulation
+                const fakeCountries = ["Germany", "France", "Switzerland", "Italy"];
+                const fakeCalls = ["LHT442", "AFR12A", "SWR99B", "BAW505", "RYR77X"];
+                currentRadarCallsign = fakeCalls[Math.floor(Math.random() * fakeCalls.length)];
+                
+                textEl.innerHTML = `
+                    <span style="color:#fff;">[ TARGET ACQUIRED (SIMULATED) ]</span><br>
+                    ----------------------<br>
+                    ORIGIN: ${fakeCountries[Math.floor(Math.random() * fakeCountries.length)]}<br>
+                    ALT: ${Math.floor(Math.random()*8000 + 2000)} M<br>
+                    SPD: ${Math.floor(Math.random()*500 + 300)} KPH<br>
+                    ----------------------<br>
+                    CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><span class='blinking-cursor'>_</span>
+                `;
+                startRadarTimer();
+            });
+        }
+
+        function startRadarTimer() {
+            document.getElementById('radar-controls').style.display = 'flex';
+            document.getElementById('radar-input').focus();
+            radarTime = 15;
+            document.getElementById('radar-timer').textContent = "00:" + (radarTime < 10 ? "0"+radarTime : radarTime);
+            
+            radarCountdown = setInterval(() => {
+                radarTime--;
+                document.getElementById('radar-timer').textContent = "00:" + (radarTime < 10 ? "0"+radarTime : radarTime);
+                if(radarTime <= 0) {
+                    clearInterval(radarCountdown);
+                    failRadar("TARGET LOST (-100L)");
+                }
+            }, 1000);
+        }
+
+        function submitRadar() {
+            if(radarTime <= 0) return;
+            const guess = document.getElementById('radar-input').value.trim().toUpperCase();
+            
+            if(guess === currentRadarCallsign.toUpperCase()) {
+                clearInterval(radarCountdown);
+                document.getElementById('radar-message').className = "success";
+                document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
+                globalState.currentFuel += 250;
+                saveState();
+                setTimeout(closeRadar, 2000);
+            } else {
+                // Shake input
+                const inp = document.getElementById('radar-input');
+                inp.style.borderColor = "var(--brand-red)";
+                setTimeout(() => inp.style.borderColor = "var(--radar-green)", 500);
+            }
+        }
+
+        function failRadar(msg) {
+            document.getElementById('radar-controls').style.display = 'none';
+            document.getElementById('radar-message').className = "fail";
+            document.getElementById('radar-message').textContent = msg;
+            
+            globalState.currentFuel = Math.max(0, globalState.currentFuel - 100);
+            saveState();
+            
+            if(globalState.currentFuel <= 0) {
+                setTimeout(triggerGameOver, 1500);
+            } else {
+                setTimeout(closeRadar, 2500);
+            }
+        }
+
+        function closeRadar() {
+            if(radarCountdown) clearInterval(radarCountdown);
+            renderDashboard();
+            radarView.classList.remove('active');
+            selectorView.classList.add('active');
+        }
+
+        // --- REST OF APP LOGIC ---
         function triggerSmartBomb() {
             if (!globalState.hasSmartBomb) return;
             
@@ -1432,6 +1514,7 @@
         function triggerGameOver() {
             document.getElementById('game-view').classList.add('gray-out');
             document.getElementById('selector-view').classList.add('gray-out');
+            document.getElementById('radar-view').classList.add('gray-out');
             setTimeout(() => { gameOverOverlay.style.display = 'flex'; }, 500);
         }
 
@@ -1443,23 +1526,15 @@
             else el.classList.remove('danger');
         }
 
-        function saveAndExit() { 
-            tkState.active = false; 
-            if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
-            renderDashboard(); 
-            gameView.classList.remove('active'); 
-            selectorView.classList.add('active'); 
-        }
-        
-        function triggerResetUI() { restartOverlay.style.display = 'flex'; }
-        function cancelReset() { restartOverlay.style.display = 'none'; }
-        function confirmReset() { localStorage.clear(); location.reload(); }
-
         function showFloat(x, y, text) {
             const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text;
             el.style.left = x + 'px'; el.style.top = (y - 50) + 'px';
             document.body.appendChild(el); setTimeout(() => el.remove(), 800);
         }
+
+        function triggerResetUI() { restartOverlay.style.display = 'flex'; }
+        function cancelReset() { restartOverlay.style.display = 'none'; }
+        function confirmReset() { localStorage.clear(); location.reload(); }
 
         function isMatch(guess, answers) {
             if (answers.includes(guess)) return true;

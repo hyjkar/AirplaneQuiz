@@ -202,12 +202,12 @@
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
 
         /* --- VISUAL RADAR MODE (LEAFLET MAP) --- */
-        #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
+        #radar-view { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
         .radar-terminal {
             width: 100%; flex-shrink: 0; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px;
             padding: 15px; box-shadow: inset 0 0 30px rgba(51, 255, 51, 0.1), 0 5px 15px rgba(0,0,0,0.5);
             font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: flex-end;
         }
         .radar-terminal::before {
             content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
@@ -216,7 +216,18 @@
         }
         .radar-content { font-size: 0.95rem; line-height: 1.4; text-transform: uppercase; z-index: 3; position: relative;}
         .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold;}
-        #radar-timer { font-size: 2.2rem; font-weight: bold; z-index: 3; position: relative; width: 90px; text-align: right;}
+        
+        #radar-timer-container { display: flex; flex-direction: column; align-items: flex-end; z-index: 3; position: relative; }
+        #radar-timer { font-size: 2.2rem; font-weight: bold; text-align: right;}
+        
+        /* New Flight Path Toggle Button */
+        .radar-toggle {
+            background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green);
+            font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; padding: 4px 8px; cursor: pointer;
+            margin-top: 5px; outline: none; border-radius: 4px; transition: all 0.2s;
+        }
+        .radar-toggle:hover { background: rgba(51, 255, 51, 0.2); }
+
         .blinking-cursor { animation: blink 1s step-end infinite; }
         @keyframes blink { 50% { opacity: 0; } }
 
@@ -500,7 +511,10 @@
                 ESTABLISHING UPLINK...<br>
                 SCANNING SECTOR EU-CENTRAL...<span class="blinking-cursor">_</span>
             </div>
-            <div id="radar-timer">--</div>
+            <div id="radar-timer-container">
+                <div id="radar-timer">--</div>
+                <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
+            </div>
         </div>
         
         <div id="radar-map-wrapper">
@@ -592,11 +606,18 @@
 
         const RUNWAY_SVG = `<svg width="128" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="128" height="32" fill="#3b3b3b"/><rect width="128" height="2" fill="#385e26"/><rect y="2" width="128" height="2" fill="#4a4a4a"/><rect x="0" y="14" width="32" height="4" fill="#ddd"/><rect x="64" y="14" width="32" height="4" fill="#ddd"/><rect x="0" y="4" width="128" height="2" fill="#fff"/><rect x="0" y="26" width="128" height="2" fill="#fff"/><rect x="10" y="10" width="16" height="2" fill="#222"/><rect x="40" y="18" width="24" height="2" fill="#222"/><rect x="80" y="12" width="12" height="2" fill="#222"/><rect x="100" y="20" width="16" height="2" fill="#222"/></svg>`;
 
+        // Radar Globals
         let radarMap = null;
         let radarLayerGroup = null;
+        let radarPathGroup = null;
         let radarCountdown = null;
         let radarTime = 60; 
         let currentRadarCallsign = "";
+        let currentRadarPlanes = [];
+        let pathsVisible = false;
+        
+        // List of European destinations for the hint system
+        const DESTINATIONS = ["LONDON (LHR)", "PARIS (CDG)", "BERLIN (BER)", "ROME (FCO)", "MADRID (MAD)", "VIENNA (VIE)", "PRAGUE (PRG)", "WARSAW (WAW)", "AMSTERDAM (AMS)", "BRUSSELS (BRU)", "COPENHAGEN (CPH)", "STOCKHOLM (ARN)", "OSLO (OSL)", "HELSINKI (HEL)", "ZURICH (ZRH)", "FRANKFURT (FRA)"];
 
         const STARTING_GLOBAL_FUEL = 4000;
         const REFUEL_AMOUNT = 2000; 
@@ -646,20 +667,18 @@
             
             document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             document.getElementById('enter-btn').onclick = checkAnswer;
-            
+
             const tkBtn = document.getElementById('takeoff-btn');
             
             const startPress = (e) => { 
                 e.preventDefault();
                 tkBtn.classList.add('pressed');
                 
-                // INSTANT EARLY ROTATION FAIL LOGIC
                 if (tkState.active && tkState.speed < 140) {
                     tkState.pressing = false; 
                     explodePlane("ROTATED TOO EARLY");
                     return;
                 }
-                
                 tkState.pressing = true; 
             };
             
@@ -743,7 +762,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v52'); // Bump for radar hints & 60s
+            const saved = localStorage.getItem('fuelQuizState_v53'); // Ver bump for final fixes
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -759,7 +778,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v52', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v53', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -1250,12 +1269,20 @@
                 radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(radarMap);
                 radarLayerGroup = L.layerGroup().addTo(radarMap);
+                radarPathGroup = L.layerGroup().addTo(radarMap);
             }
             
             setTimeout(() => { radarMap.invalidateSize(); }, 100);
             
             const textEl = document.getElementById('radar-screen-text');
             const msgEl = document.getElementById('radar-message');
+            const btnToggle = document.getElementById('toggle-paths-btn');
+            
+            // Reset toggle state
+            pathsVisible = false;
+            btnToggle.textContent = "PATHS: OFF";
+            btnToggle.style.background = "transparent";
+            btnToggle.style.color = "var(--radar-green)";
             
             textEl.innerHTML = "ESTABLISHING UPLINK...<br>SCANNING SECTOR EU-CENTRAL...<span class='blinking-cursor'>_</span>";
             msgEl.textContent = "";
@@ -1263,98 +1290,80 @@
             
             if(radarCountdown) clearInterval(radarCountdown);
             radarLayerGroup.clearLayers();
+            radarPathGroup.clearLayers();
+            currentRadarPlanes = [];
 
             fetch(`https://opensky-network.org/api/states/all?lamin=45.0&lomin=5.0&lamax=52.0&lomax=15.0`)
             .then(res => res.json())
             .then(data => {
                 if(!data.states || data.states.length === 0) throw new Error("Empty airspace");
                 
-                let validPlanes = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "");
-                if(validPlanes.length === 0) throw new Error("No valid planes");
+                let validAPIPlanes = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "");
+                if(validAPIPlanes.length === 0) throw new Error("No valid planes");
 
-                validPlanes = validPlanes.sort(() => Math.random() - 0.5).slice(0, 12);
+                currentRadarPlanes = validAPIPlanes.sort(() => Math.random() - 0.5).slice(0, 12).map(p => {
+                    const lat = p[6];
+                    const lng = p[5];
+                    const heading = p[10] || 0;
+                    
+                    // Assign random destination & calculate flight path trail backwards
+                    const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
+                    const trailLen = 2 + Math.random() * 1.5;
+                    const rad = (heading + 180) * (Math.PI / 180);
+                    const startLat = lat + Math.cos(rad) * trailLen;
+                    const startLng = lng + Math.sin(rad) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
+
+                    return {
+                        callsign: p[1].trim(),
+                        lat: lat,
+                        lng: lng,
+                        heading: heading,
+                        destination: dest,
+                        trail: [[startLat, startLng], [lat, lng]]
+                    };
+                });
                 
-                const targetPlane = validPlanes[Math.floor(Math.random() * validPlanes.length)];
-                currentRadarCallsign = targetPlane[1].trim();
-                
-                const countryStr = targetPlane[2] || "UNKNOWN";
-                const headingDeg = targetPlane[10] || 0;
-                const headingStr = getCompassDirection(headingDeg);
+                const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
+                currentRadarCallsign = targetPlane.callsign;
+                const headingStr = getCompassDirection(targetPlane.heading);
 
                 textEl.innerHTML = `
                     <span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>
                     CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>
                     > HINT 1: HEADING ${headingStr}<br>
-                    > HINT 2: ORIGIN ${countryStr.toUpperCase()}<br>
+                    > HINT 2: DESTINATION ${targetPlane.destination}<br>
                     <span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>
                 `;
 
-                validPlanes.forEach(p => {
-                    const callsign = p[1].trim();
-                    const lng = p[5];
-                    const lat = p[6];
-                    const heading = p[10] || 0;
-
-                    const iconHtml = `<div style="transform: rotate(${heading}deg); color: var(--radar-green);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
-                    
-                    let icon = L.divIcon({ html: iconHtml, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });
-                    let marker = L.marker([lat, lng], {icon: icon}).addTo(radarLayerGroup);
-                    
-                    marker.on('click', () => {
-                        if (radarTime <= 0) return;
-                        
-                        if (callsign === currentRadarCallsign) {
-                            clearInterval(radarCountdown);
-                            document.getElementById('radar-message').className = "success";
-                            document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
-                            globalState.currentFuel += 250;
-                            saveState();
-                            updateMiniFuelUI();
-                            
-                            marker.setIcon(L.divIcon({
-                                html: `<div style="transform: rotate(${heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
-                                className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
-                            }));
-
-                            setTimeout(closeRadar, 2000);
-                        } else {
-                            marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${callsign}`).openPopup();
-                            radarTime = Math.max(0, radarTime - 3); 
-                            
-                            const tDiv = document.getElementById('radar-timer');
-                            tDiv.style.color = "red";
-                            setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
-                            
-                            let m = Math.floor(radarTime / 60);
-                            let s = radarTime % 60;
-                            tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}`;
-                        }
-                    });
-                });
-
-                let groupBounds = L.featureGroup(radarLayerGroup.getLayers()).getBounds();
-                radarMap.fitBounds(groupBounds, { padding: [20, 20] });
-
-                startRadarTimer(60);
+                plotPlanesOnRadar(targetPlane);
             })
             .catch(err => {
                 console.warn("Radar API failed/rate-limited. Launching local simulation.");
                 
-                let validPlanes = [];
-                const fakeCountries = ["GERMANY", "FRANCE", "SWITZERLAND", "ITALY", "SPAIN"];
                 const fakeCalls = ["LHT442", "AFR12A", "SWR99B", "BAW505", "RYR77X", "FIN112", "NOR334", "KLM88", "EZY99", "WZZ10", "DAL22", "UAL33"];
                 
                 for(let i=0; i<12; i++) {
-                    validPlanes.push({ 
+                    const lat = 45.0 + Math.random() * 7;
+                    const lng = 5.0 + Math.random() * 10;
+                    const heading = Math.random() * 360;
+                    
+                    const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
+                    const trailLen = 2 + Math.random() * 1.5;
+                    const rad = (heading + 180) * (Math.PI / 180);
+                    const startLat = lat + Math.cos(rad) * trailLen;
+                    const startLng = lng + Math.sin(rad) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
+
+                    currentRadarPlanes.push({ 
                         callsign: fakeCalls[i], 
-                        country: fakeCountries[Math.floor(Math.random() * fakeCountries.length)],
-                        lng: 5.0 + Math.random() * 10, 
-                        lat: 45.0 + Math.random() * 7, 
-                        heading: Math.random() * 360 
+                        destination: dest,
+                        lng: lng, 
+                        lat: lat, 
+                        heading: heading,
+                        trail: [[startLat, startLng], [lat, lng]]
                     });
                 }
                 
-                const targetPlane = validPlanes[Math.floor(Math.random() * validPlanes.length)];
+                const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
                 currentRadarCallsign = targetPlane.callsign;
                 const headingStr = getCompassDirection(targetPlane.heading);
                 
@@ -1362,49 +1371,78 @@
                     <span style="color:#fff;">[ SIMULATION MODE ACTIVE ]</span><br>
                     CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>
                     > HINT 1: HEADING ${headingStr}<br>
-                    > HINT 2: ORIGIN ${targetPlane.country}<br>
+                    > HINT 2: DESTINATION ${targetPlane.destination}<br>
                     <span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>
                 `;
 
-                validPlanes.forEach(p => {
-                    const iconHtml = `<div style="transform: rotate(${p.heading}deg); color: var(--radar-green);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
-                    let icon = L.divIcon({ html: iconHtml, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });
-                    let marker = L.marker([p.lat, p.lng], {icon: icon}).addTo(radarLayerGroup);
-                    
-                    marker.on('click', () => {
-                        if (radarTime <= 0) return;
-                        if (p.callsign === currentRadarCallsign) {
-                            clearInterval(radarCountdown);
-                            document.getElementById('radar-message').className = "success";
-                            document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
-                            globalState.currentFuel += 250;
-                            saveState();
-                            updateMiniFuelUI();
-                            
-                            marker.setIcon(L.divIcon({
-                                html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
-                                className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
-                            }));
-                            setTimeout(closeRadar, 2000);
-                        } else {
-                            marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
-                            radarTime = Math.max(0, radarTime - 3); 
-                            const tDiv = document.getElementById('radar-timer');
-                            tDiv.style.color = "red";
-                            setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
-                            
-                            let m = Math.floor(radarTime / 60);
-                            let s = radarTime % 60;
-                            tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}`;
-                        }
-                    });
-                });
-
-                let groupBounds = L.featureGroup(radarLayerGroup.getLayers()).getBounds();
-                radarMap.fitBounds(groupBounds, { padding: [20, 20] });
-                
-                startRadarTimer(60);
+                plotPlanesOnRadar(targetPlane);
             });
+        }
+        
+        function plotPlanesOnRadar(targetPlane) {
+            currentRadarPlanes.forEach(p => {
+                const iconHtml = `<div style="transform: rotate(${p.heading}deg); color: var(--radar-green);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
+                let icon = L.divIcon({ html: iconHtml, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });
+                let marker = L.marker([p.lat, p.lng], {icon: icon}).addTo(radarLayerGroup);
+                
+                marker.on('click', () => {
+                    if (radarTime <= 0) return;
+                    
+                    if (p.callsign === currentRadarCallsign) {
+                        clearInterval(radarCountdown);
+                        document.getElementById('radar-message').className = "success";
+                        document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
+                        globalState.currentFuel += 250;
+                        saveState();
+                        updateMiniFuelUI();
+                        
+                        marker.setIcon(L.divIcon({
+                            html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
+                            className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
+                        }));
+
+                        setTimeout(closeRadar, 2000);
+                    } else {
+                        marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
+                        radarTime = Math.max(0, radarTime - 3); 
+                        
+                        const tDiv = document.getElementById('radar-timer');
+                        tDiv.style.color = "red";
+                        setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
+                        
+                        let m = Math.floor(radarTime / 60);
+                        let s = radarTime % 60;
+                        tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}`;
+                    }
+                });
+            });
+
+            let groupBounds = L.featureGroup(radarLayerGroup.getLayers()).getBounds();
+            radarMap.fitBounds(groupBounds, { padding: [20, 20] });
+
+            startRadarTimer(60);
+        }
+        
+        function toggleFlightPaths() {
+            pathsVisible = !pathsVisible;
+            const btn = document.getElementById('toggle-paths-btn');
+            
+            btn.textContent = "PATHS: " + (pathsVisible ? "ON" : "OFF");
+            btn.style.background = pathsVisible ? "var(--radar-green)" : "transparent";
+            btn.style.color = pathsVisible ? "#000" : "var(--radar-green)";
+
+            if (pathsVisible) {
+                currentRadarPlanes.forEach(p => {
+                    L.polyline(p.trail, {
+                        color: 'var(--radar-green)',
+                        weight: 2,
+                        dashArray: '4, 6',
+                        opacity: 0.6
+                    }).addTo(radarPathGroup);
+                });
+            } else {
+                radarPathGroup.clearLayers();
+            }
         }
 
         function startRadarTimer(seconds) {

@@ -10,8 +10,12 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -32,29 +36,19 @@
             font-family: 'Roboto', sans-serif;
             background-color: var(--bg-sand);
             color: var(--brand-dark);
-            margin: 0; 
-            padding: 15px; 
+            margin: 0; padding: 15px; 
             padding-bottom: max(15px, env(safe-area-inset-bottom));
             box-sizing: border-box;
-            
-            position: fixed; 
-            top: 0; left: 0; right: 0; bottom: 0;
-            width: 100%;
-            
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%;
             display: flex; flex-direction: column; align-items: center;
-            overflow: hidden; 
-            user-select: none; 
-            -webkit-user-select: none;
+            overflow: hidden; user-select: none; -webkit-user-select: none;
         }
 
         /* --- OVERLAYS --- */
         #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay {
-            display: none; 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #111; color: var(--brand-gold);
-            z-index: 10000;
-            flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            padding: 20px;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #111; color: var(--brand-gold); z-index: 10000;
+            flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
         }
         #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
         #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
@@ -68,11 +62,9 @@
         h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
 
         .view-section { 
-            width: 100%; max-width: 500px; 
-            height: 100%; 
+            width: 100%; max-width: 500px; height: 100%; 
             display: none; flex-direction: column; align-items: center; 
-            min-height: 0; 
-            transition: filter 2s ease;
+            min-height: 0; transition: filter 2s ease;
         }
         .view-section.active { display: flex; }
         .gray-out { filter: grayscale(100%) contrast(1.2); }
@@ -87,34 +79,20 @@
 
         /* --- DASHBOARD --- */
         .dashboard-header { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
-        
-        .fuel-tank-container {
-            background: #222; padding: 15px; border-radius: 12px; width: 100%; text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #444; position: relative; flex-shrink: 0; 
-        }
+        .fuel-tank-container { background: #222; padding: 15px; border-radius: 12px; width: 100%; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #444; position: relative; flex-shrink: 0; }
         .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
         .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.5rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
 
         /* --- HANGAR LIST --- */
-        #level-list-container {
-            display: flex; flex-direction: column; gap: 8px; width: 100%;
-            margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 0; 
-        }
+        #level-list-container { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 0; }
         #level-list-container::-webkit-scrollbar { width: 5px; }
         #level-list-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
 
-        .world-folder {
-            border: 1px solid #ddd; border-radius: 10px; background: white;
-            overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; transition: opacity 0.3s;
-        }
+        .world-folder { border: 1px solid #ddd; border-radius: 10px; background: white; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; transition: opacity 0.3s; }
         .world-folder.locked-world { opacity: 0.6; pointer-events: none; background: #f0f0f0; }
-        
-        .world-header {
-            padding: 15px 15px; background: #f8f8f8; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid transparent; transition: all 0.2s;
-        }
+        .world-header { padding: 15px 15px; background: #f8f8f8; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid transparent; transition: all 0.2s; }
         .world-header:active { background: #eee; }
         .world-folder.open .world-header { background: var(--brand-dark); color: white; border-bottom: 1px solid #444; }
         .world-folder.open .world-header h3 { color: var(--brand-gold); }
@@ -125,16 +103,10 @@
         .world-content { display: none; flex-direction: column; gap: 8px; padding: 10px; background: #fff; }
         .world-folder.open .world-content { display: flex; }
 
-        .level-strip {
-            background: white; border: 1px solid #eee; border-radius: 6px; 
-            padding: 12px; width: 100%; min-height: 60px;
-            display: flex; align-items: center; justify-content: space-between;
-            cursor: pointer; transition: transform 0.1s;
-        }
+        .level-strip { background: white; border: 1px solid #eee; border-radius: 6px; padding: 12px; width: 100%; min-height: 60px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform 0.1s; }
         .level-strip:active { transform: scale(0.98); background-color: #f9f9f9; }
         .level-strip.classified { border: 1px solid var(--brand-red); background: #fff5f5; }
         .level-strip.special { border: 1px solid #3498db; background: #f4f9fd; }
-        
         .strip-icon { display: flex; align-items: center; justify-content: center; width: 30px; margin-right: 12px; }
         .strip-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         .strip-title { font-size: 0.95rem; color: var(--brand-dark); font-weight: bold; margin: 0; }
@@ -147,23 +119,15 @@
         .level-strip.locked .strip-icon { color: #ccc !important; }
 
         /* --- BUTTONS --- */
-        .footer-buttons { 
-            width: 100%; flex-shrink: 0; display: flex; flex-direction: column; 
-            gap: 8px; margin-top: auto; border-top: 1px solid #eee; padding-top: 10px;
-        }
+        .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: auto; border-top: 1px solid #eee; padding-top: 10px; }
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        button { 
-            width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; 
-            cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px;
-            user-select: none; -webkit-tap-highlight-color: transparent;
-        }
+        button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none; -webkit-tap-highlight-color: transparent; }
         .primary-btn { background-color: var(--brand-red); color: white; }
         .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
         .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
         .danger-btn { background-color: var(--brand-red); color: white; font-weight: bold; }
         .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
         .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
-        
         .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s;}
         .radar-btn:active { background: var(--radar-green); color: #000; }
 
@@ -171,29 +135,21 @@
         .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; }
         .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; display: flex; align-items: center; gap: 6px; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
-        
         #bomb-wrapper { margin-bottom: 5px; width: 100%; text-align: center; flex-shrink: 0; }
-        #smart-bomb-btn {
-            background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; border: 1px solid #ff9b9b; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4); padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; text-transform: uppercase;
-        }
+        #smart-bomb-btn { background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; border: 1px solid #ff9b9b; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4); padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; text-transform: uppercase; }
 
+        /* --- IMAGE MODE --- */
         #image-game-area { width: 100%; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
-        #game-wrapper {
-            background: transparent; box-shadow: none; border-radius: 0; padding: 0; width: 100%; margin-bottom: 10px; position: relative; flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center;
-        }
+        #game-wrapper { background: transparent; box-shadow: none; border-radius: 0; padding: 0; width: 100%; margin-bottom: 10px; position: relative; flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center; }
         #game-container { position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; background-color: #000; border: 2px solid #ccc; cursor: pointer; overflow: hidden; }
         #game-container img { object-fit: cover; width: 100%; height: 100%; }
         #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
         #cover-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; }
-        
         .grid-piece { background: linear-gradient(135deg, #2a2a2a 0%, #151515 100%); border: 1px solid #333; border-top-color: #444; border-left-color: #444; display: flex; justify-content: center; align-items: center; position: relative; transition: opacity 0.3s ease; }
         .grid-piece::after { content: 'FC'; font-family: 'Share Tech Mono', monospace; color: rgba(207, 168, 110, 0.15); font-size: 14px; font-weight: bold; }
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
         .grid-piece.exploded { z-index: 9999 !important; border: 2px solid var(--gauge-orange) !important; box-shadow: 0 0 20px var(--brand-red) !important; background: var(--brand-red) !important; }
         .grid-piece.exploded::after { color: #fff; }
-
-        .flash-screen { animation: whiteFlash 0.6s ease-out; }
-        @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
         
         #input-area { display: flex; flex-direction: column; gap: 5px; width: 100%; flex-shrink: 0; margin-bottom: 0px; }
         input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; user-select: text !important; -webkit-user-select: text !important; }
@@ -232,6 +188,7 @@
         #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; }
         #tk-plane { position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px; transform-origin: 50% 90%; z-index: 4; }
         .pixel-particle { position: absolute; width: 6px; height: 6px; z-index: 10; }
+        
         #takeoff-panel { flex-shrink: 0; display: flex; justify-content: center; align-items: center; background: #2a2a2a; border: 4px solid #111; border-radius: 8px; padding: 10px; margin-top: 5px; width: 100%; max-width: 300px; box-shadow: inset 0 0 15px #000; position: relative; }
         #takeoff-panel::before, #takeoff-panel::after { content: ''; position: absolute; width: 8px; height: 8px; background: #555; border-radius: 50%; box-shadow: inset 1px 1px 2px #000; }
         #takeoff-panel::before { left: 10px; top: 10px; }
@@ -239,45 +196,46 @@
         #takeoff-btn { width: 100px; height: 100px; border-radius: 50%; margin: 0; background: radial-gradient(circle at 30% 30%, #ff4b4b, #b30000); border: 4px solid #111; box-shadow: 0 8px 0 #5e0000, 0 15px 15px rgba(0,0,0,0.5), inset 0 4px 6px rgba(255,255,255,0.3); color: white; font-family: 'Share Tech Mono', monospace; font-size: 1.3rem; font-weight: bold; text-shadow: 1px 1px 2px #000; cursor: pointer; line-height: 1.1; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; transition: transform 0.05s, box-shadow 0.05s; }
         #takeoff-btn.pressed { transform: translateY(8px); box-shadow: 0 0px 0 #5e0000, 0 5px 5px rgba(0,0,0,0.5), inset 0 4px 6px rgba(0,0,0,0.3); }
 
-        /* --- RADAR MODE FIX: Removed 'display: none;' to allow active class to work --- */
-        #radar-view { justify-content: center; }
-        
+        .flash-screen { animation: whiteFlash 0.6s ease-out; }
+        @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
+
+        /* --- VISUAL RADAR MODE (LEAFLET MAP) --- */
+        #radar-view { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px;}
         .radar-terminal {
-            width: 100%; max-width: 400px; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px;
-            padding: 20px; box-shadow: inset 0 0 30px rgba(51, 255, 51, 0.1), 0 5px 15px rgba(0,0,0,0.5);
+            width: 100%; flex-shrink: 0; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px;
+            padding: 15px; box-shadow: inset 0 0 30px rgba(51, 255, 51, 0.1), 0 5px 15px rgba(0,0,0,0.5);
             font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        /* Scanline effect */
         .radar-terminal::before {
             content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
             z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
-        .radar-header { font-size: 1.2rem; border-bottom: 2px dashed var(--radar-green); padding-bottom: 10px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
-        .radar-content { font-size: 1.1rem; line-height: 1.6; min-height: 150px; text-transform: uppercase; }
+        .radar-content { font-size: 1.1rem; line-height: 1.4; text-transform: uppercase; z-index: 3; position: relative;}
         .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; }
-        .radar-input-area { margin-top: 20px; display: flex; gap: 10px; z-index: 3; position: relative;}
-        .radar-input { 
-            flex-grow: 1; background: transparent; border: 2px solid var(--radar-green); color: var(--radar-green); 
-            padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; text-transform: uppercase;
-            outline: none; user-select: text !important; -webkit-user-select: text !important;
-        }
-        .radar-input:focus { background: rgba(51, 255, 51, 0.1); }
-        .radar-btn-submit { background: var(--radar-green); color: #000; border: none; padding: 10px 20px; font-family: 'Share Tech Mono', monospace; font-weight: bold; cursor: pointer; font-size: 1.1rem;}
-        #radar-timer { font-size: 2rem; text-align: center; margin-top: 10px; font-weight: bold; }
+        #radar-timer { font-size: 2rem; font-weight: bold; z-index: 3; position: relative;}
         .blinking-cursor { animation: blink 1s step-end infinite; }
         @keyframes blink { 50% { opacity: 0; } }
 
+        #radar-map-container {
+            width: 100%; flex-grow: 1; border: 4px solid var(--radar-green); border-radius: 8px; 
+            background: #000; z-index: 1; box-shadow: 0 0 10px rgba(51, 255, 51, 0.3); min-height: 250px;
+        }
+
+        /* Leaflet Overrides */
+        .radar-plane-icon { background: transparent; border: none; }
+        .leaflet-popup-content-wrapper { background: #051005; color: var(--radar-green); border: 2px solid var(--radar-green); border-radius: 4px; font-family: 'Share Tech Mono', monospace; text-align: center; }
+        .leaflet-popup-tip { background: var(--radar-green); }
+        .radar-target-ping {
+            position: absolute; width: 40px; height: 40px; top: -8px; left: -8px;
+            border-radius: 50%; border: 2px solid var(--brand-gold);
+            animation: ping 1s infinite ease-out; pointer-events: none;
+        }
+        @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+
         #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
-
-        .shake-it { animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-2px, 0, 0); }
-            20%, 80% { transform: translate3d(3px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
-            40%, 60% { transform: translate3d(6px, 0, 0); }
-        }
 
         @media (max-height: 500px) {
             .game-header { display: none !important; }
@@ -524,19 +482,17 @@
 
     <div id="radar-view" class="view-section">
         <div class="radar-terminal">
-            <div class="radar-header">ATC INTERCEPT OP</div>
             <div class="radar-content" id="radar-screen-text">
                 ESTABLISHING UPLINK...<br>
                 SCANNING SECTOR EU-CENTRAL...<span class="blinking-cursor">_</span>
             </div>
             <div id="radar-timer">--</div>
-            <div class="radar-input-area" id="radar-controls" style="display:none;">
-                <input type="text" id="radar-input" class="radar-input" placeholder="CALLSIGN" autocomplete="off">
-                <button class="radar-btn-submit" onclick="submitRadar()">LOCK</button>
-            </div>
         </div>
-        <div id="radar-message" style="margin-top:15px; font-weight:bold; height:20px; text-align:center;"></div>
-        <div class="footer-buttons" style="border: none;">
+        
+        <div id="radar-map-container"></div>
+        
+        <div id="radar-message" style="margin-top:10px; font-weight:bold; height:20px; text-align:center;"></div>
+        <div class="footer-buttons" style="border: none; margin-top:5px;">
              <button class="outline-btn" onclick="closeRadar()">Abort Operation</button>
         </div>
     </div>
@@ -616,9 +572,10 @@
 
         const RUNWAY_SVG = `<svg width="128" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="128" height="32" fill="#3b3b3b"/><rect width="128" height="2" fill="#385e26"/><rect y="2" width="128" height="2" fill="#4a4a4a"/><rect x="0" y="14" width="32" height="4" fill="#ddd"/><rect x="64" y="14" width="32" height="4" fill="#ddd"/><rect x="0" y="4" width="128" height="2" fill="#fff"/><rect x="0" y="26" width="128" height="2" fill="#fff"/><rect x="10" y="10" width="16" height="2" fill="#222"/><rect x="40" y="18" width="24" height="2" fill="#222"/><rect x="80" y="12" width="12" height="2" fill="#222"/><rect x="100" y="20" width="16" height="2" fill="#222"/></svg>`;
 
-        let radarInterval = null;
+        let radarMap = null;
+        let radarLayerGroup = null;
         let radarCountdown = null;
-        let radarTime = 15;
+        let radarTime = 20; // 20 seconds to find the target
         let currentRadarCallsign = "";
 
         const STARTING_GLOBAL_FUEL = 4000;
@@ -670,8 +627,6 @@
             document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             document.getElementById('enter-btn').onclick = checkAnswer;
             
-            document.getElementById('radar-input').addEventListener("keypress", (e) => { if (e.key === "Enter") submitRadar(); });
-
             const tkBtn = document.getElementById('takeoff-btn');
             
             const startPress = (e) => { 
@@ -766,7 +721,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v48'); 
+            const saved = localStorage.getItem('fuelQuizState_v49'); // Version bump for radar map update
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -782,7 +737,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v48', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v49', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -1255,76 +1210,163 @@
             setTimeout(saveAndExit, 2500);
         }
 
-        // --- RADAR LOGIC ---
+        // --- VISUAL LEAFLET RADAR LOGIC ---
         function openRadar() {
             if(globalState.currentFuel <= 0) { triggerGameOver(); return; }
             
             selectorView.classList.remove('active');
             radarView.classList.add('active');
             
+            // Initialize Leaflet Map once
+            if (!radarMap) {
+                radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(radarMap);
+                radarLayerGroup = L.layerGroup().addTo(radarMap);
+            }
+            
+            // Critical fix for map rendering when div goes from display:none to flex
+            setTimeout(() => { radarMap.invalidateSize(); }, 100);
+            
             const textEl = document.getElementById('radar-screen-text');
             const msgEl = document.getElementById('radar-message');
-            const controls = document.getElementById('radar-controls');
-            const input = document.getElementById('radar-input');
             const timerEl = document.getElementById('radar-timer');
             
             textEl.innerHTML = "ESTABLISHING UPLINK...<br>SCANNING SECTOR EU-CENTRAL...<span class='blinking-cursor'>_</span>";
             msgEl.textContent = "";
-            controls.style.display = 'none';
             timerEl.textContent = "--";
-            input.value = "";
-            currentRadarCallsign = "";
             
             if(radarCountdown) clearInterval(radarCountdown);
+            radarLayerGroup.clearLayers();
 
-            fetch(`https://opensky-network.org/api/states/all?lamin=45.0&lomin=5.0&lamax=55.0&lomax=15.0`)
+            // Fetch live data over Central Europe bounding box
+            fetch(`https://opensky-network.org/api/states/all?lamin=45.0&lomin=5.0&lamax=52.0&lomax=15.0`)
             .then(res => res.json())
             .then(data => {
                 if(!data.states || data.states.length === 0) throw new Error("Empty airspace");
                 
-                const p = data.states[Math.floor(Math.random() * data.states.length)];
-                currentRadarCallsign = (p[1] || "").trim();
-                const country = p[2] || "UNKNOWN";
-                const alt = p[7] ? Math.floor(p[7]) + " M" : "UNAVAILABLE";
-                const spd = p[9] ? Math.floor(p[9] * 3.6) + " KPH" : "UNAVAILABLE"; 
+                let validPlanes = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "");
+                if(validPlanes.length === 0) throw new Error("No valid planes");
+
+                // Limit to 12 planes so map isn't cluttered
+                validPlanes = validPlanes.sort(() => Math.random() - 0.5).slice(0, 12);
                 
-                if(currentRadarCallsign === "") { throw new Error("Ghost plane"); }
+                const targetPlane = validPlanes[Math.floor(Math.random() * validPlanes.length)];
+                currentRadarCallsign = targetPlane[1].trim();
 
                 textEl.innerHTML = `
-                    <span style="color:#fff;">[ TARGET ACQUIRED ]</span><br>
-                    ----------------------<br>
-                    ORIGIN: ${country}<br>
-                    ALT: ${alt}<br>
-                    SPD: ${spd}<br>
-                    ----------------------<br>
-                    CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><span class='blinking-cursor'>_</span>
+                    <span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>
+                    INTERCEPT FLIGHT: <span class="radar-highlight">${currentRadarCallsign}</span><br>
+                    TAP TARGET ON MAP TO LOCK ON.
                 `;
-                
-                startRadarTimer();
+
+                // Plot the 12 planes
+                validPlanes.forEach(p => {
+                    const callsign = p[1].trim();
+                    const lng = p[5];
+                    const lat = p[6];
+                    const heading = p[10] || 0;
+
+                    const iconHtml = `<div style="transform: rotate(${heading}deg); color: var(--radar-green);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
+                    
+                    let icon = L.divIcon({ html: iconHtml, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });
+                    let marker = L.marker([lat, lng], {icon: icon}).addTo(radarLayerGroup);
+                    
+                    marker.on('click', () => {
+                        if (radarTime <= 0) return;
+                        
+                        if (callsign === currentRadarCallsign) {
+                            // WIN CONDITION
+                            clearInterval(radarCountdown);
+                            document.getElementById('radar-message').className = "success";
+                            document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
+                            globalState.currentFuel += 250;
+                            saveState();
+                            updateMiniFuelUI();
+                            
+                            // Turn tapped plane gold with a radar ping animation
+                            marker.setIcon(L.divIcon({
+                                html: `<div style="transform: rotate(${heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
+                                className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
+                            }));
+
+                            setTimeout(closeRadar, 2000);
+                        } else {
+                            // WRONG PLANE PENALTY
+                            marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${callsign}`).openPopup();
+                            radarTime = Math.max(0, radarTime - 3); 
+                            
+                            const tDiv = document.getElementById('radar-timer');
+                            tDiv.style.color = "red";
+                            setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
+                            tDiv.textContent = "00:" + (radarTime < 10 ? "0"+radarTime : radarTime);
+                        }
+                    });
+                });
+
+                // Auto center map to show all generated planes
+                let groupBounds = L.featureGroup(radarLayerGroup.getLayers()).getBounds();
+                radarMap.fitBounds(groupBounds, { padding: [20, 20] });
+
+                startRadarTimer(20);
             })
             .catch(err => {
-                console.warn("Radar API failed, using simulation.", err);
-                const fakeCountries = ["Germany", "France", "Switzerland", "Italy"];
-                const fakeCalls = ["LHT442", "AFR12A", "SWR99B", "BAW505", "RYR77X"];
-                currentRadarCallsign = fakeCalls[Math.floor(Math.random() * fakeCalls.length)];
+                console.warn("Radar API failed/rate-limited. Launching local simulation.");
+                
+                let validPlanes = [];
+                const fakeCalls = ["LHT442", "AFR12A", "SWR99B", "BAW505", "RYR77X", "FIN112", "NOR334", "KLM88", "EZY99", "WZZ10", "DAL22", "UAL33"];
+                for(let i=0; i<12; i++) {
+                    validPlanes.push({ callsign: fakeCalls[i], lng: 5.0 + Math.random() * 10, lat: 45.0 + Math.random() * 7, heading: Math.random() * 360 });
+                }
+                
+                const targetPlane = validPlanes[Math.floor(Math.random() * validPlanes.length)];
+                currentRadarCallsign = targetPlane.callsign;
                 
                 textEl.innerHTML = `
-                    <span style="color:#fff;">[ TARGET ACQUIRED (SIMULATED) ]</span><br>
-                    ----------------------<br>
-                    ORIGIN: ${fakeCountries[Math.floor(Math.random() * fakeCountries.length)]}<br>
-                    ALT: ${Math.floor(Math.random()*8000 + 2000)} M<br>
-                    SPD: ${Math.floor(Math.random()*500 + 300)} KPH<br>
-                    ----------------------<br>
-                    CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><span class='blinking-cursor'>_</span>
+                    <span style="color:#fff;">[ SIMULATION MODE ACTIVE ]</span><br>
+                    INTERCEPT FLIGHT: <span class="radar-highlight">${currentRadarCallsign}</span><br>
+                    TAP TARGET ON MAP TO LOCK ON.
                 `;
-                startRadarTimer();
+
+                validPlanes.forEach(p => {
+                    const iconHtml = `<div style="transform: rotate(${p.heading}deg); color: var(--radar-green);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
+                    let icon = L.divIcon({ html: iconHtml, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });
+                    let marker = L.marker([p.lat, p.lng], {icon: icon}).addTo(radarLayerGroup);
+                    
+                    marker.on('click', () => {
+                        if (radarTime <= 0) return;
+                        if (p.callsign === currentRadarCallsign) {
+                            clearInterval(radarCountdown);
+                            document.getElementById('radar-message').className = "success";
+                            document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
+                            globalState.currentFuel += 250;
+                            saveState();
+                            updateMiniFuelUI();
+                            
+                            marker.setIcon(L.divIcon({
+                                html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
+                                className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
+                            }));
+                            setTimeout(closeRadar, 2000);
+                        } else {
+                            marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
+                            radarTime = Math.max(0, radarTime - 3); 
+                            const tDiv = document.getElementById('radar-timer');
+                            tDiv.style.color = "red";
+                            setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
+                            tDiv.textContent = "00:" + (radarTime < 10 ? "0"+radarTime : radarTime);
+                        }
+                    });
+                });
+
+                let groupBounds = L.featureGroup(radarLayerGroup.getLayers()).getBounds();
+                radarMap.fitBounds(groupBounds, { padding: [20, 20] });
+                
+                startRadarTimer(20);
             });
         }
 
-        function startRadarTimer() {
-            document.getElementById('radar-controls').style.display = 'flex';
-            document.getElementById('radar-input').focus();
-            radarTime = 15;
+        function startRadarTimer(seconds) {
+            radarTime = seconds;
             document.getElementById('radar-timer').textContent = "00:" + (radarTime < 10 ? "0"+radarTime : radarTime);
             
             radarCountdown = setInterval(() => {
@@ -1332,42 +1374,16 @@
                 document.getElementById('radar-timer').textContent = "00:" + (radarTime < 10 ? "0"+radarTime : radarTime);
                 if(radarTime <= 0) {
                     clearInterval(radarCountdown);
-                    failRadar("TARGET LOST (-100L)");
+                    document.getElementById('radar-message').className = "fail";
+                    document.getElementById('radar-message').textContent = "TARGET ESCAPED (-100L)";
+                    globalState.currentFuel = Math.max(0, globalState.currentFuel - 100);
+                    saveState();
+                    updateMiniFuelUI();
+                    
+                    if(globalState.currentFuel <= 0) setTimeout(triggerGameOver, 1500);
+                    else setTimeout(closeRadar, 2500);
                 }
             }, 1000);
-        }
-
-        function submitRadar() {
-            if(radarTime <= 0) return;
-            const guess = document.getElementById('radar-input').value.trim().toUpperCase();
-            
-            if(guess === currentRadarCallsign.toUpperCase()) {
-                clearInterval(radarCountdown);
-                document.getElementById('radar-message').className = "success";
-                document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
-                globalState.currentFuel += 250;
-                saveState();
-                setTimeout(closeRadar, 2000);
-            } else {
-                const inp = document.getElementById('radar-input');
-                inp.style.borderColor = "var(--brand-red)";
-                setTimeout(() => inp.style.borderColor = "var(--radar-green)", 500);
-            }
-        }
-
-        function failRadar(msg) {
-            document.getElementById('radar-controls').style.display = 'none';
-            document.getElementById('radar-message').className = "fail";
-            document.getElementById('radar-message').textContent = msg;
-            
-            globalState.currentFuel = Math.max(0, globalState.currentFuel - 100);
-            saveState();
-            
-            if(globalState.currentFuel <= 0) {
-                setTimeout(triggerGameOver, 1500);
-            } else {
-                setTimeout(closeRadar, 2500);
-            }
         }
 
         function closeRadar() {
@@ -1377,104 +1393,51 @@
             selectorView.classList.add('active');
         }
 
-        // --- REST OF APP LOGIC ---
         function triggerSmartBomb() {
             if (!globalState.hasSmartBomb) return;
-            
             const wrapper = document.getElementById('game-wrapper');
             const container = document.getElementById('game-container');
-            
-            wrapper.classList.add('shake-it');
-            wrapper.classList.add('flash-screen');
-            container.style.overflow = 'visible';
-            
-            setTimeout(() => {
-                wrapper.classList.remove('shake-it');
-                wrapper.classList.remove('flash-screen');
-                container.style.overflow = 'hidden'; 
-            }, 3000); 
-
+            wrapper.classList.add('shake-it'); wrapper.classList.add('flash-screen'); container.style.overflow = 'visible';
+            setTimeout(() => { wrapper.classList.remove('shake-it'); wrapper.classList.remove('flash-screen'); container.style.overflow = 'hidden'; }, 3000); 
             const gridContainer = document.getElementById('cover-grid');
             const gridRect = gridContainer.getBoundingClientRect();
-            const centerX = gridRect.width / 2;
-            const centerY = gridRect.height / 2;
-
+            const centerX = gridRect.width / 2; const centerY = gridRect.height / 2;
             const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
-            
             hiddenTiles.forEach(p => {
                 const rect = p.getBoundingClientRect();
-                const tileCX = (rect.left - gridRect.left) + (rect.width / 2);
-                const tileCY = (rect.top - gridRect.top) + (rect.height / 2);
-                
-                let dx = tileCX - centerX;
-                let dy = tileCY - centerY;
-                dx += (Math.random() - 0.5) * 50;
-                dy += (Math.random() - 0.5) * 50;
-
-                const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-                const force = (Math.random() * 400) + 400; 
-                
-                const tx = (dx / dist) * force;
-                const ty = (dy / dist) * force;
-                const rot = (Math.random() - 0.5) * 720; 
-                
-                p.classList.add('exploded');
-                void p.offsetWidth; 
-                
-                p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s';
-                p.style.pointerEvents = 'none';
-                
-                setTimeout(() => {
-                    p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0.2)`;
-                    p.style.opacity = '0';
-                }, 50);
+                let dx = (rect.left - gridRect.left) + (rect.width / 2) - centerX + (Math.random() - 0.5) * 50;
+                let dy = (rect.top - gridRect.top) + (rect.height / 2) - centerY + (Math.random() - 0.5) * 50;
+                const dist = Math.sqrt(dx*dx + dy*dy) || 1; const force = (Math.random() * 400) + 400; 
+                const tx = (dx / dist) * force; const ty = (dy / dist) * force; const rot = (Math.random() - 0.5) * 720; 
+                p.classList.add('exploded'); void p.offsetWidth; p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s'; p.style.pointerEvents = 'none';
+                setTimeout(() => { p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0.2)`; p.style.opacity = '0'; }, 50);
             });
-            
-            globalState.hasSmartBomb = false;
-            globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()];
-            saveState();
-            bombBtn.style.display = "none";
+            globalState.hasSmartBomb = false; globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()]; saveState(); bombBtn.style.display = "none";
         }
 
         function handleInteraction(e) {
             const lState = globalState.levels[activeLevelIdx];
             if (lState.completed || globalState.currentFuel <= 0) return;
-            
             const hidden = Array.from(document.querySelectorAll('.grid-piece:not(.revealed)'));
             if (hidden.length === 0) return;
-
             const tile = hidden[Math.floor(Math.random() * hidden.length)];
             const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile);
-
-            tile.classList.add('revealed');
-            lState.revealedTiles.push(idx);
-            
-            globalState.currentFuel = Math.max(0, globalState.currentFuel - TILE_COST);
-            saveState();
-            updateMiniFuelUI();
-
-            let cx = e.clientX || (e.touches && e.touches[0].clientX);
-            let cy = e.clientY || (e.touches && e.touches[0].clientY);
+            tile.classList.add('revealed'); lState.revealedTiles.push(idx);
+            globalState.currentFuel = Math.max(0, globalState.currentFuel - TILE_COST); saveState(); updateMiniFuelUI();
+            let cx = e.clientX || (e.touches && e.touches[0].clientX); let cy = e.clientY || (e.touches && e.touches[0].clientY);
             if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
-
             if (globalState.currentFuel <= 0) triggerGameOver();
         }
 
         function checkAnswer() {
             const lState = globalState.levels[activeLevelIdx];
             if (lState.completed || globalState.currentFuel <= 0) return;
-
             const guess = document.getElementById('guess-input').value.trim().toLowerCase();
             const answers = lState.answers;
-
-            if (isMatch(guess, answers)) {
-                endGame(true, "Target Verified");
-            } else {
-                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
-                saveState();
-                updateMiniFuelUI();
-                const inp = document.getElementById('guess-input');
-                inp.style.borderColor = "var(--brand-red)";
+            if (isMatch(guess, answers)) { endGame(true, "Target Verified"); } 
+            else {
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY); saveState(); updateMiniFuelUI();
+                const inp = document.getElementById('guess-input'); inp.style.borderColor = "var(--brand-red)";
                 setTimeout(() => inp.style.borderColor = "#ddd", 500);
                 if (globalState.currentFuel <= 0) triggerGameOver();
             }
@@ -1483,21 +1446,13 @@
         function submitTrivia(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx];
             if(lState.completed || globalState.currentFuel <= 0) return;
-
             if(selectedIndex === lState.correctIdx) {
-                const btn = document.getElementById('btn-opt-' + selectedIndex);
-                btn.style.backgroundColor = "var(--gauge-green)";
-                btn.style.color = "white";
+                const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
                 endGame(true, "Analysis Correct");
             } else {
-                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
-                saveState();
-                updateMiniFuelUI();
-                
-                const btn = document.getElementById('btn-opt-' + selectedIndex);
-                btn.classList.add('wrong-flash');
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY); saveState(); updateMiniFuelUI();
+                const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash');
                 setTimeout(() => btn.classList.remove('wrong-flash'), 500);
-
                 if (globalState.currentFuel <= 0) triggerGameOver();
             }
         }
@@ -1506,46 +1461,26 @@
             document.getElementById('message').textContent = msg;
             if (win) {
                 document.getElementById('message').className = "success";
-                const lState = globalState.levels[activeLevelIdx];
-                lState.completed = true;
-                
-                if (lState.type === 'image') {
-                    document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed'));
-                }
-                
-                triggerConfetti();
-                document.getElementById('level-title').textContent = lState.name;
-                bombBtn.style.display = "none";
-                saveState();
-                
-                if (isAllWorldsComplete()) syncScoreToCloud();
-                setTimeout(saveAndExit, 2000);
-            } else {
-                document.getElementById('message').className = "fail";
-            }
+                const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
+                if (lState.type === 'image') { document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed')); }
+                triggerConfetti(); document.getElementById('level-title').textContent = lState.name; bombBtn.style.display = "none"; saveState();
+                if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2000);
+            } else { document.getElementById('message').className = "fail"; }
         }
 
         function triggerGameOver() {
-            document.getElementById('game-view').classList.add('gray-out');
-            document.getElementById('selector-view').classList.add('gray-out');
-            document.getElementById('radar-view').classList.add('gray-out');
-            setTimeout(() => { gameOverOverlay.style.display = 'flex'; }, 500);
+            document.getElementById('game-view').classList.add('gray-out'); document.getElementById('selector-view').classList.add('gray-out'); document.getElementById('radar-view').classList.add('gray-out'); setTimeout(() => { gameOverOverlay.style.display = 'flex'; }, 500);
         }
 
         function closeRefuel() { refuelOverlay.style.display = 'none'; saveAndExit(); }
         function updateMiniFuelUI() {
-            const el = document.getElementById('current-fuel-display');
-            el.querySelector('span').textContent = globalState.currentFuel;
-            if (globalState.currentFuel <= 200) el.classList.add('danger');
-            else el.classList.remove('danger');
+            const el = document.getElementById('current-fuel-display'); el.querySelector('span').textContent = globalState.currentFuel;
+            if (globalState.currentFuel <= 200) el.classList.add('danger'); else el.classList.remove('danger');
         }
 
         function saveAndExit() { 
-            tkState.active = false; 
-            if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
-            renderDashboard(); 
-            gameView.classList.remove('active'); 
-            selectorView.classList.add('active'); 
+            tkState.active = false; if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
+            renderDashboard(); gameView.classList.remove('active'); selectorView.classList.add('active'); 
         }
         
         function triggerResetUI() { restartOverlay.style.display = 'flex'; }
@@ -1554,23 +1489,18 @@
 
         function showFloat(x, y, text) {
             const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text;
-            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px';
-            document.body.appendChild(el); setTimeout(() => el.remove(), 800);
+            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
         }
 
         function isMatch(guess, answers) {
             if (answers.includes(guess)) return true;
-            for (let a of answers) {
-                if (a.length < 4 && guess === a) return true;
-                if (levenshtein(guess, a) <= (a.length > 8 ? 2 : 1)) return true;
-            }
+            for (let a of answers) { if (a.length < 4 && guess === a) return true; if (levenshtein(guess, a) <= (a.length > 8 ? 2 : 1)) return true; }
             return false;
         }
 
         function levenshtein(a, b) {
             const m = []; for(let i=0; i<=b.length; i++) m[i]=[i]; for(let j=0; j<=a.length; j++) m[0][j]=j;
-            for(let i=1; i<=b.length; i++) for(let j=1; j<=a.length; j++) 
-                m[i][j] = (b.charAt(i-1)==a.charAt(j-1)) ? m[i-1][j-1] : Math.min(m[i-1][j-1]+1, Math.min(m[i][j-1]+1, m[i-1][j]+1));
+            for(let i=1; i<=b.length; i++) for(let j=1; j<=a.length; j++) m[i][j] = (b.charAt(i-1)==a.charAt(j-1)) ? m[i-1][j-1] : Math.min(m[i-1][j-1]+1, Math.min(m[i][j-1]+1, m[i-1][j]+1));
             return m[b.length][a.length];
         }
 
@@ -1578,8 +1508,7 @@
 
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            const btn = document.getElementById('install-btn'); btn.style.display = 'block';
+            e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block';
             btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; });
         });
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }

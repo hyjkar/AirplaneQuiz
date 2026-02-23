@@ -166,7 +166,7 @@
         .trivia-option:active { transform: scale(0.98); background: #eee; }
         .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
 
-        /* --- TAKEOFF MINI GAME --- */
+        /* --- TAKEOFF MINI GAME (8-BIT PARALLAX PURE PIXEL) --- */
         #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; min-height: 0; align-items: center; }
         .takeoff-hud { display: flex; justify-content: space-between; align-items: center; width: 100%; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #333; margin-bottom: 5px; flex-shrink: 0;}
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
@@ -220,7 +220,6 @@
         #radar-timer-container { display: flex; flex-direction: column; align-items: flex-end; z-index: 3; position: relative; }
         #radar-timer { font-size: 2.2rem; font-weight: bold; text-align: right;}
         
-        /* New Flight Path Toggle Button */
         .radar-toggle {
             background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green);
             font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; padding: 4px 8px; cursor: pointer;
@@ -606,7 +605,6 @@
 
         const RUNWAY_SVG = `<svg width="128" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="128" height="32" fill="#3b3b3b"/><rect width="128" height="2" fill="#385e26"/><rect y="2" width="128" height="2" fill="#4a4a4a"/><rect x="0" y="14" width="32" height="4" fill="#ddd"/><rect x="64" y="14" width="32" height="4" fill="#ddd"/><rect x="0" y="4" width="128" height="2" fill="#fff"/><rect x="0" y="26" width="128" height="2" fill="#fff"/><rect x="10" y="10" width="16" height="2" fill="#222"/><rect x="40" y="18" width="24" height="2" fill="#222"/><rect x="80" y="12" width="12" height="2" fill="#222"/><rect x="100" y="20" width="16" height="2" fill="#222"/></svg>`;
 
-        // Radar Globals
         let radarMap = null;
         let radarLayerGroup = null;
         let radarPathGroup = null;
@@ -616,7 +614,6 @@
         let currentRadarPlanes = [];
         let pathsVisible = false;
         
-        // List of European destinations for the hint system
         const DESTINATIONS = ["LONDON (LHR)", "PARIS (CDG)", "BERLIN (BER)", "ROME (FCO)", "MADRID (MAD)", "VIENNA (VIE)", "PRAGUE (PRG)", "WARSAW (WAW)", "AMSTERDAM (AMS)", "BRUSSELS (BRU)", "COPENHAGEN (CPH)", "STOCKHOLM (ARN)", "OSLO (OSL)", "HELSINKI (HEL)", "ZURICH (ZRH)", "FRANKFURT (FRA)"];
 
         const STARTING_GLOBAL_FUEL = 4000;
@@ -762,7 +759,7 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v53'); // Ver bump for final fixes
+            const saved = localStorage.getItem('fuelQuizState_v54'); 
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) {
@@ -778,7 +775,7 @@
             }
         }
 
-        function saveState() { localStorage.setItem('fuelQuizState_v53', JSON.stringify(globalState)); }
+        function saveState() { localStorage.setItem('fuelQuizState_v54', JSON.stringify(globalState)); }
         
         function isHangarComplete(hNum) {
             return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
@@ -1278,7 +1275,6 @@
             const msgEl = document.getElementById('radar-message');
             const btnToggle = document.getElementById('toggle-paths-btn');
             
-            // Reset toggle state
             pathsVisible = false;
             btnToggle.textContent = "PATHS: OFF";
             btnToggle.style.background = "transparent";
@@ -1306,7 +1302,6 @@
                     const lng = p[5];
                     const heading = p[10] || 0;
                     
-                    // Assign random destination & calculate flight path trail backwards
                     const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
                     const trailLen = 2 + Math.random() * 1.5;
                     const rad = (heading + 180) * (Math.PI / 180);
@@ -1482,101 +1477,49 @@
 
         function triggerSmartBomb() {
             if (!globalState.hasSmartBomb) return;
-            
             const wrapper = document.getElementById('game-wrapper');
             const container = document.getElementById('game-container');
-            
-            wrapper.classList.add('shake-it');
-            wrapper.classList.add('flash-screen');
-            container.style.overflow = 'visible';
-            
-            setTimeout(() => {
-                wrapper.classList.remove('shake-it');
-                wrapper.classList.remove('flash-screen');
-                container.style.overflow = 'hidden'; 
-            }, 3000); 
-
+            wrapper.classList.add('shake-it'); wrapper.classList.add('flash-screen'); container.style.overflow = 'visible';
+            setTimeout(() => { wrapper.classList.remove('shake-it'); wrapper.classList.remove('flash-screen'); container.style.overflow = 'hidden'; }, 3000); 
             const gridContainer = document.getElementById('cover-grid');
             const gridRect = gridContainer.getBoundingClientRect();
-            const centerX = gridRect.width / 2;
-            const centerY = gridRect.height / 2;
-
+            const centerX = gridRect.width / 2; const centerY = gridRect.height / 2;
             const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
-            
             hiddenTiles.forEach(p => {
                 const rect = p.getBoundingClientRect();
-                const tileCX = (rect.left - gridRect.left) + (rect.width / 2);
-                const tileCY = (rect.top - gridRect.top) + (rect.height / 2);
-                
-                let dx = tileCX - centerX;
-                let dy = tileCY - centerY;
-                dx += (Math.random() - 0.5) * 50;
-                dy += (Math.random() - 0.5) * 50;
-
-                const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-                const force = (Math.random() * 400) + 400; 
-                
-                const tx = (dx / dist) * force;
-                const ty = (dy / dist) * force;
-                const rot = (Math.random() - 0.5) * 720; 
-                
-                p.classList.add('exploded');
-                void p.offsetWidth; 
-                
-                p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s';
-                p.style.pointerEvents = 'none';
-                
-                setTimeout(() => {
-                    p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0.2)`;
-                    p.style.opacity = '0';
-                }, 50);
+                let dx = (rect.left - gridRect.left) + (rect.width / 2) - centerX + (Math.random() - 0.5) * 50;
+                let dy = (rect.top - gridRect.top) + (rect.height / 2) - centerY + (Math.random() - 0.5) * 50;
+                const dist = Math.sqrt(dx*dx + dy*dy) || 1; const force = (Math.random() * 400) + 400; 
+                const tx = (dx / dist) * force; const ty = (dy / dist) * force; const rot = (Math.random() - 0.5) * 720; 
+                p.classList.add('exploded'); void p.offsetWidth; p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s'; p.style.pointerEvents = 'none';
+                setTimeout(() => { p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0.2)`; p.style.opacity = '0'; }, 50);
             });
-            
-            globalState.hasSmartBomb = false;
-            globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()];
-            saveState();
-            bombBtn.style.display = "none";
+            globalState.hasSmartBomb = false; globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()]; saveState(); bombBtn.style.display = "none";
         }
 
         function handleInteraction(e) {
             const lState = globalState.levels[activeLevelIdx];
             if (lState.completed || globalState.currentFuel <= 0) return;
-            
             const hidden = Array.from(document.querySelectorAll('.grid-piece:not(.revealed)'));
             if (hidden.length === 0) return;
-
             const tile = hidden[Math.floor(Math.random() * hidden.length)];
             const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile);
-
-            tile.classList.add('revealed');
-            lState.revealedTiles.push(idx);
-            
-            globalState.currentFuel = Math.max(0, globalState.currentFuel - TILE_COST);
-            saveState();
-            updateMiniFuelUI();
-
-            let cx = e.clientX || (e.touches && e.touches[0].clientX);
-            let cy = e.clientY || (e.touches && e.touches[0].clientY);
+            tile.classList.add('revealed'); lState.revealedTiles.push(idx);
+            globalState.currentFuel = Math.max(0, globalState.currentFuel - TILE_COST); saveState(); updateMiniFuelUI();
+            let cx = e.clientX || (e.touches && e.touches[0].clientX); let cy = e.clientY || (e.touches && e.touches[0].clientY);
             if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
-
             if (globalState.currentFuel <= 0) triggerGameOver();
         }
 
         function checkAnswer() {
             const lState = globalState.levels[activeLevelIdx];
             if (lState.completed || globalState.currentFuel <= 0) return;
-
             const guess = document.getElementById('guess-input').value.trim().toLowerCase();
             const answers = lState.answers;
-
-            if (isMatch(guess, answers)) {
-                endGame(true, "Target Verified");
-            } else {
-                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
-                saveState();
-                updateMiniFuelUI();
-                const inp = document.getElementById('guess-input');
-                inp.style.borderColor = "var(--brand-red)";
+            if (isMatch(guess, answers)) { endGame(true, "Target Verified"); } 
+            else {
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY); saveState(); updateMiniFuelUI();
+                const inp = document.getElementById('guess-input'); inp.style.borderColor = "var(--brand-red)";
                 setTimeout(() => inp.style.borderColor = "#ddd", 500);
                 if (globalState.currentFuel <= 0) triggerGameOver();
             }
@@ -1585,21 +1528,13 @@
         function submitTrivia(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx];
             if(lState.completed || globalState.currentFuel <= 0) return;
-
             if(selectedIndex === lState.correctIdx) {
-                const btn = document.getElementById('btn-opt-' + selectedIndex);
-                btn.style.backgroundColor = "var(--gauge-green)";
-                btn.style.color = "white";
+                const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
                 endGame(true, "Analysis Correct");
             } else {
-                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
-                saveState();
-                updateMiniFuelUI();
-                
-                const btn = document.getElementById('btn-opt-' + selectedIndex);
-                btn.classList.add('wrong-flash');
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY); saveState(); updateMiniFuelUI();
+                const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash');
                 setTimeout(() => btn.classList.remove('wrong-flash'), 500);
-
                 if (globalState.currentFuel <= 0) triggerGameOver();
             }
         }
@@ -1608,46 +1543,26 @@
             document.getElementById('message').textContent = msg;
             if (win) {
                 document.getElementById('message').className = "success";
-                const lState = globalState.levels[activeLevelIdx];
-                lState.completed = true;
-                
-                if (lState.type === 'image') {
-                    document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed'));
-                }
-                
-                triggerConfetti();
-                document.getElementById('level-title').textContent = lState.name;
-                bombBtn.style.display = "none";
-                saveState();
-                
-                if (isAllWorldsComplete()) syncScoreToCloud();
-                setTimeout(saveAndExit, 2000);
-            } else {
-                document.getElementById('message').className = "fail";
-            }
+                const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
+                if (lState.type === 'image') { document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed')); }
+                triggerConfetti(); document.getElementById('level-title').textContent = lState.name; bombBtn.style.display = "none"; saveState();
+                if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2000);
+            } else { document.getElementById('message').className = "fail"; }
         }
 
         function triggerGameOver() {
-            document.getElementById('game-view').classList.add('gray-out');
-            document.getElementById('selector-view').classList.add('gray-out');
-            document.getElementById('radar-view').classList.add('gray-out');
-            setTimeout(() => { gameOverOverlay.style.display = 'flex'; }, 500);
+            document.getElementById('game-view').classList.add('gray-out'); document.getElementById('selector-view').classList.add('gray-out'); document.getElementById('radar-view').classList.add('gray-out'); setTimeout(() => { gameOverOverlay.style.display = 'flex'; }, 500);
         }
 
         function closeRefuel() { refuelOverlay.style.display = 'none'; saveAndExit(); }
         function updateMiniFuelUI() {
-            const el = document.getElementById('current-fuel-display');
-            el.querySelector('span').textContent = globalState.currentFuel;
-            if (globalState.currentFuel <= 200) el.classList.add('danger');
-            else el.classList.remove('danger');
+            const el = document.getElementById('current-fuel-display'); el.querySelector('span').textContent = globalState.currentFuel;
+            if (globalState.currentFuel <= 200) el.classList.add('danger'); else el.classList.remove('danger');
         }
 
         function saveAndExit() { 
-            tkState.active = false; 
-            if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
-            renderDashboard(); 
-            gameView.classList.remove('active'); 
-            selectorView.classList.add('active'); 
+            tkState.active = false; if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
+            renderDashboard(); gameView.classList.remove('active'); selectorView.classList.add('active'); 
         }
         
         function triggerResetUI() { restartOverlay.style.display = 'flex'; }
@@ -1656,23 +1571,18 @@
 
         function showFloat(x, y, text) {
             const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text;
-            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px';
-            document.body.appendChild(el); setTimeout(() => el.remove(), 800);
+            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
         }
 
         function isMatch(guess, answers) {
             if (answers.includes(guess)) return true;
-            for (let a of answers) {
-                if (a.length < 4 && guess === a) return true;
-                if (levenshtein(guess, a) <= (a.length > 8 ? 2 : 1)) return true;
-            }
+            for (let a of answers) { if (a.length < 4 && guess === a) return true; if (levenshtein(guess, a) <= (a.length > 8 ? 2 : 1)) return true; }
             return false;
         }
 
         function levenshtein(a, b) {
             const m = []; for(let i=0; i<=b.length; i++) m[i]=[i]; for(let j=0; j<=a.length; j++) m[0][j]=j;
-            for(let i=1; i<=b.length; i++) for(let j=1; j<=a.length; j++) 
-                m[i][j] = (b.charAt(i-1)==a.charAt(j-1)) ? m[i-1][j-1] : Math.min(m[i-1][j-1]+1, Math.min(m[i][j-1]+1, m[i-1][j]+1));
+            for(let i=1; i<=b.length; i++) for(let j=1; j<=a.length; j++) m[i][j] = (b.charAt(i-1)==a.charAt(j-1)) ? m[i-1][j-1] : Math.min(m[i-1][j-1]+1, Math.min(m[i][j-1]+1, m[i-1][j]+1));
             return m[b.length][a.length];
         }
 
@@ -1680,8 +1590,7 @@
 
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            const btn = document.getElementById('install-btn'); btn.style.display = 'block';
+            e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block';
             btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; });
         });
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }

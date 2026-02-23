@@ -122,14 +122,14 @@
         .primary-btn { background-color: var(--brand-red); color: white; }
         .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
         .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
-        .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
         .danger-btn { background-color: var(--brand-red); color: white; font-weight: bold; }
+        .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
         .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
         
         .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s;}
         .radar-btn:active { background: var(--radar-green); color: #000; }
 
-        /* --- GAMEPLAY SHARED --- */
+        /* --- GAMEPLAY (Shared) --- */
         .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; }
         .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; display: flex; align-items: center; gap: 6px; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
@@ -169,7 +169,7 @@
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
         .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
         
-        #takeoff-viewport { position: relative; width: 100%; flex-grow: 1; min-height: 200px; max-height: 300px; border: 4px solid #222; border-radius: 4px; overflow: hidden; margin-bottom: 10px; image-rendering: pixelated; background-color: #87CEEB; }
+        #takeoff-viewport { position: relative; width: 100%; flex-grow: 1; min-height: 160px; max-height: 250px; border: 4px solid #222; border-radius: 4px; overflow: hidden; margin-bottom: 10px; image-rendering: pixelated; background-color: #87CEEB; }
         .parallax-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 32px; background-repeat: repeat-x; background-position: 0px bottom; }
         #tk-bg-sky { background-size: 256px 100%; z-index: 0; }
         #tk-bg-city { background-size: 256px 100%; z-index: 1; }
@@ -203,35 +203,63 @@
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
 
         /* --- VISUAL RADAR MODE --- */
-        #radar-view { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
-        .radar-terminal { width: 100%; flex-shrink: 0; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px; padding: 15px; box-shadow: inset 0 0 30px rgba(51, 255, 51, 0.1), 0 5px 15px rgba(0,0,0,0.5); font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; }
-        .radar-terminal::before { content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none; }
+        #radar-view { flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
+        
+        .radar-terminal {
+            width: 100%; flex-shrink: 0; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px;
+            padding: 15px; box-shadow: inset 0 0 30px rgba(51, 255, 51, 0.1), 0 5px 15px rgba(0,0,0,0.5);
+            font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        .radar-terminal::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
         .radar-content { font-size: 0.95rem; line-height: 1.4; text-transform: uppercase; z-index: 3; position: relative;}
         .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold;}
         
         #radar-timer-container { display: flex; flex-direction: column; align-items: flex-end; z-index: 3; position: relative; }
         #radar-timer { font-size: 2.2rem; font-weight: bold; text-align: right;}
         
-        .radar-toggle { background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; padding: 4px 8px; cursor: pointer; margin-top: 5px; outline: none; border-radius: 4px; transition: all 0.2s; }
+        .radar-toggle {
+            background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green);
+            font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; padding: 4px 8px; cursor: pointer;
+            margin-top: 5px; outline: none; border-radius: 4px; transition: all 0.2s;
+        }
         .radar-toggle:hover { background: rgba(51, 255, 51, 0.2); }
 
         .blinking-cursor { animation: blink 1s step-end infinite; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        #radar-map-wrapper { width: 100%; flex-grow: 1; border: 4px solid var(--radar-green); border-radius: 8px; position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(51, 255, 51, 0.3); min-height: 250px; }
+        /* Compass Overlay and Map Container */
+        #radar-map-wrapper {
+            width: 100%; flex-grow: 1; border: 4px solid var(--radar-green); border-radius: 8px; 
+            position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(51, 255, 51, 0.3); min-height: 250px;
+        }
         #radar-map-container { width: 100%; height: 100%; background: #000; z-index: 1; }
         
-        .compass-pt { position: absolute; color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-size: 1.4rem; font-weight: bold; z-index: 1000; pointer-events: none; text-shadow: 0 0 10px #000, 0 0 10px #000, 0 0 10px #000; }
+        .compass-pt { 
+            position: absolute; color: var(--radar-green); font-family: 'Share Tech Mono', monospace; 
+            font-size: 1.4rem; font-weight: bold; z-index: 1000; pointer-events: none; 
+            text-shadow: 0 0 10px #000, 0 0 10px #000, 0 0 10px #000;
+        }
         .compass-n { top: 10px; left: 50%; transform: translateX(-50%); }
         .compass-s { bottom: 10px; left: 50%; transform: translateX(-50%); }
         .compass-e { top: 50%; right: 10px; transform: translateY(-50%); }
         .compass-w { top: 50%; left: 10px; transform: translateY(-50%); }
 
+        /* Leaflet Overrides */
         .radar-plane-icon { background: transparent; border: none; }
         .leaflet-popup-content-wrapper { background: #051005; color: var(--radar-green); border: 2px solid var(--radar-green); border-radius: 4px; font-family: 'Share Tech Mono', monospace; text-align: center; }
         .leaflet-popup-tip { background: var(--radar-green); }
-        .radar-target-ping { position: absolute; width: 40px; height: 40px; top: -8px; left: -8px; border-radius: 50%; border: 2px solid var(--brand-gold); animation: ping 1s infinite ease-out; pointer-events: none; }
+        .radar-target-ping {
+            position: absolute; width: 40px; height: 40px; top: -8px; left: -8px;
+            border-radius: 50%; border: 2px solid var(--brand-gold);
+            animation: ping 1s infinite ease-out; pointer-events: none;
+        }
         @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        
         .radar-dest-label { pointer-events: none; text-shadow: 1px 1px 2px #000; }
 
         #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
@@ -507,6 +535,7 @@
     </div>
 
     <script>
+        // --- 🔥 FIREBASE CONFIGURATION 🔥 ---
         const firebaseConfig = {
   apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
   authDomain: "fuelcommand.firebaseapp.com",
@@ -520,7 +549,10 @@
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
-        } catch(e) { console.error("Firebase Init Error", e); }
+            console.log("Firebase successfully connected!");
+        } catch(e) { 
+            console.error("Firebase Init Error", e); 
+        }
 
         const ICONS = {
             plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
@@ -620,7 +652,7 @@
         const bombBtn = document.getElementById('smart-bomb-btn');
         
         window.onload = function() {
-            try { loadState(); } catch(e) { console.error("Save load failed", e); }
+            try { loadState(); } catch(e) { console.error("Load state fail", e); }
             
             if (!globalState.username) {
                 loginOverlay.style.display = 'flex';
@@ -631,19 +663,21 @@
                 if (isAllWorldsComplete()) syncScoreToCloud();
             }
             
-            document.getElementById('callsign-input')?.addEventListener('keypress', function (e) {
+            let ci = document.getElementById('callsign-input');
+            if(ci) ci.addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') { this.blur(); registerPilot(); }
             });
             
-            document.getElementById('guess-input')?.addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
-            document.getElementById('enter-btn').onclick = checkAnswer;
+            let gi = document.getElementById('guess-input');
+            if(gi) gi.addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
             
+            let eb = document.getElementById('enter-btn');
+            if(eb) eb.onclick = checkAnswer;
+
             const tkBtn = document.getElementById('takeoff-btn');
-            
             const startPress = (e) => { 
                 e.preventDefault();
                 tkBtn.classList.add('pressed');
-                
                 if (tkState.active && tkState.speed < 140) {
                     tkState.pressing = false; 
                     explodePlane("ROTATED TOO EARLY");
@@ -651,16 +685,16 @@
                 }
                 tkState.pressing = true; 
             };
-            
             const endPress = (e) => { 
                 if (e && e.cancelable) e.preventDefault();
                 tkBtn.classList.remove('pressed');
                 tkState.pressing = false; 
             };
-            
-            tkBtn?.addEventListener('pointerdown', startPress);
-            window.addEventListener('pointerup', endPress);
-            window.addEventListener('pointercancel', endPress);
+            if(tkBtn) {
+                tkBtn.addEventListener('pointerdown', startPress);
+                window.addEventListener('pointerup', endPress);
+                window.addEventListener('pointercancel', endPress);
+            }
         };
 
         function generateGameLevels() {
@@ -732,12 +766,10 @@
         function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v57'); 
+            const saved = localStorage.getItem('fuelQuizState_v58'); 
             if (saved) {
                 globalState = JSON.parse(saved);
-                if(!globalState.levels || globalState.levels.length === 0) {
-                    globalState.levels = generateGameLevels();
-                }
+                if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
                 if(globalState.hasSmartBomb === undefined) globalState.hasSmartBomb = true;
                 if(globalState.hasSeenTakeoffTutorial === undefined) globalState.hasSeenTakeoffTutorial = false;
             } else {
@@ -749,15 +781,11 @@
         }
 
         function saveState() { 
-            try { localStorage.setItem('fuelQuizState_v57', JSON.stringify(globalState)); } catch(e){} 
+            try { localStorage.setItem('fuelQuizState_v58', JSON.stringify(globalState)); } catch(e){} 
         }
         
-        function isHangarComplete(hNum) {
-            return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
-        }
-        function isAllWorldsComplete() {
-            return globalState.levels.every(l => l.completed);
-        }
+        function isHangarComplete(hNum) { return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed); }
+        function isAllWorldsComplete() { return globalState.levels.every(l => l.completed); }
 
         function renderDashboard() {
             document.getElementById('total-fuel-display').textContent = globalState.currentFuel;
@@ -767,14 +795,8 @@
             const h1Done = isHangarComplete(1);
             const h2Done = isHangarComplete(2);
             
-            if (h1Done && !globalState.world1Complete) {
-                globalState.world1Complete = true;
-                triggerRefuel();
-            }
-            if (h2Done && !globalState.world2Complete) {
-                globalState.world2Complete = true;
-                triggerRefuel();
-            }
+            if (h1Done && !globalState.world1Complete) { globalState.world1Complete = true; triggerRefuel(); }
+            if (h2Done && !globalState.world2Complete) { globalState.world2Complete = true; triggerRefuel(); }
 
             const unlockMsg = document.getElementById('unlock-message');
             if(h2Done) unlockMsg.innerHTML = "Classified Ops: <span style='color:#2ecc71'>GRANTED</span>";
@@ -785,9 +807,7 @@
             listContainer.innerHTML = "";
 
             const hangars = { 1: [], 2: [], 3: [] };
-            globalState.levels.forEach((level, index) => {
-                hangars[level.hangar].push({ ...level, originalIndex: index });
-            });
+            globalState.levels.forEach((level, index) => { hangars[level.hangar].push({ ...level, originalIndex: index }); });
 
             let activeHangar = 1;
             if (h1Done) activeHangar = 2;
@@ -807,10 +827,7 @@
                 const header = document.createElement('div');
                 header.className = 'world-header';
                 let lockSVG = isFolderLocked ? ICONS.lock : '';
-                header.innerHTML = `
-                    <div class="world-title-group"><h3>${lockSVG}Hangar ${hNum}</h3></div>
-                    <div class="arrow">▼</div>
-                `;
+                header.innerHTML = `<div class="world-title-group"><h3>${lockSVG}Hangar ${hNum}</h3></div><div class="arrow">▼</div>`;
                 if (!isFolderLocked) header.onclick = () => folder.classList.toggle('open');
 
                 const content = document.createElement('div');
@@ -828,35 +845,18 @@
                     let iconColor = "var(--brand-dark)";
                     let title = `Flight ${idx + 1}`;
                     
-                    if (levelData.type === 'trivia') { 
-                        iconSvg = ICONS.folder; 
-                        iconColor = "#3498db";
-                        title = "Incident Report"; 
-                    } else if (levelData.type === 'takeoff') {
-                        iconSvg = ICONS.takeoff; 
-                        iconColor = "#3498db";
-                        title = "Takeoff Calibration";
-                    }
-                    else if (levelData.isClassified) { 
-                        iconSvg = ICONS.jet; 
-                        iconColor = "var(--brand-red)";
-                        title = "Classified"; 
-                    }
+                    if (levelData.type === 'trivia') { iconSvg = ICONS.folder; iconColor = "#3498db"; title = "Incident Report"; } 
+                    else if (levelData.type === 'takeoff') { iconSvg = ICONS.takeoff; iconColor = "#3498db"; title = "Takeoff Calibration"; }
+                    else if (levelData.isClassified) { iconSvg = ICONS.jet; iconColor = "var(--brand-red)"; title = "Classified"; }
 
                     let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
                     
                     if (levelData.failed) {
-                        iconSvg = ICONS.cross;
-                        iconColor = "var(--brand-red)";
-                        statusHtml = `<div class="strip-status" style="color:var(--brand-red)">FAILED</div>`;
+                        iconSvg = ICONS.cross; iconColor = "var(--brand-red)"; statusHtml = `<div class="strip-status" style="color:var(--brand-red)">FAILED</div>`;
                     } else if (levelData.completed) {
-                        title = levelData.name; 
-                        iconSvg = ICONS.star; 
-                        iconColor = "var(--brand-gold)";
-                        statusHtml = `<div class="strip-status status-done">Cleared</div>`;
+                        title = levelData.name; iconSvg = ICONS.star; iconColor = "var(--brand-gold)"; statusHtml = `<div class="strip-status status-done">Cleared</div>`;
                     } else if (levelData.type === 'takeoff') {
-                        let triesLeft = 3 - (levelData.attempts || 0);
-                        statusHtml = `<div class="strip-status status-ready">Tries: ${triesLeft}</div>`;
+                        let triesLeft = 3 - (levelData.attempts || 0); statusHtml = `<div class="strip-status status-ready">Tries: ${triesLeft}</div>`;
                     } else if (levelData.type === 'image' && levelData.revealedTiles.length > 0) {
                         statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
                     }
@@ -868,8 +868,7 @@
                         card.className = "level-strip locked";
                         card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${ICONS.fuel}</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
                     } else if (globalState.currentFuel <= 0 && !levelData.completed && !levelData.failed) {
-                         card.className += " locked";
-                         statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
+                         card.className += " locked"; statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
                          card.onclick = () => triggerGameOver();
                          card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                     } else if (levelData.failed) {
@@ -1028,12 +1027,6 @@
             startTakeoff();
         }
 
-        let tkState = { 
-            active: false, pitch: 0, pitchVelocity: 0, lift: 0, 
-            distance: 100, speed: 0, pressing: false, frameId: null,
-            bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0
-        };
-
         function startTakeoff() {
             document.querySelectorAll('.pixel-particle').forEach(el => el.remove());
             
@@ -1138,7 +1131,6 @@
                 let p = document.createElement('div');
                 p.className = 'pixel-particle';
                 p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                
                 p.style.left = (30 + Math.random() * 80) + 'px'; 
                 p.style.top = baseY + Math.random() * 20 + 'px'; 
                 vp.appendChild(p);
@@ -1181,14 +1173,9 @@
                 lState.failed = true;
                 lState.completed = true; 
                 saveState();
-                
                 document.getElementById('message').textContent = "SYSTEM LOCKED - MAX ATTEMPTS FAILED (-200L)";
                 document.getElementById('message').className = "fail";
-                
-                setTimeout(() => {
-                    if (isAllWorldsComplete()) syncScoreToCloud();
-                    saveAndExit();
-                }, 2500);
+                setTimeout(() => { if (isAllWorldsComplete()) syncScoreToCloud(); saveAndExit(); }, 2500);
             } else if (globalState.currentFuel <= 0) {
                 triggerGameOver();
             } else {
@@ -1313,7 +1300,7 @@
                     <span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>
                 `;
 
-                plotPlanesOnRadar(targetPlane);
+                plotPlanesOnRadar();
             })
             .catch(err => {
                 console.warn("Radar API failed/rate-limited. Launching local simulation.");
@@ -1361,7 +1348,7 @@
                     <span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>
                 `;
 
-                plotPlanesOnRadar(targetPlane);
+                plotPlanesOnRadar();
             });
         }
         
@@ -1420,24 +1407,17 @@
             if (pathsVisible) {
                 currentRadarPlanes.forEach(p => {
                     L.polyline(p.route, {
-                        color: 'var(--radar-green)',
-                        weight: 2,
-                        dashArray: '4, 6',
-                        opacity: 0.6
+                        color: 'var(--radar-green)', weight: 2, dashArray: '4, 6', opacity: 0.6
                     }).addTo(radarPathGroup);
                     
                     L.circleMarker([p.endLat, p.endLng], {
-                        radius: 3,
-                        color: 'var(--radar-green)',
-                        fillColor: 'var(--radar-green)',
-                        fillOpacity: 1
+                        radius: 3, color: 'var(--radar-green)', fillColor: 'var(--radar-green)', fillOpacity: 1
                     }).addTo(radarPathGroup);
                     
                     L.marker([p.endLat, p.endLng], {
                         icon: L.divIcon({
                             html: `<div style="color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; white-space: nowrap; margin-left: 10px; margin-top: -8px; text-shadow: 1px 1px 2px #000;">${p.destination}</div>`,
-                            className: 'radar-dest-label',
-                            iconSize: [0,0]
+                            className: 'radar-dest-label', iconSize: [0,0]
                         })
                     }).addTo(radarPathGroup);
                 });
@@ -1483,101 +1463,51 @@
 
         function triggerSmartBomb() {
             if (!globalState.hasSmartBomb) return;
-            
             const wrapper = document.getElementById('game-wrapper');
             const container = document.getElementById('game-container');
-            
-            wrapper.classList.add('shake-it');
-            wrapper.classList.add('flash-screen');
-            container.style.overflow = 'visible';
-            
-            setTimeout(() => {
-                wrapper.classList.remove('shake-it');
-                wrapper.classList.remove('flash-screen');
-                container.style.overflow = 'hidden'; 
-            }, 3000); 
-
+            wrapper.classList.add('shake-it'); wrapper.classList.add('flash-screen'); container.style.overflow = 'visible';
+            setTimeout(() => { wrapper.classList.remove('shake-it'); wrapper.classList.remove('flash-screen'); container.style.overflow = 'hidden'; }, 3000); 
             const gridContainer = document.getElementById('cover-grid');
             const gridRect = gridContainer.getBoundingClientRect();
-            const centerX = gridRect.width / 2;
-            const centerY = gridRect.height / 2;
-
+            const centerX = gridRect.width / 2; const centerY = gridRect.height / 2;
             const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
             
             hiddenTiles.forEach(p => {
                 const rect = p.getBoundingClientRect();
-                const tileCX = (rect.left - gridRect.left) + (rect.width / 2);
-                const tileCY = (rect.top - gridRect.top) + (rect.height / 2);
-                
                 let dx = tileCX - centerX;
                 let dy = tileCY - centerY;
-                dx += (Math.random() - 0.5) * 50;
-                dy += (Math.random() - 0.5) * 50;
-
-                const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-                const force = (Math.random() * 400) + 400; 
-                
-                const tx = (dx / dist) * force;
-                const ty = (dy / dist) * force;
-                const rot = (Math.random() - 0.5) * 720; 
-                
-                p.classList.add('exploded');
-                void p.offsetWidth; 
-                
-                p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s';
-                p.style.pointerEvents = 'none';
-                
-                setTimeout(() => {
-                    p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0.2)`;
-                    p.style.opacity = '0';
-                }, 50);
+                dx += (Math.random() - 0.5) * 50; dy += (Math.random() - 0.5) * 50;
+                const dist = Math.sqrt(dx*dx + dy*dy) || 1; const force = (Math.random() * 400) + 400; 
+                const tx = (dx / dist) * force; const ty = (dy / dist) * force; const rot = (Math.random() - 0.5) * 720; 
+                p.classList.add('exploded'); void p.offsetWidth; p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s'; p.style.pointerEvents = 'none';
+                setTimeout(() => { p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0.2)`; p.style.opacity = '0'; }, 50);
             });
-            
-            globalState.hasSmartBomb = false;
-            globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()];
-            saveState();
-            bombBtn.style.display = "none";
+            globalState.hasSmartBomb = false; globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()]; saveState(); bombBtn.style.display = "none";
         }
 
         function handleInteraction(e) {
             const lState = globalState.levels[activeLevelIdx];
             if (lState.completed || globalState.currentFuel <= 0) return;
-            
             const hidden = Array.from(document.querySelectorAll('.grid-piece:not(.revealed)'));
             if (hidden.length === 0) return;
-
             const tile = hidden[Math.floor(Math.random() * hidden.length)];
             const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile);
-
-            tile.classList.add('revealed');
-            lState.revealedTiles.push(idx);
-            
-            globalState.currentFuel = Math.max(0, globalState.currentFuel - TILE_COST);
-            saveState();
-            updateMiniFuelUI();
-
-            let cx = e.clientX || (e.touches && e.touches[0].clientX);
-            let cy = e.clientY || (e.touches && e.touches[0].clientY);
+            tile.classList.add('revealed'); lState.revealedTiles.push(idx);
+            globalState.currentFuel = Math.max(0, globalState.currentFuel - TILE_COST); saveState(); updateMiniFuelUI();
+            let cx = e.clientX || (e.touches && e.touches[0].clientX); let cy = e.clientY || (e.touches && e.touches[0].clientY);
             if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
-
             if (globalState.currentFuel <= 0) triggerGameOver();
         }
 
         function checkAnswer() {
             const lState = globalState.levels[activeLevelIdx];
             if (lState.completed || globalState.currentFuel <= 0) return;
-
             const guess = document.getElementById('guess-input').value.trim().toLowerCase();
             const answers = lState.answers;
-
-            if (isMatch(guess, answers)) {
-                endGame(true, "Target Verified");
-            } else {
-                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
-                saveState();
-                updateMiniFuelUI();
-                const inp = document.getElementById('guess-input');
-                inp.style.borderColor = "var(--brand-red)";
+            if (isMatch(guess, answers)) { endGame(true, "Target Verified"); } 
+            else {
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY); saveState(); updateMiniFuelUI();
+                const inp = document.getElementById('guess-input'); inp.style.borderColor = "var(--brand-red)";
                 setTimeout(() => inp.style.borderColor = "#ddd", 500);
                 if (globalState.currentFuel <= 0) triggerGameOver();
             }
@@ -1586,21 +1516,13 @@
         function submitTrivia(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx];
             if(lState.completed || globalState.currentFuel <= 0) return;
-
             if(selectedIndex === lState.correctIdx) {
-                const btn = document.getElementById('btn-opt-' + selectedIndex);
-                btn.style.backgroundColor = "var(--gauge-green)";
-                btn.style.color = "white";
+                const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
                 endGame(true, "Analysis Correct");
             } else {
-                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
-                saveState();
-                updateMiniFuelUI();
-                
-                const btn = document.getElementById('btn-opt-' + selectedIndex);
-                btn.classList.add('wrong-flash');
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY); saveState(); updateMiniFuelUI();
+                const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash');
                 setTimeout(() => btn.classList.remove('wrong-flash'), 500);
-
                 if (globalState.currentFuel <= 0) triggerGameOver();
             }
         }
@@ -1609,46 +1531,26 @@
             document.getElementById('message').textContent = msg;
             if (win) {
                 document.getElementById('message').className = "success";
-                const lState = globalState.levels[activeLevelIdx];
-                lState.completed = true;
-                
-                if (lState.type === 'image') {
-                    document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed'));
-                }
-                
-                triggerConfetti();
-                document.getElementById('level-title').textContent = lState.name;
-                bombBtn.style.display = "none";
-                saveState();
-                
-                if (isAllWorldsComplete()) syncScoreToCloud();
-                setTimeout(saveAndExit, 2000);
-            } else {
-                document.getElementById('message').className = "fail";
-            }
+                const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
+                if (lState.type === 'image') { document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed')); }
+                triggerConfetti(); document.getElementById('level-title').textContent = lState.name; bombBtn.style.display = "none"; saveState();
+                if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2000);
+            } else { document.getElementById('message').className = "fail"; }
         }
 
         function triggerGameOver() {
-            document.getElementById('game-view').classList.add('gray-out');
-            document.getElementById('selector-view').classList.add('gray-out');
-            document.getElementById('radar-view').classList.add('gray-out');
-            setTimeout(() => { gameOverOverlay.style.display = 'flex'; }, 500);
+            document.getElementById('game-view').classList.add('gray-out'); document.getElementById('selector-view').classList.add('gray-out'); document.getElementById('radar-view').classList.add('gray-out'); setTimeout(() => { gameOverOverlay.style.display = 'flex'; }, 500);
         }
 
         function closeRefuel() { refuelOverlay.style.display = 'none'; saveAndExit(); }
         function updateMiniFuelUI() {
-            const el = document.getElementById('current-fuel-display');
-            el.querySelector('span').textContent = globalState.currentFuel;
-            if (globalState.currentFuel <= 200) el.classList.add('danger');
-            else el.classList.remove('danger');
+            const el = document.getElementById('current-fuel-display'); el.querySelector('span').textContent = globalState.currentFuel;
+            if (globalState.currentFuel <= 200) el.classList.add('danger'); else el.classList.remove('danger');
         }
 
         function saveAndExit() { 
-            tkState.active = false; 
-            if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
-            renderDashboard(); 
-            gameView.classList.remove('active'); 
-            selectorView.classList.add('active'); 
+            tkState.active = false; if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
+            renderDashboard(); gameView.classList.remove('active'); selectorView.classList.add('active'); 
         }
         
         function triggerResetUI() { restartOverlay.style.display = 'flex'; }
@@ -1657,23 +1559,18 @@
 
         function showFloat(x, y, text) {
             const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text;
-            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px';
-            document.body.appendChild(el); setTimeout(() => el.remove(), 800);
+            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
         }
 
         function isMatch(guess, answers) {
             if (answers.includes(guess)) return true;
-            for (let a of answers) {
-                if (a.length < 4 && guess === a) return true;
-                if (levenshtein(guess, a) <= (a.length > 8 ? 2 : 1)) return true;
-            }
+            for (let a of answers) { if (a.length < 4 && guess === a) return true; if (levenshtein(guess, a) <= (a.length > 8 ? 2 : 1)) return true; }
             return false;
         }
 
         function levenshtein(a, b) {
             const m = []; for(let i=0; i<=b.length; i++) m[i]=[i]; for(let j=0; j<=a.length; j++) m[0][j]=j;
-            for(let i=1; i<=b.length; i++) for(let j=1; j<=a.length; j++) 
-                m[i][j] = (b.charAt(i-1)==a.charAt(j-1)) ? m[i-1][j-1] : Math.min(m[i-1][j-1]+1, Math.min(m[i][j-1]+1, m[i-1][j]+1));
+            for(let i=1; i<=b.length; i++) for(let j=1; j<=a.length; j++) m[i][j] = (b.charAt(i-1)==a.charAt(j-1)) ? m[i-1][j-1] : Math.min(m[i-1][j-1]+1, Math.min(m[i][j-1]+1, m[i-1][j]+1));
             return m[b.length][a.length];
         }
 
@@ -1681,8 +1578,7 @@
 
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            const btn = document.getElementById('install-btn'); btn.style.display = 'block';
+            e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block';
             btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; });
         });
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }

@@ -42,12 +42,12 @@
         }
 
         /* --- OVERLAYS --- */
-        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay {
+        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #111; color: var(--brand-gold); z-index: 10000;
             flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
         }
-        #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
+        #restart-overlay, #refuel-overlay, #intercept-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
         #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
         #takeoff-tutorial-overlay { background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); }
         
@@ -225,13 +225,13 @@
         .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold;}
         
         #radar-timer-container { display: flex; flex-direction: column; align-items: flex-end; z-index: 3; position: relative; }
-        #radar-timer { font-size: 2.2rem; font-weight: bold; text-align: right;}
+        #radar-timer { font-size: 2.2rem; font-weight: bold; text-align: right; margin-bottom: 5px; transition: color 0.3s;}
         
-        .radar-toggle-group { display: flex; gap: 5px; margin-top: 5px; }
+        .radar-toggle-group { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; max-width: 160px; }
         .radar-toggle {
             background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green);
-            font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; padding: 4px 8px; cursor: pointer;
-            outline: none; border-radius: 4px; transition: all 0.2s;
+            font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; padding: 4px 6px; cursor: pointer;
+            outline: none; border-radius: 4px; transition: all 0.2s; flex-grow: 1;
         }
         .radar-toggle:hover { background: rgba(51, 255, 51, 0.2); }
 
@@ -312,6 +312,18 @@
                 <span style="color:#aaa; font-size:0.9rem;">⚠️ You have 3 attempts to earn a fuel bonus. If you fail, the mission is aborted.</span>
             </p>
             <button class="gold-btn" onclick="startTakeoffFromTutorial()">START ENGINES</button>
+        </div>
+    </div>
+
+    <div id="intercept-overlay">
+        <div class="modal-box danger">
+            <h1 style="color: var(--brand-red); margin-bottom: 10px;">CONFIRM INTERCEPT</h1>
+            <p style="color: #ccc; font-size: 0.9rem;">Target signature encrypted:</p>
+            <div id="encrypted-callsign" style="font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: #fff; margin: 15px 0; letter-spacing: 5px;">***</div>
+            <div class="modal-buttons">
+                <button class="cancel-btn" onclick="cancelIntercept()">CANCEL</button>
+                <button class="danger-btn" onclick="confirmIntercept()">AUTHORIZE</button>
+            </div>
         </div>
     </div>
 
@@ -527,10 +539,11 @@
                 SCANNING SECTOR...<span class="blinking-cursor">_</span>
             </div>
             <div id="radar-timer-container">
-                <div id="radar-timer">02:00</div>
+                <div id="radar-timer">05:00</div>
                 <div class="radar-toggle-group">
                     <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
-                    <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">MAP: LABELS</button>
+                    <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">ORIGIN: OFF</button>
+                    <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">MAP: CLEAN</button>
                 </div>
             </div>
         </div>
@@ -556,14 +569,18 @@
         let radarLayerGroup = null;
         let radarPathGroup = null;
         let radarCountdown = null;
-        let radarTime = 120; // Changed to 2 minutes
+        let radarTime = 300; // BASE TIME: 5 minutes
         let currentRadarCallsign = "";
         let currentRadarPlanes = [];
+        
+        // Assist states that accelerate the timer penalty
         let pathsVisible = false;
+        let originVisible = false;
         let currentMapStyle = 'CLEAN'; 
+        
         let activeLevelIdx = 0;
+        let pendingInterceptPlane = null;
 
-        // NEW: Radar regions to randomize the map view
         const RADAR_REGIONS = [
             { name: "EU-CENTRAL", lamin: 45, lamax: 55, lomin: -5, lomax: 15 },
             { name: "US-EAST", lamin: 30, lamax: 45, lomin: -85, lomax: -70 },
@@ -1289,11 +1306,15 @@
             document.getElementById('selector-view').classList.remove('active');
             document.getElementById('radar-view').classList.add('active');
             
+            // RESET assists for new session
+            pathsVisible = false;
+            originVisible = false;
+            currentMapStyle = 'CLEAN'; 
+            
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     if (!radarMap) {
                         radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
-                        currentMapStyle = 'CLEAN'; 
                         cleanMapBase.addTo(radarMap);
                         radarLayerGroup = L.layerGroup().addTo(radarMap);
                         radarPathGroup = L.layerGroup().addTo(radarMap);
@@ -1307,19 +1328,27 @@
         function startRadarMission() {
             const textEl = document.getElementById('radar-screen-text');
             const msgEl = document.getElementById('radar-message');
-            const btnToggle = document.getElementById('toggle-paths-btn');
             
-            pathsVisible = false;
-            btnToggle.textContent = "PATHS: OFF";
-            btnToggle.style.background = "transparent";
-            btnToggle.style.color = "var(--radar-green)";
+            // Reset Button states
+            document.getElementById('toggle-paths-btn').textContent = "PATHS: OFF";
+            document.getElementById('toggle-paths-btn').style.background = "transparent";
+            document.getElementById('toggle-paths-btn').style.color = "var(--radar-green)";
             
-            // Randomly select a sector for this mission
+            document.getElementById('toggle-origin-btn').textContent = "ORIGIN: OFF";
+            document.getElementById('toggle-origin-btn').style.background = "transparent";
+            document.getElementById('toggle-origin-btn').style.color = "var(--radar-green)";
+
+            document.getElementById('toggle-map-btn').textContent = "MAP: CLEAN";
+            document.getElementById('toggle-map-btn').style.background = "var(--radar-green)";
+            document.getElementById('toggle-map-btn').style.color = "#000";
+            if (radarMap && radarMap.hasLayer(cleanMapLabels)) radarMap.removeLayer(cleanMapLabels);
+            
+            // Randomly select a sector
             const region = RADAR_REGIONS[Math.floor(Math.random() * RADAR_REGIONS.length)];
             
             textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${region.name}...<span class='blinking-cursor'>_</span>`;
             msgEl.textContent = "";
-            document.getElementById('radar-timer').textContent = "02:00";
+            document.getElementById('radar-timer').textContent = "05:00";
             
             if(radarCountdown) clearInterval(radarCountdown);
             radarLayerGroup.clearLayers();
@@ -1350,7 +1379,7 @@
                     }
                     if (isOverlapping) continue;
 
-                    // Extract actual origin country from API
+                    // Extract actual registry origin
                     const originCountry = p[2] && p[2].trim() !== "" ? p[2].trim().toUpperCase() : "CLASSIFIED";
                     
                     const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
@@ -1365,7 +1394,7 @@
                     currentRadarPlanes.push({
                         callsign: p[1].trim(), lat: lat, lng: lng, heading: heading, origin: originCountry,
                         route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng,
-                        isReal: true // Flag to show origin data
+                        isReal: true
                     });
                 }
                 
@@ -1405,7 +1434,7 @@
                         callsign: fakeCalls[currentRadarPlanes.length % fakeCalls.length], 
                         origin: null, lat: lat, lng: lng, heading: heading,
                         route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng,
-                        isReal: false // Fake data hides origin
+                        isReal: false 
                     });
                 }
                 initTargetAndPlot();
@@ -1418,7 +1447,6 @@
             currentRadarCallsign = targetPlane.callsign;
             const headingStr = getCompassDirection(targetPlane.heading);
 
-            // Conditional Hint 2 (Only if real data)
             let hint2 = "";
             if (targetPlane.isReal && targetPlane.origin) {
                 hint2 = `> HINT 2: REGISTRY ${targetPlane.origin}<br>`;
@@ -1435,37 +1463,7 @@
                 let marker = L.marker([p.lat, p.lng], {icon: icon}).addTo(radarLayerGroup);
                 
                 marker.on('click', () => {
-                    if (radarTime <= 0) return;
-                    
-                    // Native Browser Confirmation Dialog
-                    if (!confirm(`COMMAND UPLINK:\nIntercept target ${p.callsign}?\n\nAre you sure this is the right plane?`)) {
-                        return; // Cancelled
-                    }
-                    
-                    if (p.callsign === currentRadarCallsign) {
-                        clearInterval(radarCountdown);
-                        document.getElementById('radar-message').className = "success";
-                        document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
-                        globalState.currentFuel += 250;
-                        saveState(); updateMiniFuelUI();
-                        
-                        marker.setIcon(L.divIcon({
-                            html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
-                            className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
-                        }));
-
-                        setTimeout(closeRadar, 2000);
-                    } else {
-                        marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
-                        radarTime = Math.max(0, radarTime - 3); 
-                        
-                        const tDiv = document.getElementById('radar-timer');
-                        tDiv.style.color = "red";
-                        setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
-                        
-                        let m = Math.floor(radarTime / 60); let s = radarTime % 60;
-                        tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}`;
-                    }
+                    openInterceptModal(p, marker);
                 });
             });
 
@@ -1479,7 +1477,114 @@
                 }
             }
             
-            startRadarTimer(120); // Kick off the 2-minute timer
+            startRadarTimer(300); // 5 minutes
+        }
+
+        // --- NEW CUSTOM MODAL LOGIC ---
+        function openInterceptModal(plane, marker) {
+            if (radarTime <= 0) return;
+            pendingInterceptPlane = { data: plane, marker: marker };
+            
+            // Encrypt the callsign (Random alphanumeric scramble)
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
+            let encrypted = '';
+            for(let i=0; i<plane.callsign.length; i++) {
+                encrypted += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            
+            document.getElementById('encrypted-callsign').textContent = encrypted;
+            document.getElementById('intercept-overlay').style.display = 'flex';
+        }
+
+        function cancelIntercept() {
+            document.getElementById('intercept-overlay').style.display = 'none';
+            pendingInterceptPlane = null;
+        }
+
+        function confirmIntercept() {
+            document.getElementById('intercept-overlay').style.display = 'none';
+            if (!pendingInterceptPlane) return;
+            
+            let p = pendingInterceptPlane.data;
+            let marker = pendingInterceptPlane.marker;
+            pendingInterceptPlane = null;
+            
+            if (p.callsign === currentRadarCallsign) {
+                clearInterval(radarCountdown);
+                document.getElementById('radar-message').className = "success";
+                document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
+                globalState.currentFuel += 250;
+                saveState(); updateMiniFuelUI();
+                
+                marker.setIcon(L.divIcon({
+                    html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
+                    className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
+                }));
+
+                setTimeout(closeRadar, 2000);
+            } else {
+                marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
+                
+                // Big 15 second penalty for a wrong guess!
+                radarTime = Math.max(0, radarTime - 15); 
+                
+                const tDiv = document.getElementById('radar-timer');
+                tDiv.style.color = "red";
+                setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
+                
+                document.getElementById('radar-message').className = "fail";
+                document.getElementById('radar-message').textContent = `WRONG TARGET (-15s)`;
+                setTimeout(() => { document.getElementById('radar-message').textContent = ""; }, 2000);
+                
+                // Update timer immediately
+                let m = Math.floor(radarTime / 60); let s = radarTime % 60;
+                tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}`;
+            }
+        }
+
+        // --- NEW SEPARATED ASSIST TOGGLES ---
+        function renderRadarOverlays() {
+            radarPathGroup.clearLayers();
+            currentRadarPlanes.forEach(p => {
+                if (pathsVisible) {
+                    L.polyline(p.route, { color: 'var(--radar-green)', weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup);
+                    L.circleMarker([p.route[2][0], p.route[2][1]], { radius: 3, color: 'var(--radar-green)', fillColor: 'var(--radar-green)', fillOpacity: 1 }).addTo(radarPathGroup);
+                    L.circleMarker([p.route[0][0], p.route[0][1]], { radius: 2, color: 'rgba(51, 255, 51, 0.4)', fill: true, stroke: false }).addTo(radarPathGroup);
+                }
+                
+                if (originVisible && p.isReal && p.origin) {
+                    // Place label at the back of the line if paths are on, otherwise stick it right under the plane
+                    const labelLat = pathsVisible ? p.route[0][0] : p.lat;
+                    const labelLng = pathsVisible ? p.route[0][1] : p.lng;
+                    const offsetMt = pathsVisible ? -8 : 12;
+                    
+                    L.marker([labelLat, labelLng], {
+                        icon: L.divIcon({ 
+                            html: `<div style="color: rgba(51, 255, 51, 0.8); font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 8px; margin-top: ${offsetMt}px; text-shadow: 1px 1px 2px #000;">REG: ${p.origin}</div>`, 
+                            className: 'radar-dest-label', 
+                            iconSize: [0,0] 
+                        })
+                    }).addTo(radarPathGroup);
+                }
+            });
+        }
+
+        function toggleFlightPaths() {
+            pathsVisible = !pathsVisible;
+            const btn = document.getElementById('toggle-paths-btn');
+            btn.textContent = "PATHS: " + (pathsVisible ? "ON" : "OFF");
+            btn.style.background = pathsVisible ? "var(--radar-green)" : "transparent";
+            btn.style.color = pathsVisible ? "#000" : "var(--radar-green)";
+            renderRadarOverlays();
+        }
+
+        function toggleOrigin() {
+            originVisible = !originVisible;
+            const btn = document.getElementById('toggle-origin-btn');
+            btn.textContent = "ORIGIN: " + (originVisible ? "ON" : "OFF");
+            btn.style.background = originVisible ? "var(--radar-green)" : "transparent";
+            btn.style.color = originVisible ? "#000" : "var(--radar-green)";
+            renderRadarOverlays();
         }
 
         function toggleMapStyle() {
@@ -1498,40 +1603,6 @@
                 btn.style.color = "#000";
             }
         }
-        
-        function toggleFlightPaths() {
-            pathsVisible = !pathsVisible;
-            const btn = document.getElementById('toggle-paths-btn');
-            btn.textContent = "PATHS: " + (pathsVisible ? "ON" : "OFF");
-            btn.style.background = pathsVisible ? "var(--radar-green)" : "transparent";
-            btn.style.color = pathsVisible ? "#000" : "var(--radar-green)";
-
-            if (pathsVisible) {
-                currentRadarPlanes.forEach(p => {
-                    // Draw the projected flight vector line
-                    L.polyline(p.route, { color: 'var(--radar-green)', weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup);
-                    
-                    // Add dot to the front of the line (Projected heading)
-                    L.circleMarker([p.route[2][0], p.route[2][1]], { radius: 3, color: 'var(--radar-green)', fillColor: 'var(--radar-green)', fillOpacity: 1 }).addTo(radarPathGroup);
-                    
-                    // Add a faded dot to the back of the line (Projected history)
-                    L.circleMarker([p.route[0][0], p.route[0][1]], { radius: 2, color: 'rgba(51, 255, 51, 0.4)', fill: true, stroke: false }).addTo(radarPathGroup);
-
-                    // Add Registry label to the back of the path (Only if real data)
-                    if (p.isReal && p.origin) {
-                        L.marker([p.route[0][0], p.route[0][1]], {
-                            icon: L.divIcon({ 
-                                html: `<div style="color: rgba(51, 255, 51, 0.8); font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 8px; margin-top: -8px; text-shadow: 1px 1px 2px #000;">REG: ${p.origin}</div>`, 
-                                className: 'radar-dest-label', 
-                                iconSize: [0,0] 
-                            })
-                        }).addTo(radarPathGroup);
-                    }
-                });
-            } else {
-                radarPathGroup.clearLayers();
-            }
-        }
 
         function startRadarTimer(seconds) {
             radarTime = seconds;
@@ -1542,10 +1613,18 @@
             updateTimerDisplay();
             
             radarCountdown = setInterval(() => {
-                radarTime--;
+                // Calculate dynamic penalty based on how many assists are active
+                let penalty = 1; 
+                if (pathsVisible) penalty += 1;
+                if (originVisible) penalty += 1;
+                if (currentMapStyle === 'LABELS') penalty += 1;
+                
+                radarTime = Math.max(0, radarTime - penalty);
                 updateTimerDisplay();
+                
                 if(radarTime <= 0) {
                     clearInterval(radarCountdown);
+                    document.getElementById('intercept-overlay').style.display = 'none'; // Force close modal if open
                     document.getElementById('radar-message').className = "fail";
                     document.getElementById('radar-message').textContent = "TARGET ESCAPED (-100L)";
                     globalState.currentFuel = Math.max(0, globalState.currentFuel - 100);
@@ -1559,6 +1638,7 @@
 
         function closeRadar() {
             if(radarCountdown) clearInterval(radarCountdown);
+            document.getElementById('intercept-overlay').style.display = 'none';
             renderDashboard();
             document.getElementById('radar-view').classList.remove('active');
             document.getElementById('selector-view').classList.add('active');

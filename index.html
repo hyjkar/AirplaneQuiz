@@ -151,7 +151,7 @@
         
         .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; }
 
-        /* FLOATING TEXT ANIMATION */
+        /* FLOATING TEXT & REVEAL ANIMATIONS */
         .float-text {
             position: fixed; color: var(--brand-red); font-family: 'Share Tech Mono', monospace; font-size: 1.8rem;
             font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 99999;
@@ -160,6 +160,15 @@
         @keyframes floatUp {
             0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
             100% { transform: translate(-50%, -100px) scale(1.5); opacity: 0; }
+        }
+
+        .pop-reveal {
+            animation: quickPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes quickPop {
+            0% { opacity: 0; transform: scale(0.5); }
+            70% { transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         /* --- TRIVIA MODE --- */
@@ -228,7 +237,6 @@
         #radar-timer { font-size: 2.2rem; font-weight: bold; text-align: right; margin-bottom: 5px; transition: color 0.3s;}
         .timer-penalty { color: var(--brand-red) !important; text-shadow: 0 0 10px rgba(215, 25, 32, 0.8); }
         
-        /* NEW: Accordion styles */
         .radar-setup-container { width: 100%; display: flex; flex-direction: column; align-items: flex-end; }
         #radar-setup-toggle { 
             color: var(--brand-gold); font-size: 0.8rem; cursor: pointer; display: inline-block; 
@@ -257,7 +265,6 @@
         
         #radar-map-container { position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: #000; z-index: 1; }
         
-        /* NEW: Success overlay inside the map */
         #radar-success-overlay {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5, 20, 5, 0.95);
             z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center;
@@ -604,13 +611,13 @@
         let radarLayerGroup = null;
         let radarPathGroup = null;
         let radarCountdown = null;
-        let radarTimeMs = 300000; // Base time: 5 minutes in milliseconds
+        let radarTimeMs = 300000; 
         let lastTimerTick = 0;
+        let encryptionInterval = null;
         
         let currentRadarCallsign = "";
         let currentRadarPlanes = [];
         
-        // Assist states that accelerate the timer penalty
         let pathsVisible = false;
         let originVisible = false;
         let currentMapStyle = 'CLEAN'; 
@@ -646,10 +653,7 @@
             bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0
         };
 
-        // --- 2. FIREBASE CONFIGURATION ---
-        const firebaseConfig = {
-            // PASTE YOUR KEYS HERE
-        };
+        const firebaseConfig = {};
 
         try {
             if (typeof firebase !== 'undefined') {
@@ -658,7 +662,6 @@
             }
         } catch(e) { console.warn("Firebase uninitialized or blocked.", e); }
 
-        // --- 3. GAME DATA CONSTANTS ---
         const ICONS = {
             plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
             jet: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12,2 L14,10 L22,14 L22,16 L14,15 L14,19 L16,21 L16,22 L12,21 L8,22 L8,21 L10,19 L10,15 L2,16 L2,14 L10,10 Z"/></svg>`,
@@ -1295,13 +1298,17 @@
                 lState.failed = true;
                 lState.completed = true; 
                 saveState();
-                document.getElementById('message').textContent = "SYSTEM LOCKED - MAX ATTEMPTS FAILED (-200L)";
-                document.getElementById('message').className = "fail";
+                const msgEl = document.getElementById('message');
+                msgEl.textContent = "SYSTEM LOCKED - MAX ATTEMPTS FAILED (-200L)";
+                msgEl.className = "fail pop-reveal";
+                void msgEl.offsetWidth; // Trigger reflow to restart animation
                 setTimeout(() => { if (isAllWorldsComplete()) syncScoreToCloud(); saveAndExit(); }, 2500);
             } else {
                 let triesLeft = 3 - lState.attempts;
-                document.getElementById('message').textContent = `${reason} | TRIES LEFT: ${triesLeft} (-200L)`;
-                document.getElementById('message').className = "fail";
+                const msgEl = document.getElementById('message');
+                msgEl.textContent = `${reason} | TRIES LEFT: ${triesLeft} (-200L)`;
+                msgEl.className = "fail pop-reveal";
+                void msgEl.offsetWidth;
                 setTimeout(() => {
                     if(!lState.completed && !lState.failed && globalState.currentFuel > 0 && document.getElementById('takeoff-game-area').style.display !== 'none') {
                         document.getElementById('message').textContent = "";
@@ -1323,8 +1330,10 @@
             
             triggerConfetti();
             document.getElementById('level-title').textContent = lState.name;
-            document.getElementById('message').textContent = `PERFECT TAKEOFF! +${bonus}L BONUS`;
-            document.getElementById('message').className = "success";
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = `PERFECT TAKEOFF! +${bonus}L BONUS`;
+            msgEl.className = "success pop-reveal";
+            void msgEl.offsetWidth; // Trigger reflow for CSS animation
             
             saveState();
             if (isAllWorldsComplete()) syncScoreToCloud();
@@ -1568,23 +1577,32 @@
             if (radarTimeMs <= 0) return;
             pendingInterceptPlane = { data: plane, marker: marker };
             
-            // Encrypt the callsign (Random alphanumeric scramble)
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
-            let encrypted = '';
-            for(let i=0; i<plane.callsign.length; i++) {
-                encrypted += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
+            const callsignLength = plane.callsign.length;
+            const el = document.getElementById('encrypted-callsign');
             
-            document.getElementById('encrypted-callsign').textContent = encrypted;
+            if (encryptionInterval) clearInterval(encryptionInterval);
+            
+            // Data Encryption Animation
+            encryptionInterval = setInterval(() => {
+                let encrypted = '';
+                for(let i=0; i<callsignLength; i++) {
+                    encrypted += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                el.textContent = encrypted;
+            }, 60); 
+            
             document.getElementById('intercept-overlay').style.display = 'flex';
         }
 
         function cancelIntercept() {
+            if (encryptionInterval) clearInterval(encryptionInterval);
             document.getElementById('intercept-overlay').style.display = 'none';
             pendingInterceptPlane = null;
         }
 
         function confirmIntercept() {
+            if (encryptionInterval) clearInterval(encryptionInterval);
             document.getElementById('intercept-overlay').style.display = 'none';
             if (!pendingInterceptPlane) return;
             
@@ -1623,9 +1641,11 @@
                 tDiv.style.color = "red";
                 setTimeout(() => updateTimerDisplay(getAssistPenalty()), 500); // Revert to dynamic color
                 
-                document.getElementById('radar-message').className = "fail";
-                document.getElementById('radar-message').textContent = `WRONG TARGET (-15s)`;
-                setTimeout(() => { document.getElementById('radar-message').textContent = ""; }, 2000);
+                const msgEl = document.getElementById('radar-message');
+                msgEl.className = "fail pop-reveal";
+                msgEl.textContent = `WRONG TARGET (-15s)`;
+                void msgEl.offsetWidth; // Trigger CSS animation
+                setTimeout(() => { msgEl.textContent = ""; }, 2000);
                 
                 updateTimerDisplay(getAssistPenalty());
             }
@@ -1681,13 +1701,13 @@
             if (currentMapStyle === 'CLEAN') {
                 cleanMapLabels.addTo(radarMap);
                 currentMapStyle = 'LABELS';
-                btn.textContent = "MAP: LABELS";
+                btn.textContent = "LABELS: ON";
                 btn.style.background = "var(--radar-green)";
                 btn.style.color = "#000";
             } else {
                 radarMap.removeLayer(cleanMapLabels);
                 currentMapStyle = 'CLEAN';
-                btn.textContent = "MAP: CLEAN";
+                btn.textContent = "LABELS: OFF";
                 btn.style.background = "transparent";
                 btn.style.color = "var(--radar-green)";
             }
@@ -1740,8 +1760,12 @@
                     updateTimerDisplay(penalty);
                     clearInterval(radarCountdown);
                     document.getElementById('intercept-overlay').style.display = 'none'; 
-                    document.getElementById('radar-message').className = "fail";
-                    document.getElementById('radar-message').textContent = "TARGET ESCAPED (-100L)";
+                    
+                    const msgEl = document.getElementById('radar-message');
+                    msgEl.className = "fail pop-reveal";
+                    msgEl.textContent = "TARGET ESCAPED (-100L)";
+                    void msgEl.offsetWidth; // Animation trigger
+                    
                     globalState.currentFuel = Math.max(0, globalState.currentFuel - 100);
                     saveState(); updateMiniFuelUI();
                     
@@ -1840,15 +1864,18 @@
         }
 
         function endGame(win, msg) {
-            document.getElementById('message').textContent = msg;
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = msg;
+            msgEl.className = win ? "success pop-reveal" : "fail pop-reveal";
+            void msgEl.offsetWidth; // Trigger CSS pop animation
+            
             if (win) {
-                document.getElementById('message').className = "success";
                 const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
                 if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed'));
                 triggerConfetti(); document.getElementById('level-title').textContent = lState.name; 
                 document.getElementById('smart-bomb-btn').style.display = "none"; saveState();
                 if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2000);
-            } else { document.getElementById('message').className = "fail"; }
+            }
         }
 
         function triggerGameOver() {

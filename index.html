@@ -118,7 +118,7 @@
         /* --- BUTTONS --- */
         .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: auto; border-top: 1px solid #eee; padding-top: 10px; }
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none; -webkit-tap-highlight-color: transparent; }
+        button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: gap: 8px; user-select: none; -webkit-tap-highlight-color: transparent; }
         .primary-btn { background-color: var(--brand-red); color: white; }
         .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
         .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
@@ -242,7 +242,9 @@
             width: 100%; flex-grow: 1; border: 4px solid var(--radar-green); border-radius: 8px; 
             position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(51, 255, 51, 0.3); min-height: 250px;
         }
-        #radar-map-container { width: 100%; height: 100%; background: #000; z-index: 1; }
+        
+        /* THIS WAS THE FIX FOR THE BLANK SCREEN: Forcing Absolute Position */
+        #radar-map-container { position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: #000; z-index: 1; }
         
         .compass-pt { 
             position: absolute; color: var(--radar-green); font-family: 'Share Tech Mono', monospace; 
@@ -674,7 +676,7 @@
         const RUNWAY_SVG = `<svg width="128" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="128" height="32" fill="#3b3b3b"/><rect width="128" height="2" fill="#385e26"/><rect y="2" width="128" height="2" fill="#4a4a4a"/><rect x="0" y="14" width="32" height="4" fill="#ddd"/><rect x="64" y="14" width="32" height="4" fill="#ddd"/><rect x="0" y="4" width="128" height="2" fill="#fff"/><rect x="0" y="26" width="128" height="2" fill="#fff"/><rect x="10" y="10" width="16" height="2" fill="#222"/><rect x="40" y="18" width="24" height="2" fill="#222"/><rect x="80" y="12" width="12" height="2" fill="#222"/><rect x="100" y="20" width="16" height="2" fill="#222"/></svg>`;
 
         // TILE LAYERS
-        const fullMapLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png');
+        const fullMapLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png');
         const cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
         const cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
         const cleanMapLayer = L.layerGroup([cleanMapBase, cleanMapLabels]);
@@ -705,7 +707,6 @@
                     if (e.key === 'Enter') { this.blur(); registerPilot(); }
                 });
 
-                // AutoPlay Audio Logic
                 let bgMusicStarted = false;
                 window.addEventListener('pointerdown', function initAudio() {
                     if (!bgMusicStarted) {
@@ -1283,18 +1284,18 @@
             document.getElementById('selector-view').classList.remove('active');
             document.getElementById('radar-view').classList.add('active');
             
-            if (!radarMap) {
-                radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
-                currentMapStyle = 'FULL';
-                fullMapLayer.addTo(radarMap);
-                radarLayerGroup = L.layerGroup().addTo(radarMap);
-                radarPathGroup = L.layerGroup().addTo(radarMap);
-            }
-            
+            // Wait 200ms for display:flex to fully render the container size
             setTimeout(() => { 
+                if (!radarMap) {
+                    radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
+                    currentMapStyle = 'FULL';
+                    fullMapLayer.addTo(radarMap);
+                    radarLayerGroup = L.layerGroup().addTo(radarMap);
+                    radarPathGroup = L.layerGroup().addTo(radarMap);
+                }
                 radarMap.invalidateSize(); 
                 startRadarMission();
-            }, 150);
+            }, 200);
         }
 
         function startRadarMission() {
@@ -1381,8 +1382,6 @@
         }
         
         function plotPlanesOnRadar() {
-            radarMap.invalidateSize(); 
-
             currentRadarPlanes.forEach(p => {
                 const iconHtml = `<div style="transform: rotate(${p.heading}deg); color: var(--radar-green);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
                 let icon = L.divIcon({ html: iconHtml, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });

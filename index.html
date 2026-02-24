@@ -1421,7 +1421,7 @@
             // Conditional Hint 2 (Only if real data)
             let hint2 = "";
             if (targetPlane.isReal && targetPlane.origin) {
-                hint2 = `> HINT 2: ORIGIN ${targetPlane.origin}<br>`;
+                hint2 = `> HINT 2: REGISTRY ${targetPlane.origin}<br>`;
             }
 
             textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>${hint2}<span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
@@ -1525,18 +1525,6 @@
                                 className: 'radar-dest-label', 
                                 iconSize: [0,0] 
                             })
-                        }).addTo(radarPathGroup);
-                    }
-                });
-            } else {
-                radarPathGroup.clearLayers();
-            }
-        }
-                    
-                    // Show origin text on the path (Only if real)
-                    if (p.isReal && p.origin) {
-                        L.marker([p.endLat, p.endLng], {
-                            icon: L.divIcon({ html: `<div style="color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; white-space: nowrap; margin-left: 10px; margin-top: -8px; text-shadow: 1px 1px 2px #000;">ORG: ${p.origin}</div>`, className: 'radar-dest-label', iconSize: [0,0] })
                         }).addTo(radarPathGroup);
                     }
                 });

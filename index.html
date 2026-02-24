@@ -242,6 +242,8 @@
             width: 100%; flex-grow: 1; border: 4px solid var(--radar-green); border-radius: 8px; 
             position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(51, 255, 51, 0.3); min-height: 250px;
         }
+        
+        /* THIS WAS THE FIX FOR THE BLANK SCREEN: Forcing Absolute Position */
         #radar-map-container { position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: #000; z-index: 1; }
         
         .compass-pt { 
@@ -558,7 +560,7 @@
         let currentRadarCallsign = "";
         let currentRadarPlanes = [];
         let pathsVisible = false;
-        let currentMapStyle = 'CLEAN'; // Default is now the clean map
+        let currentMapStyle = 'CLEAN'; // Default map style
         let activeLevelIdx = 0;
 
         const DESTINATIONS = ["LHR", "JFK", "CDG", "FRA", "AMS", "MAD", "BCN", "FCO", "DUB", "VIE", "ZRH", "CPH"];
@@ -673,13 +675,9 @@
 
         const RUNWAY_SVG = `<svg width="128" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="128" height="32" fill="#3b3b3b"/><rect width="128" height="2" fill="#385e26"/><rect y="2" width="128" height="2" fill="#4a4a4a"/><rect x="0" y="14" width="32" height="4" fill="#ddd"/><rect x="64" y="14" width="32" height="4" fill="#ddd"/><rect x="0" y="4" width="128" height="2" fill="#fff"/><rect x="0" y="26" width="128" height="2" fill="#fff"/><rect x="10" y="10" width="16" height="2" fill="#222"/><rect x="40" y="18" width="24" height="2" fill="#222"/><rect x="80" y="12" width="12" height="2" fill="#222"/><rect x="100" y="20" width="16" height="2" fill="#222"/></svg>`;
 
-        // TILE LAYERS (Swapped to ESRI World Dark Gray Base to guarantee reliability)
+        // TILE LAYERS
         const cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
         const cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
-        
-        // Use cleanMapBase as the default to ensure no-labels and no 404 black screens
-        const defaultMapLayer = cleanMapBase;
-        const labeledMapLayer = L.layerGroup([cleanMapBase, cleanMapLabels]);
 
         // --- 4. GAME ENGINE LOGIC ---
         function getOptionsForImage(correctName, isClassified) {
@@ -1289,21 +1287,18 @@
             document.getElementById('selector-view').classList.remove('active');
             document.getElementById('radar-view').classList.add('active');
             
-            // Double RequestAnimationFrame completely guarantees the browser has painted 
-            // the display:flex CSS update before Leaflet tries to calculate its map boundaries.
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    if (!radarMap) {
-                        radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
-                        currentMapStyle = 'CLEAN'; 
-                        defaultMapLayer.addTo(radarMap);
-                        radarLayerGroup = L.layerGroup().addTo(radarMap);
-                        radarPathGroup = L.layerGroup().addTo(radarMap);
-                    }
-                    radarMap.invalidateSize(); 
-                    startRadarMission();
-                });
-            });
+            // Wait 300ms for CSS transition to settle before Leaflet calculates bounds
+            setTimeout(() => { 
+                if (!radarMap) {
+                    radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
+                    cleanMapBase.addTo(radarMap); // Add only the base layer to start
+                    radarLayerGroup = L.layerGroup().addTo(radarMap);
+                    radarPathGroup = L.layerGroup().addTo(radarMap);
+                    currentMapStyle = 'CLEAN';
+                }
+                radarMap.invalidateSize(); 
+                startRadarMission();
+            }, 300);
         }
 
         function startRadarMission() {
@@ -1425,11 +1420,15 @@
                 });
             });
 
+            // Filtering out bad API data to prevent Map Bounds NaN Crash
             if(currentRadarPlanes.length > 0) {
-                let lats = currentRadarPlanes.map(p => p.lat);
-                let lngs = currentRadarPlanes.map(p => p.lng);
-                let safeBounds = [[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]];
-                radarMap.fitBounds(safeBounds, { padding: [40, 40] });
+                let lats = currentRadarPlanes.map(p => p.lat).filter(l => l != null && !isNaN(l));
+                let lngs = currentRadarPlanes.map(p => p.lng).filter(l => l != null && !isNaN(l));
+                
+                if (lats.length > 0 && lngs.length > 0) {
+                    let safeBounds = [[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]];
+                    radarMap.fitBounds(safeBounds, { padding: [40, 40] });
+                }
             }
             
             startRadarTimer(60);
@@ -1437,16 +1436,15 @@
 
         function toggleMapStyle() {
             const btn = document.getElementById('toggle-map-btn');
+            // Safe toggling: We just overlay the transparent text layer, avoiding Leaflet base-layer confusion
             if (currentMapStyle === 'CLEAN') {
-                radarMap.removeLayer(defaultMapLayer);
-                labeledMapLayer.addTo(radarMap);
+                cleanMapLabels.addTo(radarMap);
                 currentMapStyle = 'LABELS';
                 btn.textContent = "MAP: LABELS";
                 btn.style.background = "transparent";
                 btn.style.color = "var(--radar-green)";
             } else {
-                radarMap.removeLayer(labeledMapLayer);
-                defaultMapLayer.addTo(radarMap);
+                radarMap.removeLayer(cleanMapLabels);
                 currentMapStyle = 'CLEAN';
                 btn.textContent = "MAP: CLEAN";
                 btn.style.background = "var(--radar-green)";

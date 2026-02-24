@@ -207,8 +207,8 @@
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
 
         /* --- VISUAL RADAR MODE --- */
-        /* FIX: Removed 'display: none' from the ID selector to fix CSS Specificity Bug */
         #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
+        #radar-view.active { display: flex; }
         
         .radar-terminal {
             width: 100%; flex-shrink: 0; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px;
@@ -244,7 +244,6 @@
             position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(51, 255, 51, 0.3); min-height: 250px;
         }
         
-        /* FIX: Forcing Absolute Position on Map Container */
         #radar-map-container { position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: #000; z-index: 1; }
         
         .compass-pt { 
@@ -525,10 +524,10 @@
         <div class="radar-terminal">
             <div class="radar-content" id="radar-screen-text">
                 ESTABLISHING UPLINK...<br>
-                SCANNING SECTOR EU-CENTRAL...<span class="blinking-cursor">_</span>
+                SCANNING SECTOR...<span class="blinking-cursor">_</span>
             </div>
             <div id="radar-timer-container">
-                <div id="radar-timer">--</div>
+                <div id="radar-timer">02:00</div>
                 <div class="radar-toggle-group">
                     <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
                     <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">MAP: LABELS</button>
@@ -557,14 +556,21 @@
         let radarLayerGroup = null;
         let radarPathGroup = null;
         let radarCountdown = null;
-        let radarTime = 60; 
+        let radarTime = 120; // Changed to 2 minutes
         let currentRadarCallsign = "";
         let currentRadarPlanes = [];
         let pathsVisible = false;
-        let currentMapStyle = 'CLEAN'; // Default map style
+        let currentMapStyle = 'CLEAN'; 
         let activeLevelIdx = 0;
 
-        const DESTINATIONS = ["LHR", "JFK", "CDG", "FRA", "AMS", "MAD", "BCN", "FCO", "DUB", "VIE", "ZRH", "CPH"];
+        // NEW: Radar regions to randomize the map view
+        const RADAR_REGIONS = [
+            { name: "EU-CENTRAL", lamin: 45, lamax: 55, lomin: -5, lomax: 15 },
+            { name: "US-EAST", lamin: 30, lamax: 45, lomin: -85, lomax: -70 },
+            { name: "US-WEST", lamin: 30, lamax: 45, lomin: -125, lomax: -110 },
+            { name: "ASIA-EAST", lamin: 30, lamax: 40, lomin: 125, lomax: 140 }
+        ];
+
         const STARTING_GLOBAL_FUEL = 4000;
         const REFUEL_AMOUNT = 2000; 
         const TILE_COST = 15;
@@ -588,12 +594,7 @@
 
         // --- 2. FIREBASE CONFIGURATION ---
         const firebaseConfig = {
-  apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
-  authDomain: "fuelcommand.firebaseapp.com",
-  projectId: "fuelcommand",
-  storageBucket: "fuelcommand.firebasestorage.app",
-  messagingSenderId: "211722292779",
-  appId: "1:211722292779:web:5dec358fc0693c7126246e"
+            // PASTE YOUR KEYS HERE
         };
 
         try {
@@ -1288,18 +1289,19 @@
             document.getElementById('selector-view').classList.remove('active');
             document.getElementById('radar-view').classList.add('active');
             
-            // Allow CSS flex to apply, then trigger map calculations
-            setTimeout(() => { 
-                if (!radarMap) {
-                    radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
-                    currentMapStyle = 'CLEAN'; 
-                    cleanMapBase.addTo(radarMap);
-                    radarLayerGroup = L.layerGroup().addTo(radarMap);
-                    radarPathGroup = L.layerGroup().addTo(radarMap);
-                }
-                radarMap.invalidateSize(); 
-                startRadarMission();
-            }, 200);
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (!radarMap) {
+                        radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
+                        currentMapStyle = 'CLEAN'; 
+                        cleanMapBase.addTo(radarMap);
+                        radarLayerGroup = L.layerGroup().addTo(radarMap);
+                        radarPathGroup = L.layerGroup().addTo(radarMap);
+                    }
+                    radarMap.invalidateSize(); 
+                    startRadarMission();
+                });
+            });
         }
 
         function startRadarMission() {
@@ -1312,28 +1314,46 @@
             btnToggle.style.background = "transparent";
             btnToggle.style.color = "var(--radar-green)";
             
-            textEl.innerHTML = "ESTABLISHING UPLINK...<br>SCANNING SECTOR EU-CENTRAL...<span class='blinking-cursor'>_</span>";
+            // Randomly select a sector for this mission
+            const region = RADAR_REGIONS[Math.floor(Math.random() * RADAR_REGIONS.length)];
+            
+            textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${region.name}...<span class='blinking-cursor'>_</span>`;
             msgEl.textContent = "";
-            document.getElementById('radar-timer').textContent = "01:00";
+            document.getElementById('radar-timer').textContent = "02:00";
             
             if(radarCountdown) clearInterval(radarCountdown);
             radarLayerGroup.clearLayers();
             radarPathGroup.clearLayers();
             currentRadarPlanes = [];
 
-            fetch(`https://opensky-network.org/api/states/all?lamin=45.0&lomin=5.0&lamax=52.0&lomax=15.0`)
+            fetch(`https://opensky-network.org/api/states/all?lamin=${region.lamin}&lomin=${region.lomin}&lamax=${region.lamax}&lomax=${region.lomax}`)
             .then(res => res.json())
             .then(data => {
                 if(!data.states || data.states.length === 0) throw new Error("Empty airspace");
                 
                 let validAPIPlanes = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "");
                 if(validAPIPlanes.length === 0) throw new Error("No valid planes");
+                
+                validAPIPlanes = validAPIPlanes.sort(() => Math.random() - 0.5);
 
-                currentRadarPlanes = validAPIPlanes.sort(() => Math.random() - 0.5).slice(0, 12).map(p => {
-                    const lat = p[6]; const lng = p[5]; const heading = p[10] || 0;
-                    const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
-                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
+                for (let p of validAPIPlanes) {
+                    if (currentRadarPlanes.length >= 10) break; // Limit total planes
                     
+                    const lat = p[6]; const lng = p[5]; const heading = p[10] || 0;
+                    
+                    // Filter: Prevent planes from overlapping/spawning too close together
+                    let isOverlapping = false;
+                    for (let cp of currentRadarPlanes) {
+                        if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) {
+                            isOverlapping = true; break;
+                        }
+                    }
+                    if (isOverlapping) continue;
+
+                    // Extract actual origin country from API
+                    const originCountry = p[2] && p[2].trim() !== "" ? p[2].trim().toUpperCase() : "CLASSIFIED";
+                    
+                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
                     const radBack = (heading + 180) * (Math.PI / 180);
                     const startLat = lat + Math.cos(radBack) * trailLen;
                     const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
@@ -1342,21 +1362,36 @@
                     const endLat = lat + Math.cos(radFwd) * fwdLen;
                     const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
 
-                    return {
-                        callsign: p[1].trim(), lat: lat, lng: lng, heading: heading, nextStop: dest,
-                        route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng
-                    };
-                });
+                    currentRadarPlanes.push({
+                        callsign: p[1].trim(), lat: lat, lng: lng, heading: heading, origin: originCountry,
+                        route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng,
+                        isReal: true // Flag to show origin data
+                    });
+                }
                 
+                if (currentRadarPlanes.length === 0) throw new Error("No spaced planes found");
                 initTargetAndPlot();
             })
             .catch(err => {
-                console.warn("Radar API failed/rate-limited. Launching local simulation.");
+                console.warn("Radar API fallback. Launching local simulation.");
                 const fakeCalls = ["LHT442", "AFR12A", "SWR99B", "BAW505", "RYR77X", "FIN112", "NOR334", "KLM88", "EZY99", "WZZ10", "DAL22", "UAL33"];
-                for(let i=0; i<12; i++) {
-                    const lat = 45.0 + Math.random() * 7; const lng = 5.0 + Math.random() * 10;
+                let attempts = 0;
+                
+                while(currentRadarPlanes.length < 10 && attempts < 100) {
+                    attempts++;
+                    const lat = region.lamin + Math.random() * (region.lamax - region.lamin); 
+                    const lng = region.lomin + Math.random() * (region.lomax - region.lomin);
+                    
+                    // Filter: Prevent overlaps in fake data too
+                    let isOverlapping = false;
+                    for (let cp of currentRadarPlanes) {
+                        if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) {
+                            isOverlapping = true; break;
+                        }
+                    }
+                    if (isOverlapping) continue;
+
                     const heading = Math.random() * 360;
-                    const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
                     const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
                     
                     const radBack = (heading + 180) * (Math.PI / 180);
@@ -1367,8 +1402,10 @@
                     const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
 
                     currentRadarPlanes.push({ 
-                        callsign: fakeCalls[i], nextStop: dest, lng: lng, lat: lat, heading: heading,
-                        route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng
+                        callsign: fakeCalls[currentRadarPlanes.length % fakeCalls.length], 
+                        origin: null, lat: lat, lng: lng, heading: heading,
+                        route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng,
+                        isReal: false // Fake data hides origin
                     });
                 }
                 initTargetAndPlot();
@@ -1381,7 +1418,13 @@
             currentRadarCallsign = targetPlane.callsign;
             const headingStr = getCompassDirection(targetPlane.heading);
 
-            textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: NEXT STOP ${targetPlane.nextStop}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
+            // Conditional Hint 2 (Only if real data)
+            let hint2 = "";
+            if (targetPlane.isReal && targetPlane.origin) {
+                hint2 = `> HINT 2: ORIGIN ${targetPlane.origin}<br>`;
+            }
+
+            textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>${hint2}<span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
             plotPlanesOnRadar();
         }
         
@@ -1393,6 +1436,11 @@
                 
                 marker.on('click', () => {
                     if (radarTime <= 0) return;
+                    
+                    // Native Browser Confirmation Dialog
+                    if (!confirm(`COMMAND UPLINK:\nIntercept target ${p.callsign}?\n\nAre you sure this is the right plane?`)) {
+                        return; // Cancelled
+                    }
                     
                     if (p.callsign === currentRadarCallsign) {
                         clearInterval(radarCountdown);
@@ -1421,7 +1469,6 @@
                 });
             });
 
-            // Filtering out bad API data to prevent Map Bounds NaN Crash
             if(currentRadarPlanes.length > 0) {
                 let lats = currentRadarPlanes.map(p => p.lat).filter(l => l != null && !isNaN(l));
                 let lngs = currentRadarPlanes.map(p => p.lng).filter(l => l != null && !isNaN(l));
@@ -1432,12 +1479,11 @@
                 }
             }
             
-            startRadarTimer(60);
+            startRadarTimer(120); // Kick off the 2-minute timer
         }
 
         function toggleMapStyle() {
             const btn = document.getElementById('toggle-map-btn');
-            // Safe toggling: We just overlay the transparent text layer, avoiding Leaflet base-layer confusion
             if (currentMapStyle === 'CLEAN') {
                 cleanMapLabels.addTo(radarMap);
                 currentMapStyle = 'LABELS';
@@ -1464,9 +1510,13 @@
                 currentRadarPlanes.forEach(p => {
                     L.polyline(p.route, { color: 'var(--radar-green)', weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup);
                     L.circleMarker([p.endLat, p.endLng], { radius: 3, color: 'var(--radar-green)', fillColor: 'var(--radar-green)', fillOpacity: 1 }).addTo(radarPathGroup);
-                    L.marker([p.endLat, p.endLng], {
-                        icon: L.divIcon({ html: `<div style="color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; white-space: nowrap; margin-left: 10px; margin-top: -8px; text-shadow: 1px 1px 2px #000;">${p.nextStop}</div>`, className: 'radar-dest-label', iconSize: [0,0] })
-                    }).addTo(radarPathGroup);
+                    
+                    // Show origin text on the path (Only if real)
+                    if (p.isReal && p.origin) {
+                        L.marker([p.endLat, p.endLng], {
+                            icon: L.divIcon({ html: `<div style="color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; white-space: nowrap; margin-left: 10px; margin-top: -8px; text-shadow: 1px 1px 2px #000;">ORG: ${p.origin}</div>`, className: 'radar-dest-label', iconSize: [0,0] })
+                        }).addTo(radarPathGroup);
+                    }
                 });
             } else {
                 radarPathGroup.clearLayers();

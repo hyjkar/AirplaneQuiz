@@ -116,7 +116,7 @@
         .level-strip.locked .strip-icon { color: #ccc !important; }
 
         /* --- BUTTONS --- */
-        .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: auto; border-top: 1px solid #eee; padding-top: 10px; }
+        .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-top: 10px; z-index: 10;}
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
         button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none; -webkit-tap-highlight-color: transparent; }
         .primary-btn { background-color: var(--brand-red); color: white; }
@@ -128,6 +128,9 @@
         
         .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s;}
         .radar-btn:active { background: var(--radar-green); color: #000; }
+
+        /* Tactical style for the Abort button sitting over the map */
+        .radar-abort-btn { background: rgba(10, 10, 10, 0.85) !important; border: 1px solid var(--brand-red) !important; color: var(--brand-red) !important; backdrop-filter: blur(4px); font-weight: bold;}
 
         /* --- GAMEPLAY (Shared) --- */
         .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; }
@@ -216,58 +219,55 @@
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
 
         /* --- VISUAL RADAR MODE --- */
-        #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
+        #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; gap: 0; }
         #radar-view.active { display: flex; }
         
+        /* Floating Accordion Window */
         .radar-top-accordion {
-            width: 100%; flex-shrink: 0; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px;
+            width: 100%; flex-shrink: 0; background: rgba(5, 16, 5, 0.9); border: 1px solid var(--radar-green); border-radius: 8px;
             font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
-            box-shadow: inset 0 0 30px rgba(51, 255, 51, 0.1), 0 5px 15px rgba(0,0,0,0.5);
-        }
-        .radar-top-accordion::before {
-            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8), inset 0 0 15px rgba(51, 255, 51, 0.05); z-index: 10;
+            backdrop-filter: blur(5px);
         }
         
         .radar-accordion-header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 10px 15px; cursor: pointer; z-index: 3; position: relative;
-            background: rgba(51, 255, 51, 0.05); border-bottom: 2px solid transparent;
+            background: rgba(51, 255, 51, 0.05); border-bottom: 1px solid transparent;
         }
         .radar-accordion-header:active { background: rgba(51, 255, 51, 0.1); }
         .radar-accordion-header.open { border-bottom-color: #1f3d1f; }
-        .radar-accordion-title { font-weight: bold; font-size: 1.1rem; color: #fff; }
+        .radar-accordion-title { font-weight: bold; font-size: 1rem; color: var(--brand-gold); }
         
+        #radar-timer { font-size: 1.2rem; font-weight: bold; text-align: right; transition: color 0.3s; margin: 0; }
+        .timer-penalty { color: var(--brand-red) !important; text-shadow: 0 0 10px rgba(215, 25, 32, 0.8); }
+
         .radar-accordion-body {
-            display: none; padding: 15px; justify-content: space-between; align-items: flex-start; z-index: 3; position: relative; gap: 10px;
+            display: none; padding: 15px; justify-content: space-between; align-items: flex-start; z-index: 3; position: relative; gap: 15px;
         }
         .radar-accordion-body.open { display: flex; }
 
-        .radar-content { font-size: 0.85rem; line-height: 1.4; text-transform: uppercase; flex-grow: 1; }
+        .radar-content { font-size: 0.8rem; line-height: 1.5; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
         .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold;}
         
-        #radar-timer { font-size: 1.4rem; font-weight: bold; text-align: right; transition: color 0.3s; margin: 0; }
-        .timer-penalty { color: var(--brand-red) !important; text-shadow: 0 0 10px rgba(215, 25, 32, 0.8); }
-        
-        .radar-toggle-group { display: flex; flex-direction: column; gap: 5px; max-width: 120px; flex-shrink: 0;}
+        .radar-setup-container { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; min-width: 110px;}
         .radar-toggle {
             background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green);
-            font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; padding: 4px 6px; cursor: pointer;
+            font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; padding: 6px 8px; cursor: pointer;
             outline: none; border-radius: 4px; transition: all 0.2s; width: 100%; text-align: right;
+            box-shadow: inset 0 0 5px rgba(51,255,51,0.1);
         }
         .radar-toggle:hover { background: rgba(51, 255, 51, 0.2); }
 
         .blinking-cursor { animation: blink 1s step-end infinite; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* Compass Overlay and Map Container */
+        /* Full Bleed Map Container */
         #radar-map-wrapper {
-            width: 100%; flex-grow: 1; border: 4px solid var(--radar-green); border-radius: 8px; 
-            position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(51, 255, 51, 0.3); min-height: 250px;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0; border: none; border-radius: 0; margin: 0; box-shadow: none; background: #000;
         }
-        
-        #radar-map-container { position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: #000; z-index: 1; }
+        #radar-map-container { width: 100%; height: 100%; background: #000; z-index: 1; }
         
         #radar-success-overlay {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5, 20, 5, 0.95);
@@ -283,16 +283,16 @@
         .compass-pt { 
             position: absolute; color: var(--radar-green); font-family: 'Share Tech Mono', monospace; 
             font-size: 1.4rem; font-weight: bold; z-index: 1000; pointer-events: none; 
-            text-shadow: 0 0 10px #000, 0 0 10px #000, 0 0 10px #000;
+            text-shadow: 0 0 10px #000, 0 0 15px #000, 2px 2px 2px rgba(0,0,0,0.8);
         }
-        .compass-n { top: 10px; left: 50%; transform: translateX(-50%); }
-        .compass-s { bottom: 10px; left: 50%; transform: translateX(-50%); }
-        .compass-e { top: 50%; right: 10px; transform: translateY(-50%); }
-        .compass-w { top: 50%; left: 10px; transform: translateY(-50%); }
+        .compass-n { top: 90px; left: 50%; transform: translateX(-50%); }
+        .compass-s { bottom: 80px; left: 50%; transform: translateX(-50%); }
+        .compass-e { top: 50%; right: 15px; transform: translateY(-50%); }
+        .compass-w { top: 50%; left: 15px; transform: translateY(-50%); }
 
         /* Leaflet Overrides */
         .radar-plane-icon { background: transparent; border: none; }
-        .leaflet-popup-content-wrapper { background: #051005; color: var(--radar-green); border: 2px solid var(--radar-green); border-radius: 4px; font-family: 'Share Tech Mono', monospace; text-align: center; }
+        .leaflet-popup-content-wrapper { background: rgba(5, 16, 5, 0.95); color: var(--radar-green); border: 1px solid var(--radar-green); border-radius: 4px; font-family: 'Share Tech Mono', monospace; text-align: center; }
         .leaflet-popup-tip { background: var(--radar-green); }
         .radar-target-ping {
             position: absolute; width: 40px; height: 40px; top: -8px; left: -8px;
@@ -303,6 +303,15 @@
         
         .radar-dest-label { pointer-events: none; text-shadow: 1px 1px 2px #000; }
 
+        /* Floating messaging */
+        #radar-message-container {
+            position: relative; z-index: 10; margin-top: auto; display: flex; justify-content: center; width: 100%; height: 30px; pointer-events: none;
+        }
+        #radar-message { font-size: 1rem; text-align: center; font-weight: bold; padding: 4px 12px; border-radius: 4px; display: none; }
+        #radar-message.success { color: var(--gauge-green); text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.8); border: 1px solid var(--gauge-green); box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); display: inline-block;} 
+        #radar-message.fail { color: var(--brand-red); text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.8); border: 1px solid var(--brand-red); box-shadow: 0 0 10px rgba(215, 25, 32, 0.4); display: inline-block;}
+
+        /* Regular game message */
         #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
@@ -310,6 +319,7 @@
             .game-header { display: none !important; }
             #game-wrapper { margin-bottom: 5px; }
             h1 { display: none; }
+            .compass-n { top: 60px; }
         }
 
         /* --- LEADERBOARD --- */
@@ -567,6 +577,7 @@
     </div>
 
     <div id="radar-view" class="view-section">
+        
         <div class="radar-top-accordion">
             <div class="radar-accordion-header open" id="radar-accordion-header" onclick="toggleRadarInfo()">
                 <div class="radar-accordion-title">[-] TARGET INTEL</div>
@@ -577,15 +588,17 @@
                     ESTABLISHING UPLINK...<br>
                     SCANNING SECTOR...<span class="blinking-cursor">_</span>
                 </div>
-                <div class="radar-toggle-group">
-                    <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
-                    <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">REG: OFF</button>
-                    <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">LABELS: OFF</button>
+                <div class="radar-setup-container">
+                    <div class="radar-toggle-group">
+                        <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
+                        <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">REG: OFF</button>
+                        <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">LABELS: OFF</button>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div id="radar-map-wrapper" style="margin-top:10px;">
+        <div id="radar-map-wrapper">
             <div id="radar-map-container"></div>
             
             <div id="radar-success-overlay">
@@ -600,9 +613,12 @@
             <div class="compass-pt compass-w">W</div>
         </div>
         
-        <div id="radar-message" style="margin-top:10px; font-weight:bold; height:20px; text-align:center;"></div>
-        <div class="footer-buttons" style="border: none; margin-top:5px;">
-             <button class="outline-btn" onclick="closeRadar()">Abort Operation</button>
+        <div id="radar-message-container">
+            <div id="radar-message"></div>
+        </div>
+
+        <div class="footer-buttons">
+             <button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button>
         </div>
     </div>
 
@@ -1163,7 +1179,7 @@
             tkState.active = true;
             tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0;
             tkState.distance = 100; tkState.speed = 0; tkState.pressing = false;
-            tkState.bgPosSky = 0; tkPosCity = 0; tkPosGround = 0; tkPosRunway = 0;
+            tkState.bgPosSky = 0; tkState.bgPosCity = 0; tkState.bgPosGround = 0; tkState.bgPosRunway = 0;
             
             document.getElementById('tk-plane').style.display = 'block';
             document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`;
@@ -1386,6 +1402,8 @@
             document.querySelector('.radar-accordion-title').textContent = "[-] TARGET INTEL";
             
             document.getElementById('radar-success-overlay').style.display = 'none';
+            document.getElementById('radar-message').style.display = 'none';
+            document.getElementById('radar-message').className = "";
             
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
@@ -1423,7 +1441,7 @@
             const region = RADAR_REGIONS[Math.floor(Math.random() * RADAR_REGIONS.length)];
             
             textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${region.name}...<span class='blinking-cursor'>_</span>`;
-            msgEl.textContent = "";
+            msgEl.style.display = "none";
             
             if(radarCountdown) clearInterval(radarCountdown);
             radarLayerGroup.clearLayers();
@@ -1656,10 +1674,11 @@
                 setTimeout(() => updateTimerDisplay(getAssistPenalty()), 500); // Revert to dynamic color
                 
                 const msgEl = document.getElementById('radar-message');
+                msgEl.style.display = "inline-block";
                 msgEl.className = "fail pop-reveal";
                 msgEl.textContent = `WRONG TARGET (-15s)`;
                 void msgEl.offsetWidth; // Trigger CSS animation
-                setTimeout(() => { msgEl.textContent = ""; }, 2000);
+                setTimeout(() => { msgEl.style.display = "none"; }, 2000);
                 
                 updateTimerDisplay(getAssistPenalty());
             }
@@ -1776,6 +1795,7 @@
                     document.getElementById('intercept-overlay').style.display = 'none'; 
                     
                     const msgEl = document.getElementById('radar-message');
+                    msgEl.style.display = "inline-block";
                     msgEl.className = "fail pop-reveal";
                     msgEl.textContent = "TARGET ESCAPED (-100L)";
                     void msgEl.offsetWidth; // Animation trigger

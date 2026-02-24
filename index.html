@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#d71920">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
     <title>Fuel Command</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -123,6 +124,7 @@
         .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
         .danger-btn { background-color: var(--brand-red); color: white; font-weight: bold; }
         .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
+        .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
         
         .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s;}
         .radar-btn:active { background: var(--radar-green); color: #000; }
@@ -205,7 +207,8 @@
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
 
         /* --- VISUAL RADAR MODE --- */
-        #radar-view { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
+        /* FIX: Removed 'display: none' from the ID selector to fix CSS Specificity Bug */
+        #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
         
         .radar-terminal {
             width: 100%; flex-shrink: 0; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px;
@@ -239,11 +242,10 @@
         #radar-map-wrapper {
             width: 100%; flex-grow: 1; border: 4px solid var(--radar-green); border-radius: 8px; 
             position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(51, 255, 51, 0.3); min-height: 250px;
-            display: flex; flex-direction: column; /* FORCES internal height */
         }
         
-        /* Forcing explicit bounds so Leaflet never gets confused and crashes */
-        #radar-map-container { position: absolute; top: 0; left: 0; bottom: 0; right: 0; width: 100%; height: 100%; background: #000; z-index: 1; }
+        /* FIX: Forcing Absolute Position on Map Container */
+        #radar-map-container { position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: #000; z-index: 1; }
         
         .compass-pt { 
             position: absolute; color: var(--radar-green); font-family: 'Share Tech Mono', monospace; 
@@ -378,6 +380,8 @@
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 3h-2V1h-2v2H9V1H7v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zm0-12H5V5h14v2zm-7 4H7v5h5v-5z"/></svg> 
                 Global Leaderboard
             </button>
+            <button id="install-btn" class="dark-btn">📲 Install App</button>
+            <button class="outline-btn" onclick="triggerResetUI()">Restart Game</button>
         </div>
     </div>
 
@@ -547,7 +551,7 @@
     </div>
 
     <script>
-        // --- 1. DECLARE GLOBAL VARIABLES ---
+        // --- 1. DECLARE GLOBAL VARIABLES FIRST ---
         let db = null;
         let radarMap = null;
         let radarLayerGroup = null;
@@ -557,7 +561,7 @@
         let currentRadarCallsign = "";
         let currentRadarPlanes = [];
         let pathsVisible = false;
-        let currentMapStyle = 'CLEAN'; 
+        let currentMapStyle = 'CLEAN'; // Default map style
         let activeLevelIdx = 0;
 
         const DESTINATIONS = ["LHR", "JFK", "CDG", "FRA", "AMS", "MAD", "BCN", "FCO", "DUB", "VIE", "ZRH", "CPH"];
@@ -632,7 +636,22 @@
             { type: 'trivia', question: "What caused the 1977 Tenerife airport disaster, the deadliest accident in aviation history?", options: ["A runway collision in thick fog", "A mid-air collision over the Atlantic", "Dual engine failure due to volcanic ash"], correctIdx: 0, name: "Tenerife Disaster" },
             { type: 'trivia', question: "What forced US Airways Flight 1549 (the 'Miracle on the Hudson') to ditch into the river?", options: ["Complete loss of hydraulic fluid", "A flock of geese struck both engines", "Fuel starvation due to a leak"], correctIdx: 1, name: "Hudson River Ditching" },
             { type: 'trivia', question: "Why did Air Canada Flight 143 (the 'Gimli Glider') run out of fuel mid-flight?", options: ["The fuel tanks were punctured", "A mix-up between pounds and kilograms", "The pilots forgot to switch fuel tanks"], correctIdx: 1, name: "Gimli Glider Incident" },
-            { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
+            { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" },
+            { type: 'trivia', question: "What caused the tragic explosion of TWA Flight 800 in 1996?", options: ["A short circuit igniting fuel tank vapors", "A surface-to-air missile", "An uncontained engine failure"], correctIdx: 0, name: "TWA Flight 800" },
+            { type: 'trivia', question: "The fatal stall of Air France Flight 447 over the Atlantic was initiated by:", options: ["Ice crystals blocking the Pitot tubes", "Total hydraulic failure", "A mid-air collision with a weather balloon"], correctIdx: 0, name: "Air France 447" },
+            { type: 'trivia', question: "What led to the devastating crash of American Airlines Flight 191 in Chicago (1979)?", options: ["Improper forklift maintenance snapping the engine pylon", "Severe microburst windshear", "Rudder hardover due to a jammed valve"], correctIdx: 0, name: "American Airlines 191" },
+            { type: 'trivia', question: "The 1988 Pan Am Flight 103 disaster over Lockerbie was caused by:", options: ["A terrorist bomb hidden in a cassette player", "Catastrophic metal fatigue", "Dual engine flameout from volcanic ash"], correctIdx: 0, name: "Lockerbie Bombing" },
+            { type: 'trivia', question: "How did the pilots of United Airlines Flight 232 miraculously steer the plane after total hydraulic loss?", options: ["By using differential engine thrust", "By dropping the landing gear to create drag", "By manually pulling cables under the floorboards"], correctIdx: 0, name: "United Airlines 232" },
+            { type: 'trivia', question: "ValuJet Flight 592 crashed into the Everglades after a fire broke out caused by:", options: ["Improperly stored chemical oxygen generators", "A lithium-ion battery in passenger luggage", "A massive fuel leak in the cargo hold"], correctIdx: 0, name: "ValuJet Flight 592" },
+            { type: 'trivia', question: "The fatal in-flight fire on Swissair Flight 111 (1998) originated from:", options: ["Flammable insulation around the in-flight entertainment system", "A short circuit in the cockpit coffee maker", "An exploding auxiliary power unit (APU)"], correctIdx: 0, name: "Swissair Flight 111" },
+            { type: 'trivia', question: "What mechanical failure sent Alaska Airlines Flight 261 into an uncontrollable dive?", options: ["Stripped threads on the horizontal stabilizer jackscrew", "A jammed elevator control cable", "Asymmetric thrust reverser deployment"], correctIdx: 0, name: "Alaska Airlines 261" },
+            { type: 'trivia', question: "The 'ghost plane' crash of Helios Airways Flight 522 was traced back to:", options: ["The pressurization switch being left on 'Manual'", "A slow leak in the oxygen masks", "Carbon monoxide leaking into the cabin"], correctIdx: 0, name: "Helios Airways 522" },
+            { type: 'trivia', question: "What caused all four engines to fail on British Airways Flight 9 in 1982?", options: ["Flying through a dense cloud of volcanic ash", "Contaminated jet fuel freezing at high altitude", "A software glitch shutting off fuel valves"], correctIdx: 0, name: "British Airways Flight 9" },
+            { type: 'trivia', question: "Eastern Air Lines Flight 401 crashed into the Everglades because the crew:", options: ["Got distracted by a burnt-out landing gear indicator light", "Ignored ground proximity warnings", "Fell asleep due to extreme fatigue"], correctIdx: 0, name: "Eastern Air Lines 401" },
+            { type: 'trivia', question: "The tragic crash of Aloha Airlines Flight 243 involved the roof tearing off mid-flight due to:", options: ["Extensive metal fatigue and corrosion", "A pressurization valve exploding", "A bird strike shattering the cockpit window"], correctIdx: 0, name: "Aloha Airlines 243" },
+            { type: 'trivia', question: "The Air France Flight 4590 Concorde disaster was initiated when:", options: ["A burst tire propelled debris into the fuel tank", "The supersonic engines stalled from a bird strike", "The landing gear failed to deploy"], correctIdx: 0, name: "Concorde Disaster" },
+            { type: 'trivia', question: "What caused the fatal CFIT (Controlled Flight Into Terrain) of Air New Zealand Flight 901 in Antarctica?", options: ["A navigational coordinate typing error", "Complete whiteout blinding the radar", "A sudden downdraft over Mount Erebus"], correctIdx: 0, name: "Mount Erebus Disaster" },
+            { type: 'trivia', question: "The deadly crashes of two Boeing 737 MAX aircraft were ultimately linked to:", options: ["The MCAS system acting on a single faulty AOA sensor", "Cracks in the horizontal stabilizer", "Software shutting down the auto-throttle prematurely"], correctIdx: 0, name: "Boeing 737 MAX" }
         ];
 
         function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
@@ -640,17 +659,17 @@
         const THEMES = {
             1: { 
                 sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#87CEEB"/><rect y="32" width="256" height="32" fill="#99D9F0"/><rect x="20" y="16" width="20" height="8" fill="#fff"/><rect x="10" y="20" width="40" height="4" fill="#fff"/><rect x="30" y="24" width="10" height="4" fill="#e0e0e0"/><rect x="100" y="4" width="30" height="10" fill="#fff"/><rect x="85" y="10" width="60" height="4" fill="#fff"/><rect x="115" y="14" width="15" height="4" fill="#e0e0e0"/><rect x="200" y="21" width="25" height="8" fill="#fff"/><rect x="190" y="25" width="40" height="4" fill="#fff"/></svg>`,
-                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#8ca1cc"/><rect x="50" y="10" width="40" height="54" fill="#8ca1cc"/><rect x="120" y="25" width="35" height="39" fill="#8ca1cc"/><rect x="180" y="15" width="25" height="49" fill="#8ca1cc"/><rect x="220" y="30" width="30" height="34" fill="#8ca1cc"/><rect x="0" y="35" width="25" height="29" fill="#5a6988"/><rect x="35" y="25" width="30" height="39" fill="#5a6988"/><rect x="80" y="40" width="50" height="24" fill="#5a6988"/><rect x="140" y="20" width="45" height="44" fill="#5a6988"/><rect x="200" y="35" width="40" height="29" fill="#5a6988"/><rect x="20" y="45" width="40" height="19" fill="#4a5875"/><rect x="70" y="30" width="35" height="34" fill="#4a5875"/><rect x="110" y="50" width="40" height="14" fill="#4a5875"/><rect x="160" y="40" width="30" height="24" fill="#4a5875"/><rect x="230" y="45" width="26" height="19" fill="#4a5875"/></svg>`,
-                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#2d4c1e"/><rect x="10" y="12" width="20" height="8" fill="#2d4c1e"/><rect x="15" y="8" width="10" height="4" fill="#2d4c1e"/><rect x="50" y="10" width="30" height="10" fill="#2d4c1e"/><rect x="60" y="6" width="10" height="4" fill="#2d4c1e"/><rect x="110" y="14" width="20" height="6" fill="#2d4c1e"/><rect x="160" y="8" width="40" height="12" fill="#2d4c1e"/><rect x="175" y="4" width="10" height="4" fill="#2d4c1e"/><rect x="220" y="12" width="30" height="8" fill="#2d4c1e"/><rect x="0" y="20" width="256" height="12" fill="#1e3b12"/><rect x="15" y="16" width="10" height="4" fill="#1e3b12"/><rect x="55" y="14" width="20" height="6" fill="#1e3b12"/><rect x="120" y="18" width="10" height="4" fill="#1e3b12"/><rect x="170" y="12" width="20" height="8" fill="#1e3b12"/><rect x="230" y="16" width="15" height="4" fill="#1e3b12"/></svg>`
+                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#8ca1cc"/><rect x="50" y="10" width="40" height="54" fill="#8ca1cc"/><rect x="120" y="25" width="35" height="39" fill="#8ca1cc"/><rect x="180" y="15" width="25" height="49" fill="#8ca1cc"/><rect x="220" y="30" width="30" height="34" fill="#8ca1cc"/><rect x="0" y="35" width="25" height="29" fill="#5a6988"/><rect x="35" y="25" width="30" height="39" fill="#5a6988"/><rect x="80" y="40" width="50" height="24" fill="#5a6988"/><rect x="140" y="20" width="45" height="44" fill="#5a6988"/><rect x="200" y="35" width="40" height="29" fill="#5a6988"/><rect x="20" y="45" width="40" height="19" fill="#4a5875"/><rect x="70" y="30" width="35" height="34" fill="#4a5875"/><rect x="110" y="50" width="40" height="14" fill="#4a5875"/><rect x="160" y="40" width="30" height="24" fill="#4a5875"/><rect x="230" y="45" width="26" height="19" fill="#4a5875"/><rect x="40" y="30" width="4" height="4" fill="#7585a5"/><rect x="48" y="30" width="4" height="4" fill="#7585a5"/><rect x="40" y="38" width="4" height="4" fill="#7585a5"/><rect x="48" y="38" width="4" height="4" fill="#7585a5"/><rect x="75" y="35" width="4" height="4" fill="#7585a5"/><rect x="75" y="45" width="4" height="4" fill="#7585a5"/><rect x="85" y="35" width="4" height="4" fill="#7585a5"/><rect x="85" y="45" width="4" height="4" fill="#7585a5"/><rect x="145" y="25" width="4" height="4" fill="#7585a5"/><rect x="155" y="25" width="4" height="4" fill="#7585a5"/><rect x="165" y="25" width="4" height="4" fill="#7585a5"/><rect x="145" y="35" width="4" height="4" fill="#7585a5"/><rect x="155" y="35" width="4" height="4" fill="#7585a5"/><rect x="165" y="35" width="4" height="4" fill="#7585a5"/><rect x="205" y="40" width="4" height="4" fill="#7585a5"/><rect x="215" y="40" width="4" height="4" fill="#7585a5"/></svg>`,
+                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#2d4c1e"/><rect x="10" y="12" width="20" height="8" fill="#2d4c1e"/><rect x="15" y="8" width="10" height="4" fill="#2d4c1e"/><rect x="50" y="10" width="30" height="10" fill="#2d4c1e"/><rect x="60" y="6" width="10" height="4" fill="#2d4c1e"/><rect x="110" y="14" width="20" height="6" fill="#2d4c1e"/><rect x="160" y="8" width="40" height="12" fill="#2d4c1e"/><rect x="175" y="4" width="10" height="4" fill="#2d4c1e"/><rect x="220" y="12" width="30" height="8" fill="#2d4c1e"/><rect x="0" y="20" width="256" height="12" fill="#1e3b12"/><rect x="15" y="16" width="10" height="4" fill="#1e3b12"/><rect x="55" y="14" width="20" height="6" fill="#1e3b12"/><rect x="120" y="18" width="10" height="4" fill="#1e3b12"/><rect x="170" y="12" width="20" height="8" fill="#1e3b12"/><rect x="230" y="16" width="15" height="4" fill="#1e3b12"/><rect x="25" y="24" width="4" height="4" fill="#385e26"/><rect x="80" y="22" width="4" height="4" fill="#385e26"/><rect x="140" y="26" width="4" height="4" fill="#385e26"/><rect x="190" y="22" width="4" height="4" fill="#385e26"/></svg>`
             },
             2: { 
                 sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#4a5d6a"/><rect y="32" width="256" height="32" fill="#5a6d7a"/><rect x="20" y="16" width="20" height="8" fill="#687d8c"/><rect x="10" y="20" width="40" height="4" fill="#687d8c"/><rect x="30" y="24" width="10" height="4" fill="#586b78"/><rect x="100" y="4" width="30" height="10" fill="#687d8c"/><rect x="85" y="10" width="60" height="4" fill="#687d8c"/><rect x="115" y="14" width="15" height="4" fill="#586b78"/><rect x="200" y="21" width="25" height="8" fill="#687d8c"/><rect x="190" y="25" width="40" height="4" fill="#687d8c"/></svg>`,
                 city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#3d4955"/><rect x="50" y="10" width="40" height="54" fill="#3d4955"/><rect x="120" y="25" width="35" height="39" fill="#3d4955"/><rect x="180" y="15" width="25" height="49" fill="#3d4955"/><rect x="220" y="30" width="30" height="34" fill="#3d4955"/><rect x="0" y="35" width="25" height="29" fill="#323d47"/><rect x="35" y="25" width="30" height="39" fill="#323d47"/><rect x="80" y="40" width="50" height="24" fill="#323d47"/><rect x="140" y="20" width="45" height="44" fill="#323d47"/><rect x="200" y="35" width="40" height="29" fill="#323d47"/><rect x="20" y="45" width="40" height="19" fill="#28313a"/><rect x="70" y="30" width="35" height="34" fill="#28313a"/><rect x="110" y="50" width="40" height="14" fill="#28313a"/><rect x="160" y="40" width="30" height="24" fill="#28313a"/><rect x="230" y="45" width="26" height="19" fill="#28313a"/></svg>`,
-                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#2b3626"/><rect x="10" y="12" width="20" height="8" fill="#2b3626"/><rect x="15" y="8" width="10" height="4" fill="#2b3626"/><rect x="50" y="10" width="30" height="10" fill="#2b3626"/><rect x="60" y="6" width="10" height="4" fill="#2b3626"/><rect x="110" y="14" width="20" height="6" fill="#2b3626"/><rect x="160" y="8" width="40" height="12" fill="#2b3626"/><rect x="175" y="4" width="10" height="4" fill="#2b3626"/><rect x="220" y="12" width="30" height="8" fill="#2b3626"/><rect x="0" y="20" width="256" height="12" fill="#1d251a"/><rect x="15" y="16" width="10" height="4" fill="#1d251a"/><rect x="55" y="14" width="20" height="6" fill="#1d251a"/><rect x="120" y="18" width="10" height="4" fill="#1d251a"/><rect x="170" y="12" width="20" height="8" fill="#1d251a"/><rect x="230" y="16" width="15" height="4" fill="#1d251a"/></svg>`
+                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#2b3626"/><rect x="10" y="12" width="20" height="8" fill="#2b3626"/><rect x="15" y="8" width="10" height="4" fill="#2b3626"/><rect x="50" y="10" width="30" height="10" fill="#2b3626"/><rect x="60" y="6" width="10" height="4" fill="#2b3626"/><rect x="110" y="14" width="20" height="6" fill="#2b3626"/><rect x="160" y="8" width="40" height="12" fill="#2b3626"/><rect x="175" y="4" width="10" height="4" fill="#2b3626"/><rect x="220" y="12" width="30" height="8" fill="#2b3626"/><rect x="0" y="20" width="256" height="12" fill="#1d251a"/><rect x="15" y="16" width="10" height="4" fill="#1d251a"/><rect x="55" y="14" width="20" height="6" fill="#1d251a"/><rect x="120" y="18" width="10" height="4" fill="#1d251a"/><rect x="170" y="12" width="20" height="8" fill="#1d251a"/><rect x="230" y="16" width="15" height="4" fill="#1d251a"/><rect x="25" y="24" width="4" height="4" fill="#34422e"/><rect x="80" y="22" width="4" height="4" fill="#34422e"/><rect x="140" y="26" width="4" height="4" fill="#34422e"/><rect x="190" y="22" width="4" height="4" fill="#34422e"/></svg>`
             },
             3: { 
                 sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#0f1722"/><rect x="20" y="15" width="2" height="2" fill="#fff"/><rect x="50" y="30" width="2" height="2" fill="#fff"/><rect x="100" y="10" width="2" height="2" fill="#fff"/><rect x="150" y="25" width="2" height="2" fill="#fff"/><rect x="200" y="15" width="2" height="2" fill="#fff"/><rect x="240" y="20" width="2" height="2" fill="#fff"/></svg>`,
-                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#151e2b"/><rect x="50" y="10" width="40" height="54" fill="#151e2b"/><rect x="120" y="25" width="35" height="39" fill="#151e2b"/><rect x="180" y="15" width="25" height="49" fill="#151e2b"/><rect x="220" y="30" width="30" height="34" fill="#151e2b"/><rect x="0" y="35" width="25" height="29" fill="#101722"/><rect x="35" y="25" width="30" height="39" fill="#101722"/><rect x="80" y="40" width="50" height="24" fill="#101722"/><rect x="140" y="20" width="45" height="44" fill="#101722"/><rect x="200" y="35" width="40" height="29" fill="#101722"/><rect x="20" y="45" width="40" height="19" fill="#0a0f16"/><rect x="70" y="30" width="35" height="34" fill="#0a0f16"/><rect x="110" y="50" width="40" height="14" fill="#0a0f16"/><rect x="160" y="40" width="30" height="24" fill="#0a0f16"/><rect x="230" y="45" width="26" height="19" fill="#0a0f16"/></svg>`,
+                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#151e2b"/><rect x="50" y="10" width="40" height="54" fill="#151e2b"/><rect x="120" y="25" width="35" height="39" fill="#151e2b"/><rect x="180" y="15" width="25" height="49" fill="#151e2b"/><rect x="220" y="30" width="30" height="34" fill="#151e2b"/><rect x="0" y="35" width="25" height="29" fill="#101722"/><rect x="35" y="25" width="30" height="39" fill="#101722"/><rect x="80" y="40" width="50" height="24" fill="#101722"/><rect x="140" y="20" width="45" height="44" fill="#101722"/><rect x="200" y="35" width="40" height="29" fill="#101722"/><rect x="20" y="45" width="40" height="19" fill="#0a0f16"/><rect x="70" y="30" width="35" height="34" fill="#0a0f16"/><rect x="110" y="50" width="40" height="14" fill="#0a0f16"/><rect x="160" y="40" width="30" height="24" fill="#0a0f16"/><rect x="230" y="45" width="26" height="19" fill="#0a0f16"/><rect x="40" y="30" width="4" height="4" fill="#f1c40f"/><rect x="48" y="30" width="4" height="4" fill="#f1c40f"/><rect x="75" y="35" width="4" height="4" fill="#f1c40f"/><rect x="85" y="45" width="4" height="4" fill="#f1c40f"/><rect x="145" y="25" width="4" height="4" fill="#f1c40f"/><rect x="165" y="35" width="4" height="4" fill="#f1c40f"/><rect x="205" y="40" width="4" height="4" fill="#f1c40f"/><rect x="40" y="38" width="4" height="4" fill="#e67e22"/><rect x="75" y="45" width="4" height="4" fill="#e67e22"/><rect x="155" y="35" width="4" height="4" fill="#e67e22"/><rect x="215" y="40" width="4" height="4" fill="#e67e22"/></svg>`,
                 ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#111a11"/><rect x="10" y="12" width="20" height="8" fill="#111a11"/><rect x="15" y="8" width="10" height="4" fill="#111a11"/><rect x="50" y="10" width="30" height="10" fill="#111a11"/><rect x="60" y="6" width="10" height="4" fill="#111a11"/><rect x="110" y="14" width="20" height="6" fill="#111a11"/><rect x="160" y="8" width="40" height="12" fill="#111a11"/><rect x="175" y="4" width="10" height="4" fill="#111a11"/><rect x="220" y="12" width="30" height="8" fill="#111a11"/><rect x="0" y="20" width="256" height="12" fill="#0a100a"/><rect x="15" y="16" width="10" height="4" fill="#0a100a"/><rect x="55" y="14" width="20" height="6" fill="#0a100a"/><rect x="120" y="18" width="10" height="4" fill="#0a100a"/><rect x="170" y="12" width="20" height="8" fill="#0a100a"/><rect x="230" y="16" width="15" height="4" fill="#0a100a"/></svg>`
             }
         };
@@ -658,8 +677,8 @@
         const RUNWAY_SVG = `<svg width="128" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="128" height="32" fill="#3b3b3b"/><rect width="128" height="2" fill="#385e26"/><rect y="2" width="128" height="2" fill="#4a4a4a"/><rect x="0" y="14" width="32" height="4" fill="#ddd"/><rect x="64" y="14" width="32" height="4" fill="#ddd"/><rect x="0" y="4" width="128" height="2" fill="#fff"/><rect x="0" y="26" width="128" height="2" fill="#fff"/><rect x="10" y="10" width="16" height="2" fill="#222"/><rect x="40" y="18" width="24" height="2" fill="#222"/><rect x="80" y="12" width="12" height="2" fill="#222"/><rect x="100" y="20" width="16" height="2" fill="#222"/></svg>`;
 
         // TILE LAYERS
-        const cleanMapBase = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png');
-        const cleanMapLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png');
+        const cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
+        const cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
 
         // --- 4. GAME ENGINE LOGIC ---
         function getOptionsForImage(correctName, isClassified) {
@@ -747,13 +766,13 @@
             });
 
             h1.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 1, isClassified: false, completed: false, failed: false, attempts: 0 });
-            if (tPool[0]) h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
+            h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
             
             h2.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 2, isClassified: false, completed: false, failed: false, attempts: 0 });
-            if (tPool[1]) h2.push({ ...tPool[1], hangar: 2, isClassified: false, completed: false });
+            h2.push({ ...tPool[1], hangar: 2, isClassified: false, completed: false });
             
             h3.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 3, isClassified: true, completed: false, failed: false, attempts: 0 });
-            if (tPool[2]) h3.push({ ...tPool[2], hangar: 3, isClassified: true, completed: false }); 
+            h3.push({ ...tPool[2], hangar: 3, isClassified: true, completed: false }); 
 
             return [...h1.sort(() => Math.random() - 0.5), ...h2.sort(() => Math.random() - 0.5), ...h3.sort(() => Math.random() - 0.5)];
         }
@@ -803,7 +822,7 @@
 
         function loadState() {
             try {
-                const saved = localStorage.getItem('fuelQuizState_v66'); 
+                const saved = localStorage.getItem('fuelQuizState_v65'); 
                 if (saved) {
                     globalState = JSON.parse(saved);
                     if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
@@ -821,7 +840,7 @@
             }
         }
 
-        function saveState() { try { localStorage.setItem('fuelQuizState_v66', JSON.stringify(globalState)); } catch(e){} }
+        function saveState() { try { localStorage.setItem('fuelQuizState_v65', JSON.stringify(globalState)); } catch(e){} }
         
         function isHangarComplete(hNum) { return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed); }
         function isAllWorldsComplete() { return globalState.levels.every(l => l.completed); }
@@ -964,23 +983,21 @@
                 imgArea.style.display = 'flex';
                 container.style.overflow = 'hidden';
 
-                document.getElementById('mystery-image').src = lState.image || "";
+                document.getElementById('mystery-image').src = lState.image;
                 
-                if (lState.options) {
-                    lState.options.forEach((optText, i) => {
-                        const btn = document.getElementById('img-opt-' + i);
-                        if(btn) {
-                            btn.textContent = optText;
-                            btn.disabled = lState.completed;
-                            btn.style.backgroundColor = ""; 
-                            btn.style.color = ""; 
-                            if(lState.completed && i === lState.correctIdx) {
-                                btn.style.backgroundColor = "var(--gauge-green)";
-                                btn.style.color = "white";
-                            }
+                lState.options.forEach((optText, i) => {
+                    const btn = document.getElementById('img-opt-' + i);
+                    if(btn) {
+                        btn.textContent = optText;
+                        btn.disabled = lState.completed;
+                        btn.style.backgroundColor = ""; 
+                        btn.style.color = ""; 
+                        if(lState.completed && i === lState.correctIdx) {
+                            btn.style.backgroundColor = "var(--gauge-green)";
+                            btn.style.color = "white";
                         }
-                    });
-                }
+                    }
+                });
                 
                 if (globalState.hasSmartBomb && !lState.completed) bombBtn.style.display = "inline-block";
                 else bombBtn.style.display = "none";
@@ -1006,21 +1023,19 @@
 
                 document.getElementById('trivia-question').textContent = lState.question;
                 
-                if (lState.options) {
-                    lState.options.forEach((optText, i) => {
-                        const btn = document.getElementById('btn-opt-' + i);
-                        if(btn) {
-                            btn.textContent = String.fromCharCode(65 + i) + ". " + optText;
-                            btn.disabled = lState.completed;
-                            btn.style.backgroundColor = ""; 
-                            btn.style.color = ""; 
-                            if(lState.completed && i === lState.correctIdx) {
-                                btn.style.backgroundColor = "var(--gauge-green)";
-                                btn.style.color = "white";
-                            }
+                lState.options.forEach((optText, i) => {
+                    const btn = document.getElementById('btn-opt-' + i);
+                    if(btn) {
+                        btn.textContent = String.fromCharCode(65 + i) + ". " + optText;
+                        btn.disabled = lState.completed;
+                        btn.style.backgroundColor = ""; 
+                        btn.style.color = ""; 
+                        if(lState.completed && i === lState.correctIdx) {
+                            btn.style.backgroundColor = "var(--gauge-green)";
+                            btn.style.color = "white";
                         }
-                    });
-                }
+                    }
+                });
             } else if (lState.type === 'takeoff') {
                 takeoffArea.style.display = 'flex';
                 bombBtn.style.display = "none";
@@ -1036,7 +1051,7 @@
                 weather.className = '';
                 runwaySurf.style.backgroundImage = getSvgUri(RUNWAY_SVG);
 
-                const th = THEMES[lState.hangar] || THEMES[1];
+                const th = THEMES[lState.hangar];
                 sky.style.backgroundImage = getSvgUri(th.sky);
                 city.style.backgroundImage = getSvgUri(th.city);
                 ground.style.backgroundImage = getSvgUri(th.ground);
@@ -1133,4 +1148,485 @@
             const planeEl = document.getElementById('tk-plane');
             planeEl.style.transform = `translateY(-${liftY}px) rotate(-${tkState.pitch}deg)`;
 
-            const needle = document
+            const needle = document.getElementById('tk-needle');
+            needle.style.bottom = `${Math.max(0, Math.min(100, (tkState.pitch / 30) * 100))}%`;
+
+            const speedEl = document.getElementById('tk-speed-val');
+            speedEl.textContent = Math.floor(tkState.speed);
+            if (tkState.speed >= 140) speedEl.style.color = "var(--gauge-green)";
+            else speedEl.style.color = "var(--brand-red)";
+
+            tkState.distance -= (tkState.speed / 1450); 
+
+            tkState.bgPosSky -= tkState.speed * 0.002;
+            tkState.bgPosCity -= tkState.speed * 0.008;
+            tkState.bgPosGround -= tkState.speed * 0.025;
+            tkState.bgPosRunway -= tkState.speed * 0.08;
+
+            document.getElementById('tk-bg-sky').style.backgroundPositionX = tkState.bgPosSky + 'px';
+            document.getElementById('tk-bg-city').style.backgroundPositionX = tkState.bgPosCity + 'px';
+            document.getElementById('tk-bg-ground').style.backgroundPositionX = tkState.bgPosGround + 'px';
+            document.getElementById('tk-runway-surface').style.backgroundPositionX = tkState.bgPosRunway + 'px';
+
+            document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%';
+            document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
+            
+            if (tkState.distance < 15) {
+                const mtn = document.getElementById('tk-mountain');
+                mtn.style.display = 'block';
+                mtn.style.left = `calc(${tkState.distance * 6}% + 100px)`; 
+            }
+
+            if (tkState.lift >= 100) return winTakeoff();
+            if (tkState.distance <= 0) return explodePlane("CRASHED INTO MOUNTAIN");
+
+            tkState.frameId = requestAnimationFrame(takeoffLoop);
+        }
+
+        function explodePlane(reason) {
+            tkState.active = false; 
+            const planeEl = document.getElementById('tk-plane');
+            planeEl.style.display = 'none'; 
+            
+            const vp = document.getElementById('takeoff-viewport');
+            const colors = ['#fff', 'var(--brand-red)', '#a0a0a0', '#1a1a1a', '#555'];
+            
+            const liftY = (tkState.lift / 100) * 80;
+            const baseY = vp.offsetHeight - 60 - liftY; 
+            
+            for(let i = 0; i < 80; i++) {
+                let p = document.createElement('div');
+                p.className = 'pixel-particle';
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                p.style.left = (30 + Math.random() * 80) + 'px'; 
+                p.style.top = baseY + Math.random() * 20 + 'px'; 
+                vp.appendChild(p);
+                
+                let vx = (Math.random() - 0.5) * 5;
+                let vy = (Math.random() - 0.8) * 5;
+                animateParticle(p, vx, vy);
+            }
+
+            vp.classList.add('wrong-flash');
+            setTimeout(() => vp.classList.remove('wrong-flash'), 500);
+            setTimeout(() => failTakeoff(reason), 3500); 
+        }
+
+        function animateParticle(p, vx, vy) {
+            let x = parseFloat(p.style.left);
+            let y = parseFloat(p.style.top);
+            let age = 0;
+            function step() {
+                age++;
+                if(age > 150) { p.remove(); return; }
+                if(age > 100) { p.style.opacity = 1 - ((age - 100) / 50); } 
+                
+                x += vx; y += vy; vy += 0.1; vx *= 0.99; 
+                p.style.left = x + 'px'; p.style.top = y + 'px';
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function failTakeoff(reason) {
+            const lState = globalState.levels[activeLevelIdx];
+            lState.attempts = (lState.attempts || 0) + 1;
+            
+            globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
+            saveState();
+            updateMiniFuelUI();
+
+            if (lState.attempts >= 3) {
+                lState.failed = true;
+                lState.completed = true; 
+                saveState();
+                document.getElementById('message').textContent = "SYSTEM LOCKED - MAX ATTEMPTS FAILED (-200L)";
+                document.getElementById('message').className = "fail";
+                setTimeout(() => { if (isAllWorldsComplete()) syncScoreToCloud(); saveAndExit(); }, 2500);
+            } else {
+                let triesLeft = 3 - lState.attempts;
+                document.getElementById('message').textContent = `${reason} | TRIES LEFT: ${triesLeft} (-200L)`;
+                document.getElementById('message').className = "fail";
+                setTimeout(() => {
+                    if(!lState.completed && !lState.failed && globalState.currentFuel > 0 && document.getElementById('takeoff-game-area').style.display !== 'none') {
+                        document.getElementById('message').textContent = "";
+                        startTakeoff();
+                    }
+                }, 1500);
+            }
+            if(globalState.currentFuel <= 0) setTimeout(triggerGameOver, 1500);
+        }
+
+        function winTakeoff() {
+            tkState.active = false;
+            const bonus = 500;
+            globalState.currentFuel += bonus; 
+            updateMiniFuelUI();
+            
+            const lState = globalState.levels[activeLevelIdx];
+            lState.completed = true;
+            
+            triggerConfetti();
+            document.getElementById('level-title').textContent = lState.name;
+            document.getElementById('message').textContent = `PERFECT TAKEOFF! +${bonus}L BONUS`;
+            document.getElementById('message').className = "success";
+            
+            saveState();
+            if (isAllWorldsComplete()) syncScoreToCloud();
+            setTimeout(saveAndExit, 2500);
+        }
+
+        function getCompassDirection(heading) {
+            if (heading === null || heading === undefined) return "UNKNOWN";
+            const dirs = ["NORTH", "NORTH-EAST", "EAST", "SOUTH-EAST", "SOUTH", "SOUTH-WEST", "WEST", "NORTH-WEST"];
+            return dirs[Math.round(((heading %= 360) < 0 ? heading + 360 : heading) / 45) % 8];
+        }
+
+        function openRadar() {
+            if(globalState.currentFuel <= 0) { triggerGameOver(); return; }
+            
+            document.getElementById('selector-view').classList.remove('active');
+            document.getElementById('radar-view').classList.add('active');
+            
+            // Allow CSS flex to apply, then trigger map calculations
+            setTimeout(() => { 
+                if (!radarMap) {
+                    radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
+                    currentMapStyle = 'CLEAN'; 
+                    cleanMapBase.addTo(radarMap);
+                    radarLayerGroup = L.layerGroup().addTo(radarMap);
+                    radarPathGroup = L.layerGroup().addTo(radarMap);
+                }
+                radarMap.invalidateSize(); 
+                startRadarMission();
+            }, 200);
+        }
+
+        function startRadarMission() {
+            const textEl = document.getElementById('radar-screen-text');
+            const msgEl = document.getElementById('radar-message');
+            const btnToggle = document.getElementById('toggle-paths-btn');
+            
+            pathsVisible = false;
+            btnToggle.textContent = "PATHS: OFF";
+            btnToggle.style.background = "transparent";
+            btnToggle.style.color = "var(--radar-green)";
+            
+            textEl.innerHTML = "ESTABLISHING UPLINK...<br>SCANNING SECTOR EU-CENTRAL...<span class='blinking-cursor'>_</span>";
+            msgEl.textContent = "";
+            document.getElementById('radar-timer').textContent = "01:00";
+            
+            if(radarCountdown) clearInterval(radarCountdown);
+            radarLayerGroup.clearLayers();
+            radarPathGroup.clearLayers();
+            currentRadarPlanes = [];
+
+            fetch(`https://opensky-network.org/api/states/all?lamin=45.0&lomin=5.0&lamax=52.0&lomax=15.0`)
+            .then(res => res.json())
+            .then(data => {
+                if(!data.states || data.states.length === 0) throw new Error("Empty airspace");
+                
+                let validAPIPlanes = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "");
+                if(validAPIPlanes.length === 0) throw new Error("No valid planes");
+
+                currentRadarPlanes = validAPIPlanes.sort(() => Math.random() - 0.5).slice(0, 12).map(p => {
+                    const lat = p[6]; const lng = p[5]; const heading = p[10] || 0;
+                    const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
+                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
+                    
+                    const radBack = (heading + 180) * (Math.PI / 180);
+                    const startLat = lat + Math.cos(radBack) * trailLen;
+                    const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
+
+                    const radFwd = heading * (Math.PI / 180);
+                    const endLat = lat + Math.cos(radFwd) * fwdLen;
+                    const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+
+                    return {
+                        callsign: p[1].trim(), lat: lat, lng: lng, heading: heading, nextStop: dest,
+                        route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng
+                    };
+                });
+                
+                initTargetAndPlot();
+            })
+            .catch(err => {
+                console.warn("Radar API failed/rate-limited. Launching local simulation.");
+                const fakeCalls = ["LHT442", "AFR12A", "SWR99B", "BAW505", "RYR77X", "FIN112", "NOR334", "KLM88", "EZY99", "WZZ10", "DAL22", "UAL33"];
+                for(let i=0; i<12; i++) {
+                    const lat = 45.0 + Math.random() * 7; const lng = 5.0 + Math.random() * 10;
+                    const heading = Math.random() * 360;
+                    const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
+                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
+                    
+                    const radBack = (heading + 180) * (Math.PI / 180);
+                    const startLat = lat + Math.cos(radBack) * trailLen;
+                    const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
+                    const radFwd = heading * (Math.PI / 180);
+                    const endLat = lat + Math.cos(radFwd) * fwdLen;
+                    const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+
+                    currentRadarPlanes.push({ 
+                        callsign: fakeCalls[i], nextStop: dest, lng: lng, lat: lat, heading: heading,
+                        route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng
+                    });
+                }
+                initTargetAndPlot();
+            });
+        }
+
+        function initTargetAndPlot() {
+            const textEl = document.getElementById('radar-screen-text');
+            const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
+            currentRadarCallsign = targetPlane.callsign;
+            const headingStr = getCompassDirection(targetPlane.heading);
+
+            textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: NEXT STOP ${targetPlane.nextStop}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
+            plotPlanesOnRadar();
+        }
+        
+        function plotPlanesOnRadar() {
+            currentRadarPlanes.forEach(p => {
+                const iconHtml = `<div style="transform: rotate(${p.heading}deg); color: var(--radar-green);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
+                let icon = L.divIcon({ html: iconHtml, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });
+                let marker = L.marker([p.lat, p.lng], {icon: icon}).addTo(radarLayerGroup);
+                
+                marker.on('click', () => {
+                    if (radarTime <= 0) return;
+                    
+                    if (p.callsign === currentRadarCallsign) {
+                        clearInterval(radarCountdown);
+                        document.getElementById('radar-message').className = "success";
+                        document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
+                        globalState.currentFuel += 250;
+                        saveState(); updateMiniFuelUI();
+                        
+                        marker.setIcon(L.divIcon({
+                            html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
+                            className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
+                        }));
+
+                        setTimeout(closeRadar, 2000);
+                    } else {
+                        marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
+                        radarTime = Math.max(0, radarTime - 3); 
+                        
+                        const tDiv = document.getElementById('radar-timer');
+                        tDiv.style.color = "red";
+                        setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
+                        
+                        let m = Math.floor(radarTime / 60); let s = radarTime % 60;
+                        tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}`;
+                    }
+                });
+            });
+
+            // Filtering out bad API data to prevent Map Bounds NaN Crash
+            if(currentRadarPlanes.length > 0) {
+                let lats = currentRadarPlanes.map(p => p.lat).filter(l => l != null && !isNaN(l));
+                let lngs = currentRadarPlanes.map(p => p.lng).filter(l => l != null && !isNaN(l));
+                
+                if (lats.length > 0 && lngs.length > 0) {
+                    let safeBounds = [[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]];
+                    radarMap.fitBounds(safeBounds, { padding: [40, 40] });
+                }
+            }
+            
+            startRadarTimer(60);
+        }
+
+        function toggleMapStyle() {
+            const btn = document.getElementById('toggle-map-btn');
+            // Safe toggling: We just overlay the transparent text layer, avoiding Leaflet base-layer confusion
+            if (currentMapStyle === 'CLEAN') {
+                cleanMapLabels.addTo(radarMap);
+                currentMapStyle = 'LABELS';
+                btn.textContent = "MAP: LABELS";
+                btn.style.background = "transparent";
+                btn.style.color = "var(--radar-green)";
+            } else {
+                radarMap.removeLayer(cleanMapLabels);
+                currentMapStyle = 'CLEAN';
+                btn.textContent = "MAP: CLEAN";
+                btn.style.background = "var(--radar-green)";
+                btn.style.color = "#000";
+            }
+        }
+        
+        function toggleFlightPaths() {
+            pathsVisible = !pathsVisible;
+            const btn = document.getElementById('toggle-paths-btn');
+            btn.textContent = "PATHS: " + (pathsVisible ? "ON" : "OFF");
+            btn.style.background = pathsVisible ? "var(--radar-green)" : "transparent";
+            btn.style.color = pathsVisible ? "#000" : "var(--radar-green)";
+
+            if (pathsVisible) {
+                currentRadarPlanes.forEach(p => {
+                    L.polyline(p.route, { color: 'var(--radar-green)', weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup);
+                    L.circleMarker([p.endLat, p.endLng], { radius: 3, color: 'var(--radar-green)', fillColor: 'var(--radar-green)', fillOpacity: 1 }).addTo(radarPathGroup);
+                    L.marker([p.endLat, p.endLng], {
+                        icon: L.divIcon({ html: `<div style="color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; white-space: nowrap; margin-left: 10px; margin-top: -8px; text-shadow: 1px 1px 2px #000;">${p.nextStop}</div>`, className: 'radar-dest-label', iconSize: [0,0] })
+                    }).addTo(radarPathGroup);
+                });
+            } else {
+                radarPathGroup.clearLayers();
+            }
+        }
+
+        function startRadarTimer(seconds) {
+            radarTime = seconds;
+            function updateTimerDisplay() {
+                let m = Math.floor(radarTime / 60); let s = radarTime % 60;
+                document.getElementById('radar-timer').textContent = `0${m}:${s < 10 ? "0"+s : s}`;
+            }
+            updateTimerDisplay();
+            
+            radarCountdown = setInterval(() => {
+                radarTime--;
+                updateTimerDisplay();
+                if(radarTime <= 0) {
+                    clearInterval(radarCountdown);
+                    document.getElementById('radar-message').className = "fail";
+                    document.getElementById('radar-message').textContent = "TARGET ESCAPED (-100L)";
+                    globalState.currentFuel = Math.max(0, globalState.currentFuel - 100);
+                    saveState(); updateMiniFuelUI();
+                    
+                    if(globalState.currentFuel <= 0) setTimeout(triggerGameOver, 1500);
+                    else setTimeout(closeRadar, 2500);
+                }
+            }, 1000);
+        }
+
+        function closeRadar() {
+            if(radarCountdown) clearInterval(radarCountdown);
+            renderDashboard();
+            document.getElementById('radar-view').classList.remove('active');
+            document.getElementById('selector-view').classList.add('active');
+        }
+
+        function triggerSmartBomb() {
+            if (!globalState.hasSmartBomb) return;
+            const bombBtn = document.getElementById('smart-bomb-btn');
+            const wrapper = document.getElementById('game-wrapper');
+            const container = document.getElementById('game-container');
+            
+            wrapper.classList.add('shake-it'); wrapper.classList.add('flash-screen'); container.style.overflow = 'visible';
+            setTimeout(() => { wrapper.classList.remove('shake-it'); wrapper.classList.remove('flash-screen'); container.style.overflow = 'hidden'; }, 3000); 
+
+            const gridContainer = document.getElementById('cover-grid');
+            const gridRect = gridContainer.getBoundingClientRect();
+            const centerX = gridRect.width / 2; const centerY = gridRect.height / 2;
+            const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
+            
+            hiddenTiles.forEach(p => {
+                const rect = p.getBoundingClientRect();
+                let dx = (rect.left - gridRect.left) + (rect.width / 2) - centerX + (Math.random() - 0.5) * 50;
+                let dy = (rect.top - gridRect.top) + (rect.height / 2) - centerY + (Math.random() - 0.5) * 50;
+                const dist = Math.sqrt(dx*dx + dy*dy) || 1; const force = (Math.random() * 400) + 400; 
+                const tx = (dx / dist) * force; const ty = (dy / dist) * force; const rot = (Math.random() - 0.5) * 720; 
+                p.classList.add('exploded'); void p.offsetWidth; p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s'; p.style.pointerEvents = 'none';
+                setTimeout(() => { p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0.2)`; p.style.opacity = '0'; }, 50);
+            });
+            globalState.hasSmartBomb = false; 
+            if(!globalState.levels[activeLevelIdx].revealedTiles) globalState.levels[activeLevelIdx].revealedTiles = [];
+            globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()];
+            saveState(); bombBtn.style.display = "none";
+        }
+
+        function handleInteraction(e) {
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || globalState.currentFuel <= 0) return;
+            const hidden = Array.from(document.querySelectorAll('.grid-piece:not(.revealed)'));
+            if (hidden.length === 0) return;
+            const tile = hidden[Math.floor(Math.random() * hidden.length)];
+            const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile);
+            tile.classList.add('revealed'); 
+            if(!lState.revealedTiles) lState.revealedTiles = [];
+            lState.revealedTiles.push(idx);
+            globalState.currentFuel = Math.max(0, globalState.currentFuel - TILE_COST); saveState(); updateMiniFuelUI();
+            
+            let cx = e.clientX; let cy = e.clientY;
+            if(e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
+            if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
+            
+            if (globalState.currentFuel <= 0) triggerGameOver();
+        }
+
+        function submitImageGuess(selectedIndex) {
+            const lState = globalState.levels[activeLevelIdx];
+            if(lState.completed || globalState.currentFuel <= 0) return;
+            if(selectedIndex === lState.correctIdx) {
+                const btn = document.getElementById('img-opt-' + selectedIndex);
+                btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
+                endGame(true, "Target Verified");
+            } else {
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY); saveState(); updateMiniFuelUI();
+                const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash');
+                setTimeout(() => btn.classList.remove('wrong-flash'), 500);
+                if (globalState.currentFuel <= 0) triggerGameOver();
+            }
+        }
+
+        function submitTrivia(selectedIndex) {
+            const lState = globalState.levels[activeLevelIdx];
+            if(lState.completed || globalState.currentFuel <= 0) return;
+            if(selectedIndex === lState.correctIdx) {
+                const btn = document.getElementById('btn-opt-' + selectedIndex);
+                btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
+                endGame(true, "Analysis Correct");
+            } else {
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY); saveState(); updateMiniFuelUI();
+                const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash');
+                setTimeout(() => btn.classList.remove('wrong-flash'), 500);
+                if (globalState.currentFuel <= 0) triggerGameOver();
+            }
+        }
+
+        function endGame(win, msg) {
+            document.getElementById('message').textContent = msg;
+            if (win) {
+                document.getElementById('message').className = "success";
+                const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
+                if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed'));
+                triggerConfetti(); document.getElementById('level-title').textContent = lState.name; 
+                document.getElementById('smart-bomb-btn').style.display = "none"; saveState();
+                if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2000);
+            } else { document.getElementById('message').className = "fail"; }
+        }
+
+        function triggerGameOver() {
+            document.getElementById('game-view').classList.add('gray-out'); document.getElementById('selector-view').classList.add('gray-out'); document.getElementById('radar-view').classList.add('gray-out'); setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500);
+        }
+
+        function closeRefuel() { document.getElementById('refuel-overlay').style.display = 'none'; saveAndExit(); }
+        
+        function updateMiniFuelUI() {
+            const el = document.getElementById('current-fuel-display'); el.querySelector('span').textContent = globalState.currentFuel;
+            if (globalState.currentFuel <= 200) el.classList.add('danger'); else el.classList.remove('danger');
+        }
+
+        function saveAndExit() { 
+            tkState.active = false; if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
+            renderDashboard(); document.getElementById('game-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); 
+        }
+        
+        function triggerResetUI() { document.getElementById('restart-overlay').style.display = 'flex'; }
+        function cancelReset() { document.getElementById('restart-overlay').style.display = 'none'; }
+        function confirmReset() { localStorage.clear(); location.reload(); }
+
+        function showFloat(x, y, text) {
+            const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text;
+            el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
+        }
+
+        function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block';
+            btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; });
+        });
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+    </script>
+</body>
+</html>

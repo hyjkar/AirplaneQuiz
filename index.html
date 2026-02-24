@@ -673,609 +673,13 @@
 
         const RUNWAY_SVG = `<svg width="128" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="128" height="32" fill="#3b3b3b"/><rect width="128" height="2" fill="#385e26"/><rect y="2" width="128" height="2" fill="#4a4a4a"/><rect x="0" y="14" width="32" height="4" fill="#ddd"/><rect x="64" y="14" width="32" height="4" fill="#ddd"/><rect x="0" y="4" width="128" height="2" fill="#fff"/><rect x="0" y="26" width="128" height="2" fill="#fff"/><rect x="10" y="10" width="16" height="2" fill="#222"/><rect x="40" y="18" width="24" height="2" fill="#222"/><rect x="80" y="12" width="12" height="2" fill="#222"/><rect x="100" y="20" width="16" height="2" fill="#222"/></svg>`;
 
-        // TILE LAYERS
-        const fullMapLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png');
+// TILE LAYERS (Removed {r} to prevent 404 tile errors)
+        const fullMapLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png');
         const cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
         const cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
         const cleanMapLayer = L.layerGroup([cleanMapBase, cleanMapLabels]);
 
-        // --- 4. GAME ENGINE LOGIC ---
-        function getOptionsForImage(correctName, isClassified) {
-            const pool = isClassified ? AIRCRAFT_DATA.classified : AIRCRAFT_DATA.standard;
-            let options = [correctName];
-            let others = pool.filter(x => x.name !== correctName).sort(() => Math.random() - 0.5);
-            if(others.length >= 2) { options.push(others[0].name, others[1].name); }
-            return options.sort(() => Math.random() - 0.5);
-        }
-
-        window.onload = function() {
-            try { 
-                loadState(); 
-                if (!globalState.username) {
-                    document.getElementById('login-overlay').style.display = 'flex';
-                } else {
-                    document.getElementById('selector-view').classList.add('active');
-                    document.getElementById('pilot-greeting').textContent = `Pilot: ${globalState.username}`;
-                    renderDashboard();
-                    if (isAllWorldsComplete()) syncScoreToCloud();
-                }
-                
-                let ci = document.getElementById('callsign-input');
-                if(ci) ci.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') { this.blur(); registerPilot(); }
-                });
-
-                // AutoPlay Audio Logic
-                let bgMusicStarted = false;
-                window.addEventListener('pointerdown', function initAudio() {
-                    if (!bgMusicStarted) {
-                        const bgm = document.getElementById('bg-music');
-                        if (bgm) {
-                            bgm.volume = 0.3;
-                            bgm.play().catch(e => console.log("Audio play blocked", e));
-                            bgMusicStarted = true;
-                        }
-                        window.removeEventListener('pointerdown', initAudio);
-                    }
-                });
-                
-                const tkBtn = document.getElementById('takeoff-btn');
-                const startPress = (e) => { 
-                    e.preventDefault();
-                    if(tkBtn) tkBtn.classList.add('pressed');
-                    if (tkState.active && tkState.speed < 140) {
-                        tkState.pressing = false; 
-                        explodePlane("ROTATED TOO EARLY");
-                        return;
-                    }
-                    tkState.pressing = true; 
-                };
-                const endPress = (e) => { 
-                    if (e && e.cancelable) e.preventDefault();
-                    if(tkBtn) tkBtn.classList.remove('pressed');
-                    tkState.pressing = false; 
-                };
-                
-                if(tkBtn) {
-                    tkBtn.addEventListener('pointerdown', startPress);
-                    window.addEventListener('pointerup', endPress);
-                    window.addEventListener('pointercancel', endPress);
-                }
-            } catch(e) { 
-                console.error("Critical Load Error", e); 
-                document.body.innerHTML = `<div style='color:red; background:white; padding:20px; font-family:monospace; border-radius:10px;'><h3>Game Crash</h3><p>${e.message}</p></div>`;
-            }
-        };
-
-        function generateGameLevels() {
-            let pool = [...AIRCRAFT_DATA.standard].sort(() => Math.random() - 0.5);
-            let classPool = [...AIRCRAFT_DATA.classified].sort(() => Math.random() - 0.5);
-            let tPool = [...TRIVIA_DATA].sort(() => Math.random() - 0.5);
-
-            let h1 = pool.slice(0, 4).map(p => {
-                let opts = getOptionsForImage(p.name, false);
-                return { ...p, hangar: 1, isClassified: false, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) };
-            });
-            let h2 = pool.slice(4, 7).map(p => {
-                let opts = getOptionsForImage(p.name, false);
-                return { ...p, hangar: 2, isClassified: false, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) };
-            });
-            let h3 = classPool.map(p => {
-                let opts = getOptionsForImage(p.name, true);
-                return { ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) };
-            });
-
-            h1.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 1, isClassified: false, completed: false, failed: false, attempts: 0 });
-            h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
-            
-            h2.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 2, isClassified: false, completed: false, failed: false, attempts: 0 });
-            h2.push({ ...tPool[1], hangar: 2, isClassified: false, completed: false });
-            
-            h3.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 3, isClassified: true, completed: false, failed: false, attempts: 0 });
-            h3.push({ ...tPool[2], hangar: 3, isClassified: true, completed: false }); 
-
-            return [...h1.sort(() => Math.random() - 0.5), ...h2.sort(() => Math.random() - 0.5), ...h3.sort(() => Math.random() - 0.5)];
-        }
-
-        function registerPilot() {
-            const name = document.getElementById('callsign-input').value.trim();
-            if (name.length < 2) { alert("Callsign too short."); return; }
-            globalState.username = name;
-            saveState();
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('selector-view').classList.add('active');
-            document.getElementById('pilot-greeting').textContent = `Pilot: ${globalState.username}`;
-            renderDashboard();
-        }
-
-        function syncScoreToCloud() {
-            if (!db || !globalState.username) return;
-            db.collection("fuel_command_v6").doc(globalState.username).set({
-                name: globalState.username,
-                score: globalState.currentFuel,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(console.error);
-        }
-
-        function openLeaderboard() {
-            document.getElementById('selector-view').classList.remove('active');
-            document.getElementById('leaderboard-view').classList.add('active');
-            const list = document.getElementById('leaderboard-list');
-            list.innerHTML = "Fetching Data...";
-            if(!db) { list.innerHTML = "⚠️ Database not connected."; return; }
-
-            db.collection("fuel_command_v6").orderBy("score", "desc").limit(20).get()
-            .then((querySnapshot) => {
-                let html = "";
-                let rank = 1;
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const isMe = data.name === globalState.username;
-                    html += `<div class="lb-row ${isMe ? 'me' : ''}"><div class="lb-rank">#${rank++}</div><div class="lb-name">${data.name}</div><div class="lb-fuel">${data.score}L</div></div>`;
-                });
-                if(html === "") html = "<div style='text-align:center; padding:20px; color:#777;'>No completed missions yet.</div>";
-                list.innerHTML = html;
-            });
-        }
-
-        function closeLeaderboard() { document.getElementById('leaderboard-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); }
-
-        function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v65'); 
-            if (saved) {
-                globalState = JSON.parse(saved);
-                if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
-                if(globalState.hasSmartBomb === undefined) globalState.hasSmartBomb = true;
-                if(globalState.hasSeenTakeoffTutorial === undefined) globalState.hasSeenTakeoffTutorial = false;
-            } else {
-                globalState.currentFuel = STARTING_GLOBAL_FUEL;
-                globalState.levels = generateGameLevels();
-                globalState.hasSmartBomb = true;
-                globalState.hasSeenTakeoffTutorial = false;
-            }
-        }
-
-        function saveState() { try { localStorage.setItem('fuelQuizState_v65', JSON.stringify(globalState)); } catch(e){} }
-        
-        function isHangarComplete(hNum) { return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed); }
-        function isAllWorldsComplete() { return globalState.levels.every(l => l.completed); }
-
-        function renderDashboard() {
-            document.getElementById('total-fuel-display').textContent = globalState.currentFuel;
-            const pct = Math.min(100, Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100));
-            document.getElementById('fuel-bar').style.width = pct + "%";
-            
-            const h1Done = isHangarComplete(1);
-            const h2Done = isHangarComplete(2);
-            
-            if (h1Done && !globalState.world1Complete) { globalState.world1Complete = true; triggerRefuel(); }
-            if (h2Done && !globalState.world2Complete) { globalState.world2Complete = true; triggerRefuel(); }
-
-            const unlockMsg = document.getElementById('unlock-message');
-            if(h2Done) unlockMsg.innerHTML = "Classified Ops: <span style='color:#2ecc71'>GRANTED</span>";
-            else if(h1Done) unlockMsg.innerHTML = "Hangar 2: <span style='color:#2ecc71'>UNLOCKED</span>";
-            else unlockMsg.innerHTML = "Complete Hangar 1 to advance";
-
-            const listContainer = document.getElementById('level-list-container');
-            listContainer.innerHTML = "";
-
-            const hangars = { 1: [], 2: [], 3: [] };
-            globalState.levels.forEach((level, index) => { hangars[level.hangar].push({ ...level, originalIndex: index }); });
-
-            let activeHangar = 1;
-            if (h1Done) activeHangar = 2;
-            if (h2Done) activeHangar = 3;
-
-            [1, 2, 3].forEach(hNum => {
-                const levels = hangars[hNum];
-                if(levels.length === 0) return;
-
-                const folder = document.createElement('div');
-                let isFolderLocked = false;
-                if (hNum === 2 && !h1Done) isFolderLocked = true;
-                if (hNum === 3 && !h2Done) isFolderLocked = true;
-
-                folder.className = `world-folder ${isFolderLocked ? 'locked-world' : ''} ${hNum === activeHangar ? 'open' : ''}`;
-                
-                const header = document.createElement('div');
-                header.className = 'world-header';
-                let lockSVG = isFolderLocked ? ICONS.lock : '';
-                header.innerHTML = `<div class="world-title-group"><h3>${lockSVG}Hangar ${hNum}</h3></div><div class="arrow">▼</div>`;
-                if (!isFolderLocked) header.onclick = () => folder.classList.toggle('open');
-
-                const content = document.createElement('div');
-                content.className = 'world-content';
-
-                levels.forEach(levelData => {
-                    const idx = levelData.originalIndex;
-                    const card = document.createElement('div');
-                    
-                    if (levelData.type === 'trivia' || levelData.type === 'takeoff') card.className = "level-strip special";
-                    else if (levelData.isClassified) card.className = "level-strip classified";
-                    else card.className = "level-strip";
-
-                    let iconSvg = ICONS.plane;
-                    let iconColor = "var(--brand-dark)";
-                    let title = `Flight ${idx + 1}`;
-                    
-                    if (levelData.type === 'trivia') { iconSvg = ICONS.folder; iconColor = "#3498db"; title = "Incident Report"; } 
-                    else if (levelData.type === 'takeoff') { iconSvg = ICONS.takeoff; iconColor = "#3498db"; title = "Takeoff Calibration"; }
-                    else if (levelData.isClassified) { iconSvg = ICONS.jet; iconColor = "var(--brand-red)"; title = "Classified"; }
-
-                    let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
-                    
-                    if (levelData.failed) {
-                        iconSvg = ICONS.cross; iconColor = "var(--brand-red)"; statusHtml = `<div class="strip-status" style="color:var(--brand-red)">FAILED</div>`;
-                    } else if (levelData.completed) {
-                        title = levelData.name; iconSvg = ICONS.star; iconColor = "var(--brand-gold)"; statusHtml = `<div class="strip-status status-done">Cleared</div>`;
-                    } else if (levelData.type === 'takeoff') {
-                        let triesLeft = 3 - (levelData.attempts || 0); statusHtml = `<div class="strip-status status-ready">Tries: ${triesLeft}</div>`;
-                    } else if (levelData.type === 'image' && levelData.revealedTiles && levelData.revealedTiles.length > 0) {
-                        statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
-                    }
-
-                    let isFuelLocked = false;
-                    if (hNum === 3 && globalState.currentFuel < 1000 && !levelData.completed && !levelData.failed) isFuelLocked = true;
-
-                    if (isFuelLocked) {
-                        card.className = "level-strip locked";
-                        card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${ICONS.fuel}</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
-                    } else if (globalState.currentFuel <= 0 && !levelData.completed && !levelData.failed) {
-                         card.className += " locked"; statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
-                         card.onclick = () => triggerGameOver();
-                         card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
-                    } else if (levelData.failed) {
-                        card.className = "level-strip locked"; 
-                        card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
-                    } else {
-                        card.onclick = () => launchLevel(idx);
-                        card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
-                    }
-                    content.appendChild(card);
-                });
-
-                folder.appendChild(header);
-                folder.appendChild(content);
-                listContainer.appendChild(folder);
-            });
-        }
-
-        function triggerRefuel() {
-            globalState.currentFuel += REFUEL_AMOUNT;
-            saveState();
-            setTimeout(() => { document.getElementById('refuel-overlay').style.display = 'flex'; }, 500);
-        }
-
-        function launchLevel(idx) {
-            activeLevelIdx = idx;
-            const lState = globalState.levels[idx];
-            document.getElementById('selector-view').classList.remove('active');
-            document.getElementById('game-view').classList.add('active');
-
-            let title = `Flight ${idx+1}`;
-            if (lState.type === 'trivia') title = "Incident Report";
-            else if (lState.type === 'takeoff') title = "Takeoff Calibration";
-            else if (lState.isClassified) title = "Classified";
-            
-            if (lState.completed) title = lState.name;
-            document.getElementById('level-title').textContent = title;
-            document.getElementById('message').textContent = lState.completed ? "Cleared" : "";
-            updateMiniFuelUI();
-
-            const imgArea = document.getElementById('image-game-area');
-            const triviaArea = document.getElementById('trivia-game-area');
-            const takeoffArea = document.getElementById('takeoff-game-area');
-            const container = document.getElementById('game-container');
-            const bombBtn = document.getElementById('smart-bomb-btn');
-            
-            imgArea.style.display = 'none';
-            triviaArea.style.display = 'none';
-            takeoffArea.style.display = 'none';
-
-            if(tkState.frameId) { cancelAnimationFrame(tkState.frameId); tkState.active = false; }
-
-            if (lState.type === 'image') {
-                imgArea.style.display = 'flex';
-                container.style.overflow = 'hidden';
-
-                document.getElementById('mystery-image').src = lState.image;
-                
-                lState.options.forEach((optText, i) => {
-                    const btn = document.getElementById('img-opt-' + i);
-                    if(btn) {
-                        btn.textContent = optText;
-                        btn.disabled = lState.completed;
-                        btn.style.backgroundColor = ""; 
-                        btn.style.color = ""; 
-                        if(lState.completed && i === lState.correctIdx) {
-                            btn.style.backgroundColor = "var(--gauge-green)";
-                            btn.style.color = "white";
-                        }
-                    }
-                });
-                
-                if (globalState.hasSmartBomb && !lState.completed) bombBtn.style.display = "inline-block";
-                else bombBtn.style.display = "none";
-
-                const grid = document.getElementById('cover-grid');
-                grid.innerHTML = "";
-                for (let i = 0; i < 100; i++) {
-                    const tile = document.createElement('div');
-                    tile.className = 'grid-piece';
-                    if (lState.revealedTiles && lState.revealedTiles.includes(i)) tile.classList.add('revealed');
-                    if (lState.completed) tile.classList.add('revealed');
-                    grid.appendChild(tile);
-                }
-
-                if (!lState.completed && globalState.currentFuel > 0) {
-                    grid.onpointerdown = handleInteraction; 
-                } else {
-                    grid.onpointerdown = null;
-                }
-            } else if (lState.type === 'trivia') {
-                triviaArea.style.display = 'flex';
-                bombBtn.style.display = "none";
-
-                document.getElementById('trivia-question').textContent = lState.question;
-                
-                lState.options.forEach((optText, i) => {
-                    const btn = document.getElementById('btn-opt-' + i);
-                    if(btn) {
-                        btn.textContent = String.fromCharCode(65 + i) + ". " + optText;
-                        btn.disabled = lState.completed;
-                        btn.style.backgroundColor = ""; 
-                        btn.style.color = ""; 
-                        if(lState.completed && i === lState.correctIdx) {
-                            btn.style.backgroundColor = "var(--gauge-green)";
-                            btn.style.color = "white";
-                        }
-                    }
-                });
-            } else if (lState.type === 'takeoff') {
-                takeoffArea.style.display = 'flex';
-                bombBtn.style.display = "none";
-                
-                const sky = document.getElementById('tk-bg-sky');
-                const city = document.getElementById('tk-bg-city');
-                const ground = document.getElementById('tk-bg-ground');
-                const runwaySurf = document.getElementById('tk-runway-surface');
-                
-                const weather = document.getElementById('tk-weather-overlay');
-                const zone = document.getElementById('tk-target-zone');
-                
-                weather.className = '';
-                runwaySurf.style.backgroundImage = getSvgUri(RUNWAY_SVG);
-
-                const th = THEMES[lState.hangar];
-                sky.style.backgroundImage = getSvgUri(th.sky);
-                city.style.backgroundImage = getSvgUri(th.city);
-                ground.style.backgroundImage = getSvgUri(th.ground);
-
-                if (lState.hangar === 1) {
-                    tkState.minAngle = 9; tkState.maxAngle = 16;
-                    zone.style.bottom = '30%'; zone.style.height = '23.3%';
-                } else if (lState.hangar === 2) {
-                    weather.classList.add('weather-rain');
-                    tkState.minAngle = 10; tkState.maxAngle = 15;
-                    zone.style.bottom = '33.3%'; zone.style.height = '16.6%';
-                } else {
-                    weather.classList.add('weather-fog');
-                    tkState.minAngle = 11; tkState.maxAngle = 14;
-                    zone.style.bottom = '36.6%'; zone.style.height = '10%';
-                }
-                
-                if (!lState.completed && !lState.failed) {
-                    if (!globalState.hasSeenTakeoffTutorial) {
-                        document.getElementById('takeoff-tutorial-overlay').style.display = 'flex';
-                    } else {
-                        startTakeoff();
-                    }
-                } else {
-                    document.getElementById('tk-mountain').style.display = 'none';
-                    document.getElementById('tk-plane').style.display = 'block';
-                    document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-10deg)`;
-                    document.getElementById('tk-needle').style.bottom = `40%`;
-                    document.getElementById('tk-runway-fill').style.width = '0%';
-                    document.getElementById('tk-lift-fill').style.width = '100%';
-                    document.getElementById('tk-speed-val').textContent = "150";
-                    document.getElementById('tk-speed-val').style.color = "var(--gauge-green)";
-                }
-            }
-        }
-
-        function startTakeoffFromTutorial() {
-            globalState.hasSeenTakeoffTutorial = true;
-            saveState();
-            document.getElementById('takeoff-tutorial-overlay').style.display = 'none';
-            startTakeoff();
-        }
-
-        function startTakeoff() {
-            document.querySelectorAll('.pixel-particle').forEach(el => el.remove());
-            
-            tkState.active = true;
-            tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0;
-            tkState.distance = 100; tkState.speed = 0; tkState.pressing = false;
-            tkState.bgPosSky = 0; tkState.bgPosCity = 0; tkState.bgPosGround = 0; tkState.bgPosRunway = 0;
-            
-            document.getElementById('tk-plane').style.display = 'block';
-            document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`;
-            document.getElementById('tk-mountain').style.display = 'none';
-            document.getElementById('tk-needle').style.bottom = `0%`;
-            document.getElementById('tk-runway-fill').style.width = '100%';
-            document.getElementById('tk-lift-fill').style.width = '0%';
-            document.getElementById('tk-speed-val').textContent = "0";
-            document.getElementById('tk-speed-val').style.color = "var(--brand-red)";
-            
-            document.getElementById('tk-bg-sky').style.backgroundPositionX = '0px';
-            document.getElementById('tk-bg-city').style.backgroundPositionX = '0px';
-            document.getElementById('tk-bg-ground').style.backgroundPositionX = '0px';
-            document.getElementById('tk-runway-surface').style.backgroundPositionX = '0px';
-            
-            tkState.frameId = requestAnimationFrame(takeoffLoop);
-        }
-
-        function takeoffLoop() {
-            if (!tkState.active) return;
-
-            let acceleration = 1.0;
-            if (tkState.pitch > 0) acceleration -= (tkState.pitch * 0.05); 
-            tkState.speed += acceleration;
-            tkState.speed = Math.max(0, Math.min(220, tkState.speed));
-
-            if (tkState.pressing) tkState.pitchVelocity += 0.04; 
-            else tkState.pitchVelocity -= 0.02; 
-            
-            tkState.pitchVelocity *= 0.95; 
-            tkState.pitchVelocity = Math.max(-0.6, Math.min(0.8, tkState.pitchVelocity)); 
-            
-            tkState.pitch += tkState.pitchVelocity;
-            tkState.pitch = Math.max(0, Math.min(30, tkState.pitch));
-            if(tkState.pitch === 30 || tkState.pitch === 0) tkState.pitchVelocity = 0;
-
-            if (tkState.speed >= 140 && tkState.pitch >= tkState.minAngle && tkState.pitch <= tkState.maxAngle) {
-                tkState.lift += 0.5; 
-            } else {
-                tkState.lift = Math.max(0, tkState.lift - 0.2); 
-            }
-
-            const liftY = (tkState.lift / 100) * 80; 
-            const planeEl = document.getElementById('tk-plane');
-            planeEl.style.transform = `translateY(-${liftY}px) rotate(-${tkState.pitch}deg)`;
-
-            const needle = document.getElementById('tk-needle');
-            needle.style.bottom = `${Math.max(0, Math.min(100, (tkState.pitch / 30) * 100))}%`;
-
-            const speedEl = document.getElementById('tk-speed-val');
-            speedEl.textContent = Math.floor(tkState.speed);
-            if (tkState.speed >= 140) speedEl.style.color = "var(--gauge-green)";
-            else speedEl.style.color = "var(--brand-red)";
-
-            tkState.distance -= (tkState.speed / 1450); 
-
-            tkState.bgPosSky -= tkState.speed * 0.002;
-            tkState.bgPosCity -= tkState.speed * 0.008;
-            tkState.bgPosGround -= tkState.speed * 0.025;
-            tkState.bgPosRunway -= tkState.speed * 0.08;
-
-            document.getElementById('tk-bg-sky').style.backgroundPositionX = tkState.bgPosSky + 'px';
-            document.getElementById('tk-bg-city').style.backgroundPositionX = tkState.bgPosCity + 'px';
-            document.getElementById('tk-bg-ground').style.backgroundPositionX = tkState.bgPosGround + 'px';
-            document.getElementById('tk-runway-surface').style.backgroundPositionX = tkState.bgPosRunway + 'px';
-
-            document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%';
-            document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
-            
-            if (tkState.distance < 15) {
-                const mtn = document.getElementById('tk-mountain');
-                mtn.style.display = 'block';
-                mtn.style.left = `calc(${tkState.distance * 6}% + 100px)`; 
-            }
-
-            if (tkState.lift >= 100) return winTakeoff();
-            if (tkState.distance <= 0) return explodePlane("CRASHED INTO MOUNTAIN");
-
-            tkState.frameId = requestAnimationFrame(takeoffLoop);
-        }
-
-        function explodePlane(reason) {
-            tkState.active = false; 
-            const planeEl = document.getElementById('tk-plane');
-            planeEl.style.display = 'none'; 
-            
-            const vp = document.getElementById('takeoff-viewport');
-            const colors = ['#fff', 'var(--brand-red)', '#a0a0a0', '#1a1a1a', '#555'];
-            
-            const liftY = (tkState.lift / 100) * 80;
-            const baseY = vp.offsetHeight - 60 - liftY; 
-            
-            for(let i = 0; i < 80; i++) {
-                let p = document.createElement('div');
-                p.className = 'pixel-particle';
-                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                p.style.left = (30 + Math.random() * 80) + 'px'; 
-                p.style.top = baseY + Math.random() * 20 + 'px'; 
-                vp.appendChild(p);
-                
-                let vx = (Math.random() - 0.5) * 5;
-                let vy = (Math.random() - 0.8) * 5;
-                animateParticle(p, vx, vy);
-            }
-
-            vp.classList.add('wrong-flash');
-            setTimeout(() => vp.classList.remove('wrong-flash'), 500);
-            setTimeout(() => failTakeoff(reason), 3500); 
-        }
-
-        function animateParticle(p, vx, vy) {
-            let x = parseFloat(p.style.left);
-            let y = parseFloat(p.style.top);
-            let age = 0;
-            function step() {
-                age++;
-                if(age > 150) { p.remove(); return; }
-                if(age > 100) { p.style.opacity = 1 - ((age - 100) / 50); } 
-                
-                x += vx; y += vy; vy += 0.1; vx *= 0.99; 
-                p.style.left = x + 'px'; p.style.top = y + 'px';
-                requestAnimationFrame(step);
-            }
-            requestAnimationFrame(step);
-        }
-
-        function failTakeoff(reason) {
-            const lState = globalState.levels[activeLevelIdx];
-            lState.attempts = (lState.attempts || 0) + 1;
-            
-            globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
-            saveState();
-            updateMiniFuelUI();
-
-            if (lState.attempts >= 3) {
-                lState.failed = true;
-                lState.completed = true; 
-                saveState();
-                document.getElementById('message').textContent = "SYSTEM LOCKED - MAX ATTEMPTS FAILED (-200L)";
-                document.getElementById('message').className = "fail";
-                setTimeout(() => { if (isAllWorldsComplete()) syncScoreToCloud(); saveAndExit(); }, 2500);
-            } else {
-                let triesLeft = 3 - lState.attempts;
-                document.getElementById('message').textContent = `${reason} | TRIES LEFT: ${triesLeft} (-200L)`;
-                document.getElementById('message').className = "fail";
-                setTimeout(() => {
-                    if(!lState.completed && !lState.failed && globalState.currentFuel > 0 && document.getElementById('takeoff-game-area').style.display !== 'none') {
-                        document.getElementById('message').textContent = "";
-                        startTakeoff();
-                    }
-                }, 1500);
-            }
-            if(globalState.currentFuel <= 0) setTimeout(triggerGameOver, 1500);
-        }
-
-        function winTakeoff() {
-            tkState.active = false;
-            const bonus = 500;
-            globalState.currentFuel += bonus; 
-            updateMiniFuelUI();
-            
-            const lState = globalState.levels[activeLevelIdx];
-            lState.completed = true;
-            
-            triggerConfetti();
-            document.getElementById('level-title').textContent = lState.name;
-            document.getElementById('message').textContent = `PERFECT TAKEOFF! +${bonus}L BONUS`;
-            document.getElementById('message').className = "success";
-            
-            saveState();
-            if (isAllWorldsComplete()) syncScoreToCloud();
-            setTimeout(saveAndExit, 2500);
-        }
-
-        function getCompassDirection(heading) {
-            if (heading === null || heading === undefined) return "UNKNOWN";
-            const dirs = ["NORTH", "NORTH-EAST", "EAST", "SOUTH-EAST", "SOUTH", "SOUTH-WEST", "WEST", "NORTH-WEST"];
-            return dirs[Math.round(((heading %= 360) < 0 ? heading + 360 : heading) / 45) % 8];
-        }
+        // ... (Keep your game engine logic up to openRadar) ...
 
         function openRadar() {
             if(globalState.currentFuel <= 0) { triggerGameOver(); return; }
@@ -1291,8 +695,15 @@
                 radarPathGroup = L.layerGroup().addTo(radarMap);
             }
             
-            setTimeout(() => { radarMap.invalidateSize(); }, 100);
-            
+            // FIX: Wait 150ms for the DOM to render the flexbox container before starting
+            setTimeout(() => { 
+                radarMap.invalidateSize(); 
+                startRadarMission();
+            }, 150);
+        }
+
+        // FIX: Moved the fetching logic into a dedicated function triggered AFTER the map is ready
+        function startRadarMission() {
             const textEl = document.getElementById('radar-screen-text');
             const msgEl = document.getElementById('radar-message');
             const btnToggle = document.getElementById('toggle-paths-btn');
@@ -1320,13 +731,9 @@
                 if(validAPIPlanes.length === 0) throw new Error("No valid planes");
 
                 currentRadarPlanes = validAPIPlanes.sort(() => Math.random() - 0.5).slice(0, 12).map(p => {
-                    const lat = p[6];
-                    const lng = p[5];
-                    const heading = p[10] || 0;
-                    
+                    const lat = p[6]; const lng = p[5]; const heading = p[10] || 0;
                     const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
-                    const trailLen = 2 + Math.random() * 2;
-                    const fwdLen = 3 + Math.random() * 3;
+                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
                     
                     const radBack = (heading + 180) * (Math.PI / 180);
                     const startLat = lat + Math.cos(radBack) * trailLen;
@@ -1342,24 +749,16 @@
                     };
                 });
                 
-                const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
-                currentRadarCallsign = targetPlane.callsign;
-                const headingStr = getCompassDirection(targetPlane.heading);
-
-                textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: NEXT STOP ${targetPlane.nextStop}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
-                plotPlanesOnRadar();
+                initTargetAndPlot();
             })
             .catch(err => {
                 console.warn("Radar API failed/rate-limited. Launching local simulation.");
-                
                 const fakeCalls = ["LHT442", "AFR12A", "SWR99B", "BAW505", "RYR77X", "FIN112", "NOR334", "KLM88", "EZY99", "WZZ10", "DAL22", "UAL33"];
                 for(let i=0; i<12; i++) {
-                    const lat = 45.0 + Math.random() * 7;
-                    const lng = 5.0 + Math.random() * 10;
+                    const lat = 45.0 + Math.random() * 7; const lng = 5.0 + Math.random() * 10;
                     const heading = Math.random() * 360;
                     const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
-                    const trailLen = 2 + Math.random() * 2;
-                    const fwdLen = 3 + Math.random() * 3;
+                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
                     
                     const radBack = (heading + 180) * (Math.PI / 180);
                     const startLat = lat + Math.cos(radBack) * trailLen;
@@ -1373,17 +772,24 @@
                         route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng
                     });
                 }
-                
-                const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
-                currentRadarCallsign = targetPlane.callsign;
-                const headingStr = getCompassDirection(targetPlane.heading);
-                
-                textEl.innerHTML = `<span style="color:#fff;">[ SIMULATION MODE ACTIVE ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: NEXT STOP ${targetPlane.nextStop}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
-                plotPlanesOnRadar();
+                initTargetAndPlot();
             });
+        }
+
+        // FIX: Reusable function to set up the target and draw the map
+        function initTargetAndPlot() {
+            const textEl = document.getElementById('radar-screen-text');
+            const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
+            currentRadarCallsign = targetPlane.callsign;
+            const headingStr = getCompassDirection(targetPlane.heading);
+
+            textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: NEXT STOP ${targetPlane.nextStop}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
+            plotPlanesOnRadar();
         }
         
         function plotPlanesOnRadar() {
+            radarMap.invalidateSize(); // Force update one last time before drawing
+
             currentRadarPlanes.forEach(p => {
                 const iconHtml = `<div style="transform: rotate(${p.heading}deg); color: var(--radar-green);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
                 let icon = L.divIcon({ html: iconHtml, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });
@@ -1397,8 +803,7 @@
                         document.getElementById('radar-message').className = "success";
                         document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
                         globalState.currentFuel += 250;
-                        saveState();
-                        updateMiniFuelUI();
+                        saveState(); updateMiniFuelUI();
                         
                         marker.setIcon(L.divIcon({
                             html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
@@ -1414,15 +819,20 @@
                         tDiv.style.color = "red";
                         setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
                         
-                        let m = Math.floor(radarTime / 60);
-                        let s = radarTime % 60;
+                        let m = Math.floor(radarTime / 60); let s = radarTime % 60;
                         tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}`;
                     }
                 });
             });
 
-            let groupBounds = L.featureGroup(radarLayerGroup.getLayers()).getBounds();
-            radarMap.fitBounds(groupBounds, { padding: [40, 40] });
+            // FIX: Manually calculating bounds prevents Leaflet's FeatureGroup crashes entirely
+            if(currentRadarPlanes.length > 0) {
+                let lats = currentRadarPlanes.map(p => p.lat);
+                let lngs = currentRadarPlanes.map(p => p.lng);
+                let safeBounds = [[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]];
+                radarMap.fitBounds(safeBounds, { padding: [40, 40] });
+            }
+            
             startRadarTimer(60);
         }
 

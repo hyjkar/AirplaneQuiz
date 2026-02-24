@@ -214,7 +214,7 @@
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
 
         /* --- VISUAL RADAR MODE --- */
-        #radar-view { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
+        #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
         
         .radar-terminal {
             width: 100%; flex-shrink: 0; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px;
@@ -561,7 +561,7 @@
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
-        } catch(e) {}
+        } catch(e) { console.error("Firebase uninitialized", e); }
 
         // --- 2. GAME DATA CONSTANTS ---
         const ICONS = {
@@ -602,17 +602,17 @@
         function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
 
         const THEMES = {
-            1: { 
+            1: { // Day
                 sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#87CEEB"/><rect y="32" width="256" height="32" fill="#99D9F0"/><rect x="20" y="16" width="20" height="8" fill="#fff"/><rect x="10" y="20" width="40" height="4" fill="#fff"/><rect x="30" y="24" width="10" height="4" fill="#e0e0e0"/><rect x="100" y="4" width="30" height="10" fill="#fff"/><rect x="85" y="10" width="60" height="4" fill="#fff"/><rect x="115" y="14" width="15" height="4" fill="#e0e0e0"/><rect x="200" y="21" width="25" height="8" fill="#fff"/><rect x="190" y="25" width="40" height="4" fill="#fff"/></svg>`,
                 city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#8ca1cc"/><rect x="50" y="10" width="40" height="54" fill="#8ca1cc"/><rect x="120" y="25" width="35" height="39" fill="#8ca1cc"/><rect x="180" y="15" width="25" height="49" fill="#8ca1cc"/><rect x="220" y="30" width="30" height="34" fill="#8ca1cc"/><rect x="0" y="35" width="25" height="29" fill="#5a6988"/><rect x="35" y="25" width="30" height="39" fill="#5a6988"/><rect x="80" y="40" width="50" height="24" fill="#5a6988"/><rect x="140" y="20" width="45" height="44" fill="#5a6988"/><rect x="200" y="35" width="40" height="29" fill="#5a6988"/><rect x="20" y="45" width="40" height="19" fill="#4a5875"/><rect x="70" y="30" width="35" height="34" fill="#4a5875"/><rect x="110" y="50" width="40" height="14" fill="#4a5875"/><rect x="160" y="40" width="30" height="24" fill="#4a5875"/><rect x="230" y="45" width="26" height="19" fill="#4a5875"/><rect x="40" y="30" width="4" height="4" fill="#7585a5"/><rect x="48" y="30" width="4" height="4" fill="#7585a5"/><rect x="40" y="38" width="4" height="4" fill="#7585a5"/><rect x="48" y="38" width="4" height="4" fill="#7585a5"/><rect x="75" y="35" width="4" height="4" fill="#7585a5"/><rect x="75" y="45" width="4" height="4" fill="#7585a5"/><rect x="85" y="35" width="4" height="4" fill="#7585a5"/><rect x="85" y="45" width="4" height="4" fill="#7585a5"/><rect x="145" y="25" width="4" height="4" fill="#7585a5"/><rect x="155" y="25" width="4" height="4" fill="#7585a5"/><rect x="165" y="25" width="4" height="4" fill="#7585a5"/><rect x="145" y="35" width="4" height="4" fill="#7585a5"/><rect x="155" y="35" width="4" height="4" fill="#7585a5"/><rect x="165" y="35" width="4" height="4" fill="#7585a5"/><rect x="205" y="40" width="4" height="4" fill="#7585a5"/><rect x="215" y="40" width="4" height="4" fill="#7585a5"/></svg>`,
                 ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#2d4c1e"/><rect x="10" y="12" width="20" height="8" fill="#2d4c1e"/><rect x="15" y="8" width="10" height="4" fill="#2d4c1e"/><rect x="50" y="10" width="30" height="10" fill="#2d4c1e"/><rect x="60" y="6" width="10" height="4" fill="#2d4c1e"/><rect x="110" y="14" width="20" height="6" fill="#2d4c1e"/><rect x="160" y="8" width="40" height="12" fill="#2d4c1e"/><rect x="175" y="4" width="10" height="4" fill="#2d4c1e"/><rect x="220" y="12" width="30" height="8" fill="#2d4c1e"/><rect x="0" y="20" width="256" height="12" fill="#1e3b12"/><rect x="15" y="16" width="10" height="4" fill="#1e3b12"/><rect x="55" y="14" width="20" height="6" fill="#1e3b12"/><rect x="120" y="18" width="10" height="4" fill="#1e3b12"/><rect x="170" y="12" width="20" height="8" fill="#1e3b12"/><rect x="230" y="16" width="15" height="4" fill="#1e3b12"/><rect x="25" y="24" width="4" height="4" fill="#385e26"/><rect x="80" y="22" width="4" height="4" fill="#385e26"/><rect x="140" y="26" width="4" height="4" fill="#385e26"/><rect x="190" y="22" width="4" height="4" fill="#385e26"/></svg>`
             },
-            2: { 
+            2: { // Stormy
                 sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#4a5d6a"/><rect y="32" width="256" height="32" fill="#5a6d7a"/><rect x="20" y="16" width="20" height="8" fill="#687d8c"/><rect x="10" y="20" width="40" height="4" fill="#687d8c"/><rect x="30" y="24" width="10" height="4" fill="#586b78"/><rect x="100" y="4" width="30" height="10" fill="#687d8c"/><rect x="85" y="10" width="60" height="4" fill="#687d8c"/><rect x="115" y="14" width="15" height="4" fill="#586b78"/><rect x="200" y="21" width="25" height="8" fill="#687d8c"/><rect x="190" y="25" width="40" height="4" fill="#687d8c"/></svg>`,
                 city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#3d4955"/><rect x="50" y="10" width="40" height="54" fill="#3d4955"/><rect x="120" y="25" width="35" height="39" fill="#3d4955"/><rect x="180" y="15" width="25" height="49" fill="#3d4955"/><rect x="220" y="30" width="30" height="34" fill="#3d4955"/><rect x="0" y="35" width="25" height="29" fill="#323d47"/><rect x="35" y="25" width="30" height="39" fill="#323d47"/><rect x="80" y="40" width="50" height="24" fill="#323d47"/><rect x="140" y="20" width="45" height="44" fill="#323d47"/><rect x="200" y="35" width="40" height="29" fill="#323d47"/><rect x="20" y="45" width="40" height="19" fill="#28313a"/><rect x="70" y="30" width="35" height="34" fill="#28313a"/><rect x="110" y="50" width="40" height="14" fill="#28313a"/><rect x="160" y="40" width="30" height="24" fill="#28313a"/><rect x="230" y="45" width="26" height="19" fill="#28313a"/></svg>`,
                 ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#2b3626"/><rect x="10" y="12" width="20" height="8" fill="#2b3626"/><rect x="15" y="8" width="10" height="4" fill="#2b3626"/><rect x="50" y="10" width="30" height="10" fill="#2b3626"/><rect x="60" y="6" width="10" height="4" fill="#2b3626"/><rect x="110" y="14" width="20" height="6" fill="#2b3626"/><rect x="160" y="8" width="40" height="12" fill="#2b3626"/><rect x="175" y="4" width="10" height="4" fill="#2b3626"/><rect x="220" y="12" width="30" height="8" fill="#2b3626"/><rect x="0" y="20" width="256" height="12" fill="#1d251a"/><rect x="15" y="16" width="10" height="4" fill="#1d251a"/><rect x="55" y="14" width="20" height="6" fill="#1d251a"/><rect x="120" y="18" width="10" height="4" fill="#1d251a"/><rect x="170" y="12" width="20" height="8" fill="#1d251a"/><rect x="230" y="16" width="15" height="4" fill="#1d251a"/><rect x="25" y="24" width="4" height="4" fill="#34422e"/><rect x="80" y="22" width="4" height="4" fill="#34422e"/><rect x="140" y="26" width="4" height="4" fill="#34422e"/><rect x="190" y="22" width="4" height="4" fill="#34422e"/></svg>`
             },
-            3: { 
+            3: { // Night
                 sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#0f1722"/><rect x="20" y="15" width="2" height="2" fill="#fff"/><rect x="50" y="30" width="2" height="2" fill="#fff"/><rect x="100" y="10" width="2" height="2" fill="#fff"/><rect x="150" y="25" width="2" height="2" fill="#fff"/><rect x="200" y="15" width="2" height="2" fill="#fff"/><rect x="240" y="20" width="2" height="2" fill="#fff"/></svg>`,
                 city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#151e2b"/><rect x="50" y="10" width="40" height="54" fill="#151e2b"/><rect x="120" y="25" width="35" height="39" fill="#151e2b"/><rect x="180" y="15" width="25" height="49" fill="#151e2b"/><rect x="220" y="30" width="30" height="34" fill="#151e2b"/><rect x="0" y="35" width="25" height="29" fill="#101722"/><rect x="35" y="25" width="30" height="39" fill="#101722"/><rect x="80" y="40" width="50" height="24" fill="#101722"/><rect x="140" y="20" width="45" height="44" fill="#101722"/><rect x="200" y="35" width="40" height="29" fill="#101722"/><rect x="20" y="45" width="40" height="19" fill="#0a0f16"/><rect x="70" y="30" width="35" height="34" fill="#0a0f16"/><rect x="110" y="50" width="40" height="14" fill="#0a0f16"/><rect x="160" y="40" width="30" height="24" fill="#0a0f16"/><rect x="230" y="45" width="26" height="19" fill="#0a0f16"/><rect x="40" y="30" width="4" height="4" fill="#f1c40f"/><rect x="48" y="30" width="4" height="4" fill="#f1c40f"/><rect x="75" y="35" width="4" height="4" fill="#f1c40f"/><rect x="85" y="45" width="4" height="4" fill="#f1c40f"/><rect x="145" y="25" width="4" height="4" fill="#f1c40f"/><rect x="165" y="35" width="4" height="4" fill="#f1c40f"/><rect x="205" y="40" width="4" height="4" fill="#f1c40f"/><rect x="40" y="38" width="4" height="4" fill="#e67e22"/><rect x="75" y="45" width="4" height="4" fill="#e67e22"/><rect x="155" y="35" width="4" height="4" fill="#e67e22"/><rect x="215" y="40" width="4" height="4" fill="#e67e22"/></svg>`,
                 ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#111a11"/><rect x="10" y="12" width="20" height="8" fill="#111a11"/><rect x="15" y="8" width="10" height="4" fill="#111a11"/><rect x="50" y="10" width="30" height="10" fill="#111a11"/><rect x="60" y="6" width="10" height="4" fill="#111a11"/><rect x="110" y="14" width="20" height="6" fill="#111a11"/><rect x="160" y="8" width="40" height="12" fill="#111a11"/><rect x="175" y="4" width="10" height="4" fill="#111a11"/><rect x="220" y="12" width="30" height="8" fill="#111a11"/><rect x="0" y="20" width="256" height="12" fill="#0a100a"/><rect x="15" y="16" width="10" height="4" fill="#0a100a"/><rect x="55" y="14" width="20" height="6" fill="#0a100a"/><rect x="120" y="18" width="10" height="4" fill="#0a100a"/><rect x="170" y="12" width="20" height="8" fill="#0a100a"/><rect x="230" y="16" width="15" height="4" fill="#0a100a"/></svg>`
@@ -706,7 +706,7 @@
                 }
             } catch(e) { 
                 console.error("Critical Load Error", e); 
-                document.body.innerHTML = `<div style='color:red; background:white; padding:20px;'>FATAL ERROR: ${e.message}</div>`;
+                document.body.innerHTML = `<div style='color:red; background:white; padding:20px; font-family:monospace;'>FATAL ERROR: ${e.message}</div>`;
             }
         };
 
@@ -861,7 +861,7 @@
                     let iconColor = "var(--brand-dark)";
                     let title = `Flight ${idx + 1}`;
                     
-                    if (levelData.type === 'trivia') { iconSvg = ICONS.folder; iconColor = "#3498db"; title = "Incident Report"; } 
+                    if (levelData.type === 'trivia') { iconSvg = ICONS.folder; iconColor = "#3498db"; title = "Incident Report"; }
                     else if (levelData.type === 'takeoff') { iconSvg = ICONS.takeoff; iconColor = "#3498db"; title = "Takeoff Calibration"; }
                     else if (levelData.isClassified) { iconSvg = ICONS.jet; iconColor = "var(--brand-red)"; title = "Classified"; }
 
@@ -1116,6 +1116,7 @@
 
             tkState.distance -= (tkState.speed / 1450); 
 
+            // Parallax Scroll
             tkState.bgPosSky -= tkState.speed * 0.002;
             tkState.bgPosCity -= tkState.speed * 0.008;
             tkState.bgPosGround -= tkState.speed * 0.025;
@@ -1234,12 +1235,14 @@
             setTimeout(saveAndExit, 2500);
         }
 
+        // --- HELPER FOR RADAR COMPASS ---
         function getCompassDirection(heading) {
             if (heading === null || heading === undefined) return "UNKNOWN";
             const dirs = ["NORTH", "NORTH-EAST", "EAST", "SOUTH-EAST", "SOUTH", "SOUTH-WEST", "WEST", "NORTH-WEST"];
             return dirs[Math.round(((heading %= 360) < 0 ? heading + 360 : heading) / 45) % 8];
         }
 
+        // --- VISUAL LEAFLET RADAR LOGIC ---
         function openRadar() {
             if(globalState.currentFuel <= 0) { triggerGameOver(); return; }
             
@@ -1309,7 +1312,7 @@
                 const headingStr = getCompassDirection(targetPlane.heading);
 
                 textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: DESTINATION ${targetPlane.destination}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
-                plotPlanesOnRadar(targetPlane);
+                plotPlanesOnRadar();
             })
             .catch(err => {
                 console.warn("Radar API failed/rate-limited. Launching local simulation.");
@@ -1341,7 +1344,7 @@
                 const headingStr = getCompassDirection(targetPlane.heading);
                 
                 textEl.innerHTML = `<span style="color:#fff;">[ SIMULATION MODE ACTIVE ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: DESTINATION ${targetPlane.destination}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
-                plotPlanesOnRadar(targetPlane);
+                plotPlanesOnRadar();
             });
         }
         
@@ -1366,14 +1369,18 @@
                             html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
                             className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
                         }));
+
                         setTimeout(closeRadar, 2000);
                     } else {
                         marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
                         radarTime = Math.max(0, radarTime - 3); 
+                        
                         const tDiv = document.getElementById('radar-timer');
                         tDiv.style.color = "red";
                         setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
-                        let m = Math.floor(radarTime / 60); let s = radarTime % 60;
+                        
+                        let m = Math.floor(radarTime / 60);
+                        let s = radarTime % 60;
                         tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}`;
                     }
                 });
@@ -1381,6 +1388,7 @@
 
             let groupBounds = L.featureGroup(radarLayerGroup.getLayers()).getBounds();
             radarMap.fitBounds(groupBounds, { padding: [40, 40] });
+
             startRadarTimer(60);
         }
         
@@ -1547,7 +1555,7 @@
 
         function showFloat(x, y, text) {
             const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text;
-            el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
+            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
         }
 
         function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }

@@ -1508,8 +1508,30 @@
 
             if (pathsVisible) {
                 currentRadarPlanes.forEach(p => {
+                    // Draw the projected flight vector line
                     L.polyline(p.route, { color: 'var(--radar-green)', weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup);
-                    L.circleMarker([p.endLat, p.endLng], { radius: 3, color: 'var(--radar-green)', fillColor: 'var(--radar-green)', fillOpacity: 1 }).addTo(radarPathGroup);
+                    
+                    // Add dot to the front of the line (Projected heading)
+                    L.circleMarker([p.route[2][0], p.route[2][1]], { radius: 3, color: 'var(--radar-green)', fillColor: 'var(--radar-green)', fillOpacity: 1 }).addTo(radarPathGroup);
+                    
+                    // Add a faded dot to the back of the line (Projected history)
+                    L.circleMarker([p.route[0][0], p.route[0][1]], { radius: 2, color: 'rgba(51, 255, 51, 0.4)', fill: true, stroke: false }).addTo(radarPathGroup);
+
+                    // Add Registry label to the back of the path (Only if real data)
+                    if (p.isReal && p.origin) {
+                        L.marker([p.route[0][0], p.route[0][1]], {
+                            icon: L.divIcon({ 
+                                html: `<div style="color: rgba(51, 255, 51, 0.8); font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 8px; margin-top: -8px; text-shadow: 1px 1px 2px #000;">REG: ${p.origin}</div>`, 
+                                className: 'radar-dest-label', 
+                                iconSize: [0,0] 
+                            })
+                        }).addTo(radarPathGroup);
+                    }
+                });
+            } else {
+                radarPathGroup.clearLayers();
+            }
+        }
                     
                     // Show origin text on the path (Only if real)
                     if (p.isReal && p.origin) {

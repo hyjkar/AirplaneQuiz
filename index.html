@@ -224,11 +224,21 @@
         .radar-content { font-size: 0.95rem; line-height: 1.4; text-transform: uppercase; z-index: 3; position: relative;}
         .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold;}
         
-        #radar-timer-container { display: flex; flex-direction: column; align-items: flex-end; z-index: 3; position: relative; }
+        #radar-timer-container { display: flex; flex-direction: column; align-items: flex-end; z-index: 3; position: relative; min-width: 130px;}
         #radar-timer { font-size: 2.2rem; font-weight: bold; text-align: right; margin-bottom: 5px; transition: color 0.3s;}
         .timer-penalty { color: var(--brand-red) !important; text-shadow: 0 0 10px rgba(215, 25, 32, 0.8); }
         
-        .radar-toggle-group { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; max-width: 160px; }
+        /* NEW: Accordion styles */
+        .radar-setup-container { width: 100%; display: flex; flex-direction: column; align-items: flex-end; }
+        #radar-setup-toggle { 
+            color: var(--brand-gold); font-size: 0.8rem; cursor: pointer; display: inline-block; 
+            padding: 4px 8px; border: 1px solid var(--brand-gold); border-radius: 4px; 
+            background: rgba(0,0,0,0.5); user-select: none; margin-bottom: 5px; font-weight: bold;
+        }
+        #radar-setup-content { display: none; width: 100%; justify-content: flex-end; }
+        #radar-setup-content.open { display: flex; }
+        
+        .radar-toggle-group { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; max-width: 160px;}
         .radar-toggle {
             background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green);
             font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; padding: 4px 6px; cursor: pointer;
@@ -247,6 +257,18 @@
         
         #radar-map-container { position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: #000; z-index: 1; }
         
+        /* NEW: Success overlay inside the map */
+        #radar-success-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5, 20, 5, 0.95);
+            z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center;
+            color: var(--radar-green); font-family: 'Share Tech Mono', monospace; text-align: center;
+            animation: radarFadeIn 0.3s ease-out forwards;
+        }
+        @keyframes radarFadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .success-title { font-size: 2rem; margin: 0 0 5px 0; text-shadow: 0 0 15px var(--radar-green); letter-spacing: 2px; }
+        .success-callsign { font-size: 1.5rem; color: #fff; margin-bottom: 20px; font-weight: bold;}
+        .success-reward { font-size: 1.2rem; font-weight: bold; color: var(--brand-gold); background: #111; padding: 8px 20px; border-radius: 4px; border: 1px solid var(--brand-gold); box-shadow: 0 0 10px rgba(207, 168, 110, 0.3);}
+
         .compass-pt { 
             position: absolute; color: var(--radar-green); font-family: 'Share Tech Mono', monospace; 
             font-size: 1.4rem; font-weight: bold; z-index: 1000; pointer-events: none; 
@@ -541,16 +563,28 @@
             </div>
             <div id="radar-timer-container">
                 <div id="radar-timer">05:00:00</div>
-                <div class="radar-toggle-group">
-                    <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
-                    <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">REG: OFF</button>
-                    <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">LABELS: OFF</button>
+                <div class="radar-setup-container">
+                    <div id="radar-setup-toggle" onclick="toggleRadarSetup()">[+] TACTICAL ASSISTS</div>
+                    <div id="radar-setup-content">
+                        <div class="radar-toggle-group">
+                            <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
+                            <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">REG: OFF</button>
+                            <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">LABELS: OFF</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         
         <div id="radar-map-wrapper">
             <div id="radar-map-container"></div>
+            
+            <div id="radar-success-overlay">
+                <h2 class="success-title">TARGET LOCKED</h2>
+                <div class="success-callsign" id="success-callsign-display">CALLSIGN</div>
+                <div class="success-reward">+250L FUEL</div>
+            </div>
+
             <div class="compass-pt compass-n">N</div>
             <div class="compass-pt compass-e">E</div>
             <div class="compass-pt compass-s">S</div>
@@ -1303,16 +1337,32 @@
             return dirs[Math.round(((heading %= 360) < 0 ? heading + 360 : heading) / 45) % 8];
         }
 
+        // --- ACCORDION TOGGLE ---
+        function toggleRadarSetup() {
+            const content = document.getElementById('radar-setup-content');
+            const toggle = document.getElementById('radar-setup-toggle');
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                toggle.textContent = "[+] TACTICAL ASSISTS";
+            } else {
+                content.classList.add('open');
+                toggle.textContent = "[-] TACTICAL ASSISTS";
+            }
+        }
+
         function openRadar() {
             if(globalState.currentFuel <= 0) { triggerGameOver(); return; }
             
             document.getElementById('selector-view').classList.remove('active');
             document.getElementById('radar-view').classList.add('active');
             
-            // RESET assists for new session
+            // RESET assists and UI for new session
             pathsVisible = false;
             originVisible = false;
             currentMapStyle = 'CLEAN'; 
+            document.getElementById('radar-setup-content').classList.remove('open');
+            document.getElementById('radar-setup-toggle').textContent = "[+] TACTICAL ASSISTS";
+            document.getElementById('radar-success-overlay').style.display = 'none';
             
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
@@ -1341,10 +1391,9 @@
             document.getElementById('toggle-origin-btn').style.background = "transparent";
             document.getElementById('toggle-origin-btn').style.color = "var(--radar-green)";
 
-            document.getElementById('toggle-map-btn').textContent = "LABELS: OFF";
-            document.getElementById('toggle-map-btn').style.background = "transparent";
-            document.getElementById('toggle-map-btn').style.color = "var(--radar-green)";
-            
+            document.getElementById('toggle-map-btn').textContent = "MAP: CLEAN";
+            document.getElementById('toggle-map-btn').style.background = "var(--radar-green)";
+            document.getElementById('toggle-map-btn').style.color = "#000";
             if (radarMap && radarMap.hasLayer(cleanMapLabels)) radarMap.removeLayer(cleanMapLabels);
             
             // Randomly select a sector
@@ -1414,6 +1463,7 @@
                     const lat = region.lamin + Math.random() * (region.lamax - region.lamin); 
                     const lng = region.lomin + Math.random() * (region.lomax - region.lomin);
                     
+                    // Filter: Prevent overlaps in fake data too
                     let isOverlapping = false;
                     for (let cp of currentRadarPlanes) {
                         if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) {
@@ -1513,7 +1563,7 @@
             startRadarTimer(300); // Kick off the MS timer
         }
 
-        // --- CUSTOM MODAL LOGIC ---
+        // --- CUSTOM MODAL LOGIC & SUCCESS OVERLAY ---
         function openInterceptModal(plane, marker) {
             if (radarTimeMs <= 0) return;
             pendingInterceptPlane = { data: plane, marker: marker };
@@ -1545,17 +1595,24 @@
             if (p.callsign === currentRadarCallsign) {
                 radarTimeMs = 0; // stop timer
                 clearInterval(radarCountdown);
-                document.getElementById('radar-message').className = "success";
-                document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
+                
                 globalState.currentFuel += 250;
                 saveState(); updateMiniFuelUI();
+                
+                // Show satisfying success screen
+                const overlay = document.getElementById('radar-success-overlay');
+                document.getElementById('success-callsign-display').textContent = p.callsign;
+                overlay.style.display = 'flex';
                 
                 marker.setIcon(L.divIcon({
                     html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
                     className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
                 }));
 
-                setTimeout(closeRadar, 2000);
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    closeRadar();
+                }, 3000);
             } else {
                 marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
                 
@@ -1624,13 +1681,13 @@
             if (currentMapStyle === 'CLEAN') {
                 cleanMapLabels.addTo(radarMap);
                 currentMapStyle = 'LABELS';
-                btn.textContent = "LABELS: ON";
+                btn.textContent = "MAP: LABELS";
                 btn.style.background = "var(--radar-green)";
                 btn.style.color = "#000";
             } else {
                 radarMap.removeLayer(cleanMapLabels);
                 currentMapStyle = 'CLEAN';
-                btn.textContent = "LABELS: OFF";
+                btn.textContent = "MAP: CLEAN";
                 btn.style.background = "transparent";
                 btn.style.color = "var(--radar-green)";
             }

@@ -225,7 +225,7 @@
         .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold;}
         
         #radar-timer-container { display: flex; flex-direction: column; align-items: flex-end; z-index: 3; position: relative; }
-        #radar-timer { font-size: 2.2rem; font-weight: bold; text-align: right; margin-bottom: 5px; }
+        #radar-timer { font-size: 2.2rem; font-weight: bold; text-align: right; margin-bottom: 5px; transition: color 0.3s;}
         .timer-penalty { color: var(--brand-red) !important; text-shadow: 0 0 10px rgba(215, 25, 32, 0.8); }
         
         .radar-toggle-group { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; max-width: 160px; }
@@ -544,7 +544,7 @@
                 <div class="radar-toggle-group">
                     <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
                     <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">REG: OFF</button>
-                    <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">MAP: CLEAN</button>
+                    <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">LABELS: OFF</button>
                 </div>
             </div>
         </div>
@@ -1341,9 +1341,10 @@
             document.getElementById('toggle-origin-btn').style.background = "transparent";
             document.getElementById('toggle-origin-btn').style.color = "var(--radar-green)";
 
-            document.getElementById('toggle-map-btn').textContent = "MAP: CLEAN";
-            document.getElementById('toggle-map-btn').style.background = "var(--radar-green)";
-            document.getElementById('toggle-map-btn').style.color = "#000";
+            document.getElementById('toggle-map-btn').textContent = "LABELS: OFF";
+            document.getElementById('toggle-map-btn').style.background = "transparent";
+            document.getElementById('toggle-map-btn').style.color = "var(--radar-green)";
+            
             if (radarMap && radarMap.hasLayer(cleanMapLabels)) radarMap.removeLayer(cleanMapLabels);
             
             // Randomly select a sector
@@ -1450,16 +1451,24 @@
             textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span>`;
             plotPlanesOnRadar();
 
-            // Fetch the physical airspace country to generate a dynamic hint
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${targetPlane.lat}&lon=${targetPlane.lng}&zoom=3`)
+            // Fetch the physical airspace country/city to generate dynamic hints
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${targetPlane.lat}&lon=${targetPlane.lng}&zoom=10`)
             .then(res => res.json())
             .then(geoData => {
                 let hints = [];
                 hints.push(`HEADING ${getCompassDirection(targetPlane.heading)}`);
                 if (targetPlane.isReal && targetPlane.origin) hints.push(`REGISTRY ${targetPlane.origin}`);
                 
-                if (geoData && geoData.address && geoData.address.country) {
-                    hints.push(`AIRSPACE: ${geoData.address.country.toUpperCase()}`);
+                if (geoData && geoData.address) {
+                    if (geoData.address.country) {
+                        hints.push(`AIRSPACE: ${geoData.address.country.toUpperCase()}`);
+                    }
+                    
+                    // Extract city or region for proximity hint
+                    let city = geoData.address.city || geoData.address.town || geoData.address.municipality || geoData.address.state;
+                    if (city) {
+                        hints.push(`PROXIMITY: NEAR ${city.toUpperCase()}`);
+                    }
                 } else {
                     hints.push(`AIRSPACE: INT'L WATERS`);
                 }
@@ -1472,8 +1481,10 @@
             })
             .catch(() => {
                 // Fallback if Geocoding API fails
-                let hintHtml = `> HINT 1: HEADING ${getCompassDirection(targetPlane.heading)}<br>`;
-                if (targetPlane.isReal && targetPlane.origin) hintHtml += `> HINT 2: REGISTRY ${targetPlane.origin}<br>`;
+                let hints = [`HEADING ${getCompassDirection(targetPlane.heading)}`];
+                if (targetPlane.isReal && targetPlane.origin) hints.push(`REGISTRY ${targetPlane.origin}`);
+                
+                let hintHtml = hints.map((h, i) => `> HINT ${i+1}: ${h}<br>`).join('');
                 textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}<span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
             });
         }
@@ -1613,20 +1624,20 @@
             if (currentMapStyle === 'CLEAN') {
                 cleanMapLabels.addTo(radarMap);
                 currentMapStyle = 'LABELS';
-                btn.textContent = "MAP: LABELS";
-                btn.style.background = "transparent";
-                btn.style.color = "var(--radar-green)";
+                btn.textContent = "LABELS: ON";
+                btn.style.background = "var(--radar-green)";
+                btn.style.color = "#000";
             } else {
                 radarMap.removeLayer(cleanMapLabels);
                 currentMapStyle = 'CLEAN';
-                btn.textContent = "MAP: CLEAN";
-                btn.style.background = "var(--radar-green)";
-                btn.style.color = "#000";
+                btn.textContent = "LABELS: OFF";
+                btn.style.background = "transparent";
+                btn.style.color = "var(--radar-green)";
             }
             updateTimerDisplay(getAssistPenalty());
         }
 
-        // --- NEW MS PENALTY TIMER ---
+        // --- MS PENALTY TIMER ---
         function getAssistPenalty() {
             let p = 1; // Base 1x speed
             if (pathsVisible) p += 1;

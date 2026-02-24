@@ -153,16 +153,9 @@
 
         /* FLOATING TEXT ANIMATION */
         .float-text {
-            position: fixed;
-            color: var(--brand-red);
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 1.8rem;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            pointer-events: none;
-            z-index: 99999;
-            transform: translate(-50%, -50%);
-            animation: floatUp 0.8s ease-out forwards;
+            position: fixed; color: var(--brand-red); font-family: 'Share Tech Mono', monospace; font-size: 1.8rem;
+            font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 99999;
+            transform: translate(-50%, -50%); animation: floatUp 0.8s ease-out forwards;
         }
         @keyframes floatUp {
             0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
@@ -214,8 +207,7 @@
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
 
         /* --- VISUAL RADAR MODE --- */
-        /* NO DISPLAY NONE HERE - RELY ON .ACTIVE CLASS */
-        #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
+        #radar-view { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
         
         .radar-terminal {
             width: 100%; flex-shrink: 0; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px;
@@ -556,7 +548,7 @@
     </div>
 
     <script>
-        // --- 1. GLOBAL VARIABLES ---
+        // --- 1. DECLARE GLOBAL VARIABLES FIRST ---
         let db = null;
         let radarMap = null;
         let radarLayerGroup = null;
@@ -590,7 +582,7 @@
             bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0
         };
 
-        // --- 2. FIREBASE SETUP ---
+        // --- 2. FIREBASE CONFIGURATION ---
         const firebaseConfig = {
   apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
   authDomain: "fuelcommand.firebaseapp.com",
@@ -599,14 +591,15 @@
   messagingSenderId: "211722292779",
   appId: "1:211722292779:web:5dec358fc0693c7126246e"
         };
-        try { 
-            if(typeof firebase !== 'undefined') {
-                firebase.initializeApp(firebaseConfig); 
-                db = firebase.firestore(); 
-            }
-        } catch(e) { console.warn("Firebase Init Error", e); }
 
-        // --- 3. DATA CONSTANTS ---
+        try {
+            if (typeof firebase !== 'undefined') {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+            }
+        } catch(e) { console.warn("Firebase uninitialized or blocked.", e); }
+
+        // --- 3. GAME DATA CONSTANTS ---
         const ICONS = {
             plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
             jet: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12,2 L14,10 L22,14 L22,16 L14,15 L14,19 L16,21 L16,22 L12,21 L8,22 L8,21 L10,19 L10,15 L2,16 L2,14 L10,10 Z"/></svg>`,
@@ -639,10 +632,23 @@
             { type: 'trivia', question: "What caused the 1977 Tenerife airport disaster, the deadliest accident in aviation history?", options: ["A runway collision in thick fog", "A mid-air collision over the Atlantic", "Dual engine failure due to volcanic ash"], correctIdx: 0, name: "Tenerife Disaster" },
             { type: 'trivia', question: "What forced US Airways Flight 1549 (the 'Miracle on the Hudson') to ditch into the river?", options: ["Complete loss of hydraulic fluid", "A flock of geese struck both engines", "Fuel starvation due to a leak"], correctIdx: 1, name: "Hudson River Ditching" },
             { type: 'trivia', question: "Why did Air Canada Flight 143 (the 'Gimli Glider') run out of fuel mid-flight?", options: ["The fuel tanks were punctured", "A mix-up between pounds and kilograms", "The pilots forgot to switch fuel tanks"], correctIdx: 1, name: "Gimli Glider Incident" },
-            { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
+            { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" },
+            { type: 'trivia', question: "What caused the tragic explosion of TWA Flight 800 in 1996?", options: ["A short circuit igniting fuel tank vapors", "A surface-to-air missile", "An uncontained engine failure"], correctIdx: 0, name: "TWA Flight 800" },
+            { type: 'trivia', question: "The fatal stall of Air France Flight 447 over the Atlantic was initiated by:", options: ["Ice crystals blocking the Pitot tubes", "Total hydraulic failure", "A mid-air collision with a weather balloon"], correctIdx: 0, name: "Air France 447" },
+            { type: 'trivia', question: "What led to the devastating crash of American Airlines Flight 191 in Chicago (1979)?", options: ["Improper forklift maintenance snapping the engine pylon", "Severe microburst windshear", "Rudder hardover due to a jammed valve"], correctIdx: 0, name: "American Airlines 191" },
+            { type: 'trivia', question: "The 1988 Pan Am Flight 103 disaster over Lockerbie was caused by:", options: ["A terrorist bomb hidden in a cassette player", "Catastrophic metal fatigue", "Dual engine flameout from volcanic ash"], correctIdx: 0, name: "Lockerbie Bombing" },
+            { type: 'trivia', question: "How did the pilots of United Airlines Flight 232 miraculously steer the plane after total hydraulic loss?", options: ["By using differential engine thrust", "By dropping the landing gear to create drag", "By manually pulling cables under the floorboards"], correctIdx: 0, name: "United Airlines 232" },
+            { type: 'trivia', question: "ValuJet Flight 592 crashed into the Everglades after a fire broke out caused by:", options: ["Improperly stored chemical oxygen generators", "A lithium-ion battery in passenger luggage", "A massive fuel leak in the cargo hold"], correctIdx: 0, name: "ValuJet Flight 592" },
+            { type: 'trivia', question: "The fatal in-flight fire on Swissair Flight 111 (1998) originated from:", options: ["Flammable insulation around the in-flight entertainment system", "A short circuit in the cockpit coffee maker", "An exploding auxiliary power unit (APU)"], correctIdx: 0, name: "Swissair Flight 111" },
+            { type: 'trivia', question: "What mechanical failure sent Alaska Airlines Flight 261 into an uncontrollable dive?", options: ["Stripped threads on the horizontal stabilizer jackscrew", "A jammed elevator control cable", "Asymmetric thrust reverser deployment"], correctIdx: 0, name: "Alaska Airlines 261" },
+            { type: 'trivia', question: "The 'ghost plane' crash of Helios Airways Flight 522 was traced back to:", options: ["The pressurization switch being left on 'Manual'", "A slow leak in the oxygen masks", "Carbon monoxide leaking into the cabin"], correctIdx: 0, name: "Helios Airways 522" },
+            { type: 'trivia', question: "What caused all four engines to fail on British Airways Flight 9 in 1982?", options: ["Flying through a dense cloud of volcanic ash", "Contaminated jet fuel freezing at high altitude", "A software glitch shutting off fuel valves"], correctIdx: 0, name: "British Airways Flight 9" },
+            { type: 'trivia', question: "Eastern Air Lines Flight 401 crashed into the Everglades because the crew:", options: ["Got distracted by a burnt-out landing gear indicator light", "Ignored ground proximity warnings", "Fell asleep due to extreme fatigue"], correctIdx: 0, name: "Eastern Air Lines 401" },
+            { type: 'trivia', question: "The tragic crash of Aloha Airlines Flight 243 involved the roof tearing off mid-flight due to:", options: ["Extensive metal fatigue and corrosion", "A pressurization valve exploding", "A bird strike shattering the cockpit window"], correctIdx: 0, name: "Aloha Airlines 243" },
+            { type: 'trivia', question: "The Air France Flight 4590 Concorde disaster was initiated when:", options: ["A burst tire propelled debris into the fuel tank", "The supersonic engines stalled from a bird strike", "The landing gear failed to deploy"], correctIdx: 0, name: "Concorde Disaster" },
+            { type: 'trivia', question: "What caused the fatal CFIT (Controlled Flight Into Terrain) of Air New Zealand Flight 901 in Antarctica?", options: ["A navigational coordinate typing error", "Complete whiteout blinding the radar", "A sudden downdraft over Mount Erebus"], correctIdx: 0, name: "Mount Erebus Disaster" },
+            { type: 'trivia', question: "The deadly crashes of two Boeing 737 MAX aircraft were ultimately linked to:", options: ["The MCAS system acting on a single faulty AOA sensor", "Cracks in the horizontal stabilizer", "Software shutting down the auto-throttle prematurely"], correctIdx: 0, name: "Boeing 737 MAX" }
         ];
-
-        const DESTINATIONS = ["LONDON (LHR)", "PARIS (CDG)", "BERLIN (BER)", "ROME (FCO)", "MADRID (MAD)", "VIENNA (VIE)", "PRAGUE (PRG)", "WARSAW (WAW)", "AMSTERDAM (AMS)", "BRUSSELS (BRU)", "COPENHAGEN (CPH)", "STOCKHOLM (ARN)", "OSLO (OSL)", "HELSINKI (HEL)", "ZURICH (ZRH)", "FRANKFURT (FRA)"];
 
         function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
 
@@ -666,8 +672,13 @@
 
         const RUNWAY_SVG = `<svg width="128" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="128" height="32" fill="#3b3b3b"/><rect width="128" height="2" fill="#385e26"/><rect y="2" width="128" height="2" fill="#4a4a4a"/><rect x="0" y="14" width="32" height="4" fill="#ddd"/><rect x="64" y="14" width="32" height="4" fill="#ddd"/><rect x="0" y="4" width="128" height="2" fill="#fff"/><rect x="0" y="26" width="128" height="2" fill="#fff"/><rect x="10" y="10" width="16" height="2" fill="#222"/><rect x="40" y="18" width="24" height="2" fill="#222"/><rect x="80" y="12" width="12" height="2" fill="#222"/><rect x="100" y="20" width="16" height="2" fill="#222"/></svg>`;
 
-        // --- 4. GAME FUNCTIONS ---
+        // TILE LAYERS
+        const fullMapLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png');
+        const cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
+        const cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
+        const cleanMapLayer = L.layerGroup([cleanMapBase, cleanMapLabels]);
 
+        // --- 4. GAME ENGINE LOGIC ---
         function getOptionsForImage(correctName, isClassified) {
             const pool = isClassified ? AIRCRAFT_DATA.classified : AIRCRAFT_DATA.standard;
             let options = [correctName];
@@ -809,7 +820,7 @@
         function closeLeaderboard() { document.getElementById('leaderboard-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v64'); 
+            const saved = localStorage.getItem('fuelQuizState_v65'); 
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
@@ -823,7 +834,7 @@
             }
         }
 
-        function saveState() { try { localStorage.setItem('fuelQuizState_v64', JSON.stringify(globalState)); } catch(e){} }
+        function saveState() { try { localStorage.setItem('fuelQuizState_v65', JSON.stringify(globalState)); } catch(e){} }
         
         function isHangarComplete(hNum) { return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed); }
         function isAllWorldsComplete() { return globalState.levels.every(l => l.completed); }
@@ -898,7 +909,7 @@
                         title = levelData.name; iconSvg = ICONS.star; iconColor = "var(--brand-gold)"; statusHtml = `<div class="strip-status status-done">Cleared</div>`;
                     } else if (levelData.type === 'takeoff') {
                         let triesLeft = 3 - (levelData.attempts || 0); statusHtml = `<div class="strip-status status-ready">Tries: ${triesLeft}</div>`;
-                    } else if (levelData.type === 'image' && levelData.revealedTiles.length > 0) {
+                    } else if (levelData.type === 'image' && levelData.revealedTiles && levelData.revealedTiles.length > 0) {
                         statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
                     }
 
@@ -1271,116 +1282,104 @@
             document.getElementById('selector-view').classList.remove('active');
             document.getElementById('radar-view').classList.add('active');
             
-            // Re-initialize map variables to ensure clean slate
-            if (radarMap) {
-                radarMap.remove();
-                radarMap = null;
-            }
-            
-            // Using setTimeout to ensure the DOM is visible before Leaflet calculates size
-            setTimeout(() => {
+            if (!radarMap) {
                 radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
-                
-                // Initialize custom layer group if needed
-                const customTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png');
-                customTileLayer.addTo(radarMap);
-                
+                currentMapStyle = 'FULL';
+                fullMapLayer.addTo(radarMap);
                 radarLayerGroup = L.layerGroup().addTo(radarMap);
                 radarPathGroup = L.layerGroup().addTo(radarMap);
+            }
+            
+            setTimeout(() => { radarMap.invalidateSize(); }, 100);
+            
+            const textEl = document.getElementById('radar-screen-text');
+            const msgEl = document.getElementById('radar-message');
+            const btnToggle = document.getElementById('toggle-paths-btn');
+            
+            pathsVisible = false;
+            btnToggle.textContent = "PATHS: OFF";
+            btnToggle.style.background = "transparent";
+            btnToggle.style.color = "var(--radar-green)";
+            
+            textEl.innerHTML = "ESTABLISHING UPLINK...<br>SCANNING SECTOR EU-CENTRAL...<span class='blinking-cursor'>_</span>";
+            msgEl.textContent = "";
+            document.getElementById('radar-timer').textContent = "01:00";
+            
+            if(radarCountdown) clearInterval(radarCountdown);
+            radarLayerGroup.clearLayers();
+            radarPathGroup.clearLayers();
+            currentRadarPlanes = [];
 
-                // Set initial UI state
-                const btnToggle = document.getElementById('toggle-paths-btn');
-                pathsVisible = false;
-                currentMapStyle = 'FULL';
+            fetch(`https://opensky-network.org/api/states/all?lamin=45.0&lomin=5.0&lamax=52.0&lomax=15.0`)
+            .then(res => res.json())
+            .then(data => {
+                if(!data.states || data.states.length === 0) throw new Error("Empty airspace");
                 
-                btnToggle.textContent = "PATHS: OFF";
-                btnToggle.style.background = "transparent";
-                btnToggle.style.color = "var(--radar-green)";
+                let validAPIPlanes = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "");
+                if(validAPIPlanes.length === 0) throw new Error("No valid planes");
 
-                document.getElementById('toggle-map-btn').textContent = "MAP: FULL";
-                document.getElementById('toggle-map-btn').style.background = "transparent";
-                document.getElementById('toggle-map-btn').style.color = "var(--radar-green)";
-
-                const textEl = document.getElementById('radar-screen-text');
-                const msgEl = document.getElementById('radar-message');
-                textEl.innerHTML = "ESTABLISHING UPLINK...<br>SCANNING SECTOR EU-CENTRAL...<span class='blinking-cursor'>_</span>";
-                msgEl.textContent = "";
-                document.getElementById('radar-timer').textContent = "01:00";
-                
-                if(radarCountdown) clearInterval(radarCountdown);
-                currentRadarPlanes = [];
-
-                fetch(`https://opensky-network.org/api/states/all?lamin=45.0&lomin=5.0&lamax=52.0&lomax=15.0`)
-                .then(res => res.json())
-                .then(data => {
-                    if(!data.states || data.states.length === 0) throw new Error("Empty airspace");
+                currentRadarPlanes = validAPIPlanes.sort(() => Math.random() - 0.5).slice(0, 12).map(p => {
+                    const lat = p[6];
+                    const lng = p[5];
+                    const heading = p[10] || 0;
                     
-                    let validAPIPlanes = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "");
-                    if(validAPIPlanes.length === 0) throw new Error("No valid planes");
-
-                    currentRadarPlanes = validAPIPlanes.sort(() => Math.random() - 0.5).slice(0, 12).map(p => {
-                        const lat = p[6];
-                        const lng = p[5];
-                        const heading = p[10] || 0;
-                        
-                        const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
-                        const trailLen = 2 + Math.random() * 2;
-                        const fwdLen = 3 + Math.random() * 3;
-                        
-                        const radBack = (heading + 180) * (Math.PI / 180);
-                        const startLat = lat + Math.cos(radBack) * trailLen;
-                        const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
-
-                        const radFwd = heading * (Math.PI / 180);
-                        const endLat = lat + Math.cos(radFwd) * fwdLen;
-                        const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
-
-                        return {
-                            callsign: p[1].trim(), lat: lat, lng: lng, heading: heading, destination: dest,
-                            route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng
-                        };
-                    });
+                    const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
+                    const trailLen = 2 + Math.random() * 2;
+                    const fwdLen = 3 + Math.random() * 3;
                     
-                    const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
-                    currentRadarCallsign = targetPlane.callsign;
-                    const headingStr = getCompassDirection(targetPlane.heading);
+                    const radBack = (heading + 180) * (Math.PI / 180);
+                    const startLat = lat + Math.cos(radBack) * trailLen;
+                    const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
 
-                    textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: DESTINATION ${targetPlane.destination}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
-                    plotPlanesOnRadar();
-                })
-                .catch(err => {
-                    console.warn("Radar API failed/rate-limited. Launching local simulation.");
-                    
-                    const fakeCalls = ["LHT442", "AFR12A", "SWR99B", "BAW505", "RYR77X", "FIN112", "NOR334", "KLM88", "EZY99", "WZZ10", "DAL22", "UAL33"];
-                    for(let i=0; i<12; i++) {
-                        const lat = 45.0 + Math.random() * 7;
-                        const lng = 5.0 + Math.random() * 10;
-                        const heading = Math.random() * 360;
-                        const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
-                        const trailLen = 2 + Math.random() * 2;
-                        const fwdLen = 3 + Math.random() * 3;
-                        
-                        const radBack = (heading + 180) * (Math.PI / 180);
-                        const startLat = lat + Math.cos(radBack) * trailLen;
-                        const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
-                        const radFwd = heading * (Math.PI / 180);
-                        const endLat = lat + Math.cos(radFwd) * fwdLen;
-                        const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+                    const radFwd = heading * (Math.PI / 180);
+                    const endLat = lat + Math.cos(radFwd) * fwdLen;
+                    const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
 
-                        currentRadarPlanes.push({ 
-                            callsign: fakeCalls[i], destination: dest, lng: lng, lat: lat, heading: heading,
-                            route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng
-                        });
-                    }
-                    
-                    const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
-                    currentRadarCallsign = targetPlane.callsign;
-                    const headingStr = getCompassDirection(targetPlane.heading);
-                    
-                    textEl.innerHTML = `<span style="color:#fff;">[ SIMULATION MODE ACTIVE ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: DESTINATION ${targetPlane.destination}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
-                    plotPlanesOnRadar();
+                    return {
+                        callsign: p[1].trim(), lat: lat, lng: lng, heading: heading, nextStop: dest,
+                        route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng
+                    };
                 });
-            }, 100);
+                
+                const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
+                currentRadarCallsign = targetPlane.callsign;
+                const headingStr = getCompassDirection(targetPlane.heading);
+
+                textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: NEXT STOP ${targetPlane.nextStop}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
+                plotPlanesOnRadar();
+            })
+            .catch(err => {
+                console.warn("Radar API failed/rate-limited. Launching local simulation.");
+                
+                const fakeCalls = ["LHT442", "AFR12A", "SWR99B", "BAW505", "RYR77X", "FIN112", "NOR334", "KLM88", "EZY99", "WZZ10", "DAL22", "UAL33"];
+                for(let i=0; i<12; i++) {
+                    const lat = 45.0 + Math.random() * 7;
+                    const lng = 5.0 + Math.random() * 10;
+                    const heading = Math.random() * 360;
+                    const dest = DESTINATIONS[Math.floor(Math.random() * DESTINATIONS.length)];
+                    const trailLen = 2 + Math.random() * 2;
+                    const fwdLen = 3 + Math.random() * 3;
+                    
+                    const radBack = (heading + 180) * (Math.PI / 180);
+                    const startLat = lat + Math.cos(radBack) * trailLen;
+                    const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
+                    const radFwd = heading * (Math.PI / 180);
+                    const endLat = lat + Math.cos(radFwd) * fwdLen;
+                    const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+
+                    currentRadarPlanes.push({ 
+                        callsign: fakeCalls[i], nextStop: dest, lng: lng, lat: lat, heading: heading,
+                        route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng
+                    });
+                }
+                
+                const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
+                currentRadarCallsign = targetPlane.callsign;
+                const headingStr = getCompassDirection(targetPlane.heading);
+                
+                textEl.innerHTML = `<span style="color:#fff;">[ SIMULATION MODE ACTIVE ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: NEXT STOP ${targetPlane.nextStop}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
+                plotPlanesOnRadar();
+            });
         }
         
         function plotPlanesOnRadar() {
@@ -1409,10 +1408,13 @@
                     } else {
                         marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
                         radarTime = Math.max(0, radarTime - 3); 
+                        
                         const tDiv = document.getElementById('radar-timer');
                         tDiv.style.color = "red";
                         setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
-                        let m = Math.floor(radarTime / 60); let s = radarTime % 60;
+                        
+                        let m = Math.floor(radarTime / 60);
+                        let s = radarTime % 60;
                         tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}`;
                     }
                 });
@@ -1420,39 +1422,21 @@
 
             let groupBounds = L.featureGroup(radarLayerGroup.getLayers()).getBounds();
             radarMap.fitBounds(groupBounds, { padding: [40, 40] });
-
             startRadarTimer(60);
         }
 
         function toggleMapStyle() {
             const btn = document.getElementById('toggle-map-btn');
-            // Check layers inside leaflet map
-            let hasDarkAll = false;
-            radarMap.eachLayer((layer) => {
-                if (layer._url && layer._url.includes('dark_all')) hasDarkAll = true;
-            });
-
             if (currentMapStyle === 'FULL') {
-                // Switch to CLEAN
-                radarMap.eachLayer((layer) => {
-                    if (layer._url && layer._url.includes('cartocdn')) radarMap.removeLayer(layer);
-                });
-                
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}').addTo(radarMap);
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}').addTo(radarMap);
-                
+                radarMap.removeLayer(fullMapLayer);
+                cleanMapLayer.addTo(radarMap);
                 currentMapStyle = 'CLEAN';
                 btn.textContent = "MAP: CLEAN";
                 btn.style.background = "var(--radar-green)";
                 btn.style.color = "#000";
             } else {
-                // Switch to FULL
-                radarMap.eachLayer((layer) => {
-                    if (layer._url && layer._url.includes('arcgisonline')) radarMap.removeLayer(layer);
-                });
-
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(radarMap);
-                
+                radarMap.removeLayer(cleanMapLayer);
+                fullMapLayer.addTo(radarMap);
                 currentMapStyle = 'FULL';
                 btn.textContent = "MAP: FULL";
                 btn.style.background = "transparent";
@@ -1472,7 +1456,7 @@
                     L.polyline(p.route, { color: 'var(--radar-green)', weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup);
                     L.circleMarker([p.endLat, p.endLng], { radius: 3, color: 'var(--radar-green)', fillColor: 'var(--radar-green)', fillOpacity: 1 }).addTo(radarPathGroup);
                     L.marker([p.endLat, p.endLng], {
-                        icon: L.divIcon({ html: `<div style="color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; white-space: nowrap; margin-left: 10px; margin-top: -8px; text-shadow: 1px 1px 2px #000;">${p.destination}</div>`, className: 'radar-dest-label', iconSize: [0,0] })
+                        icon: L.divIcon({ html: `<div style="color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; white-space: nowrap; margin-left: 10px; margin-top: -8px; text-shadow: 1px 1px 2px #000;">${p.nextStop}</div>`, className: 'radar-dest-label', iconSize: [0,0] })
                     }).addTo(radarPathGroup);
                 });
             } else {

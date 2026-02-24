@@ -214,7 +214,7 @@
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
 
         /* --- VISUAL RADAR MODE --- */
-        #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
+        #radar-view { flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
         
         .radar-terminal {
             width: 100%; flex-shrink: 0; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px;
@@ -294,6 +294,10 @@
     </style>
 </head>
 <body>
+
+    <audio id="bg-music" loop preload="auto">
+        <source src="ambient.mp3" type="audio/mpeg">
+    </audio>
 
     <div id="orientation-lock">
         <svg viewBox="0 0 24 24" width="60" height="60" fill="currentColor" style="margin-bottom:20px;"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.25-.77c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.46L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zm-7.31.29C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
@@ -547,7 +551,9 @@
     </div>
 
     <script>
-        // --- 1. FIREBASE CONFIGURATION ---
+        // ---------------------------------------------------------
+        // 1. DATA & CONSTANTS
+        // ---------------------------------------------------------
         const firebaseConfig = {
   apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
   authDomain: "fuelcommand.firebaseapp.com",
@@ -557,13 +563,6 @@
   appId: "1:211722292779:web:5dec358fc0693c7126246e"
         };
 
-        let db;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-        } catch(e) { console.error("Firebase uninitialized", e); }
-
-        // --- 2. GAME DATA CONSTANTS ---
         const ICONS = {
             plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
             jet: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12,2 L14,10 L22,14 L22,16 L14,15 L14,19 L16,21 L16,22 L12,21 L8,22 L8,21 L10,19 L10,15 L2,16 L2,14 L10,10 Z"/></svg>`,
@@ -599,20 +598,22 @@
             { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
         ];
 
+        const DESTINATIONS = ["LONDON (LHR)", "PARIS (CDG)", "BERLIN (BER)", "ROME (FCO)", "MADRID (MAD)", "VIENNA (VIE)", "PRAGUE (PRG)", "WARSAW (WAW)", "AMSTERDAM (AMS)", "BRUSSELS (BRU)", "COPENHAGEN (CPH)", "STOCKHOLM (ARN)", "OSLO (OSL)", "HELSINKI (HEL)", "ZURICH (ZRH)", "FRANKFURT (FRA)"];
+
         function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
 
         const THEMES = {
-            1: { // Day
+            1: { 
                 sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#87CEEB"/><rect y="32" width="256" height="32" fill="#99D9F0"/><rect x="20" y="16" width="20" height="8" fill="#fff"/><rect x="10" y="20" width="40" height="4" fill="#fff"/><rect x="30" y="24" width="10" height="4" fill="#e0e0e0"/><rect x="100" y="4" width="30" height="10" fill="#fff"/><rect x="85" y="10" width="60" height="4" fill="#fff"/><rect x="115" y="14" width="15" height="4" fill="#e0e0e0"/><rect x="200" y="21" width="25" height="8" fill="#fff"/><rect x="190" y="25" width="40" height="4" fill="#fff"/></svg>`,
                 city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#8ca1cc"/><rect x="50" y="10" width="40" height="54" fill="#8ca1cc"/><rect x="120" y="25" width="35" height="39" fill="#8ca1cc"/><rect x="180" y="15" width="25" height="49" fill="#8ca1cc"/><rect x="220" y="30" width="30" height="34" fill="#8ca1cc"/><rect x="0" y="35" width="25" height="29" fill="#5a6988"/><rect x="35" y="25" width="30" height="39" fill="#5a6988"/><rect x="80" y="40" width="50" height="24" fill="#5a6988"/><rect x="140" y="20" width="45" height="44" fill="#5a6988"/><rect x="200" y="35" width="40" height="29" fill="#5a6988"/><rect x="20" y="45" width="40" height="19" fill="#4a5875"/><rect x="70" y="30" width="35" height="34" fill="#4a5875"/><rect x="110" y="50" width="40" height="14" fill="#4a5875"/><rect x="160" y="40" width="30" height="24" fill="#4a5875"/><rect x="230" y="45" width="26" height="19" fill="#4a5875"/><rect x="40" y="30" width="4" height="4" fill="#7585a5"/><rect x="48" y="30" width="4" height="4" fill="#7585a5"/><rect x="40" y="38" width="4" height="4" fill="#7585a5"/><rect x="48" y="38" width="4" height="4" fill="#7585a5"/><rect x="75" y="35" width="4" height="4" fill="#7585a5"/><rect x="75" y="45" width="4" height="4" fill="#7585a5"/><rect x="85" y="35" width="4" height="4" fill="#7585a5"/><rect x="85" y="45" width="4" height="4" fill="#7585a5"/><rect x="145" y="25" width="4" height="4" fill="#7585a5"/><rect x="155" y="25" width="4" height="4" fill="#7585a5"/><rect x="165" y="25" width="4" height="4" fill="#7585a5"/><rect x="145" y="35" width="4" height="4" fill="#7585a5"/><rect x="155" y="35" width="4" height="4" fill="#7585a5"/><rect x="165" y="35" width="4" height="4" fill="#7585a5"/><rect x="205" y="40" width="4" height="4" fill="#7585a5"/><rect x="215" y="40" width="4" height="4" fill="#7585a5"/></svg>`,
                 ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#2d4c1e"/><rect x="10" y="12" width="20" height="8" fill="#2d4c1e"/><rect x="15" y="8" width="10" height="4" fill="#2d4c1e"/><rect x="50" y="10" width="30" height="10" fill="#2d4c1e"/><rect x="60" y="6" width="10" height="4" fill="#2d4c1e"/><rect x="110" y="14" width="20" height="6" fill="#2d4c1e"/><rect x="160" y="8" width="40" height="12" fill="#2d4c1e"/><rect x="175" y="4" width="10" height="4" fill="#2d4c1e"/><rect x="220" y="12" width="30" height="8" fill="#2d4c1e"/><rect x="0" y="20" width="256" height="12" fill="#1e3b12"/><rect x="15" y="16" width="10" height="4" fill="#1e3b12"/><rect x="55" y="14" width="20" height="6" fill="#1e3b12"/><rect x="120" y="18" width="10" height="4" fill="#1e3b12"/><rect x="170" y="12" width="20" height="8" fill="#1e3b12"/><rect x="230" y="16" width="15" height="4" fill="#1e3b12"/><rect x="25" y="24" width="4" height="4" fill="#385e26"/><rect x="80" y="22" width="4" height="4" fill="#385e26"/><rect x="140" y="26" width="4" height="4" fill="#385e26"/><rect x="190" y="22" width="4" height="4" fill="#385e26"/></svg>`
             },
-            2: { // Stormy
+            2: { 
                 sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#4a5d6a"/><rect y="32" width="256" height="32" fill="#5a6d7a"/><rect x="20" y="16" width="20" height="8" fill="#687d8c"/><rect x="10" y="20" width="40" height="4" fill="#687d8c"/><rect x="30" y="24" width="10" height="4" fill="#586b78"/><rect x="100" y="4" width="30" height="10" fill="#687d8c"/><rect x="85" y="10" width="60" height="4" fill="#687d8c"/><rect x="115" y="14" width="15" height="4" fill="#586b78"/><rect x="200" y="21" width="25" height="8" fill="#687d8c"/><rect x="190" y="25" width="40" height="4" fill="#687d8c"/></svg>`,
                 city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#3d4955"/><rect x="50" y="10" width="40" height="54" fill="#3d4955"/><rect x="120" y="25" width="35" height="39" fill="#3d4955"/><rect x="180" y="15" width="25" height="49" fill="#3d4955"/><rect x="220" y="30" width="30" height="34" fill="#3d4955"/><rect x="0" y="35" width="25" height="29" fill="#323d47"/><rect x="35" y="25" width="30" height="39" fill="#323d47"/><rect x="80" y="40" width="50" height="24" fill="#323d47"/><rect x="140" y="20" width="45" height="44" fill="#323d47"/><rect x="200" y="35" width="40" height="29" fill="#323d47"/><rect x="20" y="45" width="40" height="19" fill="#28313a"/><rect x="70" y="30" width="35" height="34" fill="#28313a"/><rect x="110" y="50" width="40" height="14" fill="#28313a"/><rect x="160" y="40" width="30" height="24" fill="#28313a"/><rect x="230" y="45" width="26" height="19" fill="#28313a"/></svg>`,
                 ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#2b3626"/><rect x="10" y="12" width="20" height="8" fill="#2b3626"/><rect x="15" y="8" width="10" height="4" fill="#2b3626"/><rect x="50" y="10" width="30" height="10" fill="#2b3626"/><rect x="60" y="6" width="10" height="4" fill="#2b3626"/><rect x="110" y="14" width="20" height="6" fill="#2b3626"/><rect x="160" y="8" width="40" height="12" fill="#2b3626"/><rect x="175" y="4" width="10" height="4" fill="#2b3626"/><rect x="220" y="12" width="30" height="8" fill="#2b3626"/><rect x="0" y="20" width="256" height="12" fill="#1d251a"/><rect x="15" y="16" width="10" height="4" fill="#1d251a"/><rect x="55" y="14" width="20" height="6" fill="#1d251a"/><rect x="120" y="18" width="10" height="4" fill="#1d251a"/><rect x="170" y="12" width="20" height="8" fill="#1d251a"/><rect x="230" y="16" width="15" height="4" fill="#1d251a"/><rect x="25" y="24" width="4" height="4" fill="#34422e"/><rect x="80" y="22" width="4" height="4" fill="#34422e"/><rect x="140" y="26" width="4" height="4" fill="#34422e"/><rect x="190" y="22" width="4" height="4" fill="#34422e"/></svg>`
             },
-            3: { // Night
+            3: { 
                 sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#0f1722"/><rect x="20" y="15" width="2" height="2" fill="#fff"/><rect x="50" y="30" width="2" height="2" fill="#fff"/><rect x="100" y="10" width="2" height="2" fill="#fff"/><rect x="150" y="25" width="2" height="2" fill="#fff"/><rect x="200" y="15" width="2" height="2" fill="#fff"/><rect x="240" y="20" width="2" height="2" fill="#fff"/></svg>`,
                 city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#151e2b"/><rect x="50" y="10" width="40" height="54" fill="#151e2b"/><rect x="120" y="25" width="35" height="39" fill="#151e2b"/><rect x="180" y="15" width="25" height="49" fill="#151e2b"/><rect x="220" y="30" width="30" height="34" fill="#151e2b"/><rect x="0" y="35" width="25" height="29" fill="#101722"/><rect x="35" y="25" width="30" height="39" fill="#101722"/><rect x="80" y="40" width="50" height="24" fill="#101722"/><rect x="140" y="20" width="45" height="44" fill="#101722"/><rect x="200" y="35" width="40" height="29" fill="#101722"/><rect x="20" y="45" width="40" height="19" fill="#0a0f16"/><rect x="70" y="30" width="35" height="34" fill="#0a0f16"/><rect x="110" y="50" width="40" height="14" fill="#0a0f16"/><rect x="160" y="40" width="30" height="24" fill="#0a0f16"/><rect x="230" y="45" width="26" height="19" fill="#0a0f16"/><rect x="40" y="30" width="4" height="4" fill="#f1c40f"/><rect x="48" y="30" width="4" height="4" fill="#f1c40f"/><rect x="75" y="35" width="4" height="4" fill="#f1c40f"/><rect x="85" y="45" width="4" height="4" fill="#f1c40f"/><rect x="145" y="25" width="4" height="4" fill="#f1c40f"/><rect x="165" y="35" width="4" height="4" fill="#f1c40f"/><rect x="205" y="40" width="4" height="4" fill="#f1c40f"/><rect x="40" y="38" width="4" height="4" fill="#e67e22"/><rect x="75" y="45" width="4" height="4" fill="#e67e22"/><rect x="155" y="35" width="4" height="4" fill="#e67e22"/><rect x="215" y="40" width="4" height="4" fill="#e67e22"/></svg>`,
                 ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#111a11"/><rect x="10" y="12" width="20" height="8" fill="#111a11"/><rect x="15" y="8" width="10" height="4" fill="#111a11"/><rect x="50" y="10" width="30" height="10" fill="#111a11"/><rect x="60" y="6" width="10" height="4" fill="#111a11"/><rect x="110" y="14" width="20" height="6" fill="#111a11"/><rect x="160" y="8" width="40" height="12" fill="#111a11"/><rect x="175" y="4" width="10" height="4" fill="#111a11"/><rect x="220" y="12" width="30" height="8" fill="#111a11"/><rect x="0" y="20" width="256" height="12" fill="#0a100a"/><rect x="15" y="16" width="10" height="4" fill="#0a100a"/><rect x="55" y="14" width="20" height="6" fill="#0a100a"/><rect x="120" y="18" width="10" height="4" fill="#0a100a"/><rect x="170" y="12" width="20" height="8" fill="#0a100a"/><rect x="230" y="16" width="15" height="4" fill="#0a100a"/></svg>`
@@ -621,7 +622,7 @@
 
         const RUNWAY_SVG = `<svg width="128" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="128" height="32" fill="#3b3b3b"/><rect width="128" height="2" fill="#385e26"/><rect y="2" width="128" height="2" fill="#4a4a4a"/><rect x="0" y="14" width="32" height="4" fill="#ddd"/><rect x="64" y="14" width="32" height="4" fill="#ddd"/><rect x="0" y="4" width="128" height="2" fill="#fff"/><rect x="0" y="26" width="128" height="2" fill="#fff"/><rect x="10" y="10" width="16" height="2" fill="#222"/><rect x="40" y="18" width="24" height="2" fill="#222"/><rect x="80" y="12" width="12" height="2" fill="#222"/><rect x="100" y="20" width="16" height="2" fill="#222"/></svg>`;
 
-        // --- 3. GLOBAL VARIABLES ---
+        // --- 3. VARIABLES ---
         const STARTING_GLOBAL_FUEL = 4000;
         const REFUEL_AMOUNT = 2000; 
         const TILE_COST = 15;
@@ -652,10 +653,8 @@
         let currentRadarCallsign = "";
         let currentRadarPlanes = [];
         let pathsVisible = false;
-        
-        const DESTINATIONS = ["LONDON (LHR)", "PARIS (CDG)", "BERLIN (BER)", "ROME (FCO)", "MADRID (MAD)", "VIENNA (VIE)", "PRAGUE (PRG)", "WARSAW (WAW)", "AMSTERDAM (AMS)", "BRUSSELS (BRU)", "COPENHAGEN (CPH)", "STOCKHOLM (ARN)", "OSLO (OSL)", "HELSINKI (HEL)", "ZURICH (ZRH)", "FRANKFURT (FRA)"];
 
-        // --- 4. GAME FUNCTIONS ---
+        // --- 4. GAME ENGINE LOGIC ---
 
         function getOptionsForImage(correctName, isClassified) {
             const pool = isClassified ? AIRCRAFT_DATA.classified : AIRCRAFT_DATA.standard;
@@ -667,6 +666,7 @@
 
         window.onload = function() {
             try { 
+                let dbInit = db; // Test firebase
                 loadState(); 
                 if (!globalState.username) {
                     document.getElementById('login-overlay').style.display = 'flex';
@@ -680,6 +680,20 @@
                 let ci = document.getElementById('callsign-input');
                 if(ci) ci.addEventListener('keypress', function (e) {
                     if (e.key === 'Enter') { this.blur(); registerPilot(); }
+                });
+
+                // AutoPlay Audio Logic
+                let bgMusicStarted = false;
+                window.addEventListener('pointerdown', function initAudio() {
+                    if (!bgMusicStarted) {
+                        const bgm = document.getElementById('bg-music');
+                        if (bgm) {
+                            bgm.volume = 0.3;
+                            bgm.play().catch(e => console.log("Audio play blocked", e));
+                            bgMusicStarted = true;
+                        }
+                        window.removeEventListener('pointerdown', initAudio);
+                    }
                 });
                 
                 const tkBtn = document.getElementById('takeoff-btn');
@@ -706,7 +720,7 @@
                 }
             } catch(e) { 
                 console.error("Critical Load Error", e); 
-                document.body.innerHTML = `<div style='color:red; background:white; padding:20px; font-family:monospace;'>FATAL ERROR: ${e.message}</div>`;
+                document.body.innerHTML = `<div style='color:red; background:white; padding:20px; font-family:monospace; border-radius:10px;'><h3>Game Crash</h3><p>${e.message}</p></div>`;
             }
         };
 
@@ -784,7 +798,7 @@
         function closeLeaderboard() { document.getElementById('leaderboard-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v61'); 
+            const saved = localStorage.getItem('fuelQuizState_v62'); 
             if (saved) {
                 globalState = JSON.parse(saved);
                 if(!globalState.levels || globalState.levels.length === 0) globalState.levels = generateGameLevels();
@@ -798,7 +812,7 @@
             }
         }
 
-        function saveState() { try { localStorage.setItem('fuelQuizState_v61', JSON.stringify(globalState)); } catch(e){} }
+        function saveState() { try { localStorage.setItem('fuelQuizState_v62', JSON.stringify(globalState)); } catch(e){} }
         
         function isHangarComplete(hNum) { return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed); }
         function isAllWorldsComplete() { return globalState.levels.every(l => l.completed); }
@@ -861,7 +875,7 @@
                     let iconColor = "var(--brand-dark)";
                     let title = `Flight ${idx + 1}`;
                     
-                    if (levelData.type === 'trivia') { iconSvg = ICONS.folder; iconColor = "#3498db"; title = "Incident Report"; }
+                    if (levelData.type === 'trivia') { iconSvg = ICONS.folder; iconColor = "#3498db"; title = "Incident Report"; } 
                     else if (levelData.type === 'takeoff') { iconSvg = ICONS.takeoff; iconColor = "#3498db"; title = "Takeoff Calibration"; }
                     else if (levelData.isClassified) { iconSvg = ICONS.jet; iconColor = "var(--brand-red)"; title = "Classified"; }
 
@@ -1116,7 +1130,6 @@
 
             tkState.distance -= (tkState.speed / 1450); 
 
-            // Parallax Scroll
             tkState.bgPosSky -= tkState.speed * 0.002;
             tkState.bgPosCity -= tkState.speed * 0.008;
             tkState.bgPosGround -= tkState.speed * 0.025;
@@ -1235,14 +1248,12 @@
             setTimeout(saveAndExit, 2500);
         }
 
-        // --- HELPER FOR RADAR COMPASS ---
         function getCompassDirection(heading) {
             if (heading === null || heading === undefined) return "UNKNOWN";
             const dirs = ["NORTH", "NORTH-EAST", "EAST", "SOUTH-EAST", "SOUTH", "SOUTH-WEST", "WEST", "NORTH-WEST"];
             return dirs[Math.round(((heading %= 360) < 0 ? heading + 360 : heading) / 45) % 8];
         }
 
-        // --- VISUAL LEAFLET RADAR LOGIC ---
         function openRadar() {
             if(globalState.currentFuel <= 0) { triggerGameOver(); return; }
             
@@ -1312,7 +1323,7 @@
                 const headingStr = getCompassDirection(targetPlane.heading);
 
                 textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: DESTINATION ${targetPlane.destination}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
-                plotPlanesOnRadar();
+                plotPlanesOnRadar(targetPlane);
             })
             .catch(err => {
                 console.warn("Radar API failed/rate-limited. Launching local simulation.");
@@ -1344,7 +1355,7 @@
                 const headingStr = getCompassDirection(targetPlane.heading);
                 
                 textEl.innerHTML = `<span style="color:#fff;">[ SIMULATION MODE ACTIVE ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>> HINT 2: DESTINATION ${targetPlane.destination}<br><span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
-                plotPlanesOnRadar();
+                plotPlanesOnRadar(targetPlane);
             });
         }
         
@@ -1369,18 +1380,14 @@
                             html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
                             className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
                         }));
-
                         setTimeout(closeRadar, 2000);
                     } else {
                         marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
                         radarTime = Math.max(0, radarTime - 3); 
-                        
                         const tDiv = document.getElementById('radar-timer');
                         tDiv.style.color = "red";
                         setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
-                        
-                        let m = Math.floor(radarTime / 60);
-                        let s = radarTime % 60;
+                        let m = Math.floor(radarTime / 60); let s = radarTime % 60;
                         tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}`;
                     }
                 });
@@ -1388,7 +1395,6 @@
 
             let groupBounds = L.featureGroup(radarLayerGroup.getLayers()).getBounds();
             radarMap.fitBounds(groupBounds, { padding: [40, 40] });
-
             startRadarTimer(60);
         }
         
@@ -1555,7 +1561,7 @@
 
         function showFloat(x, y, text) {
             const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text;
-            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
+            el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
         }
 
         function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }

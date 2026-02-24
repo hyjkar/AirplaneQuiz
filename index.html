@@ -118,7 +118,7 @@
         /* --- BUTTONS --- */
         .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: auto; border-top: 1px solid #eee; padding-top: 10px; }
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: gap: 8px; user-select: none; -webkit-tap-highlight-color: transparent; }
+        button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none; -webkit-tap-highlight-color: transparent; }
         .primary-btn { background-color: var(--brand-red); color: white; }
         .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
         .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
@@ -242,8 +242,6 @@
             width: 100%; flex-grow: 1; border: 4px solid var(--radar-green); border-radius: 8px; 
             position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(51, 255, 51, 0.3); min-height: 250px;
         }
-        
-        /* THIS WAS THE FIX FOR THE BLANK SCREEN: Forcing Absolute Position */
         #radar-map-container { position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: #000; z-index: 1; }
         
         .compass-pt { 
@@ -530,7 +528,7 @@
                 <div id="radar-timer">--</div>
                 <div class="radar-toggle-group">
                     <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
-                    <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">MAP: FULL</button>
+                    <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">MAP: LABELS</button>
                 </div>
             </div>
         </div>
@@ -560,7 +558,7 @@
         let currentRadarCallsign = "";
         let currentRadarPlanes = [];
         let pathsVisible = false;
-        let currentMapStyle = 'FULL';
+        let currentMapStyle = 'CLEAN'; // Default is now the clean map
         let activeLevelIdx = 0;
 
         const DESTINATIONS = ["LHR", "JFK", "CDG", "FRA", "AMS", "MAD", "BCN", "FCO", "DUB", "VIE", "ZRH", "CPH"];
@@ -675,11 +673,13 @@
 
         const RUNWAY_SVG = `<svg width="128" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="128" height="32" fill="#3b3b3b"/><rect width="128" height="2" fill="#385e26"/><rect y="2" width="128" height="2" fill="#4a4a4a"/><rect x="0" y="14" width="32" height="4" fill="#ddd"/><rect x="64" y="14" width="32" height="4" fill="#ddd"/><rect x="0" y="4" width="128" height="2" fill="#fff"/><rect x="0" y="26" width="128" height="2" fill="#fff"/><rect x="10" y="10" width="16" height="2" fill="#222"/><rect x="40" y="18" width="24" height="2" fill="#222"/><rect x="80" y="12" width="12" height="2" fill="#222"/><rect x="100" y="20" width="16" height="2" fill="#222"/></svg>`;
 
-        // TILE LAYERS
-        const fullMapLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png');
+        // TILE LAYERS (Swapped to ESRI World Dark Gray Base to guarantee reliability)
         const cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
         const cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
-        const cleanMapLayer = L.layerGroup([cleanMapBase, cleanMapLabels]);
+        
+        // Use cleanMapBase as the default to ensure no-labels and no 404 black screens
+        const defaultMapLayer = cleanMapBase;
+        const labeledMapLayer = L.layerGroup([cleanMapBase, cleanMapLabels]);
 
         // --- 4. GAME ENGINE LOGIC ---
         function getOptionsForImage(correctName, isClassified) {
@@ -822,17 +822,22 @@
         function closeLeaderboard() { document.getElementById('leaderboard-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); }
 
         function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v65'); 
-            if (saved) {
-                globalState = JSON.parse(saved);
-                if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
-                if(globalState.hasSmartBomb === undefined) globalState.hasSmartBomb = true;
-                if(globalState.hasSeenTakeoffTutorial === undefined) globalState.hasSeenTakeoffTutorial = false;
-            } else {
+            try {
+                const saved = localStorage.getItem('fuelQuizState_v65'); 
+                if (saved) {
+                    globalState = JSON.parse(saved);
+                    if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
+                    if(globalState.hasSmartBomb === undefined) globalState.hasSmartBomb = true;
+                    if(globalState.hasSeenTakeoffTutorial === undefined) globalState.hasSeenTakeoffTutorial = false;
+                } else {
+                    throw new Error("No save");
+                }
+            } catch(e) {
                 globalState.currentFuel = STARTING_GLOBAL_FUEL;
                 globalState.levels = generateGameLevels();
                 globalState.hasSmartBomb = true;
                 globalState.hasSeenTakeoffTutorial = false;
+                globalState.username = null;
             }
         }
 
@@ -1284,18 +1289,21 @@
             document.getElementById('selector-view').classList.remove('active');
             document.getElementById('radar-view').classList.add('active');
             
-            // Wait 200ms for display:flex to fully render the container size
-            setTimeout(() => { 
-                if (!radarMap) {
-                    radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
-                    currentMapStyle = 'FULL';
-                    fullMapLayer.addTo(radarMap);
-                    radarLayerGroup = L.layerGroup().addTo(radarMap);
-                    radarPathGroup = L.layerGroup().addTo(radarMap);
-                }
-                radarMap.invalidateSize(); 
-                startRadarMission();
-            }, 200);
+            // Double RequestAnimationFrame completely guarantees the browser has painted 
+            // the display:flex CSS update before Leaflet tries to calculate its map boundaries.
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (!radarMap) {
+                        radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
+                        currentMapStyle = 'CLEAN'; 
+                        defaultMapLayer.addTo(radarMap);
+                        radarLayerGroup = L.layerGroup().addTo(radarMap);
+                        radarPathGroup = L.layerGroup().addTo(radarMap);
+                    }
+                    radarMap.invalidateSize(); 
+                    startRadarMission();
+                });
+            });
         }
 
         function startRadarMission() {
@@ -1429,20 +1437,20 @@
 
         function toggleMapStyle() {
             const btn = document.getElementById('toggle-map-btn');
-            if (currentMapStyle === 'FULL') {
-                radarMap.removeLayer(fullMapLayer);
-                cleanMapLayer.addTo(radarMap);
+            if (currentMapStyle === 'CLEAN') {
+                radarMap.removeLayer(defaultMapLayer);
+                labeledMapLayer.addTo(radarMap);
+                currentMapStyle = 'LABELS';
+                btn.textContent = "MAP: LABELS";
+                btn.style.background = "transparent";
+                btn.style.color = "var(--radar-green)";
+            } else {
+                radarMap.removeLayer(labeledMapLayer);
+                defaultMapLayer.addTo(radarMap);
                 currentMapStyle = 'CLEAN';
                 btn.textContent = "MAP: CLEAN";
                 btn.style.background = "var(--radar-green)";
                 btn.style.color = "#000";
-            } else {
-                radarMap.removeLayer(cleanMapLayer);
-                fullMapLayer.addTo(radarMap);
-                currentMapStyle = 'FULL';
-                btn.textContent = "MAP: FULL";
-                btn.style.background = "transparent";
-                btn.style.color = "var(--radar-green)";
             }
         }
         

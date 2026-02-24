@@ -195,7 +195,6 @@
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
         .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
         
-        /* Full Bleed Viewport with direct touch-action disabled */
         #takeoff-viewport { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
             border: none; border-radius: 0; overflow: hidden; margin: 0; 
@@ -229,6 +228,7 @@
         #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; gap: 0; }
         #radar-view.active { display: flex; }
         
+        /* Floating Accordion Window */
         .radar-top-accordion {
             width: 100%; flex-shrink: 0; background: rgba(5, 16, 5, 0.9); border: 1px solid var(--radar-green); border-radius: 8px;
             font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
@@ -254,7 +254,7 @@
         .radar-accordion-body.open { display: flex; }
 
         .radar-content { font-size: 0.8rem; line-height: 1.5; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
-        .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold;}
+        .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block;}
         
         .radar-setup-container { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; min-width: 110px;}
         .radar-toggle {
@@ -275,6 +275,7 @@
         }
         #radar-map-container { width: 100%; height: 100%; background: #000; z-index: 1; }
         
+        /* Success overlay inside the map */
         #radar-success-overlay {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5, 20, 5, 0.95);
             z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center;
@@ -307,7 +308,8 @@
         }
         @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
         
-        .radar-dest-label { pointer-events: none; text-shadow: 1px 1px 2px #000; }
+        /* The custom transparent masking box for REG texts */
+        .radar-dest-label { pointer-events: none; }
 
         /* Floating messaging */
         #radar-message-container {
@@ -645,6 +647,8 @@
         
         let activeLevelIdx = 0;
         let pendingInterceptPlane = null;
+
+        const RADAR_COLORS = ['#33FF33', '#00FFFF', '#FFCC00', '#FF3366', '#CC99FF', '#00FFCC', '#FF9933', '#99FF33', '#33CCFF', '#FF6699', '#FFFF66', '#FF5555'];
 
         const RADAR_REGIONS = [
             { name: "EU-CENTRAL", lamin: 45, lamax: 55, lomin: -5, lomax: 15 },
@@ -1307,7 +1311,7 @@
                 if(age > 150) { p.remove(); return; }
                 if(age > 100) { p.style.opacity = 1 - ((age - 100) / 50); } 
                 
-                x += vx; y += vy; vy += 0.1; vx *= 0.99; 
+                x += vx; y += vy; += 0.1; vx *= 0.99; 
                 p.style.left = x + 'px'; p.style.top = y + 'px';
                 requestAnimationFrame(step);
             }
@@ -1491,11 +1495,13 @@
                     const radFwd = heading * (Math.PI / 180);
                     const endLat = lat + Math.cos(radFwd) * fwdLen;
                     const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+                    
+                    const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length];
 
                     currentRadarPlanes.push({
                         callsign: p[1].trim(), lat: lat, lng: lng, heading: heading, origin: originCountry,
                         route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng,
-                        isReal: true
+                        isReal: true, color: pColor
                     });
                 }
                 
@@ -1530,12 +1536,14 @@
                     const radFwd = heading * (Math.PI / 180);
                     const endLat = lat + Math.cos(radFwd) * fwdLen;
                     const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+                    
+                    const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length];
 
                     currentRadarPlanes.push({ 
                         callsign: fakeCalls[currentRadarPlanes.length % fakeCalls.length], 
                         origin: null, lat: lat, lng: lng, heading: heading,
                         route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng,
-                        isReal: false 
+                        isReal: false, color: pColor
                     });
                 }
                 initTargetAndPlot();
@@ -1547,7 +1555,7 @@
             const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
             currentRadarCallsign = targetPlane.callsign;
             
-            textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span>`;
+            textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight" style="background:${targetPlane.color}; color:#000;">${currentRadarCallsign}</span><br>> DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span>`;
             plotPlanesOnRadar();
 
             // Fetch the physical airspace country/city to generate dynamic hints
@@ -1576,7 +1584,7 @@
                 hints = hints.sort(() => 0.5 - Math.random()).slice(0, 2);
                 let hintHtml = hints.map((h, i) => `> HINT ${i+1}: ${h}<br>`).join('');
                 
-                textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}`;
+                textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight" style="background:${targetPlane.color}; color:#000;">${currentRadarCallsign}</span><br>${hintHtml}`;
             })
             .catch(() => {
                 // Fallback if Geocoding API fails
@@ -1584,13 +1592,13 @@
                 if (targetPlane.isReal && targetPlane.origin) hints.push(`REGISTRY ${targetPlane.origin}`);
                 
                 let hintHtml = hints.map((h, i) => `> HINT ${i+1}: ${h}<br>`).join('');
-                textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}`;
+                textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight" style="background:${targetPlane.color}; color:#000;">${currentRadarCallsign}</span><br>${hintHtml}`;
             });
         }
         
         function plotPlanesOnRadar() {
             currentRadarPlanes.forEach(p => {
-                const iconHtml = `<div style="transform: rotate(${p.heading}deg); color: var(--radar-green);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
+                const iconHtml = `<div style="transform: rotate(${p.heading}deg); color: ${p.color};"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
                 let icon = L.divIcon({ html: iconHtml, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });
                 let marker = L.marker([p.lat, p.lng], {icon: icon}).addTo(radarLayerGroup);
                 
@@ -1660,10 +1668,11 @@
                 // Show satisfying success screen
                 const overlay = document.getElementById('radar-success-overlay');
                 document.getElementById('success-callsign-display').textContent = p.callsign;
+                document.getElementById('success-callsign-display').style.color = p.color;
                 overlay.style.display = 'flex';
                 
                 marker.setIcon(L.divIcon({
-                    html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
+                    html: `<div style="transform: rotate(${p.heading}deg); color: ${p.color};"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping" style="border-color:${p.color};"></div>`,
                     className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
                 }));
 
@@ -1697,19 +1706,15 @@
             radarPathGroup.clearLayers();
             currentRadarPlanes.forEach(p => {
                 if (pathsVisible) {
-                    L.polyline(p.route, { color: 'var(--radar-green)', weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup);
-                    L.circleMarker([p.route[2][0], p.route[2][1]], { radius: 3, color: 'var(--radar-green)', fillColor: 'var(--radar-green)', fillOpacity: 1 }).addTo(radarPathGroup);
-                    L.circleMarker([p.route[0][0], p.route[0][1]], { radius: 2, color: 'rgba(51, 255, 51, 0.4)', fill: true, stroke: false }).addTo(radarPathGroup);
+                    L.polyline(p.route, { color: p.color, weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup);
+                    L.circleMarker([p.route[2][0], p.route[2][1]], { radius: 3, color: p.color, fillColor: p.color, fillOpacity: 1 }).addTo(radarPathGroup);
+                    L.circleMarker([p.route[0][0], p.route[0][1]], { radius: 2, color: p.color, fill: true, stroke: false, fillOpacity: 0.4 }).addTo(radarPathGroup);
                 }
                 
                 if (originVisible && p.isReal && p.origin) {
-                    const labelLat = pathsVisible ? p.route[0][0] : p.lat;
-                    const labelLng = pathsVisible ? p.route[0][1] : p.lng;
-                    const offsetMt = pathsVisible ? -8 : 12;
-                    
-                    L.marker([labelLat, labelLng], {
+                    L.marker([p.lat, p.lng], {
                         icon: L.divIcon({ 
-                            html: `<div style="color: rgba(51, 255, 51, 0.8); font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 8px; margin-top: ${offsetMt}px; text-shadow: 1px 1px 2px #000;">REG: ${p.origin}</div>`, 
+                            html: `<div style="color: ${p.color}; background: #000; padding: 1px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 12px; margin-top: 12px; display: inline-block;">REG: ${p.origin}</div>`, 
                             className: 'radar-dest-label', 
                             iconSize: [0,0] 
                         })

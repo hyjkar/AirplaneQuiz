@@ -228,7 +228,6 @@
         #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; gap: 0; }
         #radar-view.active { display: flex; }
         
-        /* Floating Accordion Window */
         .radar-top-accordion {
             width: 100%; flex-shrink: 0; background: rgba(5, 16, 5, 0.9); border: 1px solid var(--radar-green); border-radius: 8px;
             font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
@@ -275,7 +274,6 @@
         }
         #radar-map-container { width: 100%; height: 100%; background: #000; z-index: 1; }
         
-        /* Success overlay inside the map */
         #radar-success-overlay {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5, 20, 5, 0.95);
             z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center;
@@ -308,8 +306,7 @@
         }
         @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
         
-        /* The custom transparent masking box for REG texts */
-        .radar-dest-label { pointer-events: none; }
+        .radar-dest-label { pointer-events: none; text-shadow: 1px 1px 2px #000; }
 
         /* Floating messaging */
         #radar-message-container {
@@ -1311,7 +1308,7 @@
                 if(age > 150) { p.remove(); return; }
                 if(age > 100) { p.style.opacity = 1 - ((age - 100) / 50); } 
                 
-                x += vx; y += vy; += 0.1; vx *= 0.99; 
+                x += vx; y += vy; vy += 0.1; vx *= 0.99; 
                 p.style.left = x + 'px'; p.style.top = y + 'px';
                 requestAnimationFrame(step);
             }
@@ -1672,7 +1669,7 @@
                 overlay.style.display = 'flex';
                 
                 marker.setIcon(L.divIcon({
-                    html: `<div style="transform: rotate(${p.heading}deg); color: ${p.color};"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping" style="border-color:${p.color};"></div>`,
+                    html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
                     className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
                 }));
 

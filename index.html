@@ -219,25 +219,38 @@
         #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: flex-start; gap: 10px; }
         #radar-view.active { display: flex; }
         
-        .radar-terminal {
+        .radar-top-accordion {
             width: 100%; flex-shrink: 0; background: #051005; border: 4px solid #1f3d1f; border-radius: 8px;
-            padding: 15px; box-shadow: inset 0 0 30px rgba(51, 255, 51, 0.1), 0 5px 15px rgba(0,0,0,0.5);
             font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
-            display: flex; justify-content: space-between; align-items: flex-end;
+            box-shadow: inset 0 0 30px rgba(51, 255, 51, 0.1), 0 5px 15px rgba(0,0,0,0.5);
         }
-        .radar-terminal::before {
+        .radar-top-accordion::before {
             content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
             z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
-        .radar-content { font-size: 0.95rem; line-height: 1.4; text-transform: uppercase; z-index: 3; position: relative;}
+        
+        .radar-accordion-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; cursor: pointer; z-index: 3; position: relative;
+            background: rgba(51, 255, 51, 0.05); border-bottom: 2px solid transparent;
+        }
+        .radar-accordion-header:active { background: rgba(51, 255, 51, 0.1); }
+        .radar-accordion-header.open { border-bottom-color: #1f3d1f; }
+        .radar-accordion-title { font-weight: bold; font-size: 1.1rem; color: #fff; }
+        
+        .radar-accordion-body {
+            display: none; padding: 15px; justify-content: space-between; align-items: flex-start; z-index: 3; position: relative; gap: 10px;
+        }
+        .radar-accordion-body.open { display: flex; }
+
+        .radar-content { font-size: 0.85rem; line-height: 1.4; text-transform: uppercase; flex-grow: 1; }
         .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold;}
         
-        #radar-timer-container { display: flex; flex-direction: column; align-items: flex-end; z-index: 3; position: relative; min-width: 130px;}
-        #radar-timer { font-size: 2.2rem; font-weight: bold; text-align: right; margin-bottom: 5px; transition: color 0.3s;}
+        #radar-timer { font-size: 1.4rem; font-weight: bold; text-align: right; transition: color 0.3s; margin: 0; }
         .timer-penalty { color: var(--brand-red) !important; text-shadow: 0 0 10px rgba(215, 25, 32, 0.8); }
         
-        .radar-setup-container { width: 100%; display: flex; flex-direction: column; align-items: flex-end; }
+        .radar-setup-container { width: auto; display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
         #radar-setup-toggle { 
             color: var(--brand-gold); font-size: 0.8rem; cursor: pointer; display: inline-block; 
             padding: 4px 8px; border: 1px solid var(--brand-gold); border-radius: 4px; 
@@ -246,11 +259,11 @@
         #radar-setup-content { display: none; width: 100%; justify-content: flex-end; }
         #radar-setup-content.open { display: flex; }
         
-        .radar-toggle-group { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; max-width: 160px;}
+        .radar-toggle-group { display: flex; flex-direction: column; gap: 5px; max-width: 120px;}
         .radar-toggle {
             background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green);
             font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; padding: 4px 6px; cursor: pointer;
-            outline: none; border-radius: 4px; transition: all 0.2s; flex-grow: 1;
+            outline: none; border-radius: 4px; transition: all 0.2s; width: 100%; text-align: right;
         }
         .radar-toggle:hover { background: rgba(51, 255, 51, 0.2); }
 
@@ -563,13 +576,16 @@
     </div>
 
     <div id="radar-view" class="view-section">
-        <div class="radar-terminal">
-            <div class="radar-content" id="radar-screen-text">
-                ESTABLISHING UPLINK...<br>
-                SCANNING SECTOR...<span class="blinking-cursor">_</span>
-            </div>
-            <div id="radar-timer-container">
+        <div class="radar-top-accordion">
+            <div class="radar-accordion-header open" id="radar-accordion-header" onclick="toggleRadarInfo()">
+                <div class="radar-accordion-title">[-] MISSION INTEL</div>
                 <div id="radar-timer">05:00:00</div>
+            </div>
+            <div class="radar-accordion-body open" id="radar-info-body">
+                <div class="radar-content" id="radar-screen-text">
+                    ESTABLISHING UPLINK...<br>
+                    SCANNING SECTOR...<span class="blinking-cursor">_</span>
+                </div>
                 <div class="radar-setup-container">
                     <div id="radar-setup-toggle" onclick="toggleRadarSetup()">[+] TACTICAL ASSISTS</div>
                     <div id="radar-setup-content">
@@ -583,7 +599,7 @@
             </div>
         </div>
         
-        <div id="radar-map-wrapper">
+        <div id="radar-map-wrapper" style="margin-top:10px;">
             <div id="radar-map-container"></div>
             
             <div id="radar-success-overlay">
@@ -653,7 +669,9 @@
             bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0
         };
 
-        const firebaseConfig = {};
+        const firebaseConfig = {
+            // PASTE YOUR KEYS HERE
+        };
 
         try {
             if (typeof firebase !== 'undefined') {
@@ -1347,6 +1365,24 @@
         }
 
         // --- ACCORDION TOGGLE ---
+        function toggleRadarInfo() {
+            const body = document.getElementById('radar-info-body');
+            const header = document.getElementById('radar-accordion-header');
+            const title = header.querySelector('.radar-accordion-title');
+            
+            if (body.classList.contains('open')) {
+                body.classList.remove('open');
+                header.classList.remove('open');
+                title.textContent = "[+] MISSION INTEL";
+            } else {
+                body.classList.add('open');
+                header.classList.add('open');
+                title.textContent = "[-] MISSION INTEL";
+            }
+            // Trigger map resize so the tile grid re-calculates safely
+            setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
+        }
+
         function toggleRadarSetup() {
             const content = document.getElementById('radar-setup-content');
             const toggle = document.getElementById('radar-setup-toggle');
@@ -1369,6 +1405,12 @@
             pathsVisible = false;
             originVisible = false;
             currentMapStyle = 'CLEAN'; 
+            
+            // Open the accordion by default on new mission
+            document.getElementById('radar-info-body').classList.add('open');
+            document.getElementById('radar-accordion-header').classList.add('open');
+            document.querySelector('.radar-accordion-title').textContent = "[-] MISSION INTEL";
+            
             document.getElementById('radar-setup-content').classList.remove('open');
             document.getElementById('radar-setup-toggle').textContent = "[+] TACTICAL ASSISTS";
             document.getElementById('radar-success-overlay').style.display = 'none';
@@ -1472,7 +1514,6 @@
                     const lat = region.lamin + Math.random() * (region.lamax - region.lamin); 
                     const lng = region.lomin + Math.random() * (region.lomax - region.lomin);
                     
-                    // Filter: Prevent overlaps in fake data too
                     let isOverlapping = false;
                     for (let cp of currentRadarPlanes) {
                         if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) {
@@ -1507,7 +1548,7 @@
             const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
             currentRadarCallsign = targetPlane.callsign;
             
-            textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span>`;
+            textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span>`;
             plotPlanesOnRadar();
 
             // Fetch the physical airspace country/city to generate dynamic hints
@@ -1536,7 +1577,7 @@
                 hints = hints.sort(() => 0.5 - Math.random()).slice(0, 2);
                 let hintHtml = hints.map((h, i) => `> HINT ${i+1}: ${h}<br>`).join('');
                 
-                textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}<span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
+                textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}`;
             })
             .catch(() => {
                 // Fallback if Geocoding API fails
@@ -1544,7 +1585,7 @@
                 if (targetPlane.isReal && targetPlane.origin) hints.push(`REGISTRY ${targetPlane.origin}`);
                 
                 let hintHtml = hints.map((h, i) => `> HINT ${i+1}: ${h}<br>`).join('');
-                textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}<span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
+                textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}`;
             });
         }
         

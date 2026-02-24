@@ -129,7 +129,6 @@
         .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s;}
         .radar-btn:active { background: var(--radar-green); color: #000; }
 
-        /* Tactical style for the Abort button sitting over the map */
         .radar-abort-btn { background: rgba(10, 10, 10, 0.85) !important; border: 1px solid var(--brand-red) !important; color: var(--brand-red) !important; backdrop-filter: blur(4px); font-weight: bold;}
 
         /* --- GAMEPLAY (Shared) --- */
@@ -191,16 +190,17 @@
             font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #333; 
             margin-top: 5px; padding: 10px 15px; background: rgba(255,255,255,0.9); 
             border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 10; position: relative;
-            backdrop-filter: blur(4px); flex-shrink: 0;
+            backdrop-filter: blur(4px); flex-shrink: 0; pointer-events: none;
         }
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
         .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
         
-        /* Full Bleed Viewport */
+        /* Full Bleed Viewport with direct touch-action disabled */
         #takeoff-viewport { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
             border: none; border-radius: 0; overflow: hidden; margin: 0; 
             image-rendering: pixelated; background-color: #87CEEB; z-index: 0; 
+            touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
         }
         .parallax-layer { position: absolute; left: 0; right: 0; background-repeat: repeat-x; }
         #tk-bg-sky { top: 0; bottom: 60px; background-size: auto 100%; z-index: 0; }
@@ -217,22 +217,10 @@
         .weather-fog { width: 200%; height: 100%; top: 0; left: -50%; background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 60%); background-size: 50% 100%; background-repeat: repeat-x; animation: fogDrift 5s linear infinite alternate; filter: blur(8px); opacity: 0.8; }
         @keyframes fogDrift { from { transform: translateX(-15%); } to { transform: translateX(15%); } }
         
-        #tk-gauge-container { position: absolute; right: 15px; top: 120px; bottom: 180px; width: 20px; background: rgba(0,0,0,0.5); border-radius: 4px; border: 2px solid #fff; z-index: 6; }
+        #tk-gauge-container { position: absolute; right: 15px; top: 120px; bottom: 180px; width: 20px; background: rgba(0,0,0,0.5); border-radius: 4px; border: 2px solid #fff; z-index: 6; pointer-events: none;}
         #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); }
         #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; }
-        .pixel-particle { position: absolute; width: 6px; height: 6px; z-index: 10; }
-        
-        #takeoff-panel { 
-            position: relative; z-index: 10; flex-shrink: 0; display: flex; justify-content: center; align-items: center; 
-            background: rgba(42, 42, 42, 0.85); border: 4px solid #111; border-radius: 8px; 
-            padding: 10px; margin-top: auto; margin-bottom: 20px; width: 100%; max-width: 300px; 
-            box-shadow: inset 0 0 15px #000, 0 10px 20px rgba(0,0,0,0.5); backdrop-filter: blur(4px);
-        }
-        #takeoff-panel::before, #takeoff-panel::after { content: ''; position: absolute; width: 8px; height: 8px; background: #555; border-radius: 50%; box-shadow: inset 1px 1px 2px #000; }
-        #takeoff-panel::before { left: 10px; top: 10px; }
-        #takeoff-panel::after { right: 10px; bottom: 10px; }
-        #takeoff-btn { width: 100px; height: 100px; border-radius: 50%; margin: 0; background: radial-gradient(circle at 30% 30%, #ff4b4b, #b30000); border: 4px solid #111; box-shadow: 0 8px 0 #5e0000, 0 15px 15px rgba(0,0,0,0.5), inset 0 4px 6px rgba(255,255,255,0.3); color: white; font-family: 'Share Tech Mono', monospace; font-size: 1.3rem; font-weight: bold; text-shadow: 1px 1px 2px #000; cursor: pointer; line-height: 1.1; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; transition: transform 0.05s, box-shadow 0.05s; }
-        #takeoff-btn.pressed { transform: translateY(8px); box-shadow: 0 0px 0 #5e0000, 0 5px 5px rgba(0,0,0,0.5), inset 0 4px 6px rgba(0,0,0,0.3); }
+        .pixel-particle { position: absolute; width: 6px; height: 6px; z-index: 10; pointer-events: none;}
 
         .flash-screen { animation: whiteFlash 0.6s ease-out; }
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
@@ -241,7 +229,6 @@
         #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; gap: 0; }
         #radar-view.active { display: flex; }
         
-        /* Floating Accordion Window */
         .radar-top-accordion {
             width: 100%; flex-shrink: 0; background: rgba(5, 16, 5, 0.9); border: 1px solid var(--radar-green); border-radius: 8px;
             font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
@@ -288,7 +275,6 @@
         }
         #radar-map-container { width: 100%; height: 100%; background: #000; z-index: 1; }
         
-        /* Success overlay inside the map */
         #radar-success-overlay {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5, 20, 5, 0.95);
             z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center;
@@ -371,7 +357,7 @@
             <p class="tutorial-text">
                 1. Wait for your speed to reach <strong style="color:var(--gauge-green)">140 KTS</strong>. <br>
                 <span style="color:var(--brand-red); font-size:0.85rem;">(Rotating early causes a catastrophic stall!)</span><br><br>
-                2. Tap and <strong>HOLD</strong> the button to pull the nose up.<br><br>
+                2. Tap and <strong>HOLD ANYWHERE</strong> on the screen to pull the nose up.<br><br>
                 3. Keep the needle in the <strong style="color:var(--gauge-green)">GREEN ZONE</strong> to gain lift before the runway ends!<br><br>
                 <span style="color:#aaa; font-size:0.9rem;">⚠️ You have 3 attempts to earn a fuel bonus. If you fail, the mission is aborted.</span>
             </p>
@@ -573,15 +559,12 @@
                 </div>
             </div>
             
-            <div id="takeoff-panel">
-                <button id="takeoff-btn">PULL<br>UP</button>
-            </div>
         </div>
 
         <div id="message"></div>
         
         <div class="footer-buttons" style="border: none;">
-             <button class="outline-btn" onclick="saveAndExit()">Continue Later</button>
+             <button class="outline-btn" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(4px);" onclick="saveAndExit()">Continue Later</button>
         </div>
     </div>
 
@@ -656,7 +639,6 @@
         let currentRadarCallsign = "";
         let currentRadarPlanes = [];
         
-        // Assist states that accelerate the timer penalty
         let pathsVisible = false;
         let originVisible = false;
         let currentMapStyle = 'CLEAN'; 
@@ -820,11 +802,12 @@
                     }
                 });
                 
-                const tkBtn = document.getElementById('takeoff-btn');
+                // NEW TAKEOFF TAP ANYWHERE LOGIC
+                const tkViewport = document.getElementById('takeoff-viewport');
                 const startPress = (e) => { 
+                    if (!tkState.active) return;
                     e.preventDefault();
-                    if(tkBtn) tkBtn.classList.add('pressed');
-                    if (tkState.active && tkState.speed < 140) {
+                    if (tkState.speed < 140) {
                         tkState.pressing = false; 
                         explodePlane("ROTATED TOO EARLY");
                         return;
@@ -832,13 +815,12 @@
                     tkState.pressing = true; 
                 };
                 const endPress = (e) => { 
-                    if (e && e.cancelable) e.preventDefault();
-                    if(tkBtn) tkBtn.classList.remove('pressed');
+                    if (!tkState.active) return;
                     tkState.pressing = false; 
                 };
                 
-                if(tkBtn) {
-                    tkBtn.addEventListener('pointerdown', startPress);
+                if(tkViewport) {
+                    tkViewport.addEventListener('pointerdown', startPress);
                     window.addEventListener('pointerup', endPress);
                     window.addEventListener('pointercancel', endPress);
                 }

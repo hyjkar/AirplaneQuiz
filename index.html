@@ -1281,24 +1281,31 @@
             return dirs[Math.round(((heading %= 360) < 0 ? heading + 360 : heading) / 45) % 8];
         }
 
-        function openRadar() {
+   function openRadar() {
             if(globalState.currentFuel <= 0) { triggerGameOver(); return; }
             
             document.getElementById('selector-view').classList.remove('active');
             document.getElementById('radar-view').classList.add('active');
             
-            // Wait 300ms for CSS transition to settle before Leaflet calculates bounds
-            setTimeout(() => { 
-                if (!radarMap) {
-                    radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
-                    cleanMapBase.addTo(radarMap); // Add only the base layer to start
-                    radarLayerGroup = L.layerGroup().addTo(radarMap);
-                    radarPathGroup = L.layerGroup().addTo(radarMap);
-                    currentMapStyle = 'CLEAN';
-                }
-                radarMap.invalidateSize(); 
-                startRadarMission();
-            }, 300);
+            // Double RequestAnimationFrame completely guarantees the browser has painted 
+            // the display:flex CSS update before Leaflet tries to calculate its map boundaries.
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (!radarMap) {
+                        radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
+                        currentMapStyle = 'CLEAN'; 
+                        
+                        // THE FIX: Using the correct variable name 'cleanMapBase' here 
+                        // instead of the undefined 'defaultMapLayer'
+                        cleanMapBase.addTo(radarMap);
+                        
+                        radarLayerGroup = L.layerGroup().addTo(radarMap);
+                        radarPathGroup = L.layerGroup().addTo(radarMap);
+                    }
+                    radarMap.invalidateSize(); 
+                    startRadarMission();
+                });
+            });
         }
 
         function startRadarMission() {

@@ -250,16 +250,7 @@
         #radar-timer { font-size: 1.4rem; font-weight: bold; text-align: right; transition: color 0.3s; margin: 0; }
         .timer-penalty { color: var(--brand-red) !important; text-shadow: 0 0 10px rgba(215, 25, 32, 0.8); }
         
-        .radar-setup-container { width: auto; display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
-        #radar-setup-toggle { 
-            color: var(--brand-gold); font-size: 0.8rem; cursor: pointer; display: inline-block; 
-            padding: 4px 8px; border: 1px solid var(--brand-gold); border-radius: 4px; 
-            background: rgba(0,0,0,0.5); user-select: none; margin-bottom: 5px; font-weight: bold;
-        }
-        #radar-setup-content { display: none; width: 100%; justify-content: flex-end; }
-        #radar-setup-content.open { display: flex; }
-        
-        .radar-toggle-group { display: flex; flex-direction: column; gap: 5px; max-width: 120px;}
+        .radar-toggle-group { display: flex; flex-direction: column; gap: 5px; max-width: 120px; flex-shrink: 0;}
         .radar-toggle {
             background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green);
             font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; padding: 4px 6px; cursor: pointer;
@@ -578,7 +569,7 @@
     <div id="radar-view" class="view-section">
         <div class="radar-top-accordion">
             <div class="radar-accordion-header open" id="radar-accordion-header" onclick="toggleRadarInfo()">
-                <div class="radar-accordion-title">[-] MISSION INTEL</div>
+                <div class="radar-accordion-title">[-] TARGET INTEL</div>
                 <div id="radar-timer">05:00:00</div>
             </div>
             <div class="radar-accordion-body open" id="radar-info-body">
@@ -586,15 +577,10 @@
                     ESTABLISHING UPLINK...<br>
                     SCANNING SECTOR...<span class="blinking-cursor">_</span>
                 </div>
-                <div class="radar-setup-container">
-                    <div id="radar-setup-toggle" onclick="toggleRadarSetup()">[+] TACTICAL ASSISTS</div>
-                    <div id="radar-setup-content">
-                        <div class="radar-toggle-group">
-                            <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
-                            <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">REG: OFF</button>
-                            <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">LABELS: OFF</button>
-                        </div>
-                    </div>
+                <div class="radar-toggle-group">
+                    <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
+                    <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">REG: OFF</button>
+                    <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">LABELS: OFF</button>
                 </div>
             </div>
         </div>
@@ -1177,7 +1163,7 @@
             tkState.active = true;
             tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0;
             tkState.distance = 100; tkState.speed = 0; tkState.pressing = false;
-            tkState.bgPosSky = 0; tkState.bgPosCity = 0; tkState.bgPosGround = 0; tkState.bgPosRunway = 0;
+            tkState.bgPosSky = 0; tkPosCity = 0; tkPosGround = 0; tkPosRunway = 0;
             
             document.getElementById('tk-plane').style.display = 'block';
             document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`;
@@ -1364,7 +1350,7 @@
             return dirs[Math.round(((heading %= 360) < 0 ? heading + 360 : heading) / 45) % 8];
         }
 
-        // --- ACCORDION TOGGLE ---
+        // --- MAIN ACCORDION TOGGLE ---
         function toggleRadarInfo() {
             const body = document.getElementById('radar-info-body');
             const header = document.getElementById('radar-accordion-header');
@@ -1373,26 +1359,14 @@
             if (body.classList.contains('open')) {
                 body.classList.remove('open');
                 header.classList.remove('open');
-                title.textContent = "[+] MISSION INTEL";
+                title.textContent = "[+] TARGET INTEL";
             } else {
                 body.classList.add('open');
                 header.classList.add('open');
-                title.textContent = "[-] MISSION INTEL";
+                title.textContent = "[-] TARGET INTEL";
             }
             // Trigger map resize so the tile grid re-calculates safely
             setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
-        }
-
-        function toggleRadarSetup() {
-            const content = document.getElementById('radar-setup-content');
-            const toggle = document.getElementById('radar-setup-toggle');
-            if (content.classList.contains('open')) {
-                content.classList.remove('open');
-                toggle.textContent = "[+] TACTICAL ASSISTS";
-            } else {
-                content.classList.add('open');
-                toggle.textContent = "[-] TACTICAL ASSISTS";
-            }
         }
 
         function openRadar() {
@@ -1409,10 +1383,8 @@
             // Open the accordion by default on new mission
             document.getElementById('radar-info-body').classList.add('open');
             document.getElementById('radar-accordion-header').classList.add('open');
-            document.querySelector('.radar-accordion-title').textContent = "[-] MISSION INTEL";
+            document.querySelector('.radar-accordion-title').textContent = "[-] TARGET INTEL";
             
-            document.getElementById('radar-setup-content').classList.remove('open');
-            document.getElementById('radar-setup-toggle').textContent = "[+] TACTICAL ASSISTS";
             document.getElementById('radar-success-overlay').style.display = 'none';
             
             requestAnimationFrame(() => {
@@ -1514,6 +1486,7 @@
                     const lat = region.lamin + Math.random() * (region.lamax - region.lamin); 
                     const lng = region.lomin + Math.random() * (region.lomax - region.lomin);
                     
+                    // Filter: Prevent overlaps in fake data too
                     let isOverlapping = false;
                     for (let cp of currentRadarPlanes) {
                         if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) {

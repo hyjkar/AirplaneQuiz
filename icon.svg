@@ -1,12 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#e5c58b;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#cfa86e;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  <circle cx="256" cy="256" r="256" fill="#202020"/>
-  <path d="M256 60C235 60 210 110 210 180V320C210 380 235 430 256 450C277 430 302 380 302 320V180C302 110 277 60 256 60Z" fill="#d71920"/>
-  <path d="M256 140L420 360H320L256 260L192 360H92L256 140Z" fill="url(#goldGrad)" opacity="0.9"/>
-  <path d="M256 360L230 450H282L256 360Z" fill="url(#goldGrad)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+    <defs>
+        <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#2a2a2a" />
+            <stop offset="100%" stop-color="#050505" />
+        </radialGradient>
+        
+        <linearGradient id="goldGradient" x1="10%" y1="0%" x2="90%" y2="100%">
+            <stop offset="0%" stop-color="#FFE373" />
+            <stop offset="25%" stop-color="#D4AF37" />
+            <stop offset="50%" stop-color="#AA7C11" />
+            <stop offset="75%" stop-color="#D4AF37" />
+            <stop offset="100%" stop-color="#805000" />
+        </linearGradient>
+        
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="15" stdDeviation="15" flood-color="#000" flood-opacity="0.9" />
+            <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.5" />
+        </filter>
+    </defs>
+
+    <rect width="512" height="512" fill="url(#bgGlow)" rx="112" />
+
+    <g filter="url(#shadow)" fill="url(#goldGradient)">
+        
+        <path d="
+            M 256,40 
+            C 285,40 292,80 292,140
+            L 292,210
+            L 480,335
+            C 490,340 490,355 480,360
+            L 292,320
+            L 292,420
+            L 370,460
+            C 375,463 375,475 365,475
+            L 280,460
+            L 256,490
+            L 232,460
+            L 147,475
+            C 137,475 137,463 142,460
+            L 220,420
+            L 220,320
+            L 32,360
+            C 22,355 22,340 32,335
+            L 220,210
+            L 220,140
+            C 220,80 227,40 256,40 
+            Z" />
+        
+        <rect x="143" y="240" width="24" height="55" rx="12" />
+        <rect x="345" y="240" width="24" height="55" rx="12" />
+        <rect x="79" y="285" width="18" height="45" rx="9" />
+        <rect x="415" y="285" width="18" height="45" rx="9" />
+    </g>
+
+    <path d="M 256,55 C 268,55 275,60 278,70 C 268,66 244,66 234,70 C 237,60 244,55 256,55 Z" fill="#111111" opacity="0.9" />
 </svg>

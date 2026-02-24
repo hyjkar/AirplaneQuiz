@@ -225,7 +225,8 @@
         .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold;}
         
         #radar-timer-container { display: flex; flex-direction: column; align-items: flex-end; z-index: 3; position: relative; }
-        #radar-timer { font-size: 2.2rem; font-weight: bold; text-align: right; margin-bottom: 5px; transition: color 0.3s;}
+        #radar-timer { font-size: 2.2rem; font-weight: bold; text-align: right; margin-bottom: 5px; }
+        .timer-penalty { color: var(--brand-red) !important; text-shadow: 0 0 10px rgba(215, 25, 32, 0.8); }
         
         .radar-toggle-group { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; max-width: 160px; }
         .radar-toggle {
@@ -539,10 +540,10 @@
                 SCANNING SECTOR...<span class="blinking-cursor">_</span>
             </div>
             <div id="radar-timer-container">
-                <div id="radar-timer">05:00</div>
+                <div id="radar-timer">05:00:00</div>
                 <div class="radar-toggle-group">
                     <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
-                    <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">ORIGIN: OFF</button>
+                    <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">REG: OFF</button>
                     <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">MAP: CLEAN</button>
                 </div>
             </div>
@@ -569,7 +570,9 @@
         let radarLayerGroup = null;
         let radarPathGroup = null;
         let radarCountdown = null;
-        let radarTime = 300; // BASE TIME: 5 minutes
+        let radarTimeMs = 300000; // Base time: 5 minutes in milliseconds
+        let lastTimerTick = 0;
+        
         let currentRadarCallsign = "";
         let currentRadarPlanes = [];
         
@@ -1334,7 +1337,7 @@
             document.getElementById('toggle-paths-btn').style.background = "transparent";
             document.getElementById('toggle-paths-btn').style.color = "var(--radar-green)";
             
-            document.getElementById('toggle-origin-btn').textContent = "ORIGIN: OFF";
+            document.getElementById('toggle-origin-btn').textContent = "REG: OFF";
             document.getElementById('toggle-origin-btn').style.background = "transparent";
             document.getElementById('toggle-origin-btn').style.color = "var(--radar-green)";
 
@@ -1348,7 +1351,6 @@
             
             textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${region.name}...<span class='blinking-cursor'>_</span>`;
             msgEl.textContent = "";
-            document.getElementById('radar-timer').textContent = "05:00";
             
             if(radarCountdown) clearInterval(radarCountdown);
             radarLayerGroup.clearLayers();
@@ -1411,7 +1413,6 @@
                     const lat = region.lamin + Math.random() * (region.lamax - region.lamin); 
                     const lng = region.lomin + Math.random() * (region.lomax - region.lomin);
                     
-                    // Filter: Prevent overlaps in fake data too
                     let isOverlapping = false;
                     for (let cp of currentRadarPlanes) {
                         if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) {
@@ -1445,15 +1446,36 @@
             const textEl = document.getElementById('radar-screen-text');
             const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
             currentRadarCallsign = targetPlane.callsign;
-            const headingStr = getCompassDirection(targetPlane.heading);
-
-            let hint2 = "";
-            if (targetPlane.isReal && targetPlane.origin) {
-                hint2 = `> HINT 2: REGISTRY ${targetPlane.origin}<br>`;
-            }
-
-            textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> HINT 1: HEADING ${headingStr}<br>${hint2}<span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
+            
+            textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span>`;
             plotPlanesOnRadar();
+
+            // Fetch the physical airspace country to generate a dynamic hint
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${targetPlane.lat}&lon=${targetPlane.lng}&zoom=3`)
+            .then(res => res.json())
+            .then(geoData => {
+                let hints = [];
+                hints.push(`HEADING ${getCompassDirection(targetPlane.heading)}`);
+                if (targetPlane.isReal && targetPlane.origin) hints.push(`REGISTRY ${targetPlane.origin}`);
+                
+                if (geoData && geoData.address && geoData.address.country) {
+                    hints.push(`AIRSPACE: ${geoData.address.country.toUpperCase()}`);
+                } else {
+                    hints.push(`AIRSPACE: INT'L WATERS`);
+                }
+                
+                // Randomly select 2 hints out of the possible pool
+                hints = hints.sort(() => 0.5 - Math.random()).slice(0, 2);
+                let hintHtml = hints.map((h, i) => `> HINT ${i+1}: ${h}<br>`).join('');
+                
+                textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}<span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
+            })
+            .catch(() => {
+                // Fallback if Geocoding API fails
+                let hintHtml = `> HINT 1: HEADING ${getCompassDirection(targetPlane.heading)}<br>`;
+                if (targetPlane.isReal && targetPlane.origin) hintHtml += `> HINT 2: REGISTRY ${targetPlane.origin}<br>`;
+                textEl.innerHTML = `<span style="color:#fff;">[ TARGET IDENTIFIED ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}<span style="font-size:0.8rem; color:#aaa;">TAP TARGET ON MAP TO LOCK ON.</span>`;
+            });
         }
         
         function plotPlanesOnRadar() {
@@ -1477,12 +1499,12 @@
                 }
             }
             
-            startRadarTimer(300); // 5 minutes
+            startRadarTimer(300); // Kick off the MS timer
         }
 
-        // --- NEW CUSTOM MODAL LOGIC ---
+        // --- CUSTOM MODAL LOGIC ---
         function openInterceptModal(plane, marker) {
-            if (radarTime <= 0) return;
+            if (radarTimeMs <= 0) return;
             pendingInterceptPlane = { data: plane, marker: marker };
             
             // Encrypt the callsign (Random alphanumeric scramble)
@@ -1510,6 +1532,7 @@
             pendingInterceptPlane = null;
             
             if (p.callsign === currentRadarCallsign) {
+                radarTimeMs = 0; // stop timer
                 clearInterval(radarCountdown);
                 document.getElementById('radar-message').className = "success";
                 document.getElementById('radar-message').textContent = "INTERCEPT SUCCESSFUL! (+250L)";
@@ -1526,23 +1549,21 @@
                 marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
                 
                 // Big 15 second penalty for a wrong guess!
-                radarTime = Math.max(0, radarTime - 15); 
+                radarTimeMs = Math.max(0, radarTimeMs - 15000); 
                 
                 const tDiv = document.getElementById('radar-timer');
                 tDiv.style.color = "red";
-                setTimeout(() => tDiv.style.color = "var(--radar-green)", 500);
+                setTimeout(() => updateTimerDisplay(getAssistPenalty()), 500); // Revert to dynamic color
                 
                 document.getElementById('radar-message').className = "fail";
                 document.getElementById('radar-message').textContent = `WRONG TARGET (-15s)`;
                 setTimeout(() => { document.getElementById('radar-message').textContent = ""; }, 2000);
                 
-                // Update timer immediately
-                let m = Math.floor(radarTime / 60); let s = radarTime % 60;
-                tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}`;
+                updateTimerDisplay(getAssistPenalty());
             }
         }
 
-        // --- NEW SEPARATED ASSIST TOGGLES ---
+        // --- SEPARATED ASSIST TOGGLES ---
         function renderRadarOverlays() {
             radarPathGroup.clearLayers();
             currentRadarPlanes.forEach(p => {
@@ -1553,7 +1574,6 @@
                 }
                 
                 if (originVisible && p.isReal && p.origin) {
-                    // Place label at the back of the line if paths are on, otherwise stick it right under the plane
                     const labelLat = pathsVisible ? p.route[0][0] : p.lat;
                     const labelLng = pathsVisible ? p.route[0][1] : p.lng;
                     const offsetMt = pathsVisible ? -8 : 12;
@@ -1567,6 +1587,7 @@
                     }).addTo(radarPathGroup);
                 }
             });
+            updateTimerDisplay(getAssistPenalty());
         }
 
         function toggleFlightPaths() {
@@ -1581,7 +1602,7 @@
         function toggleOrigin() {
             originVisible = !originVisible;
             const btn = document.getElementById('toggle-origin-btn');
-            btn.textContent = "ORIGIN: " + (originVisible ? "ON" : "OFF");
+            btn.textContent = "REG: " + (originVisible ? "ON" : "OFF");
             btn.style.background = originVisible ? "var(--radar-green)" : "transparent";
             btn.style.color = originVisible ? "#000" : "var(--radar-green)";
             renderRadarOverlays();
@@ -1602,29 +1623,55 @@
                 btn.style.background = "var(--radar-green)";
                 btn.style.color = "#000";
             }
+            updateTimerDisplay(getAssistPenalty());
+        }
+
+        // --- NEW MS PENALTY TIMER ---
+        function getAssistPenalty() {
+            let p = 1; // Base 1x speed
+            if (pathsVisible) p += 1;
+            if (originVisible) p += 1;
+            if (currentMapStyle === 'LABELS') p += 1;
+            return p; // Can run up to 4x speed!
+        }
+
+        function updateTimerDisplay(penalty) {
+            let tDiv = document.getElementById('radar-timer');
+            
+            // Visual warning when timer is draining faster
+            if (penalty > 1) {
+                tDiv.classList.add('timer-penalty');
+            } else {
+                tDiv.classList.remove('timer-penalty');
+            }
+
+            let totalSeconds = Math.floor(radarTimeMs / 1000);
+            let m = Math.floor(totalSeconds / 60);
+            let s = totalSeconds % 60;
+            let ms = Math.floor((radarTimeMs % 1000) / 10); // 0-99
+            
+            tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}:${ms < 10 ? "0"+ms : ms}`;
         }
 
         function startRadarTimer(seconds) {
-            radarTime = seconds;
-            function updateTimerDisplay() {
-                let m = Math.floor(radarTime / 60); let s = radarTime % 60;
-                document.getElementById('radar-timer').textContent = `0${m}:${s < 10 ? "0"+s : s}`;
-            }
-            updateTimerDisplay();
+            radarTimeMs = seconds * 1000;
+            lastTimerTick = Date.now();
+            updateTimerDisplay(getAssistPenalty());
             
+            if(radarCountdown) clearInterval(radarCountdown);
             radarCountdown = setInterval(() => {
-                // Calculate dynamic penalty based on how many assists are active
-                let penalty = 1; 
-                if (pathsVisible) penalty += 1;
-                if (originVisible) penalty += 1;
-                if (currentMapStyle === 'LABELS') penalty += 1;
-                
-                radarTime = Math.max(0, radarTime - penalty);
-                updateTimerDisplay();
-                
-                if(radarTime <= 0) {
+                let now = Date.now();
+                let delta = now - lastTimerTick;
+                lastTimerTick = now;
+
+                let penalty = getAssistPenalty();
+                radarTimeMs -= (delta * penalty);
+
+                if(radarTimeMs <= 0) {
+                    radarTimeMs = 0;
+                    updateTimerDisplay(penalty);
                     clearInterval(radarCountdown);
-                    document.getElementById('intercept-overlay').style.display = 'none'; // Force close modal if open
+                    document.getElementById('intercept-overlay').style.display = 'none'; 
                     document.getElementById('radar-message').className = "fail";
                     document.getElementById('radar-message').textContent = "TARGET ESCAPED (-100L)";
                     globalState.currentFuel = Math.max(0, globalState.currentFuel - 100);
@@ -1632,8 +1679,10 @@
                     
                     if(globalState.currentFuel <= 0) setTimeout(triggerGameOver, 1500);
                     else setTimeout(closeRadar, 2500);
+                } else {
+                    updateTimerDisplay(penalty);
                 }
-            }, 1000);
+            }, 30); // ~33fps update
         }
 
         function closeRadar() {

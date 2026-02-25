@@ -70,7 +70,7 @@
         .modal-box {
             background: #222; border: 2px solid var(--brand-gold);
             padding: 25px; border-radius: 12px; width: 100%; max-width: 350px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s ease;
         }
         .modal-box.danger { border-color: var(--brand-red); box-shadow: 0 0 20px rgba(215, 25, 32, 0.2); }
         .modal-box.success { border-color: var(--gauge-green); box-shadow: 0 0 20px rgba(46, 204, 113, 0.2); }
@@ -153,7 +153,6 @@
         .grid-piece.exploded::after { color: #fff; }
         
         .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; }
-        /* IMAGE OPTIONS CENTERED */
         #image-options-container .trivia-option { text-align: center; }
 
         /* FLOATING TEXT & REVEAL ANIMATIONS */
@@ -183,15 +182,14 @@
         #trivia-question { font-size: 1.2rem; font-weight: 500; color: var(--brand-dark); margin-bottom: 20px; line-height: 1.4; }
         
         #trivia-options-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-        /* TRIVIA OPTIONS LEFT ALIGNED */
-        #trivia-options-container .trivia-option { text-align: left; }
+        #trivia-options-container .trivia-option { text-align: left; } 
         
         .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: all 0.2s; cursor: pointer; display: block; width: 100%; line-height: 1.4; white-space: normal; word-wrap: break-word; }
         .trivia-option:active { transform: scale(0.98); background: #eee; }
         .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
 
         /* --- TAKEOFF MINI GAME --- */
-        #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; }
+        #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; position: relative;}
         
         .takeoff-hud { 
             display: flex; justify-content: space-between; align-items: center; width: 100%; 
@@ -200,11 +198,11 @@
             border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 20; position: relative;
             backdrop-filter: blur(4px); flex-shrink: 0; pointer-events: none;
         }
-        #tk-speed-val { display: inline-block; transition: color 0.2s ease, transform 0.1s ease; }
+        #tk-speed-val { display: inline-block; transition: transform 0.1s ease, color 0.1s ease; }
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
         .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
         
-        /* RESTORED STABLE VIEWPORT (Not Fullscreen fixed) */
+        /* RESTORED STABLE VIEWPORT */
         #takeoff-viewport { 
             position: relative; width: 100%; flex-grow: 1; min-height: 250px; max-height: 400px;
             border: 4px solid #222; border-radius: 8px; overflow: hidden; margin: 0; 
@@ -249,6 +247,7 @@
         #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; gap: 0; }
         #radar-view.active { display: flex; }
         
+        /* Floating Accordion Window */
         .radar-top-accordion {
             width: 100%; flex-shrink: 0; background: rgba(5, 16, 5, 0.9); border: 1px solid var(--radar-green); border-radius: 8px;
             font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
@@ -273,8 +272,8 @@
         }
         .radar-accordion-body.open { display: flex; }
 
-        .radar-content { font-size: 0.8rem; line-height: 1.5; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
-        .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block;}
+        .radar-content { font-size: 0.95rem; line-height: 1.4; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
+        .radar-highlight { color: #000; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block;}
         
         .radar-setup-container { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; min-width: 110px;}
         .radar-toggle {
@@ -386,11 +385,11 @@
     </div>
 
     <div id="intercept-overlay">
-        <div class="modal-box danger">
-            <h1 style="color: var(--brand-red); margin-bottom: 10px;">CONFIRM INTERCEPT</h1>
-            <p style="color: #ccc; font-size: 0.9rem;">Target signature encrypted:</p>
+        <div class="modal-box danger" id="intercept-box">
+            <h1 id="intercept-title" style="color: var(--brand-red); margin-bottom: 10px;">CONFIRM INTERCEPT</h1>
+            <p id="intercept-desc" style="color: #ccc; font-size: 0.9rem;">Target signature encrypted:</p>
             <div id="encrypted-callsign" style="font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: #fff; margin: 15px 0; letter-spacing: 5px;">***</div>
-            <div class="modal-buttons">
+            <div class="modal-buttons" id="intercept-buttons">
                 <button class="cancel-btn" onclick="cancelIntercept()">CANCEL</button>
                 <button class="danger-btn" onclick="confirmIntercept()">AUTHORIZE</button>
             </div>
@@ -638,11 +637,7 @@
         <div id="radar-map-wrapper">
             <div id="radar-map-container"></div>
             
-            <div id="radar-success-overlay">
-                <h2 class="success-title">TARGET LOCKED</h2>
-                <div class="success-callsign" id="success-callsign-display">CALLSIGN</div>
-                <div class="success-reward">PROCEED TO NEXT SECTOR...</div>
-            </div>
+            <div id="radar-success-overlay"></div>
 
             <div class="compass-pt compass-n">N</div>
             <div class="compass-pt compass-e">E</div>
@@ -758,51 +753,14 @@
             { type: 'trivia', question: "What caused the 1977 Tenerife airport disaster, the deadliest accident in aviation history?", options: ["A runway collision in thick fog", "A mid-air collision over the Atlantic", "Dual engine failure due to volcanic ash"], correctIdx: 0, name: "Tenerife Disaster" },
             { type: 'trivia', question: "What forced US Airways Flight 1549 (the 'Miracle on the Hudson') to ditch into the river?", options: ["Complete loss of hydraulic fluid", "A flock of geese struck both engines", "Fuel starvation due to a leak"], correctIdx: 1, name: "Hudson River Ditching" },
             { type: 'trivia', question: "Why did Air Canada Flight 143 (the 'Gimli Glider') run out of fuel mid-flight?", options: ["The fuel tanks were punctured", "A mix-up between pounds and kilograms", "The pilots forgot to switch fuel tanks"], correctIdx: 1, name: "Gimli Glider Incident" },
-            { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" },
-            { type: 'trivia', question: "What caused the tragic explosion of TWA Flight 800 in 1996?", options: ["A short circuit igniting fuel tank vapors", "A surface-to-air missile", "An uncontained engine failure"], correctIdx: 0, name: "TWA Flight 800" },
-            { type: 'trivia', question: "The fatal stall of Air France Flight 447 over the Atlantic was initiated by:", options: ["Ice crystals blocking the Pitot tubes", "Total hydraulic failure", "A mid-air collision with a weather balloon"], correctIdx: 0, name: "Air France 447" },
-            { type: 'trivia', question: "What led to the devastating crash of American Airlines Flight 191 in Chicago (1979)?", options: ["Improper forklift maintenance snapping the engine pylon", "Severe microburst windshear", "Rudder hardover due to a jammed valve"], correctIdx: 0, name: "American Airlines 191" },
-            { type: 'trivia', question: "The 1988 Pan Am Flight 103 disaster over Lockerbie was caused by:", options: ["A terrorist bomb hidden in a cassette player", "Catastrophic metal fatigue", "Dual engine flameout from volcanic ash"], correctIdx: 0, name: "Lockerbie Bombing" },
-            { type: 'trivia', question: "How did the pilots of United Airlines Flight 232 miraculously steer the plane after total hydraulic loss?", options: ["By using differential engine thrust", "By dropping the landing gear to create drag", "By manually pulling cables under the floorboards"], correctIdx: 0, name: "United Airlines 232" },
-            { type: 'trivia', question: "ValuJet Flight 592 crashed into the Everglades after a fire broke out caused by:", options: ["Improperly stored chemical oxygen generators", "A lithium-ion battery in passenger luggage", "A massive fuel leak in the cargo hold"], correctIdx: 0, name: "ValuJet Flight 592" },
-            { type: 'trivia', question: "The fatal in-flight fire on Swissair Flight 111 (1998) originated from:", options: ["Flammable insulation around the in-flight entertainment system", "A short circuit in the cockpit coffee maker", "An exploding auxiliary power unit (APU)"], correctIdx: 0, name: "Swissair Flight 111" },
-            { type: 'trivia', question: "What mechanical failure sent Alaska Airlines Flight 261 into an uncontrollable dive?", options: ["Stripped threads on the horizontal stabilizer jackscrew", "A jammed elevator control cable", "Asymmetric thrust reverser deployment"], correctIdx: 0, name: "Alaska Airlines 261" },
-            { type: 'trivia', question: "The 'ghost plane' crash of Helios Airways Flight 522 was traced back to:", options: ["The pressurization switch being left on 'Manual'", "A slow leak in the oxygen masks", "Carbon monoxide leaking into the cabin"], correctIdx: 0, name: "Helios Airways 522" },
-            { type: 'trivia', question: "What caused all four engines to fail on British Airways Flight 9 in 1982?", options: ["Flying through a dense cloud of volcanic ash", "Contaminated jet fuel freezing at high altitude", "A software glitch shutting off fuel valves"], correctIdx: 0, name: "British Airways Flight 9" },
-            { type: 'trivia', question: "Eastern Air Lines Flight 401 crashed into the Everglades because the crew:", options: ["Got distracted by a burnt-out landing gear indicator light", "Ignored ground proximity warnings", "Fell asleep due to extreme fatigue"], correctIdx: 0, name: "Eastern Air Lines 401" },
-            { type: 'trivia', question: "The tragic crash of Aloha Airlines Flight 243 involved the roof tearing off mid-flight due to:", options: ["Extensive metal fatigue and corrosion", "A pressurization valve exploding", "A bird strike shattering the cockpit window"], correctIdx: 0, name: "Aloha Airlines 243" },
-            { type: 'trivia', question: "The Air France Flight 4590 Concorde disaster was initiated when:", options: ["A burst tire propelled debris into the fuel tank", "The supersonic engines stalled from a bird strike", "The landing gear failed to deploy"], correctIdx: 0, name: "Concorde Disaster" },
-            { type: 'trivia', question: "What caused the fatal CFIT (Controlled Flight Into Terrain) of Air New Zealand Flight 901 in Antarctica?", options: ["A navigational coordinate typing error", "Complete whiteout blinding the radar", "A sudden downdraft over Mount Erebus"], correctIdx: 0, name: "Mount Erebus Disaster" },
-            { type: 'trivia', question: "The deadly crashes of two Boeing 737 MAX aircraft were ultimately linked to:", options: ["The MCAS system acting on a single faulty AOA sensor", "Cracks in the horizontal stabilizer", "Software shutting down the auto-throttle prematurely"], correctIdx: 0, name: "Boeing 737 MAX" }
+            { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
         ];
 
         function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
 
-        const THEMES = {
-            1: { 
-                sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#87CEEB"/><rect y="32" width="256" height="32" fill="#99D9F0"/><rect x="20" y="16" width="20" height="8" fill="#fff"/><rect x="10" y="20" width="40" height="4" fill="#fff"/><rect x="30" y="24" width="10" height="4" fill="#e0e0e0"/><rect x="100" y="4" width="30" height="10" fill="#fff"/><rect x="85" y="10" width="60" height="4" fill="#fff"/><rect x="115" y="14" width="15" height="4" fill="#e0e0e0"/><rect x="200" y="21" width="25" height="8" fill="#fff"/><rect x="190" y="25" width="40" height="4" fill="#fff"/></svg>`,
-                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#8ca1cc"/><rect x="50" y="10" width="40" height="54" fill="#8ca1cc"/><rect x="120" y="25" width="35" height="39" fill="#8ca1cc"/><rect x="180" y="15" width="25" height="49" fill="#8ca1cc"/><rect x="220" y="30" width="30" height="34" fill="#8ca1cc"/><rect x="0" y="35" width="25" height="29" fill="#5a6988"/><rect x="35" y="25" width="30" height="39" fill="#5a6988"/><rect x="80" y="40" width="50" height="24" fill="#5a6988"/><rect x="140" y="20" width="45" height="44" fill="#5a6988"/><rect x="200" y="35" width="40" height="29" fill="#5a6988"/><rect x="20" y="45" width="40" height="19" fill="#4a5875"/><rect x="70" y="30" width="35" height="34" fill="#4a5875"/><rect x="110" y="50" width="40" height="14" fill="#4a5875"/><rect x="160" y="40" width="30" height="24" fill="#4a5875"/><rect x="230" y="45" width="26" height="19" fill="#4a5875"/><rect x="40" y="30" width="4" height="4" fill="#7585a5"/><rect x="48" y="30" width="4" height="4" fill="#7585a5"/><rect x="40" y="38" width="4" height="4" fill="#7585a5"/><rect x="48" y="38" width="4" height="4" fill="#7585a5"/><rect x="75" y="35" width="4" height="4" fill="#7585a5"/><rect x="75" y="45" width="4" height="4" fill="#7585a5"/><rect x="85" y="35" width="4" height="4" fill="#7585a5"/><rect x="85" y="45" width="4" height="4" fill="#7585a5"/><rect x="145" y="25" width="4" height="4" fill="#7585a5"/><rect x="155" y="25" width="4" height="4" fill="#7585a5"/><rect x="165" y="25" width="4" height="4" fill="#7585a5"/><rect x="145" y="35" width="4" height="4" fill="#7585a5"/><rect x="155" y="35" width="4" height="4" fill="#7585a5"/><rect x="165" y="35" width="4" height="4" fill="#7585a5"/><rect x="205" y="40" width="4" height="4" fill="#7585a5"/><rect x="215" y="40" width="4" height="4" fill="#7585a5"/></svg>`,
-                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#2d4c1e"/><rect x="10" y="12" width="20" height="8" fill="#2d4c1e"/><rect x="15" y="8" width="10" height="4" fill="#2d4c1e"/><rect x="50" y="10" width="30" height="10" fill="#2d4c1e"/><rect x="60" y="6" width="10" height="4" fill="#2d4c1e"/><rect x="110" y="14" width="20" height="6" fill="#2d4c1e"/><rect x="160" y="8" width="40" height="12" fill="#2d4c1e"/><rect x="175" y="4" width="10" height="4" fill="#2d4c1e"/><rect x="220" y="12" width="30" height="8" fill="#2d4c1e"/><rect x="0" y="20" width="256" height="12" fill="#1e3b12"/><rect x="15" y="16" width="10" height="4" fill="#1e3b12"/><rect x="55" y="14" width="20" height="6" fill="#1e3b12"/><rect x="120" y="18" width="10" height="4" fill="#1e3b12"/><rect x="170" y="12" width="20" height="8" fill="#1e3b12"/><rect x="230" y="16" width="15" height="4" fill="#1e3b12"/><rect x="25" y="24" width="4" height="4" fill="#385e26"/><rect x="80" y="22" width="4" height="4" fill="#385e26"/><rect x="140" y="26" width="4" height="4" fill="#385e26"/><rect x="190" y="22" width="4" height="4" fill="#385e26"/></svg>`
-            },
-            2: { 
-                sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#4a5d6a"/><rect y="32" width="256" height="32" fill="#5a6d7a"/><rect x="20" y="16" width="20" height="8" fill="#687d8c"/><rect x="10" y="20" width="40" height="4" fill="#687d8c"/><rect x="30" y="24" width="10" height="4" fill="#586b78"/><rect x="100" y="4" width="30" height="10" fill="#687d8c"/><rect x="85" y="10" width="60" height="4" fill="#687d8c"/><rect x="115" y="14" width="15" height="4" fill="#586b78"/><rect x="200" y="21" width="25" height="8" fill="#687d8c"/><rect x="190" y="25" width="40" height="4" fill="#687d8c"/></svg>`,
-                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#3d4955"/><rect x="50" y="10" width="40" height="54" fill="#3d4955"/><rect x="120" y="25" width="35" height="39" fill="#3d4955"/><rect x="180" y="15" width="25" height="49" fill="#3d4955"/><rect x="220" y="30" width="30" height="34" fill="#3d4955"/><rect x="0" y="35" width="25" height="29" fill="#323d47"/><rect x="35" y="25" width="30" height="39" fill="#323d47"/><rect x="80" y="40" width="50" height="24" fill="#323d47"/><rect x="140" y="20" width="45" height="44" fill="#323d47"/><rect x="200" y="35" width="40" height="29" fill="#323d47"/><rect x="20" y="45" width="40" height="19" fill="#28313a"/><rect x="70" y="30" width="35" height="34" fill="#28313a"/><rect x="110" y="50" width="40" height="14" fill="#28313a"/><rect x="160" y="40" width="30" height="24" fill="#28313a"/><rect x="230" y="45" width="26" height="19" fill="#28313a"/></svg>`,
-                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#2b3626"/><rect x="10" y="12" width="20" height="8" fill="#2b3626"/><rect x="15" y="8" width="10" height="4" fill="#2b3626"/><rect x="50" y="10" width="30" height="10" fill="#2b3626"/><rect x="60" y="6" width="10" height="4" fill="#2b3626"/><rect x="110" y="14" width="20" height="6" fill="#2b3626"/><rect x="160" y="8" width="40" height="12" fill="#2b3626"/><rect x="175" y="4" width="10" height="4" fill="#2b3626"/><rect x="220" y="12" width="30" height="8" fill="#2b3626"/><rect x="0" y="20" width="256" height="12" fill="#1d251a"/><rect x="15" y="16" width="10" height="4" fill="#1d251a"/><rect x="55" y="14" width="20" height="6" fill="#1d251a"/><rect x="120" y="18" width="10" height="4" fill="#1d251a"/><rect x="170" y="12" width="20" height="8" fill="#1d251a"/><rect x="230" y="16" width="15" height="4" fill="#1d251a"/><rect x="25" y="24" width="4" height="4" fill="#34422e"/><rect x="80" y="22" width="4" height="4" fill="#34422e"/><rect x="140" y="26" width="4" height="4" fill="#34422e"/><rect x="190" y="22" width="4" height="4" fill="#34422e"/></svg>`
-            },
-            3: { 
-                sky: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="256" height="64" fill="#0f1722"/><rect x="20" y="15" width="2" height="2" fill="#fff"/><rect x="50" y="30" width="2" height="2" fill="#fff"/><rect x="100" y="10" width="2" height="2" fill="#fff"/><rect x="150" y="25" width="2" height="2" fill="#fff"/><rect x="200" y="15" width="2" height="2" fill="#fff"/><rect x="240" y="20" width="2" height="2" fill="#fff"/></svg>`,
-                city: `<svg width="256" height="64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="10" y="20" width="30" height="44" fill="#151e2b"/><rect x="50" y="10" width="40" height="54" fill="#151e2b"/><rect x="120" y="25" width="35" height="39" fill="#151e2b"/><rect x="180" y="15" width="25" height="49" fill="#151e2b"/><rect x="220" y="30" width="30" height="34" fill="#151e2b"/><rect x="0" y="35" width="25" height="29" fill="#101722"/><rect x="35" y="25" width="30" height="39" fill="#101722"/><rect x="80" y="40" width="50" height="24" fill="#101722"/><rect x="140" y="20" width="45" height="44" fill="#101722"/><rect x="200" y="35" width="40" height="29" fill="#101722"/><rect x="20" y="45" width="40" height="19" fill="#0a0f16"/><rect x="70" y="30" width="35" height="34" fill="#0a0f16"/><rect x="110" y="50" width="40" height="14" fill="#0a0f16"/><rect x="160" y="40" width="30" height="24" fill="#0a0f16"/><rect x="230" y="45" width="26" height="19" fill="#0a0f16"/><rect x="40" y="30" width="4" height="4" fill="#f1c40f"/><rect x="48" y="30" width="4" height="4" fill="#f1c40f"/><rect x="75" y="35" width="4" height="4" fill="#f1c40f"/><rect x="85" y="45" width="4" height="4" fill="#f1c40f"/><rect x="145" y="25" width="4" height="4" fill="#f1c40f"/><rect x="165" y="35" width="4" height="4" fill="#f1c40f"/><rect x="205" y="40" width="4" height="4" fill="#f1c40f"/><rect x="40" y="38" width="4" height="4" fill="#e67e22"/><rect x="75" y="45" width="4" height="4" fill="#e67e22"/><rect x="155" y="35" width="4" height="4" fill="#e67e22"/><rect x="215" y="40" width="4" height="4" fill="#e67e22"/></svg>`,
-                ground: `<svg width="256" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="0" y="16" width="256" height="16" fill="#111a11"/><rect x="10" y="12" width="20" height="8" fill="#111a11"/><rect x="15" y="8" width="10" height="4" fill="#111a11"/><rect x="50" y="10" width="30" height="10" fill="#111a11"/><rect x="60" y="6" width="10" height="4" fill="#111a11"/><rect x="110" y="14" width="20" height="6" fill="#111a11"/><rect x="160" y="8" width="40" height="12" fill="#111a11"/><rect x="175" y="4" width="10" height="4" fill="#111a11"/><rect x="220" y="12" width="30" height="8" fill="#111a11"/><rect x="0" y="20" width="256" height="12" fill="#0a100a"/><rect x="15" y="16" width="10" height="4" fill="#0a100a"/><rect x="55" y="14" width="20" height="6" fill="#0a100a"/><rect x="120" y="18" width="10" height="4" fill="#0a100a"/><rect x="170" y="12" width="20" height="8" fill="#0a100a"/><rect x="230" y="16" width="15" height="4" fill="#0a100a"/></svg>`
-            }
-        };
-
-        const RUNWAY_SVG = `<svg width="128" height="32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="128" height="32" fill="#3b3b3b"/><rect width="128" height="2" fill="#385e26"/><rect y="2" width="128" height="2" fill="#4a4a4a"/><rect x="0" y="14" width="32" height="4" fill="#ddd"/><rect x="64" y="14" width="32" height="4" fill="#ddd"/><rect x="0" y="4" width="128" height="2" fill="#fff"/><rect x="0" y="26" width="128" height="2" fill="#fff"/><rect x="10" y="10" width="16" height="2" fill="#222"/><rect x="40" y="18" width="24" height="2" fill="#222"/><rect x="80" y="12" width="12" height="2" fill="#222"/><rect x="100" y="20" width="16" height="2" fill="#222"/></svg>`;
-
-        // TILE LAYERS
         const cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
         const cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
 
-        // --- 4. GAME ENGINE LOGIC ---
         function getOptionsForImage(correctName, isClassified) {
             const pool = isClassified ? AIRCRAFT_DATA.classified : AIRCRAFT_DATA.standard;
             let options = [correctName];
@@ -811,7 +769,6 @@
             return options.sort(() => Math.random() - 0.5);
         }
 
-        // --- FUEL DRAIN HELPER ---
         function drainFuel(amount) {
             if (globalState.extraFuel > 0) {
                 if (globalState.extraFuel >= amount) {
@@ -865,7 +822,6 @@
                     }
                 });
                 
-                // NEW TAKEOFF TAP ANYWHERE LOGIC
                 const tkViewport = document.getElementById('takeoff-viewport');
                 const handlePress = (e) => { 
                     if (!tkState.active) return;
@@ -1327,7 +1283,7 @@
                 tkState.lift = Math.max(0, tkState.lift - 0.2); 
             }
 
-            const maxLiftY = 100; // Fixed pixels for stable layout
+            const maxLiftY = 100; 
             const liftY = (tkState.lift / 100) * maxLiftY; 
             const planeEl = document.getElementById('tk-plane');
             planeEl.style.transform = `translateY(-${liftY}px) rotate(-${tkState.pitch}deg)`;
@@ -1338,7 +1294,6 @@
             const speedEl = document.getElementById('tk-speed-val');
             speedEl.textContent = Math.floor(tkState.speed);
             
-            // Only update color naturally if not currently flashing orange from an early tap
             if (speedEl.style.color !== "var(--gauge-orange)") {
                 if (tkState.speed >= 140) speedEl.style.color = "var(--gauge-green)";
                 else speedEl.style.color = "var(--brand-red)";
@@ -1726,9 +1681,23 @@
             if (radarTimeMs <= 0) return;
             pendingInterceptPlane = { data: plane, marker: marker };
             
+            const titleEl = document.querySelector('#intercept-overlay h1');
+            const descEl = document.querySelector('#intercept-overlay p');
+            const boxEl = document.querySelector('#intercept-overlay .modal-box');
+            const buttonsEl = document.querySelector('#intercept-overlay .modal-buttons');
+            const el = document.getElementById('encrypted-callsign');
+
+            titleEl.textContent = "CONFIRM INTERCEPT";
+            titleEl.style.color = "var(--brand-red)";
+            descEl.innerHTML = "Target signature encrypted:";
+            descEl.style.color = "#ccc";
+            boxEl.style.borderColor = "var(--brand-red)";
+            boxEl.style.boxShadow = "0 0 20px rgba(215, 25, 32, 0.2)";
+            buttonsEl.style.display = "flex";
+            el.style.color = "#fff";
+            
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
             const callsignLength = plane.callsign.length;
-            const el = document.getElementById('encrypted-callsign');
             
             if (encryptionInterval) clearInterval(encryptionInterval);
             
@@ -1751,32 +1720,38 @@
 
         function confirmIntercept() {
             if (encryptionInterval) clearInterval(encryptionInterval);
-            document.getElementById('intercept-overlay').style.display = 'none';
             if (!pendingInterceptPlane) return;
             
             let p = pendingInterceptPlane.data;
             let marker = pendingInterceptPlane.marker;
-            pendingInterceptPlane = null;
+            
+            const titleEl = document.querySelector('#intercept-overlay h1');
+            const descEl = document.querySelector('#intercept-overlay p');
+            const boxEl = document.querySelector('#intercept-overlay .modal-box');
+            const el = document.getElementById('encrypted-callsign');
+            
+            el.textContent = p.callsign;
+            document.querySelector('#intercept-overlay .modal-buttons').style.display = 'none';
             
             if (p.callsign === currentRadarCallsign) {
-                const overlay = document.getElementById('radar-success-overlay');
-                document.getElementById('success-callsign-display').textContent = p.callsign;
-                document.getElementById('success-callsign-display').style.color = p.color;
+                titleEl.textContent = "TARGET LOCKED";
+                titleEl.style.color = "var(--gauge-green)";
+                boxEl.style.borderColor = "var(--gauge-green)";
+                boxEl.style.boxShadow = "0 0 20px rgba(46, 204, 113, 0.4)";
+                el.style.color = p.color;
                 
                 marker.setIcon(L.divIcon({
-                    html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
+                    html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping" style="border-color:${p.color};"></div>`,
                     className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
                 }));
 
                 if (radarLevel < 3) {
-                    document.querySelector('.success-title').textContent = "TARGET LOCKED";
-                    document.querySelector('.success-reward').textContent = "PROCEED TO NEXT SECTOR...";
-                    overlay.style.display = 'flex';
-                    
+                    descEl.textContent = "PROCEED TO NEXT SECTOR...";
                     setTimeout(() => {
-                        overlay.style.display = 'none';
+                        document.getElementById('intercept-overlay').style.display = 'none';
                         radarLevel++;
                         startRadarMission();
+                        pendingInterceptPlane = null;
                     }, 2500);
                 } else {
                     radarTimeMs = 0; 
@@ -1785,19 +1760,22 @@
                     globalState.extraFuel += 1500;
                     saveState(); updateMiniFuelUI();
                     
-                    document.querySelector('.success-title').textContent = "MISSION COMPLETE";
-                    document.querySelector('.success-reward').textContent = "+1500L AUX TANK SECURED";
-                    overlay.style.display = 'flex';
+                    descEl.innerHTML = "MISSION COMPLETE<br><strong style='color:var(--brand-gold)'>+1500L AUX TANK SECURED</strong>";
 
                     setTimeout(() => {
-                        overlay.style.display = 'none';
+                        document.getElementById('intercept-overlay').style.display = 'none';
                         closeRadar();
+                        pendingInterceptPlane = null;
                     }, 3500);
                 }
             } else {
-                marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
+                titleEl.textContent = "WRONG TARGET";
+                titleEl.style.color = "var(--brand-red)";
+                descEl.textContent = "Signature mismatch. Penalty: -15s";
+                el.style.color = "var(--brand-red)";
                 
                 radarTimeMs = Math.max(0, radarTimeMs - 15000); 
+                updateTimerDisplay(getAssistPenalty());
                 
                 const tDiv = document.getElementById('radar-timer');
                 tDiv.style.color = "red";
@@ -1810,7 +1788,11 @@
                 void msgEl.offsetWidth; 
                 setTimeout(() => { msgEl.style.display = "none"; }, 2000);
                 
-                updateTimerDisplay(getAssistPenalty());
+                setTimeout(() => {
+                    document.getElementById('intercept-overlay').style.display = 'none';
+                    marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
+                    pendingInterceptPlane = null;
+                }, 2000);
             }
         }
 

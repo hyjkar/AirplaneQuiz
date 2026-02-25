@@ -43,7 +43,7 @@
         }
 
         /* --- OVERLAYS --- */
-        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay {
+        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay, #cat-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #111; color: var(--brand-gold); z-index: 10000;
             flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
@@ -51,6 +51,7 @@
         #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
         #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
         #takeoff-tutorial-overlay { background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); }
+        #cat-modal { background: rgba(0,0,0,0.95); z-index: 20000; overflow-y: auto; }
         
         /* SEAMLESS INTERCEPT HUD */
         #intercept-overlay { 
@@ -107,6 +108,8 @@
         .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.5rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
+
+        #password-container { background: #1a1a1a; padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; text-align: center; border: 1px solid #333; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
 
         /* --- HANGAR LIST --- */
         #level-list-container { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 0; }
@@ -456,6 +459,19 @@
         </div>
     </div>
 
+    <div id="cat-modal">
+        <h1 style="color:var(--brand-gold); margin-bottom:10px;">TOP SECRET: AVIATION FELINES</h1>
+        <p style="color:#ccc; margin-bottom:20px;">Operation "Queen of the Skies" Successful.</p>
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; max-width:500px; margin-bottom:20px;">
+            <img src="https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/BzyTuYCmvSORqs1Qks/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/l4KibWpBGWchSqCRy/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/3oEduV4SOS9mmmIOkw/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+        </div>
+        <button class="primary-btn" onclick="document.getElementById('cat-modal').style.display='none'">CLOSE DOSSIER</button>
+    </div>
+
     <div id="selector-view" class="view-section">
         <div class="dashboard-header">
             
@@ -489,9 +505,10 @@
                     </div>
                     <div class="fuel-bar-bg" style="height:6px;"><div class="fuel-bar-fill" id="aux-fuel-bar" style="background:var(--aux-blue);"></div></div>
                 </div>
-
                 <div id="unlock-message" style="font-size: 0.75rem; margin-top:10px; color:#888;"></div>
             </div>
+
+            <div id="password-container"></div>
         </div>
 
         <div id="level-list-container"></div>
@@ -722,7 +739,11 @@
         ];
 
         const CITIES = ["LONDON", "NEW YORK", "TOKYO", "PARIS", "DUBAI", "SYDNEY", "LOS ANGELES", "CHICAGO", "HONG KONG", "SINGAPORE", "BERLIN", "ROME", "MADRID", "TORONTO", "MUMBAI", "SAO PAULO", "MEXICO CITY", "CAIRO", "MOSCOW", "BEIJING", "SEOUL", "AMSTERDAM", "ISTANBUL", "BANGKOK", "KUALA LUMPUR", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON", "MONTREAL", "VANCOUVER", "BUENOS AIRES", "BOGOTA", "SANTIAGO", "LIMA", "CAPE TOWN", "JOHANNESBURG", "NAIROBI", "DELHI", "JAKARTA", "MANILA", "SHANGHAI", "TAIPEI", "OSAKA"];
-        
+        const US_CITIES = ["NEW YORK", "LOS ANGELES", "CHICAGO", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON"];
+        const INTL_CITIES = CITIES.filter(c => !US_CITIES.includes(c));
+
+        const TARGET_PASSWORD = "QUEEN OF THE SKIES";
+
         // 10 Level Escalation Curve (Story Mode)
         const RADAR_LEVEL_CONFIG = {
             1: { latOffset: 5, lngOffset: 8, planes: 8, hints: 2 },
@@ -751,7 +772,8 @@
             hasSeenTakeoffTutorial: false,
             world1Complete: false,
             world2Complete: false,
-            world3Complete: false
+            world3Complete: false,
+            passwordRevealed: []
         };
 
         let tkState = { 
@@ -847,6 +869,27 @@
             bombEl.innerHTML = `<div class="bomb-icon-anim">💣</div><div>+1 SMART BOMB</div>`;
             document.body.appendChild(bombEl);
             setTimeout(() => bombEl.remove(), 2500);
+        }
+
+        // ====== SECRET PASSWORD LOGIC ======
+        function awardPasswordLetters(count) {
+            if (!globalState.passwordRevealed) globalState.passwordRevealed = [];
+            let unrevealed = [];
+            for (let i = 0; i < TARGET_PASSWORD.length; i++) {
+                if (TARGET_PASSWORD[i] !== ' ' && !globalState.passwordRevealed.includes(i)) {
+                    unrevealed.push(i);
+                }
+            }
+            if (unrevealed.length === 0) return;
+            
+            unrevealed.sort(() => Math.random() - 0.5);
+            let toReveal = unrevealed.slice(0, count);
+            globalState.passwordRevealed.push(...toReveal);
+            saveState();
+        }
+
+        function showCatModal() {
+            document.getElementById('cat-modal').style.display = 'flex';
         }
 
         window.onload = function() {
@@ -1024,6 +1067,7 @@
                     if(globalState.hasSeenTakeoffTutorial === undefined) globalState.hasSeenTakeoffTutorial = false;
                     if(globalState.extraFuel === undefined) globalState.extraFuel = 0;
                     if(globalState.world3Complete === undefined) globalState.world3Complete = false;
+                    if(!globalState.passwordRevealed) globalState.passwordRevealed = [];
                 } else {
                     throw new Error("No save");
                 }
@@ -1037,6 +1081,7 @@
                 globalState.world1Complete = false;
                 globalState.world2Complete = false;
                 globalState.world3Complete = false;
+                globalState.passwordRevealed = [];
             }
         }
 
@@ -1072,6 +1117,33 @@
             if(h2Done) unlockMsg.innerHTML = "Classified Ops: <span style='color:#2ecc71'>GRANTED</span>";
             else if(h1Done) unlockMsg.innerHTML = "Hangar 2: <span style='color:#2ecc71'>UNLOCKED</span>";
             else unlockMsg.innerHTML = "Complete Hangar 1 to advance";
+
+            // Update Password Container
+            const pwContainer = document.getElementById('password-container');
+            let displayStr = "";
+            let targetNoSpace = TARGET_PASSWORD.replace(/ /g, '');
+            for (let i = 0; i < TARGET_PASSWORD.length; i++) {
+                if (TARGET_PASSWORD[i] === ' ') {
+                    displayStr += "&nbsp;&nbsp;";
+                } else if (globalState.passwordRevealed && globalState.passwordRevealed.includes(i)) {
+                    displayStr += TARGET_PASSWORD[i] + " ";
+                } else {
+                    displayStr += "_ ";
+                }
+            }
+
+            if (globalState.passwordRevealed && globalState.passwordRevealed.length >= targetNoSpace.length) {
+                pwContainer.innerHTML = `
+                    <div style="color:#aaa; font-size:0.7rem; margin-bottom:5px;">TRANSMISSION DECRYPTED</div>
+                    <div style="font-family:'Share Tech Mono', monospace; color:var(--gauge-green); font-size:1.2rem; letter-spacing:3px; margin-bottom:10px;">${TARGET_PASSWORD}</div>
+                    <button class="gold-btn" onclick="showCatModal()" style="font-size:0.8rem; padding:8px;">ACCESS CLASSIFIED FELINES</button>
+                `;
+            } else {
+                pwContainer.innerHTML = `
+                    <div style="color:#aaa; font-size:0.7rem; margin-bottom:5px;">DECRYPTING TRANSMISSION...</div>
+                    <div style="font-family:'Share Tech Mono', monospace; color:var(--brand-gold); font-size:1.2rem; letter-spacing:2px;">${displayStr}</div>
+                `;
+            }
 
             const listContainer = document.getElementById('level-list-container');
             listContainer.innerHTML = "";
@@ -1676,13 +1748,15 @@
             const center = RADAR_CENTERS[Math.floor(Math.random() * RADAR_CENTERS.length)];
             const rLat = center.lat + (Math.random() * 10 - 5);
             const rLng = center.lng + (Math.random() * 10 - 5);
+            const centerName = center.name;
+            const isUS = centerName.includes("US-");
             
             const lamin = rLat - config.latOffset;
             const lamax = rLat + config.latOffset;
             const lomin = rLng - config.lngOffset;
             const lomax = rLng + config.lngOffset;
             
-            textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${center.name}...<span class='blinking-cursor'>_</span>`;
+            textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${centerName}...<span class='blinking-cursor'>_</span>`;
             
             if (radarAnimFrame) cancelAnimationFrame(radarAnimFrame);
             radarLayerGroup.clearLayers();
@@ -1693,7 +1767,8 @@
             const timeoutId = setTimeout(() => controller.abort(), 2500);
 
             const numCities = Math.min(15, Math.max(3, Math.floor(config.planes / 3)));
-            const roundCities = CITIES.sort(() => 0.5 - Math.random()).slice(0, numCities);
+            const roundCitiesUS = US_CITIES.sort(() => 0.5 - Math.random()).slice(0, numCities);
+            const roundCitiesIntl = INTL_CITIES.sort(() => 0.5 - Math.random()).slice(0, numCities);
 
             fetch(`https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`, { signal: controller.signal })
             .then(res => {
@@ -1723,11 +1798,20 @@
                     }
                     if (isOverlapping) continue;
 
-                    const originCountry = p[2] && p[2].trim() !== "" ? p[2].trim().toUpperCase() : "CLASSIFIED";
+                    let originCountry = p[2] && p[2].trim() !== "" ? p[2].trim().toUpperCase() : "CLASSIFIED";
                     
-                    let c1 = roundCities[Math.floor(Math.random() * roundCities.length)];
-                    let c2 = roundCities[Math.floor(Math.random() * roundCities.length)];
-                    while (c1 === c2 && roundCities.length > 1) c2 = roundCities[Math.floor(Math.random() * roundCities.length)];
+                    // DOMESTIC USA LOGIC
+                    let isDomestic = isUS && (Math.random() < 0.9);
+                    let c1, c2;
+                    if (isDomestic) {
+                        c1 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)] || US_CITIES[0];
+                        c2 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)] || US_CITIES[1];
+                        while (c1 === c2 && roundCitiesUS.length > 1) c2 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)];
+                    } else {
+                        c1 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)] || INTL_CITIES[0];
+                        c2 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)] || INTL_CITIES[1];
+                        while (c1 === c2 && roundCitiesIntl.length > 1) c2 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)];
+                    }
                     
                     const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
                     const radBack = (heading + 180) * (Math.PI / 180);
@@ -1755,7 +1839,7 @@
                 console.warn("Radar API fallback. Launching local simulation.");
                 
                 const prefixes = ["LHT", "AFR", "SWR", "BAW", "RYR", "FIN", "NOR", "KLM", "EZY", "WZZ", "DAL", "UAL", "AAL", "SWA", "JBU", "QFA", "UAE", "VIR", "CCA", "ACA", "ANA", "THY", "SIA", "JAL"];
-                const fakeOrigins = ["GERMANY", "FRANCE", "UK", "USA", "SPAIN", "ITALY", "SWEDEN", "FINLAND", "NORWAY", "JAPAN", "CHINA", "CANADA", "BRAZIL"];
+                const fakeOrigins = ["GERMANY", "FRANCE", "UK", "SPAIN", "ITALY", "SWEDEN", "FINLAND", "NORWAY", "JAPAN", "CHINA", "CANADA", "BRAZIL"];
 
                 let attempts = 0;
                 
@@ -1778,9 +1862,18 @@
                         randCall = prefixes[Math.floor(Math.random()*prefixes.length)] + Math.floor(10 + Math.random()*90);
                     } while (currentRadarPlanes.find(p => p.callsign === randCall));
 
-                    let c1 = roundCities[Math.floor(Math.random() * roundCities.length)];
-                    let c2 = roundCities[Math.floor(Math.random() * roundCities.length)];
-                    while (c1 === c2 && roundCities.length > 1) c2 = roundCities[Math.floor(Math.random() * roundCities.length)];
+                    // DOMESTIC USA LOGIC FOR FALLBACK
+                    let isDomestic = isUS && (Math.random() < 0.9);
+                    let c1, c2;
+                    if (isDomestic) {
+                        c1 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)] || US_CITIES[0];
+                        c2 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)] || US_CITIES[1];
+                        while (c1 === c2 && roundCitiesUS.length > 1) c2 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)];
+                    } else {
+                        c1 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)] || INTL_CITIES[0];
+                        c2 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)] || INTL_CITIES[1];
+                        while (c1 === c2 && roundCitiesIntl.length > 1) c2 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)];
+                    }
 
                     const heading = Math.random() * 360;
                     const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
@@ -1793,7 +1886,7 @@
                     const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
                     
                     const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length];
-                    const randomOrigin = fakeOrigins[Math.floor(Math.random() * fakeOrigins.length)];
+                    const randomOrigin = isDomestic ? "UNITED STATES" : fakeOrigins[Math.floor(Math.random() * fakeOrigins.length)];
 
                     currentRadarPlanes.push({ 
                         callsign: randCall, 
@@ -2020,14 +2113,22 @@
                         p.showPing = true;
                         if(p.marker) p.marker.setIcon(createPlaneIcon(p));
 
+                        // DECRYPT PASSWORD PROGRESS
+                        let unrevealedCount = 0;
+                        for(let i=0; i<TARGET_PASSWORD.length; i++){
+                            if(TARGET_PASSWORD[i] !== ' ' && !globalState.passwordRevealed.includes(i)) unrevealedCount++;
+                        }
+                        let lettersToAward = Math.min(unrevealedCount, Math.floor(Math.random() * 2) + 1); // 1 or 2 letters
+                        if (lettersToAward > 0) awardPasswordLetters(lettersToAward);
+
                         if (radarLevel < 10) {
-                            descEl.innerHTML = "<span style='color:var(--brand-gold)'>PROCEED TO NEXT SECTOR...</span>";
+                            descEl.innerHTML = `<span style='color:var(--brand-gold)'>PROCEED TO NEXT SECTOR...</span><br><span style="font-size:0.75rem; color:#aaa;">(+${lettersToAward} Password Datablocks)</span>`;
                             setTimeout(() => {
                                 document.getElementById('intercept-overlay').style.display = 'none';
                                 radarLevel++;
                                 startRadarMission();
                                 pendingInterceptPlane = null;
-                            }, 2500);
+                            }, 3000);
                         } else {
                             radarTimeMs = 0; 
                             clearInterval(radarCountdown);
@@ -2035,13 +2136,13 @@
                             globalState.extraFuel += 5000;
                             saveState(); updateMiniFuelUI();
                             
-                            descEl.innerHTML = "MISSION COMPLETE<br><strong style='color:var(--brand-gold)'>+5000L AUX TANK SECURED</strong>";
+                            descEl.innerHTML = `MISSION COMPLETE<br><strong style='color:var(--brand-gold)'>+5000L AUX TANK SECURED</strong><br><span style="font-size:0.75rem; color:#aaa;">(+${lettersToAward} Password Datablocks)</span>`;
 
                             setTimeout(() => {
                                 document.getElementById('intercept-overlay').style.display = 'none';
                                 closeRadar();
                                 pendingInterceptPlane = null;
-                            }, 3500);
+                            }, 4000);
                         }
                     } else {
                         titleEl.textContent = "WRONG TARGET";

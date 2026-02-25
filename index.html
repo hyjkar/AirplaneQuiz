@@ -70,7 +70,7 @@
         .modal-box {
             background: #222; border: 2px solid var(--brand-gold);
             padding: 25px; border-radius: 12px; width: 100%; max-width: 350px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .modal-box.danger { border-color: var(--brand-red); box-shadow: 0 0 20px rgba(215, 25, 32, 0.2); }
         .modal-box.success { border-color: var(--gauge-green); box-shadow: 0 0 20px rgba(46, 204, 113, 0.2); }
@@ -202,7 +202,7 @@
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
         .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
         
-        /* RESTORED STABLE VIEWPORT */
+        /* RESTORED STABLE VIEWPORT (Not Fullscreen) */
         #takeoff-viewport { 
             position: relative; width: 100%; flex-grow: 1; min-height: 250px; max-height: 400px;
             border: 4px solid #222; border-radius: 8px; overflow: hidden; margin: 0; 
@@ -211,10 +211,10 @@
             cursor: pointer; box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
         }
         
-        .parallax-layer { position: absolute; left: 0; right: 0; background-repeat: repeat-x; pointer-events: none; }
-        #tk-bg-sky { top: 0; bottom: 32px; background-size: 256px 100%; z-index: 0; }
-        #tk-bg-city { bottom: 32px; height: 128px; background-size: 256px 100%; background-position: bottom left; z-index: 1; }
-        #tk-bg-ground { bottom: 32px; height: 32px; background-size: 256px 100%; background-position: bottom left; z-index: 2; }
+        .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; background-repeat: repeat-x; pointer-events: none; }
+        #tk-bg-sky { background-size: 1024px 100%; z-index: 0; }
+        #tk-bg-city { height: 50%; background-size: 1024px 100%; background-position: bottom left; z-index: 1; bottom: 32px; top: auto;}
+        #tk-bg-ground { height: 25%; background-size: 1024px 100%; background-position: bottom left; z-index: 2; bottom: 32px; top: auto;}
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 32px; z-index: 3; pointer-events: none;}
         #tk-runway-surface { width: 100%; height: 100%; background-repeat: repeat-x; background-size: 128px 32px; }
         #tk-mountain { position: absolute; bottom: 32px; left: 100%; width: 150px; height: 150px; z-index: 3; display: none; pointer-events: none;}
@@ -272,8 +272,8 @@
         }
         .radar-accordion-body.open { display: flex; }
 
-        .radar-content { font-size: 0.95rem; line-height: 1.4; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
-        .radar-highlight { color: #000; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block;}
+        .radar-content { font-size: 0.8rem; line-height: 1.5; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
+        .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block;}
         
         .radar-setup-container { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; min-width: 110px;}
         .radar-toggle {
@@ -327,6 +327,7 @@
         }
         @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
         
+        /* The custom transparent masking box for REG texts */
         .radar-dest-label { pointer-events: none; }
 
         /* Floating messaging */
@@ -637,7 +638,11 @@
         <div id="radar-map-wrapper">
             <div id="radar-map-container"></div>
             
-            <div id="radar-success-overlay"></div>
+            <div id="radar-success-overlay">
+                <h2 class="success-title">TARGET LOCKED</h2>
+                <div class="success-callsign" id="success-callsign-display">CALLSIGN</div>
+                <div class="success-reward">PROCEED TO NEXT SECTOR...</div>
+            </div>
 
             <div class="compass-pt compass-n">N</div>
             <div class="compass-pt compass-e">E</div>
@@ -1681,23 +1686,9 @@
             if (radarTimeMs <= 0) return;
             pendingInterceptPlane = { data: plane, marker: marker };
             
-            const titleEl = document.querySelector('#intercept-overlay h1');
-            const descEl = document.querySelector('#intercept-overlay p');
-            const boxEl = document.querySelector('#intercept-overlay .modal-box');
-            const buttonsEl = document.querySelector('#intercept-overlay .modal-buttons');
-            const el = document.getElementById('encrypted-callsign');
-
-            titleEl.textContent = "CONFIRM INTERCEPT";
-            titleEl.style.color = "var(--brand-red)";
-            descEl.innerHTML = "Target signature encrypted:";
-            descEl.style.color = "#ccc";
-            boxEl.style.borderColor = "var(--brand-red)";
-            boxEl.style.boxShadow = "0 0 20px rgba(215, 25, 32, 0.2)";
-            buttonsEl.style.display = "flex";
-            el.style.color = "#fff";
-            
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
             const callsignLength = plane.callsign.length;
+            const el = document.getElementById('encrypted-callsign');
             
             if (encryptionInterval) clearInterval(encryptionInterval);
             
@@ -1720,38 +1711,32 @@
 
         function confirmIntercept() {
             if (encryptionInterval) clearInterval(encryptionInterval);
+            document.getElementById('intercept-overlay').style.display = 'none';
             if (!pendingInterceptPlane) return;
             
             let p = pendingInterceptPlane.data;
             let marker = pendingInterceptPlane.marker;
-            
-            const titleEl = document.querySelector('#intercept-overlay h1');
-            const descEl = document.querySelector('#intercept-overlay p');
-            const boxEl = document.querySelector('#intercept-overlay .modal-box');
-            const el = document.getElementById('encrypted-callsign');
-            
-            el.textContent = p.callsign;
-            document.querySelector('#intercept-overlay .modal-buttons').style.display = 'none';
+            pendingInterceptPlane = null;
             
             if (p.callsign === currentRadarCallsign) {
-                titleEl.textContent = "TARGET LOCKED";
-                titleEl.style.color = "var(--gauge-green)";
-                boxEl.style.borderColor = "var(--gauge-green)";
-                boxEl.style.boxShadow = "0 0 20px rgba(46, 204, 113, 0.4)";
-                el.style.color = p.color;
+                const overlay = document.getElementById('radar-success-overlay');
+                document.getElementById('success-callsign-display').textContent = p.callsign;
+                document.getElementById('success-callsign-display').style.color = p.color;
                 
                 marker.setIcon(L.divIcon({
-                    html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping" style="border-color:${p.color};"></div>`,
+                    html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
                     className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
                 }));
 
                 if (radarLevel < 3) {
-                    descEl.textContent = "PROCEED TO NEXT SECTOR...";
+                    document.querySelector('.success-title').textContent = "TARGET LOCKED";
+                    document.querySelector('.success-reward').textContent = "PROCEED TO NEXT SECTOR...";
+                    overlay.style.display = 'flex';
+                    
                     setTimeout(() => {
-                        document.getElementById('intercept-overlay').style.display = 'none';
+                        overlay.style.display = 'none';
                         radarLevel++;
                         startRadarMission();
-                        pendingInterceptPlane = null;
                     }, 2500);
                 } else {
                     radarTimeMs = 0; 
@@ -1760,22 +1745,19 @@
                     globalState.extraFuel += 1500;
                     saveState(); updateMiniFuelUI();
                     
-                    descEl.innerHTML = "MISSION COMPLETE<br><strong style='color:var(--brand-gold)'>+1500L AUX TANK SECURED</strong>";
+                    document.querySelector('.success-title').textContent = "MISSION COMPLETE";
+                    document.querySelector('.success-reward').textContent = "+1500L AUX TANK SECURED";
+                    overlay.style.display = 'flex';
 
                     setTimeout(() => {
-                        document.getElementById('intercept-overlay').style.display = 'none';
+                        overlay.style.display = 'none';
                         closeRadar();
-                        pendingInterceptPlane = null;
                     }, 3500);
                 }
             } else {
-                titleEl.textContent = "WRONG TARGET";
-                titleEl.style.color = "var(--brand-red)";
-                descEl.textContent = "Signature mismatch. Penalty: -15s";
-                el.style.color = "var(--brand-red)";
+                marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
                 
                 radarTimeMs = Math.max(0, radarTimeMs - 15000); 
-                updateTimerDisplay(getAssistPenalty());
                 
                 const tDiv = document.getElementById('radar-timer');
                 tDiv.style.color = "red";
@@ -1788,11 +1770,7 @@
                 void msgEl.offsetWidth; 
                 setTimeout(() => { msgEl.style.display = "none"; }, 2000);
                 
-                setTimeout(() => {
-                    document.getElementById('intercept-overlay').style.display = 'none';
-                    marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
-                    pendingInterceptPlane = null;
-                }, 2000);
+                updateTimerDisplay(getAssistPenalty());
             }
         }
 

@@ -149,6 +149,7 @@
         
         .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s;}
         .radar-btn:active { background: var(--radar-green); color: #000; }
+
         .radar-abort-btn { background: rgba(10, 10, 10, 0.85) !important; border: 1px solid var(--brand-red) !important; color: var(--brand-red) !important; backdrop-filter: blur(4px); font-weight: bold;}
 
         /* --- GAMEPLAY (Shared) --- */
@@ -315,6 +316,7 @@
             position: absolute; color: var(--radar-green); font-family: 'Share Tech Mono', monospace; 
             font-size: 1.4rem; font-weight: bold; z-index: 1000; pointer-events: none; 
             text-shadow: 0 0 10px #000, 0 0 15px #000, 2px 2px 2px rgba(0,0,0,0.8);
+            display: none; 
         }
         .compass-n { top: 90px; left: 50%; transform: translateX(-50%); }
         .compass-s { bottom: 80px; left: 50%; transform: translateX(-50%); }
@@ -345,6 +347,29 @@
         /* Regular game message */
         #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
+
+        /* DESKTOP FULL SCREEN LAYOUT */
+        @media (min-width: 768px) {
+            #radar-view {
+                max-width: 100%;
+            }
+            .radar-top-accordion {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                width: 320px;
+                margin: 0;
+            }
+            #radar-view .footer-buttons {
+                position: absolute !important;
+                bottom: 20px !important;
+                right: 20px !important;
+                left: auto !important;
+                transform: none !important;
+                width: 200px !important;
+                max-width: none !important;
+            }
+        }
 
         @media (max-height: 500px) {
             .game-header { display: none !important; }
@@ -616,17 +641,6 @@
         </div>
     </div>
 
-    <div id="leaderboard-view" class="view-section">
-        <div style="flex-shrink: 0; width:100%; text-align:center;">
-            <h1>Global Standings</h1>
-            <h2 style="margin-bottom: 10px;">Top Fuel Reserves</h2>
-        </div>
-        <div id="leaderboard-list">Connecting to HQ...</div>
-        <div class="footer-buttons">
-            <button class="primary-btn" onclick="closeLeaderboard()">Back to Command</button>
-        </div>
-    </div>
-
     <div id="radar-view" class="view-section">
         
         <div class="radar-top-accordion">
@@ -645,11 +659,12 @@
                 <div class="radar-setup-container">
                     <div class="radar-toggle-group">
                         <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
-                        <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">REG: OFF</button>
-                        <button id="toggle-alt-btn" class="radar-toggle" onclick="toggleAlt()">ALT: OFF</button>
                         <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">LABELS: OFF</button>
+                        <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">REG: OFF</button>
+                        <button id="toggle-compass-btn" class="radar-toggle" onclick="toggleCompass()">COMP: OFF</button>
                         <button id="toggle-origcity-btn" class="radar-toggle" onclick="toggleOrigCity()">ORIG: OFF</button>
                         <button id="toggle-destcity-btn" class="radar-toggle" onclick="toggleDestCity()">DEST: OFF</button>
+                        <button id="toggle-alt-btn" class="radar-toggle" onclick="toggleAlt()" style="grid-column: span 2;">ALT: OFF</button>
                     </div>
                 </div>
             </div>
@@ -657,14 +672,14 @@
         
         <div id="radar-map-wrapper">
             <div id="radar-map-container"></div>
-            
+
             <div class="compass-pt compass-n">N</div>
             <div class="compass-pt compass-e">E</div>
             <div class="compass-pt compass-s">S</div>
             <div class="compass-pt compass-w">W</div>
         </div>
         
-        <div class="footer-buttons" style="border: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;">
+        <div class="footer-buttons radar-footer" style="border: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;">
              <button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button>
         </div>
     </div>
@@ -689,6 +704,7 @@
         let altVisible = false;
         let origCityVisible = false;
         let destCityVisible = false;
+        let compassVisible = false;
         let currentMapStyle = 'CLEAN'; 
         
         let activeLevelIdx = 0;
@@ -1503,6 +1519,7 @@
             altVisible = false;
             origCityVisible = false;
             destCityVisible = false;
+            compassVisible = false;
             currentMapStyle = 'CLEAN'; 
             radarLevel = 1;
             radarTimeMs = 600000; 
@@ -1527,6 +1544,7 @@
                     altVisible = false;
                     origCityVisible = false;
                     destCityVisible = false;
+                    compassVisible = false;
                     currentMapStyle = 'CLEAN'; 
 
                     startRadarTimer(); 
@@ -1537,7 +1555,7 @@
 
         function createPlaneIcon(p) {
             let labels = [];
-            if (originVisible && p.origin) labels.push(p.origin);
+            if (originVisible && p.origin) labels.push(`REG: ${p.origin}`);
             if (altVisible && p.alt) labels.push(`${Math.round(p.alt)}M`);
             if (origCityVisible && p.originCity) labels.push(`ORG: ${p.originCity}`);
             if (destCityVisible && p.destCity) labels.push(`DST: ${p.destCity}`);
@@ -1591,6 +1609,7 @@
             altVisible = false;
             origCityVisible = false;
             destCityVisible = false;
+            compassVisible = false;
             currentMapStyle = 'CLEAN'; 
 
             document.getElementById('toggle-paths-btn').textContent = "PATHS: OFF";
@@ -1612,6 +1631,11 @@
             document.getElementById('toggle-destcity-btn').textContent = "DEST: OFF";
             document.getElementById('toggle-destcity-btn').style.background = "transparent";
             document.getElementById('toggle-destcity-btn').style.color = "var(--radar-green)";
+            
+            document.getElementById('toggle-compass-btn').textContent = "COMP: OFF";
+            document.getElementById('toggle-compass-btn').style.background = "transparent";
+            document.getElementById('toggle-compass-btn').style.color = "var(--radar-green)";
+            document.querySelectorAll('.compass-pt').forEach(el => el.style.display = 'none');
 
             document.getElementById('toggle-map-btn').textContent = "LABELS: OFF";
             document.getElementById('toggle-map-btn').style.background = "transparent";
@@ -2015,6 +2039,24 @@
             renderRadarOverlays();
         }
 
+        function toggleMapStyle() {
+            const btn = document.getElementById('toggle-map-btn');
+            if (currentMapStyle === 'CLEAN') {
+                cleanMapLabels.addTo(radarMap);
+                currentMapStyle = 'LABELS';
+                btn.textContent = "LABELS: ON";
+                btn.style.background = "var(--radar-green)";
+                btn.style.color = "#000";
+            } else {
+                radarMap.removeLayer(cleanMapLabels);
+                currentMapStyle = 'CLEAN';
+                btn.textContent = "LABELS: OFF";
+                btn.style.background = "transparent";
+                btn.style.color = "var(--radar-green)";
+            }
+            updateTimerDisplay(getAssistPenalty());
+        }
+
         function toggleOrigin() {
             originVisible = !originVisible;
             const btn = document.getElementById('toggle-origin-btn');
@@ -2024,13 +2066,16 @@
             renderRadarOverlays();
         }
 
-        function toggleAlt() {
-            altVisible = !altVisible;
-            const btn = document.getElementById('toggle-alt-btn');
-            btn.textContent = "ALT: " + (altVisible ? "ON" : "OFF");
-            btn.style.background = altVisible ? "var(--radar-green)" : "transparent";
-            btn.style.color = altVisible ? "#000" : "var(--radar-green)";
-            renderRadarOverlays();
+        function toggleCompass() {
+            compassVisible = !compassVisible;
+            const btn = document.getElementById('toggle-compass-btn');
+            btn.textContent = "COMP: " + (compassVisible ? "ON" : "OFF");
+            btn.style.background = compassVisible ? "var(--radar-green)" : "transparent";
+            btn.style.color = compassVisible ? "#000" : "var(--radar-green)";
+            document.querySelectorAll('.compass-pt').forEach(el => {
+                el.style.display = compassVisible ? 'block' : 'none';
+            });
+            updateTimerDisplay(getAssistPenalty());
         }
 
         function toggleOrigCity() {
@@ -2051,32 +2096,24 @@
             renderRadarOverlays();
         }
 
-        function toggleMapStyle() {
-            const btn = document.getElementById('toggle-map-btn');
-            if (currentMapStyle === 'CLEAN') {
-                cleanMapLabels.addTo(radarMap);
-                currentMapStyle = 'LABELS';
-                btn.textContent = "LABELS: ON";
-                btn.style.background = "var(--radar-green)";
-                btn.style.color = "#000";
-            } else {
-                radarMap.removeLayer(cleanMapLabels);
-                currentMapStyle = 'CLEAN';
-                btn.textContent = "LABELS: OFF";
-                btn.style.background = "transparent";
-                btn.style.color = "var(--radar-green)";
-            }
-            updateTimerDisplay(getAssistPenalty());
+        function toggleAlt() {
+            altVisible = !altVisible;
+            const btn = document.getElementById('toggle-alt-btn');
+            btn.textContent = "ALT: " + (altVisible ? "ON" : "OFF");
+            btn.style.background = altVisible ? "var(--radar-green)" : "transparent";
+            btn.style.color = altVisible ? "#000" : "var(--radar-green)";
+            renderRadarOverlays();
         }
 
         function getAssistPenalty() {
             let p = 1; 
             if (pathsVisible) p += 1;
+            if (currentMapStyle === 'LABELS') p += 1;
             if (originVisible) p += 1;
-            if (altVisible) p += 1;
+            if (compassVisible) p += 1;
             if (origCityVisible) p += 1;
             if (destCityVisible) p += 1;
-            if (currentMapStyle === 'LABELS') p += 1;
+            if (altVisible) p += 1;
             return p; 
         }
 

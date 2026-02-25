@@ -60,7 +60,7 @@
         #intercept-box { min-height: 220px; display: flex; flex-direction: column; justify-content: center; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(8px); }
         
         @media screen and (orientation: landscape) and (max-height: 600px) {
-            #orientation-lock { display: flex; }
+            body:not(.radar-active) #orientation-lock { display: flex; }
         }
 
         h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--brand-dark); margin: 0; text-align: center; text-transform: uppercase; }
@@ -214,62 +214,10 @@
         .trivia-option:active { transform: scale(0.98); background: #eee; }
         .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
 
-        /* --- TAKEOFF MINI GAME --- */
-        #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; position: relative;}
-        
-        .takeoff-hud { 
-            display: flex; justify-content: space-between; align-items: center; width: 100%; 
-            font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #333; 
-            margin-top: 5px; margin-bottom: 10px; padding: 10px 15px; background: rgba(255,255,255,0.9); 
-            border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 20; position: relative;
-            backdrop-filter: blur(4px); flex-shrink: 0; pointer-events: none;
-        }
-        #tk-speed-val { display: inline-block; transition: transform 0.1s ease, color 0.1s ease; }
-        .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
-        .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
-        
-        #takeoff-viewport { 
-            position: relative; width: 100%; flex-grow: 1; min-height: 250px; max-height: 400px;
-            border: 4px solid #222; border-radius: 8px; overflow: hidden; margin: 0; 
-            image-rendering: pixelated; background-color: #87CEEB; z-index: 5; 
-            touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
-            cursor: pointer; box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
-        }
-        
-        .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; background-repeat: repeat-x; pointer-events: none; }
-        #tk-bg-sky { background-size: 1024px 100%; z-index: 0; }
-        #tk-bg-city { height: 50%; background-size: 1024px 100%; background-position: bottom left; z-index: 1; bottom: 32px; top: auto;}
-        #tk-bg-ground { height: 25%; background-size: 1024px 100%; background-position: bottom left; z-index: 2; bottom: 32px; top: auto;}
-        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 32px; z-index: 3; pointer-events: none;}
-        #tk-runway-surface { width: 100%; height: 100%; background-repeat: repeat-x; background-size: 128px 32px; }
-        #tk-mountain { position: absolute; bottom: 32px; left: 100%; width: 150px; height: 150px; z-index: 3; display: none; pointer-events: none;}
-        #tk-plane { position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px; transform-origin: 50% 90%; z-index: 4; pointer-events: none;}
-        
-        #tk-weather-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 5; }
-        .weather-rain { width: 150%; height: 150%; top: -25%; left: -25%; background-image: repeating-linear-gradient(-15deg, transparent, transparent 15px, rgba(255,255,255,0.4) 16px, transparent 17px); background-size: 100px 100%; animation: rainFall 0.3s linear infinite; }
-        @keyframes rainFall { from { transform: translateY(-50px) translateX(10px); } to { transform: translateY(50px) translateX(-10px); } }
-        .weather-fog { width: 200%; height: 100%; top: 0; left: -50%; background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 60%); background-size: 50% 100%; background-repeat: repeat-x; animation: fogDrift 5s linear infinite alternate; filter: blur(8px); opacity: 0.8; }
-        @keyframes fogDrift { from { transform: translateX(-15%); } to { transform: translateX(15%); } }
-        
-        #tk-gauge-container { position: absolute; right: 15px; top: 15px; bottom: 60px; width: 20px; background: rgba(0,0,0,0.5); border-radius: 4px; border: 2px solid #fff; z-index: 6; pointer-events: none;}
-        #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); }
-        #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; }
-        .pixel-particle { position: absolute; width: 6px; height: 6px; z-index: 10; pointer-events: none;}
-
-        .flash-screen { animation: whiteFlash 0.6s ease-out; }
-        @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
-
-        #tk-touch-prompt {
-            position: absolute; top: 45%; left: 0; width: 100%; text-align: center;
-            color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 1.3rem;
-            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; pointer-events: none;
-            animation: pulseText 1.5s infinite; transition: opacity 0.3s; z-index: 8;
-        }
-        @keyframes pulseText { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-
         /* --- VISUAL RADAR MODE --- */
         #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; gap: 0; }
         
+        /* Floating Accordion Window */
         .radar-top-accordion {
             width: 100%; flex-shrink: 0; background: rgba(5, 16, 5, 0.9); border: 1px solid var(--radar-green); border-radius: 8px;
             font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
@@ -295,8 +243,8 @@
         }
         .radar-accordion-body.open { display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; }
 
-        .radar-content { font-size: 0.95rem; line-height: 1.4; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
-        .radar-highlight { color: #000; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block;}
+        .radar-content { font-size: 0.65rem; line-height: 1.3; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
+        .radar-highlight { color: #000; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block; font-size: 0.85rem;}
         
         .radar-setup-container { display: flex; flex-direction: column; flex-shrink: 0; min-width: 140px;}
         .radar-toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
@@ -354,11 +302,12 @@
         #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
-        /* DESKTOP FULL SCREEN LAYOUT */
-        @media (min-width: 768px) {
+        /* DESKTOP & LANDSCAPE FULL SCREEN RADAR LAYOUT */
+        @media (min-width: 768px), screen and (orientation: landscape) and (max-height: 600px) {
             #radar-view { max-width: 100%; }
-            .radar-top-accordion { position: absolute; top: 20px; left: 20px; width: 320px; margin: 0; }
-            #radar-view .footer-buttons { position: absolute !important; bottom: 20px !important; right: 20px !important; left: auto !important; transform: none !important; width: 200px !important; max-width: none !important; }
+            .radar-top-accordion { position: absolute; top: 15px; left: 15px; width: 320px; margin: 0; max-height: calc(100vh - 30px); display: flex; flex-direction: column; z-index: 1000; }
+            .radar-accordion-body { overflow-y: auto; }
+            #radar-view .footer-buttons { position: absolute !important; bottom: 15px !important; right: 15px !important; left: auto !important; transform: none !important; width: 200px !important; max-width: none !important; z-index: 1000;}
         }
 
         @media (max-height: 500px) {
@@ -462,11 +411,11 @@
             
             <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
                 <div style="display: flex; gap: 8px; width: 80px;">
-                    <div class="icon-btn" onclick="openLeaderboard()" title="Global Leaderboard">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg>
-                    </div>
                     <div class="icon-btn" onclick="triggerResetUI()" title="Sign Out / Restart">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                    </div>
+                    <div class="icon-btn" onclick="openLeaderboard()" title="Global Leaderboard">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg>
                     </div>
                 </div>
                 <div style="flex-grow: 1; text-align: center;">
@@ -549,81 +498,6 @@
             </div>
         </div>
 
-        <div id="takeoff-game-area">
-            <div class="takeoff-hud">
-                <div style="min-width: 85px;">SPD: <span id="tk-speed-val" style="color:var(--brand-red); font-weight:bold;">0</span></div>
-                <div>DIST: <div class="tk-bar-bg" style="width: 50px;"><div class="tk-bar-fill" id="tk-runway-fill" style="background:#f39c12"></div></div></div>
-                <div>LIFT: <div class="tk-bar-bg" style="width: 50px;"><div class="tk-bar-fill" id="tk-lift-fill"></div></div></div>
-            </div>
-            
-            <div id="takeoff-viewport">
-                <div id="tk-touch-prompt">TAP & HOLD TO PULL UP</div>
-                
-                <div id="tk-bg-sky" class="parallax-layer"></div>
-                <div id="tk-bg-city" class="parallax-layer"></div>
-                <div id="tk-bg-ground" class="parallax-layer"></div>
-                
-                <div id="tk-weather-overlay"></div>
-                
-                <div id="tk-gauge-container">
-                    <div id="tk-target-zone"></div>
-                    <div id="tk-needle"></div>
-                </div>
-                
-                <div id="tk-mountain">
-                    <svg viewBox="0 0 100 100" shape-rendering="crispEdges" width="100%" height="100%">
-                        <rect x="50" y="40" width="10" height="60" fill="#3b3b3b"/>
-                        <rect x="40" y="50" width="30" height="50" fill="#4a4a4a"/>
-                        <rect x="20" y="60" width="70" height="40" fill="#2d2d2d"/>
-                        <rect x="0" y="70" width="100" height="30" fill="#1f1f1f"/>
-                        <rect x="50" y="40" width="10" height="10" fill="#fff"/>
-                        <rect x="40" y="50" width="10" height="10" fill="#eee"/>
-                        <rect x="60" y="50" width="10" height="10" fill="#eee"/>
-                    </svg>
-                </div>
-                
-                <div id="tk-plane">
-                    <svg viewBox="0 0 80 30" width="100%" height="100%" shape-rendering="crispEdges">
-                        <rect x="4" y="2" width="8" height="12" fill="var(--brand-red)" />
-                        <rect x="2" y="8" width="2" height="6" fill="var(--brand-red)" />
-                        <rect x="6" y="14" width="68" height="8" fill="#fff" />
-                        <rect x="8" y="22" width="60" height="2" fill="#e0e0e0" /> 
-                        <rect x="74" y="16" width="4" height="6" fill="#fff" />
-                        <rect x="78" y="18" width="2" height="4" fill="#fff" />
-                        <rect x="72" y="16" width="4" height="2" fill="#1a1a1a" />
-                        <rect x="20" y="17" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="24" y="17" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="28" y="17" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="32" y="17" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="44" y="17" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="48" y="17" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="52" y="17" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="56" y="17" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="60" y="17" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="64" y="17" width="2" height="2" fill="#1a1a1a" />
-                        <rect x="14" y="16" width="4" height="6" fill="var(--brand-red)" />
-                        <rect x="38" y="17" width="4" height="5" fill="var(--brand-red)" />
-                        <rect x="68" y="16" width="2" height="6" fill="var(--brand-red)" />
-                        <rect x="34" y="20" width="16" height="2" fill="#d0d0d0" />
-                        <rect x="30" y="22" width="24" height="2" fill="#a0a0a0" />
-                        <rect x="26" y="24" width="24" height="2" fill="#808080" />
-                        <rect x="38" y="22" width="10" height="6" fill="#333" />
-                        <rect x="36" y="24" width="2" height="4" fill="#111" /> 
-                        <rect x="48" y="24" width="2" height="2" fill="#555" /> 
-                        <rect x="68" y="24" width="2" height="4" fill="#555" />
-                        <rect x="66" y="28" width="4" height="2" fill="#111" />
-                        <rect x="24" y="24" width="4" height="4" fill="#555" />
-                        <rect x="22" y="28" width="8" height="2" fill="#111" />
-                    </svg>
-                </div>
-                
-                <div id="tk-runway">
-                    <div id="tk-runway-surface"></div>
-                </div>
-            </div>
-            
-        </div>
-
         <div id="message"></div>
         
         <div class="footer-buttons" style="border: none; position: relative; z-index: 20;">
@@ -665,7 +539,7 @@
                         <button id="toggle-compass-btn" class="radar-toggle" onclick="toggleCompass()">COMP: OFF</button>
                         <button id="toggle-origcity-btn" class="radar-toggle" onclick="toggleOrigCity()">ORIG: OFF</button>
                         <button id="toggle-destcity-btn" class="radar-toggle" onclick="toggleDestCity()">DEST: OFF</button>
-                        <button id="toggle-alt-btn" class="radar-toggle" onclick="toggleAlt()">ALT: OFF</button>
+                        <button id="toggle-alt-btn" class="radar-toggle" onclick="toggleAlt()" style="grid-column: span 2;">ALT: OFF</button>
                     </div>
                 </div>
             </div>
@@ -747,17 +621,11 @@
             username: null,
             currentFuel: STARTING_GLOBAL_FUEL,
             extraFuel: 0,
-            smartBombs: 1,
             levels: [],
+            hasSmartBomb: true,
             hasSeenTakeoffTutorial: false,
             world1Complete: false,
             world2Complete: false
-        };
-
-        let tkState = { 
-            active: false, pitch: 0, pitchVelocity: 0, lift: 0, 
-            distance: 100, speed: 0, pressing: false, frameId: null,
-            bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0
         };
 
         const firebaseConfig = {};
@@ -775,8 +643,7 @@
             folder: `<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`,
             lock: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="vertical-align: text-bottom; margin-right: 2px;"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>`,
             star: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
-            fuel: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>`,
-            takeoff: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M2.5 19h19v2h-19zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 1.82 3.16.77 1.33 1.6-.43 5.31-1.42 4.35-1.16L21 11.49c.81-.23 1.28-1.05 1.07-1.85z"/></svg>`
+            fuel: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>`
         };
 
         const AIRCRAFT_DATA = {
@@ -888,40 +755,6 @@
                         }
                     }
                 });
-
-                const tkViewport = document.getElementById('takeoff-viewport');
-                const handlePress = (e) => { 
-                    if (!tkState.active) return;
-                    if (e.target && typeof e.target.closest === 'function') {
-                        if (e.target.closest('button') || e.target.closest('.takeoff-hud') || e.target.closest('.game-header') || e.target.closest('.footer-buttons')) return;
-                    }
-                    if (e.cancelable) e.preventDefault();
-                    
-                    if (tkState.speed < 140) {
-                        const speedVal = document.getElementById('tk-speed-val');
-                        if(speedVal) {
-                            speedVal.style.transform = "scale(1.5)";
-                            speedVal.style.color = "var(--gauge-orange)";
-                            setTimeout(() => {
-                                speedVal.style.transform = "scale(1)";
-                                speedVal.style.color = "var(--brand-red)";
-                            }, 150);
-                        }
-                        return;
-                    }
-                    
-                    document.getElementById('tk-touch-prompt').style.opacity = '0';
-                    tkState.pressing = true; 
-                };
-                const handleRelease = () => { if(tkState.active) tkState.pressing = false; };
-                
-                if(tkViewport) {
-                    tkViewport.addEventListener('pointerdown', handlePress);
-                    tkViewport.addEventListener('touchstart', handlePress, {passive: false});
-                }
-                window.addEventListener('pointerup', handleRelease);
-                window.addEventListener('touchend', handleRelease);
-                window.addEventListener('pointercancel', handleRelease);
                 
             } catch(e) { 
                 console.error("Critical Load Error", e); 
@@ -947,13 +780,8 @@
                 return { ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) };
             });
 
-            h1.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 1, isClassified: false, completed: false, failed: false, attempts: 0 });
             h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
-            
-            h2.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 2, isClassified: false, completed: false, failed: false, attempts: 0 });
             h2.push({ ...tPool[1], hangar: 2, isClassified: false, completed: false });
-            
-            h3.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 3, isClassified: true, completed: false, failed: false, attempts: 0 });
             h3.push({ ...tPool[2], hangar: 3, isClassified: true, completed: false }); 
 
             return [...h1.sort(() => Math.random() - 0.5), ...h2.sort(() => Math.random() - 0.5), ...h3.sort(() => Math.random() - 0.5)];
@@ -1043,7 +871,7 @@
             if (globalState.extraFuel && globalState.extraFuel > 0) {
                 auxContainer.style.display = 'block';
                 document.getElementById('aux-fuel-value').textContent = globalState.extraFuel;
-                const auxPct = Math.min(100, Math.max(0, (globalState.extraFuel / 5000) * 100)); // Scales nicely for big rewards
+                const auxPct = Math.min(100, Math.max(0, (globalState.extraFuel / 5000) * 100)); 
                 document.getElementById('aux-fuel-bar').style.width = auxPct + "%";
             } else {
                 auxContainer.style.display = 'none';
@@ -1180,8 +1008,6 @@
             triviaArea.style.display = 'none';
             takeoffArea.style.display = 'none';
 
-            if(tkState.frameId) { cancelAnimationFrame(tkState.frameId); tkState.active = false; }
-
             if (lState.type === 'image') {
                 imgArea.style.display = 'flex';
                 container.style.overflow = 'hidden';
@@ -1243,271 +1069,7 @@
                         }
                     }
                 });
-            } else if (lState.type === 'takeoff') {
-                takeoffArea.style.display = 'flex';
-                bombBtn.style.display = "none";
-                
-                const sky = document.getElementById('tk-bg-sky');
-                const city = document.getElementById('tk-bg-city');
-                const ground = document.getElementById('tk-bg-ground');
-                const runwaySurf = document.getElementById('tk-runway-surface');
-                
-                const weather = document.getElementById('tk-weather-overlay');
-                const zone = document.getElementById('tk-target-zone');
-                
-                weather.className = '';
-                runwaySurf.style.backgroundImage = getSvgUri(RUNWAY_SVG);
-
-                const th = THEMES[lState.hangar];
-                sky.style.backgroundImage = getSvgUri(th.sky);
-                city.style.backgroundImage = getSvgUri(th.city);
-                ground.style.backgroundImage = getSvgUri(th.ground);
-
-                if (lState.hangar === 1) {
-                    tkState.minAngle = 9; tkState.maxAngle = 16;
-                    zone.style.bottom = '30%'; zone.style.height = '23.3%';
-                } else if (lState.hangar === 2) {
-                    weather.classList.add('weather-rain');
-                    tkState.minAngle = 10; tkState.maxAngle = 15;
-                    zone.style.bottom = '33.3%'; zone.style.height = '16.6%';
-                } else {
-                    weather.classList.add('weather-fog');
-                    tkState.minAngle = 11; tkState.maxAngle = 14;
-                    zone.style.bottom = '36.6%'; zone.style.height = '10%';
-                }
-                
-                if (!lState.completed && !lState.failed) {
-                    if (!globalState.hasSeenTakeoffTutorial) {
-                        document.getElementById('takeoff-tutorial-overlay').style.display = 'flex';
-                    } else {
-                        startTakeoff();
-                    }
-                } else {
-                    document.getElementById('tk-mountain').style.display = 'none';
-                    document.getElementById('tk-plane').style.display = 'block';
-                    document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-10deg)`;
-                    document.getElementById('tk-needle').style.bottom = `40%`;
-                    document.getElementById('tk-runway-fill').style.width = '0%';
-                    document.getElementById('tk-lift-fill').style.width = '100%';
-                    document.getElementById('tk-speed-val').textContent = "150";
-                    document.getElementById('tk-speed-val').style.color = "var(--gauge-green)";
-                    document.getElementById('tk-touch-prompt').style.display = "none";
-                }
             }
-        }
-
-        function startTakeoffFromTutorial() {
-            globalState.hasSeenTakeoffTutorial = true;
-            saveState();
-            document.getElementById('takeoff-tutorial-overlay').style.display = 'none';
-            setTimeout(() => { startTakeoff(); }, 100);
-        }
-
-        function startTakeoff() {
-            document.querySelectorAll('.pixel-particle').forEach(el => el.remove());
-            if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
-            
-            tkState.active = true;
-            tkState.pitch = 0;
-            tkState.pitchVelocity = 0;
-            tkState.lift = 0;
-            tkState.distance = 100;
-            tkState.speed = 0;
-            tkState.pressing = false;
-            tkState.bgPosSky = 0;
-            tkState.bgPosCity = 0;
-            tkState.bgPosGround = 0;
-            tkState.bgPosRunway = 0;
-            
-            document.getElementById('tk-touch-prompt').style.display = 'block';
-            document.getElementById('tk-touch-prompt').style.opacity = '0.8';
-            document.getElementById('tk-plane').style.display = 'block';
-            document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`;
-            document.getElementById('tk-mountain').style.display = 'none';
-            document.getElementById('tk-needle').style.bottom = `0%`;
-            document.getElementById('tk-runway-fill').style.width = '100%';
-            document.getElementById('tk-lift-fill').style.width = '0%';
-            document.getElementById('tk-speed-val').textContent = "0";
-            document.getElementById('tk-speed-val').style.color = "var(--brand-red)";
-            
-            document.getElementById('tk-bg-sky').style.backgroundPositionX = '0px';
-            document.getElementById('tk-bg-city').style.backgroundPositionX = '0px';
-            document.getElementById('tk-bg-ground').style.backgroundPositionX = '0px';
-            document.getElementById('tk-runway-surface').style.backgroundPositionX = '0px';
-            
-            tkState.frameId = requestAnimationFrame(takeoffLoop);
-        }
-
-        function takeoffLoop() {
-            if (!tkState.active) return;
-
-            let acceleration = 1.0;
-            if (tkState.pitch > 0) acceleration -= (tkState.pitch * 0.05); 
-            tkState.speed += acceleration;
-            tkState.speed = Math.max(0, Math.min(220, tkState.speed));
-
-            if (tkState.pressing) tkState.pitchVelocity += 0.04; 
-            else tkState.pitchVelocity -= 0.02; 
-            
-            tkState.pitchVelocity *= 0.95; 
-            tkState.pitchVelocity = Math.max(-0.6, Math.min(0.8, tkState.pitchVelocity)); 
-            
-            tkState.pitch += tkState.pitchVelocity;
-            tkState.pitch = Math.max(0, Math.min(30, tkState.pitch));
-            if(tkState.pitch === 30 || tkState.pitch === 0) tkState.pitchVelocity = 0;
-
-            if (tkState.speed >= 140 && tkState.pitch >= tkState.minAngle && tkState.pitch <= tkState.maxAngle) {
-                tkState.lift += 0.5; 
-            } else {
-                tkState.lift = Math.max(0, tkState.lift - 0.2); 
-            }
-
-            const maxLiftY = 100; 
-            const liftY = (tkState.lift / 100) * maxLiftY; 
-            const planeEl = document.getElementById('tk-plane');
-            planeEl.style.transform = `translateY(-${liftY}px) rotate(-${tkState.pitch}deg)`;
-
-            const needle = document.getElementById('tk-needle');
-            needle.style.bottom = `${Math.max(0, Math.min(100, (tkState.pitch / 30) * 100))}%`;
-
-            const speedEl = document.getElementById('tk-speed-val');
-            speedEl.textContent = Math.floor(tkState.speed);
-            
-            if (speedEl.style.color !== "var(--gauge-orange)") {
-                if (tkState.speed >= 140) speedEl.style.color = "var(--gauge-green)";
-                else speedEl.style.color = "var(--brand-red)";
-            }
-
-            tkState.distance -= (tkState.speed / 1450); 
-
-            tkState.bgPosSky -= tkState.speed * 0.002;
-            tkState.bgPosCity -= tkState.speed * 0.008;
-            tkState.bgPosGround -= tkState.speed * 0.025;
-            tkState.bgPosRunway -= tkState.speed * 0.08;
-
-            document.getElementById('tk-bg-sky').style.backgroundPositionX = tkState.bgPosSky + 'px';
-            document.getElementById('tk-bg-city').style.backgroundPositionX = tkState.bgPosCity + 'px';
-            document.getElementById('tk-bg-ground').style.backgroundPositionX = tkState.bgPosGround + 'px';
-            document.getElementById('tk-runway-surface').style.backgroundPositionX = tkState.bgPosRunway + 'px';
-
-            document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%';
-            document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
-            
-            if (tkState.distance < 15) {
-                const mtn = document.getElementById('tk-mountain');
-                mtn.style.display = 'block';
-                mtn.style.left = `calc(${tkState.distance * 6}% + 40px)`; 
-            }
-
-            if (tkState.lift >= 100) return winTakeoff();
-            if (tkState.distance <= 0) return explodePlane("CRASHED INTO MOUNTAIN");
-
-            tkState.frameId = requestAnimationFrame(takeoffLoop);
-        }
-
-        function explodePlane(reason) {
-            tkState.active = false; 
-            const planeEl = document.getElementById('tk-plane');
-            planeEl.style.display = 'none'; 
-            
-            const vp = document.getElementById('takeoff-viewport');
-            const colors = ['#fff', 'var(--brand-red)', '#a0a0a0', '#1a1a1a', '#555'];
-            
-            const maxLiftY = 100;
-            const liftY = (tkState.lift / 100) * maxLiftY;
-            const baseY = vp.offsetHeight - 60 - liftY; 
-            
-            for(let i = 0; i < 80; i++) {
-                let p = document.createElement('div');
-                p.className = 'pixel-particle';
-                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                p.style.left = (30 + Math.random() * 80) + 'px'; 
-                p.style.top = baseY + Math.random() * 20 + 'px'; 
-                vp.appendChild(p);
-                
-                let vx = (Math.random() - 0.5) * 5;
-                let vy = (Math.random() - 0.8) * 5;
-                animateParticle(p, vx, vy);
-            }
-
-            vp.classList.add('wrong-flash');
-            setTimeout(() => vp.classList.remove('wrong-flash'), 500);
-            setTimeout(() => failTakeoff(reason), 3500); 
-        }
-
-        function animateParticle(p, vx, vy) {
-            let x = parseFloat(p.style.left);
-            let y = parseFloat(p.style.top);
-            let age = 0;
-            function step() {
-                age++;
-                if(age > 150) { p.remove(); return; }
-                if(age > 100) { p.style.opacity = 1 - ((age - 100) / 50); } 
-                
-                x += vx; 
-                y += vy; 
-                vy += 0.1; 
-                vx *= 0.99; 
-                
-                p.style.left = x + 'px'; 
-                p.style.top = y + 'px';
-                requestAnimationFrame(step);
-            }
-            requestAnimationFrame(step);
-        }
-
-        function failTakeoff(reason) {
-            const lState = globalState.levels[activeLevelIdx];
-            lState.attempts = (lState.attempts || 0) + 1;
-            
-            drainFuel(WRONG_GUESS_PENALTY);
-
-            if (lState.attempts >= 3) {
-                lState.failed = true;
-                lState.completed = true; 
-                saveState();
-                const msgEl = document.getElementById('message');
-                msgEl.textContent = "SYSTEM LOCKED - MAX ATTEMPTS FAILED (-200L)";
-                msgEl.className = "fail pop-reveal";
-                void msgEl.offsetWidth; 
-                setTimeout(() => { if (isAllWorldsComplete()) syncScoreToCloud(); saveAndExit(); }, 2500);
-            } else {
-                let triesLeft = 3 - lState.attempts;
-                const msgEl = document.getElementById('message');
-                msgEl.textContent = `${reason} | TRIES LEFT: ${triesLeft} (-200L)`;
-                msgEl.className = "fail pop-reveal";
-                void msgEl.offsetWidth;
-                setTimeout(() => {
-                    if(!lState.completed && !lState.failed && (globalState.currentFuel > 0 || globalState.extraFuel > 0) && document.getElementById('takeoff-game-area').style.display !== 'none') {
-                        document.getElementById('message').textContent = "";
-                        startTakeoff();
-                    }
-                }, 1500);
-            }
-            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) setTimeout(triggerGameOver, 1500);
-        }
-
-        function winTakeoff() {
-            tkState.active = false;
-            const bonus = 500;
-            globalState.currentFuel += bonus; 
-            updateMiniFuelUI();
-            
-            const lState = globalState.levels[activeLevelIdx];
-            lState.completed = true;
-            
-            triggerConfetti();
-            document.getElementById('level-title').textContent = lState.name;
-            const msgEl = document.getElementById('message');
-            msgEl.textContent = `PERFECT TAKEOFF! +${bonus}L BONUS`;
-            msgEl.className = "success pop-reveal";
-            void msgEl.offsetWidth; 
-            
-            awardSmartBomb();
-            
-            saveState();
-            if (isAllWorldsComplete()) syncScoreToCloud();
-            setTimeout(saveAndExit, 2500);
         }
 
         function getCompassDirection(heading) {
@@ -1535,6 +1097,8 @@
 
         function openRadar() {
             if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) { triggerGameOver(); return; }
+            
+            document.body.classList.add('radar-active');
             
             document.getElementById('selector-view').classList.remove('active');
             const radarView = document.getElementById('radar-view');
@@ -1689,7 +1253,6 @@
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-            // Create subset of cities to force duplicates and require logic
             const numCities = Math.min(15, Math.max(3, Math.floor(config.planes / 3)));
             const roundCities = CITIES.sort(() => 0.5 - Math.random()).slice(0, numCities);
 
@@ -1811,7 +1374,7 @@
             currentRadarCallsign = targetPlane.callsign;
             const config = RADAR_LEVEL_CONFIG[radarLevel];
             
-            textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br><div style="margin-top:8px; color:#aaa;">DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span></div>`;
+            textEl.innerHTML = `CALLSIGN: <span class="radar-highlight" style="font-size:0.85rem">${currentRadarCallsign}</span><br><div style="margin-top:4px; color:#aaa; font-size:0.65rem;">DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span></div>`;
             plotPlanesOnRadar();
 
             const nomController = new AbortController();
@@ -1857,9 +1420,9 @@
                 }
                 
                 selectedHints = selectedHints.sort(() => 0.5 - Math.random());
-                let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join('');
+                let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:4px; line-height:1.2;"><span style="color:#888; font-size:0.55rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.65rem;">${h}</span></div>`).join('');
                 
-                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`;
+                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight" style="font-size:0.85rem">${currentRadarCallsign}</span>${hintHtml}`;
             })
             .catch(() => {
                 let availableHints = [];
@@ -1888,8 +1451,8 @@
                 }
                 
                 selectedHints = selectedHints.sort(() => 0.5 - Math.random());
-                let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join('');
-                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`;
+                let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:4px; line-height:1.2;"><span style="color:#888; font-size:0.55rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.65rem;">${h}</span></div>`).join('');
+                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight" style="font-size:0.85rem">${currentRadarCallsign}</span>${hintHtml}`;
             });
         }
         
@@ -2058,6 +1621,7 @@
                         
                         setTimeout(() => {
                             document.getElementById('intercept-overlay').style.display = 'none';
+                            marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
                             cancelIntercept(); 
                         }, 2500);
                     }
@@ -2218,6 +1782,8 @@
             if(radarCountdown) clearInterval(radarCountdown);
             if(radarAnimFrame) cancelAnimationFrame(radarAnimFrame);
             document.getElementById('intercept-overlay').style.display = 'none';
+            
+            document.body.classList.remove('radar-active');
             
             const radarView = document.getElementById('radar-view');
             const selectorView = document.getElementById('selector-view');

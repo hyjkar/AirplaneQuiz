@@ -312,6 +312,14 @@
         /* The custom transparent masking box for REG texts */
         .radar-dest-label { pointer-events: none; }
 
+        /* Floating messaging */
+        #radar-message-container {
+            position: relative; z-index: 10; margin-top: auto; display: flex; justify-content: center; width: 100%; height: 30px; pointer-events: none;
+        }
+        #radar-message { font-size: 1rem; text-align: center; font-weight: bold; padding: 4px 12px; border-radius: 4px; display: none; }
+        #radar-message.success { color: var(--gauge-green); text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.8); border: 1px solid var(--gauge-green); box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); display: inline-block;} 
+        #radar-message.fail { color: var(--brand-red); text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.8); border: 1px solid var(--brand-red); box-shadow: 0 0 10px rgba(215, 25, 32, 0.4); display: inline-block;}
+
         /* Regular game message */
         #message { position: relative; z-index: 10; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
@@ -746,6 +754,15 @@
         const cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
         const cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
 
+        // --- 4. GAME ENGINE LOGIC ---
+        function getOptionsForImage(correctName, isClassified) {
+            const pool = isClassified ? AIRCRAFT_DATA.classified : AIRCRAFT_DATA.standard;
+            let options = [correctName];
+            let others = pool.filter(x => x.name !== correctName).sort(() => Math.random() - 0.5);
+            if(others.length >= 2) { options.push(others[0].name, others[1].name); }
+            return options.sort(() => Math.random() - 0.5);
+        }
+
         // --- FUEL DRAIN HELPER ---
         function drainFuel(amount) {
             if (globalState.extraFuel > 0) {
@@ -793,7 +810,7 @@
                     }
                 });
                 
-                // TAKEOFF TAP ANYWHERE LOGIC
+                // NEW TAKEOFF TAP ANYWHERE LOGIC
                 const tkViewport = document.getElementById('takeoff-viewport');
                 const startPress = (e) => { 
                     if (!tkState.active) return;
@@ -1752,6 +1769,7 @@
                 }
                 
                 if (originVisible && p.isReal && p.origin) {
+                    // Always lock exactly to the plane's location. The black background will mask out the path underneath it.
                     L.marker([p.lat, p.lng], {
                         icon: L.divIcon({ 
                             html: `<div style="color: ${p.color}; background: #000; padding: 1px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 14px; margin-top: 14px; display: inline-block;">${p.origin}</div>`, 
@@ -1978,31 +1996,4 @@
             } else {
                 auxEl.style.display = 'none';
             }
-            if (globalState.currentFuel <= 200 && globalState.extraFuel === 0) el.classList.add('danger'); else el.classList.remove('danger');
-        }
-
-        function saveAndExit() { 
-            tkState.active = false; if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
-            renderDashboard(); document.getElementById('game-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); 
-        }
-        
-        function triggerResetUI() { document.getElementById('restart-overlay').style.display = 'flex'; }
-        function cancelReset() { document.getElementById('restart-overlay').style.display = 'none'; }
-        function confirmReset() { localStorage.clear(); location.reload(); }
-
-        function showFloat(x, y, text) {
-            const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text;
-            el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
-        }
-
-        function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
-
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block';
-            btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; });
-        });
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
-    </script>
-</body>
-</html>
+            if (globalState.currentFuel

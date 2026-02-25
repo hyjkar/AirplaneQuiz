@@ -1555,7 +1555,7 @@
             const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
             currentRadarCallsign = targetPlane.callsign;
             
-            textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight" style="background:${targetPlane.color}; color:#000;">${currentRadarCallsign}</span><br>> DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span>`;
+            textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span>`;
             plotPlanesOnRadar();
 
             // Fetch the physical airspace country/city to generate dynamic hints
@@ -1584,7 +1584,7 @@
                 hints = hints.sort(() => 0.5 - Math.random()).slice(0, 2);
                 let hintHtml = hints.map((h, i) => `> HINT ${i+1}: ${h}<br>`).join('');
                 
-                textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight" style="background:${targetPlane.color}; color:#000;">${currentRadarCallsign}</span><br>${hintHtml}`;
+                textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}`;
             })
             .catch(() => {
                 // Fallback if Geocoding API fails
@@ -1592,7 +1592,7 @@
                 if (targetPlane.isReal && targetPlane.origin) hints.push(`REGISTRY ${targetPlane.origin}`);
                 
                 let hintHtml = hints.map((h, i) => `> HINT ${i+1}: ${h}<br>`).join('');
-                textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight" style="background:${targetPlane.color}; color:#000;">${currentRadarCallsign}</span><br>${hintHtml}`;
+                textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}`;
             });
         }
         
@@ -1718,7 +1718,7 @@
                     
                     L.marker([labelLat, labelLng], {
                         icon: L.divIcon({ 
-                            html: `<div style="color: ${p.color}; background: #000; padding: 1px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 8px; margin-top: ${offsetMt}px; text-shadow: 1px 1px 2px #000; display: inline-block;">REG: ${p.origin}</div>`, 
+                            html: `<div style="color: ${p.color}; background: #000; padding: 1px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 8px; margin-top: ${offsetMt}px; display: inline-block;">${p.origin}</div>`, 
                             className: 'radar-dest-label', 
                             iconSize: [0,0] 
                         })

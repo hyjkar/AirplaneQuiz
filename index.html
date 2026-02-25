@@ -154,6 +154,8 @@
         
         .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s;}
         .radar-btn:active { background: var(--radar-green); color: #000; }
+        .tactical-btn { background: rgba(52, 152, 219, 0.1); border: 1px solid #3498db; color: #3498db; font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(52, 152, 219, 0.2); transition: all 0.2s;}
+        .tactical-btn:active { background: #3498db; color: #fff; }
         .radar-abort-btn { background: rgba(10, 10, 10, 0.85) !important; border: 1px solid var(--brand-red) !important; color: var(--brand-red) !important; backdrop-filter: blur(4px); font-weight: bold;}
 
         /* --- GAMEPLAY (Shared) --- */
@@ -341,6 +343,19 @@
         
         .radar-dest-label { pointer-events: none; }
 
+        /* Tactical Map Specific Tooltips */
+        .region-label {
+            background: rgba(0,0,0,0.8);
+            border: 1px solid var(--brand-gold);
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            font-size: 0.8rem;
+            padding: 5px;
+        }
+        .leaflet-tooltip.region-label::before { border-top-color: rgba(0,0,0,0.8); }
+
         /* Floating messaging */
         #radar-message-container {
             position: relative; z-index: 10; margin-top: auto; display: flex; justify-content: center; width: 100%; height: 30px; pointer-events: none;
@@ -501,7 +516,22 @@
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4-8c0 2.21-1.79 4-4 4s-4-1.79-4-4 1.79-4 4-4 4 1.79 4 4z"/></svg>
                 LIVE RADAR OPS
             </button>
+            <button class="tactical-btn" onclick="openRegionSelector()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                TACTICAL MAP
+            </button>
             <button id="install-btn" class="dark-btn">📲 Install App</button>
+        </div>
+    </div>
+
+    <div id="region-selector-view" class="view-section">
+        <div class="dashboard-header" style="margin-bottom: 10px;">
+            <h1>Tactical Map</h1>
+            <h2>Select Mission Zone</h2>
+        </div>
+        <div id="region-map-container" style="width: 100%; flex-grow: 1; border: 2px solid #444; border-radius: 8px; margin-bottom: 10px; z-index: 1;"></div>
+        <div class="footer-buttons">
+            <button class="outline-btn" onclick="closeRegionSelector()">Back to Command</button>
         </div>
     </div>
 
@@ -687,6 +717,7 @@
     <script>
         let db = null;
         let radarMap = null;
+        let regionMap = null;
         let radarLayerGroup = null;
         let radarPathGroup = null;
         let radarCountdown = null;
@@ -698,6 +729,7 @@
         
         let currentRadarCallsign = "";
         let currentRadarPlanes = [];
+        let currentRegionConfig = null; // Used to override 1-10 level settings
         
         let pathsVisible = false;
         let originVisible = false;
@@ -721,9 +753,16 @@
             { name: "ASIA-EAST", lat: 35, lng: 135 }
         ];
 
+        // The Tactical Map Regions
+        const TACTICAL_REGIONS = [
+            { id: "eu", name: "EU-CENTRAL", lat: 50, lng: 10, color: "#2ecc71", difficulty: "EASY", planes: 15, hints: 4, timeMs: 600000, radius: 800000, latOffset: 7, lngOffset: 10 },
+            { id: "us", name: "US-EAST", lat: 38, lng: -78, color: "#f39c12", difficulty: "NORMAL", planes: 35, hints: 6, timeMs: 300000, radius: 1200000, latOffset: 12, lngOffset: 18 },
+            { id: "as", name: "ASIA-EAST", lat: 35, lng: 135, color: "#e74c3c", difficulty: "HARD", planes: 65, hints: 8, timeMs: 180000, radius: 2000000, latOffset: 20, lngOffset: 30 }
+        ];
+
         const CITIES = ["LONDON", "NEW YORK", "TOKYO", "PARIS", "DUBAI", "SYDNEY", "LOS ANGELES", "CHICAGO", "HONG KONG", "SINGAPORE", "BERLIN", "ROME", "MADRID", "TORONTO", "MUMBAI", "SAO PAULO", "MEXICO CITY", "CAIRO", "MOSCOW", "BEIJING", "SEOUL", "AMSTERDAM", "ISTANBUL", "BANGKOK", "KUALA LUMPUR", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON", "MONTREAL", "VANCOUVER", "BUENOS AIRES", "BOGOTA", "SANTIAGO", "LIMA", "CAPE TOWN", "JOHANNESBURG", "NAIROBI", "DELHI", "JAKARTA", "MANILA", "SHANGHAI", "TAIPEI", "OSAKA"];
         
-        // 10 Level Escalation Curve
+        // 10 Level Escalation Curve (Story Mode)
         const RADAR_LEVEL_CONFIG = {
             1: { latOffset: 5, lngOffset: 8, planes: 8, hints: 2 },
             2: { latOffset: 6, lngOffset: 10, planes: 12, hints: 2 },
@@ -804,7 +843,6 @@
             { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
         ];
 
-        // MISSING VARIABLES FIXED HERE:
         const RUNWAY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="32" viewBox="0 0 128 32"><rect width="128" height="32" fill="#333"/><rect x="10" y="14" width="40" height="4" fill="#fff"/></svg>`;
         const THEMES = {
             1: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#87CEEB"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2E8B57"/></svg>` },
@@ -1545,6 +1583,84 @@
             setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
         }
 
+        // ====== NEW: TACTICAL MAP REGION LOGIC ======
+        function openRegionSelector() {
+            document.getElementById('selector-view').classList.remove('active');
+            document.getElementById('region-selector-view').classList.add('active');
+
+            if (!regionMap) {
+                // Initialize map zoomed out to see the world
+                regionMap = L.map('region-map-container', { zoomControl: false, attributionControl: false }).setView([30, 0], 2);
+                cleanMapBase.addTo(regionMap); 
+
+                TACTICAL_REGIONS.forEach(region => {
+                    let circle = L.circle([region.lat, region.lng], {
+                        color: region.color,
+                        fillColor: region.color,
+                        fillOpacity: 0.3,
+                        radius: region.radius,
+                        className: 'tactical-zone'
+                    }).addTo(regionMap);
+
+                    circle.bindTooltip(`<b>${region.name}</b><br>Diff: <span style="color:${region.color}">${region.difficulty}</span>`, { permanent: true, direction: "center", className: "region-label" });
+                    
+                    circle.on('click', () => {
+                        startCustomRadarMission(region);
+                    });
+                });
+            }
+            
+            setTimeout(() => { regionMap.invalidateSize(); }, 300);
+        }
+
+        function closeRegionSelector() {
+            document.getElementById('region-selector-view').classList.remove('active');
+            document.getElementById('selector-view').classList.add('active');
+        }
+
+        function startCustomRadarMission(region) {
+            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) { triggerGameOver(); return; }
+
+            closeRegionSelector();
+            currentRegionConfig = region; // Override the 1-10 level settings
+            
+            document.getElementById('selector-view').classList.remove('active');
+            const radarView = document.getElementById('radar-view');
+            radarView.classList.remove('active');
+            void radarView.offsetWidth;
+            radarView.classList.add('active');
+            
+            pathsVisible = false;
+            originVisible = false;
+            altVisible = false;
+            origCityVisible = false;
+            destCityVisible = false;
+            compassVisible = false;
+            currentMapStyle = 'CLEAN'; 
+            radarTimeMs = region.timeMs; 
+            
+            document.getElementById('radar-info-body').classList.add('open');
+            document.getElementById('radar-accordion-header').classList.add('open');
+            document.querySelector('.acc-icon').textContent = "[-]";
+            document.querySelector('.lvl-text').textContent = `TACTICAL: ${region.difficulty}`;
+            
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (!radarMap) {
+                        radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
+                        cleanMapBase.addTo(radarMap);
+                        radarLayerGroup = L.layerGroup().addTo(radarMap);
+                        radarPathGroup = L.layerGroup().addTo(radarMap);
+                    }
+                    radarMap.invalidateSize(); 
+                    
+                    startRadarTimer(); 
+                    startRadarMission();
+                });
+            });
+        }
+
+        // Standard 1-10 Radar
         function openRadar() {
             if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) { triggerGameOver(); return; }
             
@@ -1554,6 +1670,7 @@
             void radarView.offsetWidth;
             radarView.classList.add('active');
             
+            currentRegionConfig = null; // Clear tactical override
             pathsVisible = false;
             originVisible = false;
             altVisible = false;
@@ -1578,14 +1695,6 @@
                         radarPathGroup = L.layerGroup().addTo(radarMap);
                     }
                     radarMap.invalidateSize(); 
-                    
-                    pathsVisible = false;
-                    originVisible = false;
-                    altVisible = false;
-                    origCityVisible = false;
-                    destCityVisible = false;
-                    compassVisible = false;
-                    currentMapStyle = 'CLEAN'; 
 
                     startRadarTimer(); 
                     startRadarMission();
@@ -1641,8 +1750,14 @@
         function startRadarMission() {
             const textEl = document.getElementById('radar-screen-text');
             
-            const config = RADAR_LEVEL_CONFIG[radarLevel];
-            document.querySelector('.lvl-text').textContent = `LEVEL ${radarLevel} OF 10`;
+            // USE EITHER TACTICAL OVERRIDE OR 1-10 STORY MODE CONFIG
+            const config = currentRegionConfig || RADAR_LEVEL_CONFIG[radarLevel];
+            
+            if (currentRegionConfig) {
+                document.querySelector('.lvl-text').textContent = `TACTICAL: ${config.difficulty}`;
+            } else {
+                document.querySelector('.lvl-text').textContent = `LEVEL ${radarLevel} OF 10`;
+            }
             
             pathsVisible = false;
             originVisible = false;
@@ -1682,16 +1797,28 @@
             document.getElementById('toggle-map-btn').style.color = "var(--radar-green)";
             if (radarMap && radarMap.hasLayer(cleanMapLabels)) radarMap.removeLayer(cleanMapLabels);
             
-            const center = RADAR_CENTERS[Math.floor(Math.random() * RADAR_CENTERS.length)];
-            const rLat = center.lat + (Math.random() * 10 - 5);
-            const rLng = center.lng + (Math.random() * 10 - 5);
+            // Setup coordinates
+            let rLat, rLng, lamin, lamax, lomin, lomax, centerName;
+
+            if (currentRegionConfig) {
+                // Fixed coordinates for Tactical Mode
+                rLat = config.lat;
+                rLng = config.lng;
+                centerName = config.name;
+            } else {
+                // Random coordinates for Story Mode
+                const center = RADAR_CENTERS[Math.floor(Math.random() * RADAR_CENTERS.length)];
+                rLat = center.lat + (Math.random() * 10 - 5);
+                rLng = center.lng + (Math.random() * 10 - 5);
+                centerName = center.name;
+            }
             
-            const lamin = rLat - config.latOffset;
-            const lamax = rLat + config.latOffset;
-            const lomin = rLng - config.lngOffset;
-            const lomax = rLng + config.lngOffset;
+            lamin = rLat - config.latOffset;
+            lamax = rLat + config.latOffset;
+            lomin = rLng - config.lngOffset;
+            lomax = rLng + config.lngOffset;
             
-            textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${center.name}...<span class='blinking-cursor'>_</span>`;
+            textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${centerName}...<span class='blinking-cursor'>_</span>`;
             
             if (radarAnimFrame) cancelAnimationFrame(radarAnimFrame);
             radarLayerGroup.clearLayers();
@@ -1821,7 +1948,9 @@
             const textEl = document.getElementById('radar-screen-text');
             const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
             currentRadarCallsign = targetPlane.callsign;
-            const config = RADAR_LEVEL_CONFIG[radarLevel];
+            
+            // Dynamic config for hints calculation
+            const config = currentRegionConfig || RADAR_LEVEL_CONFIG[radarLevel];
             
             textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br><div style="margin-top:8px; color:#aaa;">DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span></div>`;
             plotPlanesOnRadar();
@@ -2020,6 +2149,7 @@
                 if (revealedIndex > actualCallsign.length) {
                     clearInterval(encryptionInterval);
                     
+                    // ======== WIN CONDITION ========
                     if (p.callsign === currentRadarCallsign) {
                         titleEl.textContent = "TARGET LOCKED";
                         titleEl.style.color = "var(--gauge-green)";
@@ -2030,30 +2160,57 @@
                         p.showPing = true;
                         if(p.marker) p.marker.setIcon(createPlaneIcon(p));
 
-                        if (radarLevel < 10) {
-                            descEl.innerHTML = "<span style='color:var(--brand-gold)'>PROCEED TO NEXT SECTOR...</span>";
-                            setTimeout(() => {
-                                document.getElementById('intercept-overlay').style.display = 'none';
-                                radarLevel++;
-                                startRadarMission();
-                                pendingInterceptPlane = null;
-                            }, 2500);
-                        } else {
+                        // IF TACTICAL MODE: Single win & reward
+                        if (currentRegionConfig) {
                             radarTimeMs = 0; 
                             clearInterval(radarCountdown);
                             
-                            globalState.extraFuel += 5000;
+                            let reward = 1000;
+                            if (currentRegionConfig.difficulty === "NORMAL") reward = 2500;
+                            if (currentRegionConfig.difficulty === "HARD") reward = 5000;
+
+                            globalState.extraFuel += reward;
                             saveState(); updateMiniFuelUI();
                             
-                            descEl.innerHTML = "MISSION COMPLETE<br><strong style='color:var(--brand-gold)'>+5000L AUX TANK SECURED</strong>";
+                            descEl.innerHTML = `MISSION COMPLETE<br><strong style='color:var(--brand-gold)'>+${reward}L AUX TANK SECURED</strong>`;
 
                             setTimeout(() => {
                                 document.getElementById('intercept-overlay').style.display = 'none';
                                 closeRadar();
                                 pendingInterceptPlane = null;
                             }, 3500);
+
+                        } 
+                        // IF STORY MODE (1-10 Levels)
+                        else {
+                            if (radarLevel < 10) {
+                                descEl.innerHTML = "<span style='color:var(--brand-gold)'>PROCEED TO NEXT SECTOR...</span>";
+                                setTimeout(() => {
+                                    document.getElementById('intercept-overlay').style.display = 'none';
+                                    radarLevel++;
+                                    startRadarMission();
+                                    pendingInterceptPlane = null;
+                                }, 2500);
+                            } else {
+                                radarTimeMs = 0; 
+                                clearInterval(radarCountdown);
+                                
+                                globalState.extraFuel += 5000;
+                                saveState(); updateMiniFuelUI();
+                                
+                                descEl.innerHTML = "STORY MISSION COMPLETE<br><strong style='color:var(--brand-gold)'>+5000L AUX TANK SECURED</strong>";
+
+                                setTimeout(() => {
+                                    document.getElementById('intercept-overlay').style.display = 'none';
+                                    closeRadar();
+                                    pendingInterceptPlane = null;
+                                }, 3500);
+                            }
                         }
-                    } else {
+
+                    } 
+                    // ====== LOSE CONDITION ======
+                    else {
                         titleEl.textContent = "WRONG TARGET";
                         titleEl.style.color = "var(--brand-red)";
                         descEl.innerHTML = "Signature mismatch.<br>Penalty: -15s";

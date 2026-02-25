@@ -27,6 +27,7 @@
             --gauge-green: #2ecc71;
             --gauge-orange: #f39c12;
             --radar-green: #33ff33;
+            --aux-blue: #3498db;
         }
         * { box-sizing: border-box; }
         
@@ -311,14 +312,6 @@
         /* The custom transparent masking box for REG texts */
         .radar-dest-label { pointer-events: none; }
 
-        /* Floating messaging */
-        #radar-message-container {
-            position: relative; z-index: 10; margin-top: auto; display: flex; justify-content: center; width: 100%; height: 30px; pointer-events: none;
-        }
-        #radar-message { font-size: 1rem; text-align: center; font-weight: bold; padding: 4px 12px; border-radius: 4px; display: none; }
-        #radar-message.success { color: var(--gauge-green); text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.8); border: 1px solid var(--gauge-green); box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); display: inline-block;} 
-        #radar-message.fail { color: var(--brand-red); text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.8); border: 1px solid var(--brand-red); box-shadow: 0 0 10px rgba(215, 25, 32, 0.4); display: inline-block;}
-
         /* Regular game message */
         #message { position: relative; z-index: 10; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
@@ -426,9 +419,20 @@
             <h2 id="pilot-greeting">Welcome Pilot</h2>
             <div class="fuel-tank-container">
                 <div class="fuel-label">Global Fuel Reserves</div>
-                <div class="fuel-value"><span id="total-fuel-display">4000</span></div>
+                <div class="fuel-value">
+                    <span id="total-fuel-display">4000</span><span style="font-size:1.2rem; color:#aaa;">L</span>
+                </div>
                 <div class="fuel-bar-bg"><div class="fuel-bar-fill" id="fuel-bar"></div></div>
-                <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;"></div>
+                
+                <div id="aux-fuel-container" style="display:none; margin-top:15px; border-top: 1px dashed #444; padding-top:10px;">
+                    <div class="fuel-label" style="color:var(--aux-blue);">AUXILIARY TANK</div>
+                    <div class="fuel-value" style="font-size: 1.8rem; color:var(--aux-blue);">
+                        <span id="aux-fuel-value">1500</span><span style="font-size:0.9rem; color:#888;">L</span>
+                    </div>
+                    <div class="fuel-bar-bg" style="height:6px;"><div class="fuel-bar-fill" id="aux-fuel-bar" style="background:var(--aux-blue);"></div></div>
+                </div>
+
+                <div id="unlock-message" style="font-size: 0.75rem; margin-top:10px; color:#888;"></div>
             </div>
         </div>
 
@@ -437,7 +441,7 @@
         <div class="footer-buttons">
             <button class="radar-btn" onclick="openRadar()">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4-8c0 2.21-1.79 4-4 4s-4-1.79-4-4 1.79-4 4-4 4 1.79 4 4z"/></svg>
-                LIVE RADAR OP
+                LIVE RADAR OPS
             </button>
             <button class="outline-btn" onclick="openLeaderboard()">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 3h-2V1h-2v2H9V1H7v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zm0-12H5V5h14v2zm-7 4H7v5h5v-5z"/></svg> 
@@ -454,6 +458,7 @@
             <div class="mini-fuel" id="current-fuel-display">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>
                 <span>4000</span>
+                <span id="aux-fuel-display" style="color:var(--aux-blue); font-size:1rem; margin-left:5px; display:none;">+1500</span>
             </div>
         </div>
         
@@ -570,23 +575,12 @@
         </div>
     </div>
 
-    <div id="leaderboard-view" class="view-section">
-        <div style="flex-shrink: 0; width:100%; text-align:center;">
-            <h1>Global Standings</h1>
-            <h2 style="margin-bottom: 10px;">Top Fuel Reserves</h2>
-        </div>
-        <div id="leaderboard-list">Connecting to HQ...</div>
-        <div class="footer-buttons">
-            <button class="primary-btn" onclick="closeLeaderboard()">Back to Command</button>
-        </div>
-    </div>
-
     <div id="radar-view" class="view-section">
         
         <div class="radar-top-accordion">
             <div class="radar-accordion-header open" id="radar-accordion-header" onclick="toggleRadarInfo()">
-                <div class="radar-accordion-title">[-] TARGET INTEL</div>
-                <div id="radar-timer">05:00:00</div>
+                <div class="radar-accordion-title">[-] TARGET INTEL (Lvl 1/3)</div>
+                <div id="radar-timer">10:00:00</div>
             </div>
             <div class="radar-accordion-body open" id="radar-info-body">
                 <div class="radar-content" id="radar-screen-text">
@@ -609,7 +603,7 @@
             <div id="radar-success-overlay">
                 <h2 class="success-title">TARGET LOCKED</h2>
                 <div class="success-callsign" id="success-callsign-display">CALLSIGN</div>
-                <div class="success-reward">+250L FUEL</div>
+                <div class="success-reward">PROCEED TO NEXT SECTOR...</div>
             </div>
 
             <div class="compass-pt compass-n">N</div>
@@ -618,11 +612,7 @@
             <div class="compass-pt compass-w">W</div>
         </div>
         
-        <div id="radar-message-container">
-            <div id="radar-message"></div>
-        </div>
-
-        <div class="footer-buttons">
+        <div class="footer-buttons" style="border: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;">
              <button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button>
         </div>
     </div>
@@ -634,9 +624,10 @@
         let radarLayerGroup = null;
         let radarPathGroup = null;
         let radarCountdown = null;
-        let radarTimeMs = 300000; 
+        let radarTimeMs = 600000; // 10 minutes
         let lastTimerTick = 0;
         let encryptionInterval = null;
+        let radarLevel = 1;
         
         let currentRadarCallsign = "";
         let currentRadarPlanes = [];
@@ -650,12 +641,18 @@
 
         const RADAR_COLORS = ['#33FF33', '#00FFFF', '#FFCC00', '#FF3366', '#CC99FF', '#00FFCC', '#FF9933', '#99FF33', '#33CCFF', '#FF6699', '#FFFF66', '#FF5555'];
 
-        const RADAR_REGIONS = [
-            { name: "EU-CENTRAL", lamin: 45, lamax: 55, lomin: -5, lomax: 15 },
-            { name: "US-EAST", lamin: 30, lamax: 45, lomin: -85, lomax: -70 },
-            { name: "US-WEST", lamin: 30, lamax: 45, lomin: -125, lomax: -110 },
-            { name: "ASIA-EAST", lamin: 30, lamax: 40, lomin: 125, lomax: 140 }
+        const RADAR_CENTERS = [
+            { name: "EU-CENTRAL", lat: 50, lng: 10 },
+            { name: "US-EAST", lat: 38, lng: -78 },
+            { name: "US-WEST", lat: 38, lng: -118 },
+            { name: "ASIA-EAST", lat: 35, lng: 135 }
         ];
+        
+        const RADAR_LEVEL_CONFIG = {
+            1: { latOffset: 5, lngOffset: 8, planes: 8 },
+            2: { latOffset: 10, lngOffset: 15, planes: 14 },
+            3: { latOffset: 15, lngOffset: 25, planes: 22 }
+        };
 
         const STARTING_GLOBAL_FUEL = 4000;
         const REFUEL_AMOUNT = 2000; 
@@ -665,6 +662,7 @@
         let globalState = {
             username: null,
             currentFuel: STARTING_GLOBAL_FUEL,
+            extraFuel: 0,
             levels: [],
             hasSmartBomb: true,
             hasSeenTakeoffTutorial: false,
@@ -678,10 +676,7 @@
             bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0
         };
 
-        // --- 2. FIREBASE CONFIGURATION ---
-        const firebaseConfig = {
-            // PASTE YOUR KEYS HERE
-        };
+        const firebaseConfig = {};
 
         try {
             if (typeof firebase !== 'undefined') {
@@ -690,7 +685,6 @@
             }
         } catch(e) { console.warn("Firebase uninitialized or blocked.", e); }
 
-        // --- 3. GAME DATA CONSTANTS ---
         const ICONS = {
             plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
             jet: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12,2 L14,10 L22,14 L22,16 L14,15 L14,19 L16,21 L16,22 L12,21 L8,22 L8,21 L10,19 L10,15 L2,16 L2,14 L10,10 Z"/></svg>`,
@@ -723,22 +717,7 @@
             { type: 'trivia', question: "What caused the 1977 Tenerife airport disaster, the deadliest accident in aviation history?", options: ["A runway collision in thick fog", "A mid-air collision over the Atlantic", "Dual engine failure due to volcanic ash"], correctIdx: 0, name: "Tenerife Disaster" },
             { type: 'trivia', question: "What forced US Airways Flight 1549 (the 'Miracle on the Hudson') to ditch into the river?", options: ["Complete loss of hydraulic fluid", "A flock of geese struck both engines", "Fuel starvation due to a leak"], correctIdx: 1, name: "Hudson River Ditching" },
             { type: 'trivia', question: "Why did Air Canada Flight 143 (the 'Gimli Glider') run out of fuel mid-flight?", options: ["The fuel tanks were punctured", "A mix-up between pounds and kilograms", "The pilots forgot to switch fuel tanks"], correctIdx: 1, name: "Gimli Glider Incident" },
-            { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" },
-            { type: 'trivia', question: "What caused the tragic explosion of TWA Flight 800 in 1996?", options: ["A short circuit igniting fuel tank vapors", "A surface-to-air missile", "An uncontained engine failure"], correctIdx: 0, name: "TWA Flight 800" },
-            { type: 'trivia', question: "The fatal stall of Air France Flight 447 over the Atlantic was initiated by:", options: ["Ice crystals blocking the Pitot tubes", "Total hydraulic failure", "A mid-air collision with a weather balloon"], correctIdx: 0, name: "Air France 447" },
-            { type: 'trivia', question: "What led to the devastating crash of American Airlines Flight 191 in Chicago (1979)?", options: ["Improper forklift maintenance snapping the engine pylon", "Severe microburst windshear", "Rudder hardover due to a jammed valve"], correctIdx: 0, name: "American Airlines 191" },
-            { type: 'trivia', question: "The 1988 Pan Am Flight 103 disaster over Lockerbie was caused by:", options: ["A terrorist bomb hidden in a cassette player", "Catastrophic metal fatigue", "Dual engine flameout from volcanic ash"], correctIdx: 0, name: "Lockerbie Bombing" },
-            { type: 'trivia', question: "How did the pilots of United Airlines Flight 232 miraculously steer the plane after total hydraulic loss?", options: ["By using differential engine thrust", "By dropping the landing gear to create drag", "By manually pulling cables under the floorboards"], correctIdx: 0, name: "United Airlines 232" },
-            { type: 'trivia', question: "ValuJet Flight 592 crashed into the Everglades after a fire broke out caused by:", options: ["Improperly stored chemical oxygen generators", "A lithium-ion battery in passenger luggage", "A massive fuel leak in the cargo hold"], correctIdx: 0, name: "ValuJet Flight 592" },
-            { type: 'trivia', question: "The fatal in-flight fire on Swissair Flight 111 (1998) originated from:", options: ["Flammable insulation around the in-flight entertainment system", "A short circuit in the cockpit coffee maker", "An exploding auxiliary power unit (APU)"], correctIdx: 0, name: "Swissair Flight 111" },
-            { type: 'trivia', question: "What mechanical failure sent Alaska Airlines Flight 261 into an uncontrollable dive?", options: ["Stripped threads on the horizontal stabilizer jackscrew", "A jammed elevator control cable", "Asymmetric thrust reverser deployment"], correctIdx: 0, name: "Alaska Airlines 261" },
-            { type: 'trivia', question: "The 'ghost plane' crash of Helios Airways Flight 522 was traced back to:", options: ["The pressurization switch being left on 'Manual'", "A slow leak in the oxygen masks", "Carbon monoxide leaking into the cabin"], correctIdx: 0, name: "Helios Airways 522" },
-            { type: 'trivia', question: "What caused all four engines to fail on British Airways Flight 9 in 1982?", options: ["Flying through a dense cloud of volcanic ash", "Contaminated jet fuel freezing at high altitude", "A software glitch shutting off fuel valves"], correctIdx: 0, name: "British Airways Flight 9" },
-            { type: 'trivia', question: "Eastern Air Lines Flight 401 crashed into the Everglades because the crew:", options: ["Got distracted by a burnt-out landing gear indicator light", "Ignored ground proximity warnings", "Fell asleep due to extreme fatigue"], correctIdx: 0, name: "Eastern Air Lines 401" },
-            { type: 'trivia', question: "The tragic crash of Aloha Airlines Flight 243 involved the roof tearing off mid-flight due to:", options: ["Extensive metal fatigue and corrosion", "A pressurization valve exploding", "A bird strike shattering the cockpit window"], correctIdx: 0, name: "Aloha Airlines 243" },
-            { type: 'trivia', question: "The Air France Flight 4590 Concorde disaster was initiated when:", options: ["A burst tire propelled debris into the fuel tank", "The supersonic engines stalled from a bird strike", "The landing gear failed to deploy"], correctIdx: 0, name: "Concorde Disaster" },
-            { type: 'trivia', question: "What caused the fatal CFIT (Controlled Flight Into Terrain) of Air New Zealand Flight 901 in Antarctica?", options: ["A navigational coordinate typing error", "Complete whiteout blinding the radar", "A sudden downdraft over Mount Erebus"], correctIdx: 0, name: "Mount Erebus Disaster" },
-            { type: 'trivia', question: "The deadly crashes of two Boeing 737 MAX aircraft were ultimately linked to:", options: ["The MCAS system acting on a single faulty AOA sensor", "Cracks in the horizontal stabilizer", "Software shutting down the auto-throttle prematurely"], correctIdx: 0, name: "Boeing 737 MAX" }
+            { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
         ];
 
         function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
@@ -767,13 +746,21 @@
         const cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
         const cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
 
-        // --- 4. GAME ENGINE LOGIC ---
-        function getOptionsForImage(correctName, isClassified) {
-            const pool = isClassified ? AIRCRAFT_DATA.classified : AIRCRAFT_DATA.standard;
-            let options = [correctName];
-            let others = pool.filter(x => x.name !== correctName).sort(() => Math.random() - 0.5);
-            if(others.length >= 2) { options.push(others[0].name, others[1].name); }
-            return options.sort(() => Math.random() - 0.5);
+        // --- FUEL DRAIN HELPER ---
+        function drainFuel(amount) {
+            if (globalState.extraFuel > 0) {
+                if (globalState.extraFuel >= amount) {
+                    globalState.extraFuel -= amount;
+                } else {
+                    let remainder = amount - globalState.extraFuel;
+                    globalState.extraFuel = 0;
+                    globalState.currentFuel = Math.max(0, globalState.currentFuel - remainder);
+                }
+            } else {
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - amount);
+            }
+            saveState();
+            updateMiniFuelUI();
         }
 
         window.onload = function() {
@@ -806,7 +793,7 @@
                     }
                 });
                 
-                // NEW TAKEOFF TAP ANYWHERE LOGIC
+                // TAKEOFF TAP ANYWHERE LOGIC
                 const tkViewport = document.getElementById('takeoff-viewport');
                 const startPress = (e) => { 
                     if (!tkState.active) return;
@@ -915,11 +902,13 @@
                     if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
                     if(globalState.hasSmartBomb === undefined) globalState.hasSmartBomb = true;
                     if(globalState.hasSeenTakeoffTutorial === undefined) globalState.hasSeenTakeoffTutorial = false;
+                    if(globalState.extraFuel === undefined) globalState.extraFuel = 0;
                 } else {
                     throw new Error("No save");
                 }
             } catch(e) {
                 globalState.currentFuel = STARTING_GLOBAL_FUEL;
+                globalState.extraFuel = 0;
                 globalState.levels = generateGameLevels();
                 globalState.hasSmartBomb = true;
                 globalState.hasSeenTakeoffTutorial = false;
@@ -936,6 +925,17 @@
             document.getElementById('total-fuel-display').textContent = globalState.currentFuel;
             const pct = Math.min(100, Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100));
             document.getElementById('fuel-bar').style.width = pct + "%";
+            
+            // Aux Tank Handling
+            const auxContainer = document.getElementById('aux-fuel-container');
+            if (globalState.extraFuel && globalState.extraFuel > 0) {
+                auxContainer.style.display = 'block';
+                document.getElementById('aux-fuel-value').textContent = globalState.extraFuel;
+                const auxPct = Math.min(100, Math.max(0, (globalState.extraFuel / 1500) * 100));
+                document.getElementById('aux-fuel-bar').style.width = auxPct + "%";
+            } else {
+                auxContainer.style.display = 'none';
+            }
             
             const h1Done = isHangarComplete(1);
             const h2Done = isHangarComplete(2);
@@ -1012,7 +1012,7 @@
                     if (isFuelLocked) {
                         card.className = "level-strip locked";
                         card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${ICONS.fuel}</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
-                    } else if (globalState.currentFuel <= 0 && !levelData.completed && !levelData.failed) {
+                    } else if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0 && !levelData.completed && !levelData.failed) {
                          card.className += " locked"; statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
                          card.onclick = () => triggerGameOver();
                          card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
@@ -1099,7 +1099,7 @@
                     grid.appendChild(tile);
                 }
 
-                if (!lState.completed && globalState.currentFuel > 0) {
+                if (!lState.completed && (globalState.currentFuel > 0 || globalState.extraFuel > 0)) {
                     grid.onpointerdown = handleInteraction; 
                 } else {
                     grid.onpointerdown = null;
@@ -1334,9 +1334,7 @@
             const lState = globalState.levels[activeLevelIdx];
             lState.attempts = (lState.attempts || 0) + 1;
             
-            globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
-            saveState();
-            updateMiniFuelUI();
+            drainFuel(WRONG_GUESS_PENALTY);
 
             if (lState.attempts >= 3) {
                 lState.failed = true;
@@ -1354,13 +1352,13 @@
                 msgEl.className = "fail pop-reveal";
                 void msgEl.offsetWidth;
                 setTimeout(() => {
-                    if(!lState.completed && !lState.failed && globalState.currentFuel > 0 && document.getElementById('takeoff-game-area').style.display !== 'none') {
+                    if(!lState.completed && !lState.failed && (globalState.currentFuel > 0 || globalState.extraFuel > 0) && document.getElementById('takeoff-game-area').style.display !== 'none') {
                         document.getElementById('message').textContent = "";
                         startTakeoff();
                     }
                 }, 1500);
             }
-            if(globalState.currentFuel <= 0) setTimeout(triggerGameOver, 1500);
+            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) setTimeout(triggerGameOver, 1500);
         }
 
         function winTakeoff() {
@@ -1399,18 +1397,18 @@
             if (body.classList.contains('open')) {
                 body.classList.remove('open');
                 header.classList.remove('open');
-                title.textContent = "[+] TARGET INTEL";
+                title.textContent = `[+] TARGET INTEL (Lvl ${radarLevel}/3)`;
             } else {
                 body.classList.add('open');
                 header.classList.add('open');
-                title.textContent = "[-] TARGET INTEL";
+                title.textContent = `[-] TARGET INTEL (Lvl ${radarLevel}/3)`;
             }
             // Trigger map resize so the tile grid re-calculates safely
             setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
         }
 
         function openRadar() {
-            if(globalState.currentFuel <= 0) { triggerGameOver(); return; }
+            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) { triggerGameOver(); return; }
             
             document.getElementById('selector-view').classList.remove('active');
             document.getElementById('radar-view').classList.add('active');
@@ -1419,11 +1417,13 @@
             pathsVisible = false;
             originVisible = false;
             currentMapStyle = 'CLEAN'; 
+            radarLevel = 1;
+            radarTimeMs = 600000; // Reset to 10 minutes
             
             // Open the accordion by default on new mission
             document.getElementById('radar-info-body').classList.add('open');
             document.getElementById('radar-accordion-header').classList.add('open');
-            document.querySelector('.radar-accordion-title').textContent = "[-] TARGET INTEL";
+            document.querySelector('.radar-accordion-title').textContent = "[-] TARGET INTEL (Lvl 1/3)";
             
             document.getElementById('radar-success-overlay').style.display = 'none';
             document.getElementById('radar-message').style.display = 'none';
@@ -1438,6 +1438,7 @@
                         radarPathGroup = L.layerGroup().addTo(radarMap);
                     }
                     radarMap.invalidateSize(); 
+                    startRadarTimer(); // Kick off global 10-minute timer immediately
                     startRadarMission();
                 });
             });
@@ -1446,6 +1447,14 @@
         function startRadarMission() {
             const textEl = document.getElementById('radar-screen-text');
             const msgEl = document.getElementById('radar-message');
+            
+            // Setup Level Configuration
+            const config = RADAR_LEVEL_CONFIG[radarLevel];
+            
+            // Update Headers
+            const titleEl = document.querySelector('.radar-accordion-title');
+            if(titleEl.textContent.includes('[-]')) titleEl.textContent = `[-] TARGET INTEL (Lvl ${radarLevel}/3)`;
+            else titleEl.textContent = `[+] TARGET INTEL (Lvl ${radarLevel}/3)`;
             
             // Reset Button states
             document.getElementById('toggle-paths-btn').textContent = "PATHS: OFF";
@@ -1461,18 +1470,24 @@
             document.getElementById('toggle-map-btn').style.color = "#000";
             if (radarMap && radarMap.hasLayer(cleanMapLabels)) radarMap.removeLayer(cleanMapLabels);
             
-            // Randomly select a sector
-            const region = RADAR_REGIONS[Math.floor(Math.random() * RADAR_REGIONS.length)];
+            // Randomly select a sector center
+            const center = RADAR_CENTERS[Math.floor(Math.random() * RADAR_CENTERS.length)];
+            const rLat = center.lat + (Math.random() * 10 - 5);
+            const rLng = center.lng + (Math.random() * 10 - 5);
             
-            textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${region.name}...<span class='blinking-cursor'>_</span>`;
+            const lamin = rLat - config.latOffset;
+            const lamax = rLat + config.latOffset;
+            const lomin = rLng - config.lngOffset;
+            const lomax = rLng + config.lngOffset;
+            
+            textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${center.name}...<span class='blinking-cursor'>_</span>`;
             msgEl.style.display = "none";
             
-            if(radarCountdown) clearInterval(radarCountdown);
             radarLayerGroup.clearLayers();
             radarPathGroup.clearLayers();
             currentRadarPlanes = [];
 
-            fetch(`https://opensky-network.org/api/states/all?lamin=${region.lamin}&lomin=${region.lomin}&lamax=${region.lamax}&lomax=${region.lomax}`)
+            fetch(`https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`)
             .then(res => res.json())
             .then(data => {
                 if(!data.states || data.states.length === 0) throw new Error("Empty airspace");
@@ -1483,7 +1498,7 @@
                 validAPIPlanes = validAPIPlanes.sort(() => Math.random() - 0.5);
 
                 for (let p of validAPIPlanes) {
-                    if (currentRadarPlanes.length >= 10) break; // Limit total planes
+                    if (currentRadarPlanes.length >= config.planes) break; 
                     
                     const lat = p[6]; const lng = p[5]; const heading = p[10] || 0;
                     
@@ -1525,12 +1540,11 @@
                 const fakeCalls = ["LHT442", "AFR12A", "SWR99B", "BAW505", "RYR77X", "FIN112", "NOR334", "KLM88", "EZY99", "WZZ10", "DAL22", "UAL33"];
                 let attempts = 0;
                 
-                while(currentRadarPlanes.length < 10 && attempts < 100) {
+                while(currentRadarPlanes.length < config.planes && attempts < 100) {
                     attempts++;
-                    const lat = region.lamin + Math.random() * (region.lamax - region.lamin); 
-                    const lng = region.lomin + Math.random() * (region.lomax - region.lomin);
+                    const lat = lamin + Math.random() * (lamax - lamin); 
+                    const lng = lomin + Math.random() * (lomax - lomin);
                     
-                    // Filter: Prevent overlaps in fake data too
                     let isOverlapping = false;
                     for (let cp of currentRadarPlanes) {
                         if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) {
@@ -1628,11 +1642,9 @@
                     radarMap.fitBounds(safeBounds, { padding: [40, 40] });
                 }
             }
-            
-            startRadarTimer(300); // Kick off the MS timer
         }
 
-        // --- CUSTOM MODAL LOGIC & SUCCESS OVERLAY ---
+        // --- CUSTOM MODAL LOGIC & PROGRESSION ---
         function openInterceptModal(plane, marker) {
             if (radarTimeMs <= 0) return;
             pendingInterceptPlane = { data: plane, marker: marker };
@@ -1671,27 +1683,43 @@
             pendingInterceptPlane = null;
             
             if (p.callsign === currentRadarCallsign) {
-                radarTimeMs = 0; // stop timer
-                clearInterval(radarCountdown);
-                
-                globalState.currentFuel += 250;
-                saveState(); updateMiniFuelUI();
-                
-                // Show satisfying success screen
                 const overlay = document.getElementById('radar-success-overlay');
                 document.getElementById('success-callsign-display').textContent = p.callsign;
                 document.getElementById('success-callsign-display').style.color = p.color;
-                overlay.style.display = 'flex';
                 
                 marker.setIcon(L.divIcon({
                     html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
                     className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
                 }));
 
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    closeRadar();
-                }, 3000);
+                // PROGRESSION LOGIC
+                if (radarLevel < 3) {
+                    document.querySelector('.success-title').textContent = "TARGET LOCKED";
+                    document.querySelector('.success-reward').textContent = "PROCEED TO NEXT SECTOR...";
+                    overlay.style.display = 'flex';
+                    
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        radarLevel++;
+                        startRadarMission();
+                    }, 2500);
+                } else {
+                    // FINAL WIN
+                    radarTimeMs = 0; 
+                    clearInterval(radarCountdown);
+                    
+                    globalState.extraFuel += 1500;
+                    saveState(); updateMiniFuelUI();
+                    
+                    document.querySelector('.success-title').textContent = "MISSION COMPLETE";
+                    document.querySelector('.success-reward').textContent = "+1500L AUX TANK SECURED";
+                    overlay.style.display = 'flex';
+
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        closeRadar();
+                    }, 3500);
+                }
             } else {
                 marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
                 
@@ -1796,11 +1824,11 @@
             let s = totalSeconds % 60;
             let ms = Math.floor((radarTimeMs % 1000) / 10); // 0-99
             
-            tDiv.textContent = `0${m}:${s < 10 ? "0"+s : s}:${ms < 10 ? "0"+ms : ms}`;
+            // Allow formatting to handle values over 9 minutes cleanly
+            tDiv.textContent = `${m < 10 ? "0"+m : m}:${s < 10 ? "0"+s : s}:${ms < 10 ? "0"+ms : ms}`;
         }
 
-        function startRadarTimer(seconds) {
-            radarTimeMs = seconds * 1000;
+        function startRadarTimer() {
             lastTimerTick = Date.now();
             updateTimerDisplay(getAssistPenalty());
             
@@ -1822,14 +1850,10 @@
                     const msgEl = document.getElementById('radar-message');
                     msgEl.style.display = "inline-block";
                     msgEl.className = "fail pop-reveal";
-                    msgEl.textContent = "TARGET ESCAPED (-100L)";
+                    msgEl.textContent = "TIME OUT! MISSION FAILED.";
                     void msgEl.offsetWidth; // Animation trigger
                     
-                    globalState.currentFuel = Math.max(0, globalState.currentFuel - 100);
-                    saveState(); updateMiniFuelUI();
-                    
-                    if(globalState.currentFuel <= 0) setTimeout(triggerGameOver, 1500);
-                    else setTimeout(closeRadar, 2500);
+                    setTimeout(closeRadar, 2500);
                 } else {
                     updateTimerDisplay(penalty);
                 }
@@ -1875,7 +1899,7 @@
 
         function handleInteraction(e) {
             const lState = globalState.levels[activeLevelIdx];
-            if (lState.completed || globalState.currentFuel <= 0) return;
+            if (lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
             const hidden = Array.from(document.querySelectorAll('.grid-piece:not(.revealed)'));
             if (hidden.length === 0) return;
             const tile = hidden[Math.floor(Math.random() * hidden.length)];
@@ -1883,42 +1907,43 @@
             tile.classList.add('revealed'); 
             if(!lState.revealedTiles) lState.revealedTiles = [];
             lState.revealedTiles.push(idx);
-            globalState.currentFuel = Math.max(0, globalState.currentFuel - TILE_COST); saveState(); updateMiniFuelUI();
+            
+            drainFuel(TILE_COST);
             
             let cx = e.clientX; let cy = e.clientY;
             if(e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
             if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
             
-            if (globalState.currentFuel <= 0) triggerGameOver();
+            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver();
         }
 
         function submitImageGuess(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx];
-            if(lState.completed || globalState.currentFuel <= 0) return;
+            if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
             if(selectedIndex === lState.correctIdx) {
                 const btn = document.getElementById('img-opt-' + selectedIndex);
                 btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
                 endGame(true, "Target Verified");
             } else {
-                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY); saveState(); updateMiniFuelUI();
+                drainFuel(WRONG_GUESS_PENALTY);
                 const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash');
                 setTimeout(() => btn.classList.remove('wrong-flash'), 500);
-                if (globalState.currentFuel <= 0) triggerGameOver();
+                if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver();
             }
         }
 
         function submitTrivia(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx];
-            if(lState.completed || globalState.currentFuel <= 0) return;
+            if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
             if(selectedIndex === lState.correctIdx) {
                 const btn = document.getElementById('btn-opt-' + selectedIndex);
                 btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
                 endGame(true, "Analysis Correct");
             } else {
-                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY); saveState(); updateMiniFuelUI();
+                drainFuel(WRONG_GUESS_PENALTY);
                 const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash');
                 setTimeout(() => btn.classList.remove('wrong-flash'), 500);
-                if (globalState.currentFuel <= 0) triggerGameOver();
+                if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver();
             }
         }
 
@@ -1944,8 +1969,16 @@
         function closeRefuel() { document.getElementById('refuel-overlay').style.display = 'none'; saveAndExit(); }
         
         function updateMiniFuelUI() {
-            const el = document.getElementById('current-fuel-display'); el.querySelector('span').textContent = globalState.currentFuel;
-            if (globalState.currentFuel <= 200) el.classList.add('danger'); else el.classList.remove('danger');
+            const el = document.getElementById('current-fuel-display'); 
+            el.querySelector('span:nth-of-type(1)').textContent = globalState.currentFuel;
+            const auxEl = document.getElementById('aux-fuel-display');
+            if (globalState.extraFuel > 0) {
+                auxEl.style.display = 'inline';
+                auxEl.textContent = `+${globalState.extraFuel}`;
+            } else {
+                auxEl.style.display = 'none';
+            }
+            if (globalState.currentFuel <= 200 && globalState.extraFuel === 0) el.classList.add('danger'); else el.classList.remove('danger');
         }
 
         function saveAndExit() { 

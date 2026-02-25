@@ -247,7 +247,6 @@
         
         #tk-weather-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 5; }
         .weather-rain { width: 150%; height: 150%; top: -25%; left: -25%; background-image: repeating-linear-gradient(-15deg, transparent, transparent 15px, rgba(255,255,255,0.4) 16px, transparent 17px); background-size: 100px 100%; animation: rainFall 0.3s linear infinite; }
-        @keyframes rainFall { from { transform: translateY(-50px) translateX(10px); } to { transform: translateY(50px) translateX(-10px); } }
         .weather-fog { width: 200%; height: 100%; top: 0; left: -50%; background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 60%); background-size: 50% 100%; background-repeat: repeat-x; animation: fogDrift 5s linear infinite alternate; filter: blur(8px); opacity: 0.8; }
         @keyframes fogDrift { from { transform: translateX(-15%); } to { transform: translateX(15%); } }
         
@@ -751,7 +750,8 @@
             levels: [],
             hasSeenTakeoffTutorial: false,
             world1Complete: false,
-            world2Complete: false
+            world2Complete: false,
+            world3Complete: false
         };
 
         let tkState = { 
@@ -803,6 +803,14 @@
             { type: 'trivia', question: "Why did Air Canada Flight 143 (the 'Gimli Glider') run out of fuel mid-flight?", options: ["The fuel tanks were punctured", "A mix-up between pounds and kilograms", "The pilots forgot to switch fuel tanks"], correctIdx: 1, name: "Gimli Glider Incident" },
             { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
         ];
+
+        // MISSING VARIABLES FIXED HERE:
+        const RUNWAY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="32" viewBox="0 0 128 32"><rect width="128" height="32" fill="#333"/><rect x="10" y="14" width="40" height="4" fill="#fff"/></svg>`;
+        const THEMES = {
+            1: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#87CEEB"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2E8B57"/></svg>` },
+            2: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#5F9EA0"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#556B2F"/></svg>` },
+            3: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2F4F4F"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#A9A9A9"/></svg>` }
+        };
 
         function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
 
@@ -1016,6 +1024,7 @@
                     
                     if(globalState.hasSeenTakeoffTutorial === undefined) globalState.hasSeenTakeoffTutorial = false;
                     if(globalState.extraFuel === undefined) globalState.extraFuel = 0;
+                    if(globalState.world3Complete === undefined) globalState.world3Complete = false;
                 } else {
                     throw new Error("No save");
                 }
@@ -1026,6 +1035,9 @@
                 globalState.smartBombs = 1;
                 globalState.hasSeenTakeoffTutorial = false;
                 globalState.username = null;
+                globalState.world1Complete = false;
+                globalState.world2Complete = false;
+                globalState.world3Complete = false;
             }
         }
 
@@ -1051,9 +1063,11 @@
             
             const h1Done = isHangarComplete(1);
             const h2Done = isHangarComplete(2);
+            const h3Done = isHangarComplete(3);
             
-            if (h1Done && !globalState.world1Complete) { globalState.world1Complete = true; triggerRefuel(); }
-            if (h2Done && !globalState.world2Complete) { globalState.world2Complete = true; triggerRefuel(); }
+            if (h1Done && !globalState.world1Complete) { globalState.world1Complete = true; triggerRefuel(); awardSmartBomb(); }
+            if (h2Done && !globalState.world2Complete) { globalState.world2Complete = true; triggerRefuel(); awardSmartBomb(); }
+            if (h3Done && !globalState.world3Complete) { globalState.world3Complete = true; triggerRefuel(); awardSmartBomb(); }
 
             const unlockMsg = document.getElementById('unlock-message');
             if(h2Done) unlockMsg.innerHTML = "Classified Ops: <span style='color:#2ecc71'>GRANTED</span>";
@@ -1258,7 +1272,7 @@
                 weather.className = '';
                 runwaySurf.style.backgroundImage = getSvgUri(RUNWAY_SVG);
 
-                const th = THEMES[lState.hangar];
+                const th = THEMES[lState.hangar] || THEMES[1];
                 sky.style.backgroundImage = getSvgUri(th.sky);
                 city.style.backgroundImage = getSvgUri(th.city);
                 ground.style.backgroundImage = getSvgUri(th.ground);
@@ -1346,11 +1360,11 @@
             tkState.speed += acceleration;
             tkState.speed = Math.max(0, Math.min(220, tkState.speed));
 
-            if (tkState.pressing) tkState.pitchVelocity += 0.04; 
-            else tkState.pitchVelocity -= 0.02; 
+            if (tkState.pressing) tkState.pitchVelocity += 0.05; 
+            else tkState.pitchVelocity -= 0.03; 
             
-            tkState.pitchVelocity *= 0.95; 
-            tkState.pitchVelocity = Math.max(-0.6, Math.min(0.8, tkState.pitchVelocity)); 
+            tkState.pitchVelocity *= 0.90; 
+            tkState.pitchVelocity = Math.max(-0.8, Math.min(1.0, tkState.pitchVelocity)); 
             
             tkState.pitch += tkState.pitchVelocity;
             tkState.pitch = Math.max(0, Math.min(30, tkState.pitch));
@@ -1502,8 +1516,6 @@
             msgEl.textContent = `PERFECT TAKEOFF! +${bonus}L BONUS`;
             msgEl.className = "success pop-reveal";
             void msgEl.offsetWidth; 
-            
-            awardSmartBomb();
             
             saveState();
             if (isAllWorldsComplete()) syncScoreToCloud();
@@ -2322,8 +2334,6 @@
                 if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed'));
                 triggerConfetti(); document.getElementById('level-title').textContent = lState.name; 
                 document.getElementById('smart-bomb-btn').style.display = "none"; 
-                
-                awardSmartBomb();
                 
                 saveState();
                 if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);

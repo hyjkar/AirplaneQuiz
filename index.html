@@ -59,18 +59,27 @@
         h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--brand-dark); margin: 0; text-align: center; text-transform: uppercase; }
         h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
 
+        /* --- APP SWIPE ANIMATION --- */
         .view-section { 
             width: 100%; max-width: 500px; height: 100%; 
             display: none; flex-direction: column; align-items: center; 
-            min-height: 0; transition: filter 2s ease; position: relative; z-index: 1;
+            min-height: 0; position: relative; z-index: 1;
         }
-        .view-section.active { display: flex; }
+        .view-section.active { 
+            display: flex; 
+            animation: swipeIn 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes swipeIn {
+            0% { transform: translateX(30px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
         .gray-out { filter: grayscale(100%) contrast(1.2); }
 
         .modal-box {
             background: #222; border: 2px solid var(--brand-gold);
             padding: 25px; border-radius: 12px; width: 100%; max-width: 350px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s ease;
         }
         .modal-box.danger { border-color: var(--brand-red); box-shadow: 0 0 20px rgba(215, 25, 32, 0.2); }
         .modal-box.success { border-color: var(--gauge-green); box-shadow: 0 0 20px rgba(46, 204, 113, 0.2); }
@@ -202,7 +211,6 @@
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
         .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
         
-        /* RESTORED STABLE VIEWPORT (Not Fullscreen) */
         #takeoff-viewport { 
             position: relative; width: 100%; flex-grow: 1; min-height: 250px; max-height: 400px;
             border: 4px solid #222; border-radius: 8px; overflow: hidden; margin: 0; 
@@ -245,7 +253,6 @@
 
         /* --- VISUAL RADAR MODE --- */
         #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; gap: 0; }
-        #radar-view.active { display: flex; }
         
         /* Floating Accordion Window */
         .radar-top-accordion {
@@ -293,18 +300,6 @@
             z-index: 0; border: none; border-radius: 0; margin: 0; box-shadow: none; background: #000;
         }
         #radar-map-container { width: 100%; height: 100%; background: #000; z-index: 1; }
-        
-        /* Success overlay inside the map */
-        #radar-success-overlay {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5, 20, 5, 0.95);
-            z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center;
-            color: var(--radar-green); font-family: 'Share Tech Mono', monospace; text-align: center;
-            animation: radarFadeIn 0.3s ease-out forwards;
-        }
-        @keyframes radarFadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        .success-title { font-size: 2rem; margin: 0 0 5px 0; text-shadow: 0 0 15px var(--radar-green); letter-spacing: 2px; }
-        .success-callsign { font-size: 1.5rem; color: #fff; margin-bottom: 20px; font-weight: bold;}
-        .success-reward { font-size: 1.2rem; font-weight: bold; color: var(--brand-gold); background: #111; padding: 8px 20px; border-radius: 4px; border: 1px solid var(--brand-gold); box-shadow: 0 0 10px rgba(207, 168, 110, 0.3);}
 
         .compass-pt { 
             position: absolute; color: var(--radar-green); font-family: 'Share Tech Mono', monospace; 
@@ -327,7 +322,6 @@
         }
         @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
         
-        /* The custom transparent masking box for REG texts */
         .radar-dest-label { pointer-events: none; }
 
         /* Floating messaging */
@@ -638,12 +632,6 @@
         <div id="radar-map-wrapper">
             <div id="radar-map-container"></div>
             
-            <div id="radar-success-overlay">
-                <h2 class="success-title">TARGET LOCKED</h2>
-                <div class="success-callsign" id="success-callsign-display">CALLSIGN</div>
-                <div class="success-reward">PROCEED TO NEXT SECTOR...</div>
-            </div>
-
             <div class="compass-pt compass-n">N</div>
             <div class="compass-pt compass-e">E</div>
             <div class="compass-pt compass-s">S</div>
@@ -1686,9 +1674,23 @@
             if (radarTimeMs <= 0) return;
             pendingInterceptPlane = { data: plane, marker: marker };
             
+            const titleEl = document.querySelector('#intercept-overlay h1');
+            const descEl = document.querySelector('#intercept-overlay p');
+            const boxEl = document.querySelector('#intercept-overlay .modal-box');
+            const buttonsEl = document.querySelector('#intercept-overlay .modal-buttons');
+            const el = document.getElementById('encrypted-callsign');
+
+            titleEl.textContent = "CONFIRM INTERCEPT";
+            titleEl.style.color = "var(--brand-red)";
+            descEl.innerHTML = "Target signature encrypted:";
+            descEl.style.color = "#ccc";
+            boxEl.style.borderColor = "var(--brand-red)";
+            boxEl.style.boxShadow = "0 0 20px rgba(215, 25, 32, 0.2)";
+            buttonsEl.style.display = "flex";
+            el.style.color = "#fff";
+            
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
             const callsignLength = plane.callsign.length;
-            const el = document.getElementById('encrypted-callsign');
             
             if (encryptionInterval) clearInterval(encryptionInterval);
             
@@ -1711,67 +1713,107 @@
 
         function confirmIntercept() {
             if (encryptionInterval) clearInterval(encryptionInterval);
-            document.getElementById('intercept-overlay').style.display = 'none';
             if (!pendingInterceptPlane) return;
             
             let p = pendingInterceptPlane.data;
             let marker = pendingInterceptPlane.marker;
-            pendingInterceptPlane = null;
             
-            if (p.callsign === currentRadarCallsign) {
-                const overlay = document.getElementById('radar-success-overlay');
-                document.getElementById('success-callsign-display').textContent = p.callsign;
-                document.getElementById('success-callsign-display').style.color = p.color;
-                
-                marker.setIcon(L.divIcon({
-                    html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping"></div>`,
-                    className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
-                }));
-
-                if (radarLevel < 3) {
-                    document.querySelector('.success-title').textContent = "TARGET LOCKED";
-                    document.querySelector('.success-reward').textContent = "PROCEED TO NEXT SECTOR...";
-                    overlay.style.display = 'flex';
-                    
-                    setTimeout(() => {
-                        overlay.style.display = 'none';
-                        radarLevel++;
-                        startRadarMission();
-                    }, 2500);
-                } else {
-                    radarTimeMs = 0; 
-                    clearInterval(radarCountdown);
-                    
-                    globalState.extraFuel += 1500;
-                    saveState(); updateMiniFuelUI();
-                    
-                    document.querySelector('.success-title').textContent = "MISSION COMPLETE";
-                    document.querySelector('.success-reward').textContent = "+1500L AUX TANK SECURED";
-                    overlay.style.display = 'flex';
-
-                    setTimeout(() => {
-                        overlay.style.display = 'none';
-                        closeRadar();
-                    }, 3500);
+            const titleEl = document.querySelector('#intercept-overlay h1');
+            const descEl = document.querySelector('#intercept-overlay p');
+            const boxEl = document.querySelector('#intercept-overlay .modal-box');
+            const el = document.getElementById('encrypted-callsign');
+            
+            document.querySelector('#intercept-overlay .modal-buttons').style.display = 'none';
+            
+            titleEl.textContent = "DECRYPTING...";
+            titleEl.style.color = "var(--gauge-orange)";
+            boxEl.style.borderColor = "var(--gauge-orange)";
+            boxEl.style.boxShadow = "0 0 20px rgba(243, 156, 18, 0.4)";
+            descEl.textContent = "Matching signatures...";
+            
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
+            let iterations = 0;
+            let revealedIndex = 0;
+            const actualCallsign = p.callsign;
+            
+            encryptionInterval = setInterval(() => {
+                let displayStr = "";
+                for (let i = 0; i < actualCallsign.length; i++) {
+                    if (i < revealedIndex) {
+                        displayStr += actualCallsign[i];
+                    } else {
+                        displayStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
                 }
-            } else {
-                marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
+                el.textContent = displayStr;
                 
-                radarTimeMs = Math.max(0, radarTimeMs - 15000); 
+                iterations++;
+                if (iterations % 4 === 0) {
+                    revealedIndex++;
+                }
                 
-                const tDiv = document.getElementById('radar-timer');
-                tDiv.style.color = "red";
-                setTimeout(() => updateTimerDisplay(getAssistPenalty()), 500); 
-                
-                const msgEl = document.getElementById('radar-message');
-                msgEl.style.display = "inline-block";
-                msgEl.className = "fail pop-reveal";
-                msgEl.textContent = `WRONG TARGET (-15s)`;
-                void msgEl.offsetWidth; 
-                setTimeout(() => { msgEl.style.display = "none"; }, 2000);
-                
-                updateTimerDisplay(getAssistPenalty());
-            }
+                if (revealedIndex > actualCallsign.length) {
+                    clearInterval(encryptionInterval);
+                    
+                    // Reveal Complete - Evaluate Result
+                    if (p.callsign === currentRadarCallsign) {
+                        titleEl.textContent = "TARGET LOCKED";
+                        titleEl.style.color = "var(--gauge-green)";
+                        boxEl.style.borderColor = "var(--gauge-green)";
+                        boxEl.style.boxShadow = "0 0 20px rgba(46, 204, 113, 0.4)";
+                        el.style.color = p.color;
+                        
+                        marker.setIcon(L.divIcon({
+                            html: `<div style="transform: rotate(${p.heading}deg); color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div><div class="radar-target-ping" style="border-color:${p.color};"></div>`,
+                            className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12]
+                        }));
+
+                        if (radarLevel < 3) {
+                            descEl.innerHTML = "<span style='color:var(--brand-gold)'>PROCEED TO NEXT SECTOR...</span>";
+                            setTimeout(() => {
+                                document.getElementById('intercept-overlay').style.display = 'none';
+                                radarLevel++;
+                                startRadarMission();
+                                pendingInterceptPlane = null;
+                            }, 2500);
+                        } else {
+                            radarTimeMs = 0; 
+                            clearInterval(radarCountdown);
+                            
+                            globalState.extraFuel += 1500;
+                            saveState(); updateMiniFuelUI();
+                            
+                            descEl.innerHTML = "MISSION COMPLETE<br><strong style='color:var(--brand-gold)'>+1500L AUX TANK SECURED</strong>";
+
+                            setTimeout(() => {
+                                document.getElementById('intercept-overlay').style.display = 'none';
+                                closeRadar();
+                                pendingInterceptPlane = null;
+                            }, 3500);
+                        }
+                    } else {
+                        titleEl.textContent = "WRONG TARGET";
+                        titleEl.style.color = "var(--brand-red)";
+                        descEl.innerHTML = "Signature mismatch.<br>Penalty: -15s";
+                        el.style.color = "var(--brand-red)";
+                        boxEl.style.borderColor = "var(--brand-red)";
+                        boxEl.style.boxShadow = "0 0 20px rgba(215, 25, 32, 0.4)";
+                        
+                        radarTimeMs = Math.max(0, radarTimeMs - 15000); 
+                        updateTimerDisplay(getAssistPenalty());
+                        
+                        const tDiv = document.getElementById('radar-timer');
+                        tDiv.style.color = "red";
+                        setTimeout(() => updateTimerDisplay(getAssistPenalty()), 500); 
+                        
+                        setTimeout(() => {
+                            document.getElementById('intercept-overlay').style.display = 'none';
+                            marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
+                            pendingInterceptPlane = null;
+                        }, 2500);
+                    }
+                }
+            }, 40);
         }
 
         function renderRadarOverlays() {

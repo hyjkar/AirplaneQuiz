@@ -153,7 +153,7 @@
         .grid-piece.exploded::after { color: #fff; }
         
         .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; }
-        #image-options-container .trivia-option { text-align: center; }
+        #image-options-container .trivia-option { text-align: center; } /* Image answers strictly centered */
 
         /* FLOATING TEXT & REVEAL ANIMATIONS */
         .float-text {
@@ -182,7 +182,7 @@
         #trivia-question { font-size: 1.2rem; font-weight: 500; color: var(--brand-dark); margin-bottom: 20px; line-height: 1.4; }
         
         #trivia-options-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-        #trivia-options-container .trivia-option { text-align: left; } 
+        #trivia-options-container .trivia-option { text-align: left; } /* Text answers neatly aligned left */
         
         .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: all 0.2s; cursor: pointer; display: block; width: 100%; line-height: 1.4; white-space: normal; word-wrap: break-word; }
         .trivia-option:active { transform: scale(0.98); background: #eee; }
@@ -198,7 +198,7 @@
             border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 20; position: relative;
             backdrop-filter: blur(4px); flex-shrink: 0; pointer-events: none;
         }
-        #tk-speed-val { display: inline-block; transition: transform 0.1s ease; }
+        #tk-speed-val { display: inline-block; transition: transform 0.1s ease, color 0.1s ease; }
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
         .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
         
@@ -210,13 +210,14 @@
             cursor: pointer;
         }
         
-        .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 60px; background-repeat: repeat-x; }
-        #tk-bg-sky { background-size: 1024px 100%; z-index: 0; }
-        #tk-bg-city { background-size: 1024px 100%; background-position: bottom left; z-index: 1; }
-        #tk-bg-ground { background-size: 1024px 100%; background-position: bottom left; z-index: 2; }
-        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; z-index: 3;}
+        /* Set fixed sizes for SVGs and make them click-through so the viewport catches the touch */
+        .parallax-layer { position: absolute; left: 0; right: 0; background-repeat: repeat-x; pointer-events: none; }
+        #tk-bg-sky { top: 0; bottom: 60px; background-size: auto 100%; z-index: 0; }
+        #tk-bg-city { bottom: 60px; height: 50%; background-size: auto 100%; background-position: bottom left; z-index: 1; }
+        #tk-bg-ground { bottom: 60px; height: 25%; background-size: auto 100%; background-position: bottom left; z-index: 2; }
+        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; z-index: 3; pointer-events: none;}
         #tk-runway-surface { width: 100%; height: 100%; background-repeat: repeat-x; background-size: 256px 60px; }
-        #tk-mountain { position: absolute; bottom: 60px; left: 100%; width: 200px; height: 200px; z-index: 3; display: none; }
+        #tk-mountain { position: absolute; bottom: 60px; left: 100%; width: 200px; height: 200px; z-index: 3; display: none; pointer-events: none;}
         #tk-plane { position: absolute; left: 10vw; bottom: 60px; width: 140px; height: 52px; transform-origin: 50% 90%; z-index: 4; pointer-events: none;}
         
         #tk-weather-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 5; }
@@ -819,17 +820,21 @@
                 const tkViewport = document.getElementById('takeoff-viewport');
                 const handlePress = (e) => { 
                     if (!tkState.active) return;
-                    if (e.target.closest('button') || e.target.closest('.takeoff-hud') || e.target.closest('.game-header') || e.target.closest('.footer-buttons')) return;
-                    
+                    if (e.target && typeof e.target.closest === 'function') {
+                        if (e.target.closest('button') || e.target.closest('.takeoff-hud') || e.target.closest('.game-header') || e.target.closest('.footer-buttons')) return;
+                    }
                     if (e.cancelable) e.preventDefault();
+                    
                     if (tkState.speed < 140) {
                         const speedVal = document.getElementById('tk-speed-val');
-                        speedVal.style.transform = "scale(1.5)";
-                        speedVal.style.color = "orange";
-                        setTimeout(() => {
-                            speedVal.style.transform = "scale(1)";
-                            speedVal.style.color = "var(--brand-red)";
-                        }, 150);
+                        if(speedVal) {
+                            speedVal.style.transform = "scale(1.5)";
+                            speedVal.style.color = "orange";
+                            setTimeout(() => {
+                                speedVal.style.transform = "scale(1)";
+                                speedVal.style.color = "var(--brand-red)";
+                            }, 150);
+                        }
                         return;
                     }
                     tkState.pressing = true; 
@@ -839,10 +844,11 @@
                 if(tkViewport) {
                     tkViewport.addEventListener('pointerdown', handlePress);
                     tkViewport.addEventListener('touchstart', handlePress, {passive: false});
-                    window.addEventListener('pointerup', handleRelease);
-                    window.addEventListener('touchend', handleRelease);
-                    window.addEventListener('pointercancel', handleRelease);
                 }
+                window.addEventListener('pointerup', handleRelease);
+                window.addEventListener('touchend', handleRelease);
+                window.addEventListener('pointercancel', handleRelease);
+                
             } catch(e) { 
                 console.error("Critical Load Error", e); 
                 document.body.innerHTML = `<div style='color:red; background:white; padding:20px; font-family:monospace; border-radius:10px;'><h3>Game Crash</h3><p>${e.message}</p></div>`;

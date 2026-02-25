@@ -1702,7 +1702,7 @@
         }
 
         // --- SEPARATED ASSIST TOGGLES ---
-        function renderRadarOverlays() {
+function renderRadarOverlays() {
             radarPathGroup.clearLayers();
             currentRadarPlanes.forEach(p => {
                 if (pathsVisible) {
@@ -1712,13 +1712,10 @@
                 }
                 
                 if (originVisible && p.isReal && p.origin) {
-                    const labelLat = pathsVisible ? p.route[0][0] : p.lat;
-                    const labelLng = pathsVisible ? p.route[0][1] : p.lng;
-                    const offsetMt = pathsVisible ? -8 : 12;
-                    
-                    L.marker([labelLat, labelLng], {
+                    // Always lock exactly to the plane's location. The black background will mask out the path underneath it.
+                    L.marker([p.lat, p.lng], {
                         icon: L.divIcon({ 
-                            html: `<div style="color: ${p.color}; background: #000; padding: 1px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 8px; margin-top: ${offsetMt}px; display: inline-block;">${p.origin}</div>`, 
+                            html: `<div style="color: ${p.color}; background: #000; padding: 1px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 14px; margin-top: 14px; display: inline-block;">${p.origin}</div>`, 
                             className: 'radar-dest-label', 
                             iconSize: [0,0] 
                         })

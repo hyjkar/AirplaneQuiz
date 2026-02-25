@@ -165,22 +165,35 @@
         .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; }
         #image-options-container .trivia-option { text-align: center; }
 
+        /* FLOATING TEXT & REVEAL ANIMATIONS */
         .float-text {
             position: fixed; color: var(--brand-red); font-family: 'Share Tech Mono', monospace; font-size: 1.8rem;
             font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 99999;
             transform: translate(-50%, -50%); animation: floatUp 0.8s ease-out forwards;
         }
-        @keyframes floatUp { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -100px) scale(1.5); opacity: 0; } }
-        .pop-reveal { animation: quickPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes quickPop { 0% { opacity: 0; transform: scale(0.5); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes floatUp {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -100px) scale(1.5); opacity: 0; }
+        }
+
+        .pop-reveal {
+            animation: quickPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes quickPop {
+            0% { opacity: 0; transform: scale(0.5); }
+            70% { transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
 
         /* --- TRIVIA MODE --- */
         #trivia-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; justify-content: center; gap: 15px; z-index: 10; position: relative;}
         .trivia-dossier { background: #fff; border: 2px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .trivia-title { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: #888; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
         #trivia-question { font-size: 1.2rem; font-weight: 500; color: var(--brand-dark); margin-bottom: 20px; line-height: 1.4; }
+        
         #trivia-options-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         #trivia-options-container .trivia-option { text-align: left; } 
+        
         .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: all 0.2s; cursor: pointer; display: block; width: 100%; line-height: 1.4; white-space: normal; word-wrap: break-word; }
         .trivia-option:active { transform: scale(0.98); background: #eee; }
         .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
@@ -199,6 +212,7 @@
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
         .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
         
+        /* RESTORED STABLE VIEWPORT */
         #takeoff-viewport { 
             position: relative; width: 100%; flex-grow: 1; min-height: 250px; max-height: 400px;
             border: 4px solid #222; border-radius: 8px; overflow: hidden; margin: 0; 
@@ -227,6 +241,10 @@
         #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; }
         .pixel-particle { position: absolute; width: 6px; height: 6px; z-index: 10; pointer-events: none;}
 
+        .flash-screen { animation: whiteFlash 0.6s ease-out; }
+        @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
+
+        /* Pulsing UI Hint for Takeoff */
         #tk-touch-prompt {
             position: absolute; top: 45%; left: 0; width: 100%; text-align: center;
             color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 1.3rem;
@@ -580,6 +598,17 @@
         </div>
     </div>
 
+    <div id="leaderboard-view" class="view-section">
+        <div style="flex-shrink: 0; width:100%; text-align:center;">
+            <h1>Global Standings</h1>
+            <h2 style="margin-bottom: 10px;">Top Fuel Reserves</h2>
+        </div>
+        <div id="leaderboard-list">Connecting to HQ...</div>
+        <div class="footer-buttons">
+            <button class="primary-btn" onclick="closeLeaderboard()">Back to Command</button>
+        </div>
+    </div>
+
     <div id="radar-view" class="view-section">
         
         <div class="radar-top-accordion">
@@ -630,6 +659,7 @@
         let lastTimerTick = 0;
         let encryptionInterval = null;
         let radarLevel = 1;
+        let bgMusicStarted = false;
         
         let currentRadarCallsign = "";
         let currentRadarPlanes = [];
@@ -776,7 +806,6 @@
                     if (e.key === 'Enter') { this.blur(); registerPilot(); }
                 });
 
-                let bgMusicStarted = false;
                 window.addEventListener('pointerdown', function initAudio() {
                     if (!bgMusicStarted) {
                         const bgm = document.getElementById('bg-music');
@@ -789,6 +818,18 @@
                     }
                 });
                 
+                // Visibility API to mute audio when app is minimized
+                document.addEventListener("visibilitychange", () => {
+                    const bgm = document.getElementById('bg-music');
+                    if (bgm && bgMusicStarted) {
+                        if (document.hidden) {
+                            bgm.pause();
+                        } else {
+                            bgm.play().catch(e => console.log("Audio resume blocked", e));
+                        }
+                    }
+                });
+
                 const tkViewport = document.getElementById('takeoff-viewport');
                 const handlePress = (e) => { 
                     if (!tkState.active) return;
@@ -816,12 +857,12 @@
                 const handleRelease = () => { if(tkState.active) tkState.pressing = false; };
                 
                 if(tkViewport) {
-                    tkViewport.addEventListener('mousedown', handlePress);
+                    tkViewport.addEventListener('pointerdown', handlePress);
                     tkViewport.addEventListener('touchstart', handlePress, {passive: false});
                 }
-                window.addEventListener('mouseup', handleRelease);
+                window.addEventListener('pointerup', handleRelease);
                 window.addEventListener('touchend', handleRelease);
-                window.addEventListener('touchcancel', handleRelease);
+                window.addEventListener('pointercancel', handleRelease);
                 
             } catch(e) { 
                 console.error("Critical Load Error", e); 
@@ -1453,78 +1494,29 @@
                         radarPathGroup = L.layerGroup().addTo(radarMap);
                     }
                     radarMap.invalidateSize(); 
+                    
+                    pathsVisible = false;
+                    originVisible = false;
+                    altVisible = false;
+                    currentMapStyle = 'CLEAN'; 
+
                     startRadarTimer(); 
                     startRadarMission();
                 });
             });
         }
 
-        function launchFallbackSimulation(config, lamin, lamax, lomin, lomax) {
-            radarLayerGroup.clearLayers();
-            radarPathGroup.clearLayers();
-            currentRadarPlanes = [];
-
-            const fakeCalls = [
-                "LHT442", "AFR12A", "SWR99B", "BAW505", "RYR77X", "FIN112", "NOR334", "KLM88", "EZY99", "WZZ10", 
-                "DAL22", "UAL33", "AAL44", "SWA99", "JBU11", "QFA22", "UAE44", "VIR55", "BAW12", "DLH99", 
-                "CCA44", "ACA55", "ANA88", "THY99", "SIA11", "JAL22"
-            ].sort(() => Math.random() - 0.5);
-            const fakeOrigins = ["GERMANY", "FRANCE", "UK", "USA", "SPAIN", "ITALY", "SWEDEN", "FINLAND", "NORWAY", "JAPAN", "CHINA", "CANADA", "BRAZIL"];
-
-            let attempts = 0;
-            while(currentRadarPlanes.length < config.planes && attempts < 300) {
-                attempts++;
-                const lat = lamin + Math.random() * (lamax - lamin); 
-                const lng = lomin + Math.random() * (lomax - lomin);
-                const alt = Math.floor(Math.random() * 8000 + 2000);
-                
-                let isOverlapping = false;
-                for (let cp of currentRadarPlanes) {
-                    if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) {
-                        isOverlapping = true; break;
-                    }
-                }
-                if (isOverlapping) continue;
-
-                const heading = Math.random() * 360;
-                const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
-                
-                const radBack = (heading + 180) * (Math.PI / 180);
-                const startLat = lat + Math.cos(radBack) * trailLen;
-                const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
-                const radFwd = heading * (Math.PI / 180);
-                const endLat = lat + Math.cos(radFwd) * fwdLen;
-                const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
-                
-                const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length];
-                const randomOrigin = fakeOrigins[Math.floor(Math.random() * fakeOrigins.length)];
-
-                currentRadarPlanes.push({ 
-                    callsign: fakeCalls[currentRadarPlanes.length % fakeCalls.length], 
-                    origin: randomOrigin, lat: lat, lng: lng, heading: heading, alt: alt,
-                    route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng,
-                    isReal: false, color: pColor
-                });
-            }
-            
-            if (currentRadarPlanes.length === 0) {
-                 currentRadarPlanes.push({
-                     callsign: "GHOST1", origin: "UNKNOWN", lat: lamin+1, lng: lomin+1, heading: 90, alt: 5000,
-                     route: [[lamin+1, lomin+1], [lamin+1, lomin+1], [lamin+1, lomin+1]], endLat: lamin+1, endLng: lomin+1,
-                     isReal: false, color: "#fff"
-                 });
-            }
-            initTargetAndPlot();
-        }
-
         function startRadarMission() {
             const textEl = document.getElementById('radar-screen-text');
+            
             const config = RADAR_LEVEL_CONFIG[radarLevel];
+            document.querySelector('.lvl-text').textContent = `LEVEL ${radarLevel} OF 3`;
             
-            const titleEl = document.querySelector('.radar-accordion-title');
-            if(titleEl.textContent.includes('[-]')) titleEl.innerHTML = `<span class="acc-icon">[-]</span> TARGET INTEL<div style="font-size:0.75rem; color:#aaa; margin-top:2px;" class="lvl-text">LEVEL ${radarLevel} OF 3</div>`;
-            else titleEl.innerHTML = `<span class="acc-icon">[+]</span> TARGET INTEL<div style="font-size:0.75rem; color:#aaa; margin-top:2px;" class="lvl-text">LEVEL ${radarLevel} OF 3</div>`;
-            
+            pathsVisible = false;
+            originVisible = false;
+            altVisible = false;
+            currentMapStyle = 'CLEAN'; 
+
             document.getElementById('toggle-paths-btn').textContent = "PATHS: OFF";
             document.getElementById('toggle-paths-btn').style.background = "transparent";
             document.getElementById('toggle-paths-btn').style.color = "var(--radar-green)";
@@ -1557,25 +1549,16 @@
             radarPathGroup.clearLayers();
             currentRadarPlanes = [];
 
-            let hasResponded = false;
-            const timeoutId = setTimeout(() => {
-                if (!hasResponded) {
-                    hasResponded = true;
-                    console.warn("API Timeout. Launching local simulation.");
-                    launchFallbackSimulation(config, lamin, lamax, lomin, lomax);
-                }
-            }, 2500);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-            fetch(`https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`)
+            fetch(`https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`, { signal: controller.signal })
             .then(res => {
+                clearTimeout(timeoutId);
                 if (!res.ok) throw new Error("API error");
                 return res.json();
             })
             .then(data => {
-                if (hasResponded) return; 
-                hasResponded = true;
-                clearTimeout(timeoutId);
-                
                 if(!data.states || data.states.length === 0) throw new Error("Empty airspace");
                 
                 let validAPIPlanes = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "");
@@ -1621,34 +1604,53 @@
                 initTargetAndPlot();
             })
             .catch(err => {
-                if (hasResponded) return;
-                hasResponded = true;
-                clearTimeout(timeoutId);
                 console.warn("Radar API fallback. Launching local simulation.");
-                launchFallbackSimulation(config, lamin, lamax, lomin, lomax);
-            });
-        }
+                
+                const fakeCalls = [
+                    "LHT442", "AFR12A", "SWR99B", "BAW505", "RYR77X", "FIN112", "NOR334", "KLM88", "EZY99", "WZZ10", 
+                    "DAL22", "UAL33", "AAL44", "SWA99", "JBU11", "QFA22", "UAE44", "VIR55", "BAW12", "DLH99", 
+                    "CCA44", "ACA55", "ANA88", "THY99", "SIA11", "JAL22"
+                ].sort(() => Math.random() - 0.5);
+                const fakeOrigins = ["GERMANY", "FRANCE", "UK", "USA", "SPAIN", "ITALY", "SWEDEN", "FINLAND", "NORWAY", "JAPAN", "CHINA", "CANADA", "BRAZIL"];
 
-        function applyHintsFallback(targetPlane, textEl) {
-            let hints = [];
-            hints.push(`HEADING ${getCompassDirection(targetPlane.heading)}`);
-            if (targetPlane.origin) hints.push(`REGISTRY ${targetPlane.origin}`);
-            
-            if (targetPlane.alt) {
-                const isAbove = Math.random() > 0.5;
-                let bound;
-                if (isAbove) {
-                    bound = Math.floor((targetPlane.alt - 1) / 500) * 500; 
-                    hints.push(`ALT ABOVE ${bound}M`);
-                } else {
-                    bound = Math.ceil((targetPlane.alt + 1) / 500) * 500;
-                    hints.push(`ALT BELOW ${bound}M`);
+                let attempts = 0;
+                
+                while(currentRadarPlanes.length < config.planes && attempts < 300) {
+                    attempts++;
+                    const lat = lamin + Math.random() * (lamax - lamin); 
+                    const lng = lomin + Math.random() * (lomax - lomin);
+                    const alt = Math.floor(Math.random() * 8000 + 2000);
+                    
+                    let isOverlapping = false;
+                    for (let cp of currentRadarPlanes) {
+                        if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) {
+                            isOverlapping = true; break;
+                        }
+                    }
+                    if (isOverlapping) continue;
+
+                    const heading = Math.random() * 360;
+                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
+                    
+                    const radBack = (heading + 180) * (Math.PI / 180);
+                    const startLat = lat + Math.cos(radBack) * trailLen;
+                    const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
+                    const radFwd = heading * (Math.PI / 180);
+                    const endLat = lat + Math.cos(radFwd) * fwdLen;
+                    const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+                    
+                    const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length];
+                    const randomOrigin = fakeOrigins[Math.floor(Math.random() * fakeOrigins.length)];
+
+                    currentRadarPlanes.push({ 
+                        callsign: fakeCalls[currentRadarPlanes.length % fakeCalls.length], 
+                        origin: randomOrigin, lat: lat, lng: lng, heading: heading, alt: alt,
+                        route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng,
+                        isReal: false, color: pColor
+                    });
                 }
-            }
-            
-            hints = hints.sort(() => 0.5 - Math.random()).slice(0, 3);
-            let hintHtml = hints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join('');
-            textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`;
+                initTargetAndPlot();
+            });
         }
 
         function initTargetAndPlot() {
@@ -1659,24 +1661,15 @@
             textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br><div style="margin-top:8px; color:#aaa;">DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span></div>`;
             plotPlanesOnRadar();
 
-            let geoResponded = false;
-            const geoTimeout = setTimeout(() => {
-                if (!geoResponded) {
-                    geoResponded = true;
-                    applyHintsFallback(targetPlane, textEl);
-                }
-            }, 2500);
+            const nomController = new AbortController();
+            const nomTimeout = setTimeout(() => nomController.abort(), 2500);
 
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${targetPlane.lat}&lon=${targetPlane.lng}&zoom=10`)
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${targetPlane.lat}&lon=${targetPlane.lng}&zoom=10`, { signal: nomController.signal })
             .then(res => {
-                if (!res.ok) throw new Error("geo fail");
+                clearTimeout(nomTimeout);
                 return res.json();
             })
             .then(geoData => {
-                if (geoResponded) return;
-                geoResponded = true;
-                clearTimeout(geoTimeout);
-
                 let hints = [];
                 hints.push(`HEADING ${getCompassDirection(targetPlane.heading)}`);
                 if (targetPlane.origin) hints.push(`REGISTRY ${targetPlane.origin}`);
@@ -1711,10 +1704,25 @@
                 textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`;
             })
             .catch(() => {
-                if (geoResponded) return;
-                geoResponded = true;
-                clearTimeout(geoTimeout);
-                applyHintsFallback(targetPlane, textEl);
+                let hints = [];
+                hints.push(`HEADING ${getCompassDirection(targetPlane.heading)}`);
+                if (targetPlane.origin) hints.push(`REGISTRY ${targetPlane.origin}`);
+                
+                if (targetPlane.alt) {
+                    const isAbove = Math.random() > 0.5;
+                    let bound;
+                    if (isAbove) {
+                        bound = Math.floor((targetPlane.alt - 1) / 500) * 500; 
+                        hints.push(`ALT ABOVE ${bound}M`);
+                    } else {
+                        bound = Math.ceil((targetPlane.alt + 1) / 500) * 500;
+                        hints.push(`ALT BELOW ${bound}M`);
+                    }
+                }
+                
+                hints = hints.sort(() => 0.5 - Math.random()).slice(0, 3);
+                let hintHtml = hints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join('');
+                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`;
             });
         }
         
@@ -1787,7 +1795,6 @@
             
             let p = pendingInterceptPlane.data;
             let marker = pendingInterceptPlane.marker;
-            pendingInterceptPlane = null;
             
             const titleEl = document.querySelector('#intercept-overlay h1');
             const descEl = document.querySelector('#intercept-overlay p');
@@ -1844,6 +1851,7 @@
                                 document.getElementById('intercept-overlay').style.display = 'none';
                                 radarLevel++;
                                 startRadarMission();
+                                pendingInterceptPlane = null;
                             }, 2500);
                         } else {
                             radarTimeMs = 0; 
@@ -1857,6 +1865,7 @@
                             setTimeout(() => {
                                 document.getElementById('intercept-overlay').style.display = 'none';
                                 closeRadar();
+                                pendingInterceptPlane = null;
                             }, 3500);
                         }
                     } else {
@@ -1877,6 +1886,7 @@
                         setTimeout(() => {
                             document.getElementById('intercept-overlay').style.display = 'none';
                             marker.bindPopup(`<strong style="color:red">WRONG TARGET</strong><br>${p.callsign}`).openPopup();
+                            pendingInterceptPlane = null;
                         }, 2500);
                     }
                 }
@@ -1994,7 +2004,6 @@
                     radarTimeMs = 0;
                     updateTimerDisplay(penalty);
                     clearInterval(radarCountdown);
-                    document.getElementById('intercept-overlay').style.display = 'none'; 
                     
                     const msgEl = document.createElement('div');
                     msgEl.className = 'float-text';

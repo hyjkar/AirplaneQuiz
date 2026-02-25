@@ -1495,11 +1495,13 @@
                     const radFwd = heading * (Math.PI / 180);
                     const endLat = lat + Math.cos(radFwd) * fwdLen;
                     const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+                    
+                    const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length];
 
                     currentRadarPlanes.push({
                         callsign: p[1].trim(), lat: lat, lng: lng, heading: heading, origin: originCountry,
                         route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng,
-                        isReal: true
+                        isReal: true, color: pColor
                     });
                 }
                 
@@ -1704,19 +1706,19 @@
             radarPathGroup.clearLayers();
             currentRadarPlanes.forEach(p => {
                 if (pathsVisible) {
-                    // Just the line, no circles
                     L.polyline(p.route, { color: p.color, weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup);
+                    L.circleMarker([p.route[2][0], p.route[2][1]], { radius: 3, color: p.color, fillColor: p.color, fillOpacity: 1 }).addTo(radarPathGroup);
+                    L.circleMarker([p.route[0][0], p.route[0][1]], { radius: 2, color: p.color, fill: true, stroke: false, fillOpacity: 0.4 }).addTo(radarPathGroup);
                 }
                 
                 if (originVisible && p.isReal && p.origin) {
-                    // Always position right at the plane
-                    const labelLat = p.lat;
-                    const labelLng = p.lng;
-                    const offsetMt = 12;
+                    const labelLat = pathsVisible ? p.route[0][0] : p.lat;
+                    const labelLng = pathsVisible ? p.route[0][1] : p.lng;
+                    const offsetMt = pathsVisible ? -8 : 12;
                     
                     L.marker([labelLat, labelLng], {
                         icon: L.divIcon({ 
-                            html: `<div style="color: ${p.color}; background: #000; padding: 1px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 12px; margin-top: ${offsetMt}px; display: inline-block;">${p.origin}</div>`, 
+                            html: `<div style="color: ${p.color}; background: #000; padding: 1px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 8px; margin-top: ${offsetMt}px; display: inline-block;">${p.origin}</div>`, 
                             className: 'radar-dest-label', 
                             iconSize: [0,0] 
                         })

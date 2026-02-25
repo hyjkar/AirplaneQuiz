@@ -54,7 +54,7 @@
         
         /* SEAMLESS INTERCEPT HUD */
         #intercept-overlay { 
-            background: radial-gradient(circle at center, transparent 10%, rgba(0,0,0,0.7) 100%); 
+            background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%); 
             backdrop-filter: none; justify-content: flex-end; padding-bottom: 40px; pointer-events: auto;
         }
         #intercept-box { min-height: 220px; display: flex; flex-direction: column; justify-content: center; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(8px); }
@@ -179,6 +179,7 @@
         .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; }
         #image-options-container .trivia-option { text-align: center; }
 
+        /* FLOATING TEXT & REVEAL ANIMATIONS */
         .float-text {
             position: fixed; color: var(--brand-red); font-family: 'Share Tech Mono', monospace; font-size: 1.8rem;
             font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 99999;
@@ -188,13 +189,27 @@
         .pop-reveal { animation: quickPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes quickPop { 0% { opacity: 0; transform: scale(0.5); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
 
+        /* BOMB REWARD ANIMATION */
+        .bomb-reward-toast {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: #fff; font-weight: bold;
+            text-shadow: 0 0 20px #e74c3c, 2px 2px 0 #000; z-index: 100000; pointer-events: none; opacity: 0;
+            animation: bombPop 2.5s ease-out forwards; display: flex; flex-direction: column; align-items: center;
+            background: rgba(0,0,0,0.85); padding: 25px; border-radius: 15px; border: 2px solid #e74c3c;
+        }
+        .bomb-icon-anim { font-size: 4rem; margin-bottom: 10px; animation: bombPulse 0.5s infinite alternate; }
+        @keyframes bombPop { 0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 20% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -70%) scale(1.1); } }
+        @keyframes bombPulse { 0% { transform: scale(1) rotate(-5deg); } 100% { transform: scale(1.1) rotate(5deg); } }
+
         /* --- TRIVIA MODE --- */
         #trivia-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; justify-content: center; gap: 15px; z-index: 10; position: relative;}
         .trivia-dossier { background: #fff; border: 2px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .trivia-title { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: #888; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
         #trivia-question { font-size: 1.2rem; font-weight: 500; color: var(--brand-dark); margin-bottom: 20px; line-height: 1.4; }
+        
         #trivia-options-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         #trivia-options-container .trivia-option { text-align: left; } 
+        
         .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: all 0.2s; cursor: pointer; display: block; width: 100%; line-height: 1.4; white-space: normal; word-wrap: break-word; }
         .trivia-option:active { transform: scale(0.98); background: #eee; }
         .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
@@ -213,7 +228,6 @@
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
         .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
         
-        /* RESTORED STABLE VIEWPORT */
         #takeoff-viewport { 
             position: relative; width: 100%; flex-grow: 1; min-height: 250px; max-height: 400px;
             border: 4px solid #222; border-radius: 8px; overflow: hidden; margin: 0; 
@@ -282,7 +296,7 @@
         .radar-accordion-body.open { display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; }
 
         .radar-content { font-size: 0.95rem; line-height: 1.4; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
-        .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block;}
+        .radar-highlight { color: #000; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block;}
         
         .radar-setup-container { display: flex; flex-direction: column; flex-shrink: 0; min-width: 140px;}
         .radar-toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
@@ -448,11 +462,11 @@
             
             <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
                 <div style="display: flex; gap: 8px; width: 80px;">
-                    <div class="icon-btn" onclick="triggerResetUI()" title="Sign Out / Restart">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
-                    </div>
                     <div class="icon-btn" onclick="openLeaderboard()" title="Global Leaderboard">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg>
+                    </div>
+                    <div class="icon-btn" onclick="triggerResetUI()" title="Sign Out / Restart">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
                     </div>
                 </div>
                 <div style="flex-grow: 1; text-align: center;">
@@ -651,7 +665,7 @@
                         <button id="toggle-compass-btn" class="radar-toggle" onclick="toggleCompass()">COMP: OFF</button>
                         <button id="toggle-origcity-btn" class="radar-toggle" onclick="toggleOrigCity()">ORIG: OFF</button>
                         <button id="toggle-destcity-btn" class="radar-toggle" onclick="toggleDestCity()">DEST: OFF</button>
-                        <button id="toggle-alt-btn" class="radar-toggle" onclick="toggleAlt()" style="grid-column: span 2;">ALT: OFF</button>
+                        <button id="toggle-alt-btn" class="radar-toggle" onclick="toggleAlt()">ALT: OFF</button>
                     </div>
                 </div>
             </div>
@@ -721,7 +735,7 @@
             7: { latOffset: 18, lngOffset: 28, planes: 40, hints: 5 },
             8: { latOffset: 22, lngOffset: 35, planes: 48, hints: 5 },
             9: { latOffset: 26, lngOffset: 42, planes: 56, hints: 6 },
-            10: { latOffset: 30, lngOffset: 50, planes: 64, hints: 7 } // Max scale
+            10: { latOffset: 30, lngOffset: 50, planes: 64, hints: 7 } 
         };
 
         const STARTING_GLOBAL_FUEL = 4000;
@@ -733,8 +747,8 @@
             username: null,
             currentFuel: STARTING_GLOBAL_FUEL,
             extraFuel: 0,
+            smartBombs: 1,
             levels: [],
-            hasSmartBomb: true,
             hasSeenTakeoffTutorial: false,
             world1Complete: false,
             world2Complete: false
@@ -817,6 +831,15 @@
             }
             saveState();
             updateMiniFuelUI();
+        }
+
+        function awardSmartBomb() {
+            globalState.smartBombs = (globalState.smartBombs || 0) + 1;
+            const bombEl = document.createElement('div');
+            bombEl.className = 'bomb-reward-toast';
+            bombEl.innerHTML = `<div class="bomb-icon-anim">💣</div><div>+1 SMART BOMB</div>`;
+            document.body.appendChild(bombEl);
+            setTimeout(() => bombEl.remove(), 2500);
         }
 
         window.onload = function() {
@@ -986,7 +1009,11 @@
                 if (saved) {
                     globalState = JSON.parse(saved);
                     if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
-                    if(globalState.hasSmartBomb === undefined) globalState.hasSmartBomb = true;
+                    
+                    if(globalState.smartBombs === undefined) {
+                        globalState.smartBombs = globalState.hasSmartBomb ? 1 : 1;
+                    }
+                    
                     if(globalState.hasSeenTakeoffTutorial === undefined) globalState.hasSeenTakeoffTutorial = false;
                     if(globalState.extraFuel === undefined) globalState.extraFuel = 0;
                 } else {
@@ -996,7 +1023,7 @@
                 globalState.currentFuel = STARTING_GLOBAL_FUEL;
                 globalState.extraFuel = 0;
                 globalState.levels = generateGameLevels();
-                globalState.hasSmartBomb = true;
+                globalState.smartBombs = 1;
                 globalState.hasSeenTakeoffTutorial = false;
                 globalState.username = null;
             }
@@ -1016,7 +1043,7 @@
             if (globalState.extraFuel && globalState.extraFuel > 0) {
                 auxContainer.style.display = 'block';
                 document.getElementById('aux-fuel-value').textContent = globalState.extraFuel;
-                const auxPct = Math.min(100, Math.max(0, (globalState.extraFuel / 1500) * 100));
+                const auxPct = Math.min(100, Math.max(0, (globalState.extraFuel / 5000) * 100)); // Scales nicely for big rewards
                 document.getElementById('aux-fuel-bar').style.width = auxPct + "%";
             } else {
                 auxContainer.style.display = 'none';
@@ -1175,8 +1202,12 @@
                     }
                 });
                 
-                if (globalState.hasSmartBomb && !lState.completed) bombBtn.style.display = "inline-block";
-                else bombBtn.style.display = "none";
+                if (globalState.smartBombs > 0 && !lState.completed) {
+                    bombBtn.style.display = "inline-block";
+                    bombBtn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="vertical-align: text-bottom; margin-right: 5px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg> DETONATE SMART BOMB (${globalState.smartBombs})`;
+                } else {
+                    bombBtn.style.display = "none";
+                }
 
                 const grid = document.getElementById('cover-grid');
                 grid.innerHTML = "";
@@ -1472,6 +1503,8 @@
             msgEl.className = "success pop-reveal";
             void msgEl.offsetWidth; 
             
+            awardSmartBomb();
+            
             saveState();
             if (isAllWorldsComplete()) syncScoreToCloud();
             setTimeout(saveAndExit, 2500);
@@ -1517,7 +1550,7 @@
             compassVisible = false;
             currentMapStyle = 'CLEAN'; 
             radarLevel = 1;
-            radarTimeMs = 1800000; // 30 minutes
+            radarTimeMs = 1800000; 
             
             document.getElementById('radar-info-body').classList.add('open');
             document.getElementById('radar-accordion-header').classList.add('open');
@@ -1656,7 +1689,7 @@
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-            // Pool of 3 to 15 cities so duplicates are guaranteed in higher levels
+            // Create subset of cities to force duplicates and require logic
             const numCities = Math.min(15, Math.max(3, Math.floor(config.planes / 3)));
             const roundCities = CITIES.sort(() => 0.5 - Math.random()).slice(0, numCities);
 
@@ -1791,12 +1824,13 @@
             })
             .then(geoData => {
                 let availableHints = [];
-                availableHints.push(`HEADING ${getCompassDirection(targetPlane.heading)}`);
-                if (targetPlane.origin) availableHints.push(`REGISTRY ${targetPlane.origin}`);
-                if (targetPlane.originCity) availableHints.push(`ORIGIN ${targetPlane.originCity}`);
-                if (targetPlane.destCity) availableHints.push(`DESTINATION ${targetPlane.destCity}`);
+                let headingHint = `HEADING ${getCompassDirection(targetPlane.heading)}`;
                 
-                if (targetPlane.alt) {
+                if (targetPlane.origin) availableHints.push(`REGISTRY ${targetPlane.origin}`);
+                if (targetPlane.originCity && Math.random() < 0.25) availableHints.push(`ORIGIN ${targetPlane.originCity}`);
+                if (targetPlane.destCity && Math.random() < 0.25) availableHints.push(`DESTINATION ${targetPlane.destCity}`);
+                
+                if (targetPlane.alt && Math.random() < 0.6) {
                     const isAbove = Math.random() > 0.5;
                     let bound = isAbove ? Math.floor((targetPlane.alt - 1) / 500) * 500 : Math.ceil((targetPlane.alt + 1) / 500) * 500;
                     availableHints.push(`ALT ${isAbove ? 'ABOVE' : 'BELOW'} ${bound}M`);
@@ -1810,26 +1844,51 @@
                     availableHints.push(`AIRSPACE INT'L WATERS`);
                 }
                 
-                availableHints = availableHints.sort(() => 0.5 - Math.random()).slice(0, config.hints);
-                let hintHtml = availableHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join('');
+                let selectedHints = [];
+                if (Math.random() < 0.85) {
+                    selectedHints.push(headingHint);
+                } else {
+                    availableHints.push(headingHint);
+                }
+                
+                availableHints = availableHints.sort(() => 0.5 - Math.random());
+                while(selectedHints.length < config.hints && availableHints.length > 0) {
+                    selectedHints.push(availableHints.pop());
+                }
+                
+                selectedHints = selectedHints.sort(() => 0.5 - Math.random());
+                let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join('');
                 
                 textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`;
             })
             .catch(() => {
                 let availableHints = [];
-                availableHints.push(`HEADING ${getCompassDirection(targetPlane.heading)}`);
-                if (targetPlane.origin) availableHints.push(`REGISTRY ${targetPlane.origin}`);
-                if (targetPlane.originCity) availableHints.push(`ORIGIN ${targetPlane.originCity}`);
-                if (targetPlane.destCity) availableHints.push(`DESTINATION ${targetPlane.destCity}`);
+                let headingHint = `HEADING ${getCompassDirection(targetPlane.heading)}`;
                 
-                if (targetPlane.alt) {
+                if (targetPlane.origin) availableHints.push(`REGISTRY ${targetPlane.origin}`);
+                if (targetPlane.originCity && Math.random() < 0.25) availableHints.push(`ORIGIN ${targetPlane.originCity}`);
+                if (targetPlane.destCity && Math.random() < 0.25) availableHints.push(`DESTINATION ${targetPlane.destCity}`);
+                
+                if (targetPlane.alt && Math.random() < 0.6) {
                     const isAbove = Math.random() > 0.5;
                     let bound = isAbove ? Math.floor((targetPlane.alt - 1) / 500) * 500 : Math.ceil((targetPlane.alt + 1) / 500) * 500;
                     availableHints.push(`ALT ${isAbove ? 'ABOVE' : 'BELOW'} ${bound}M`);
                 }
                 
-                availableHints = availableHints.sort(() => 0.5 - Math.random()).slice(0, config.hints);
-                let hintHtml = availableHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join('');
+                let selectedHints = [];
+                if (Math.random() < 0.85) {
+                    selectedHints.push(headingHint);
+                } else {
+                    availableHints.push(headingHint);
+                }
+                
+                availableHints = availableHints.sort(() => 0.5 - Math.random());
+                while(selectedHints.length < config.hints && availableHints.length > 0) {
+                    selectedHints.push(availableHints.pop());
+                }
+                
+                selectedHints = selectedHints.sort(() => 0.5 - Math.random());
+                let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join('');
                 textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`;
             });
         }
@@ -1862,7 +1921,7 @@
             if (radarTimeMs <= 0) return;
             pendingInterceptPlane = { data: plane, marker: marker };
             
-            radarMap.flyTo([plane.lat, plane.lng], 8, { animate: true, duration: 1.5 });
+            radarMap.flyTo([plane.lat, plane.lng], 12, { animate: true, duration: 1.5 });
             
             const titleEl = document.querySelector('#intercept-overlay h1');
             const descEl = document.querySelector('#intercept-overlay p');
@@ -1980,7 +2039,7 @@
                                 document.getElementById('intercept-overlay').style.display = 'none';
                                 closeRadar();
                                 pendingInterceptPlane = null;
-                            }, 4500);
+                            }, 3500);
                         }
                     } else {
                         titleEl.textContent = "WRONG TARGET";
@@ -2173,7 +2232,7 @@
         }
 
         function triggerSmartBomb() {
-            if (!globalState.hasSmartBomb) return;
+            if (globalState.smartBombs <= 0) return;
             const bombBtn = document.getElementById('smart-bomb-btn');
             const wrapper = document.getElementById('game-wrapper');
             const container = document.getElementById('game-container');
@@ -2195,7 +2254,8 @@
                 p.classList.add('exploded'); void p.offsetWidth; p.style.transition = 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.5s ease-in 0.5s'; p.style.pointerEvents = 'none';
                 setTimeout(() => { p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0.2)`; p.style.opacity = '0'; }, 50);
             });
-            globalState.hasSmartBomb = false; 
+            
+            globalState.smartBombs -= 1; 
             if(!globalState.levels[activeLevelIdx].revealedTiles) globalState.levels[activeLevelIdx].revealedTiles = [];
             globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()];
             saveState(); bombBtn.style.display = "none";
@@ -2261,8 +2321,12 @@
                 const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
                 if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.exploded)').forEach(p => p.classList.add('revealed'));
                 triggerConfetti(); document.getElementById('level-title').textContent = lState.name; 
-                document.getElementById('smart-bomb-btn').style.display = "none"; saveState();
-                if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2000);
+                document.getElementById('smart-bomb-btn').style.display = "none"; 
+                
+                awardSmartBomb();
+                
+                saveState();
+                if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);
             }
         }
 

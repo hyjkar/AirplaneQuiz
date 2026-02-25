@@ -43,14 +43,13 @@
         }
 
         /* --- OVERLAYS --- */
-        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay {
+        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #intercept-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #111; color: var(--brand-gold); z-index: 10000;
             flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
         }
         #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
         #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
-        #takeoff-tutorial-overlay { background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); }
         
         /* SEAMLESS INTERCEPT HUD */
         #intercept-overlay { 
@@ -243,7 +242,7 @@
         }
         .radar-accordion-body.open { display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; }
 
-        .radar-content { font-size: 0.65rem; line-height: 1.3; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
+        .radar-content { font-size: 0.95rem; line-height: 1.4; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
         .radar-highlight { color: #000; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block; font-size: 0.85rem;}
         
         .radar-setup-container { display: flex; flex-direction: column; flex-shrink: 0; min-width: 140px;}
@@ -302,19 +301,12 @@
         #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
-        /* DESKTOP & LANDSCAPE FULL SCREEN RADAR LAYOUT */
+        /* DESKTOP FULL SCREEN LAYOUT */
         @media (min-width: 768px), screen and (orientation: landscape) and (max-height: 600px) {
             #radar-view { max-width: 100%; }
             .radar-top-accordion { position: absolute; top: 15px; left: 15px; width: 320px; margin: 0; max-height: calc(100vh - 30px); display: flex; flex-direction: column; z-index: 1000; }
             .radar-accordion-body { overflow-y: auto; }
             #radar-view .footer-buttons { position: absolute !important; bottom: 15px !important; right: 15px !important; left: auto !important; transform: none !important; width: 200px !important; max-width: none !important; z-index: 1000;}
-        }
-
-        @media (max-height: 500px) {
-            .game-header { display: none !important; }
-            #game-wrapper { margin-bottom: 5px; }
-            h1 { display: none; }
-            .compass-n { top: 60px; }
         }
 
         /* --- LEADERBOARD --- */
@@ -338,19 +330,6 @@
         <svg viewBox="0 0 24 24" width="60" height="60" fill="currentColor" style="margin-bottom:20px;"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.25-.77c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.46L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zm-7.31.29C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
         <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2>
         <p>This mission requires Portrait Mode.</p>
-    </div>
-
-    <div id="takeoff-tutorial-overlay">
-        <div class="modal-box">
-            <h1 style="color: var(--brand-gold); margin-bottom: 15px;">FLIGHT MANUAL</h1>
-            <p class="tutorial-text">
-                1. Wait for your speed to reach <strong style="color:var(--gauge-green)">140 KTS</strong>. <br>
-                2. Tap and <strong>HOLD ANYWHERE</strong> on the view screen to pull the nose up.<br><br>
-                3. Keep the needle in the <strong style="color:var(--gauge-green)">GREEN ZONE</strong> to gain lift before the runway ends!<br><br>
-                <span style="color:#aaa; font-size:0.9rem;">⚠️ You have 3 attempts to earn a fuel bonus. If you fail, the mission is aborted.</span>
-            </p>
-            <button class="gold-btn" onclick="startTakeoffFromTutorial()">START ENGINES</button>
-        </div>
     </div>
 
     <div id="intercept-overlay">
@@ -621,8 +600,8 @@
             username: null,
             currentFuel: STARTING_GLOBAL_FUEL,
             extraFuel: 0,
+            smartBombs: 1,
             levels: [],
-            hasSmartBomb: true,
             hasSeenTakeoffTutorial: false,
             world1Complete: false,
             world2Complete: false
@@ -654,7 +633,9 @@
                 { type: 'image', image: "e175.jpg", name: "Embraer E175" },
                 { type: 'image', image: "concorde.jpg", name: "Concorde" },
                 { type: 'image', image: "antonov.jpg", name: "Antonov An-225" },
-                { type: 'image', image: "a350.jpg", name: "Airbus A350" }
+                { type: 'image', image: "a350.jpg", name: "Airbus A350" },
+                { type: 'image', image: "737.jpg", name: "Boeing 737" },
+                { type: 'image', image: "a320.jpg", name: "Airbus A320" }
             ],
             classified: [
                 { type: 'image', image: "f22.jpg", name: "F-22 Raptor" },
@@ -801,7 +782,7 @@
 
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
-            db.collection("fuel_command_v6").doc(globalState.username).set({
+            db.collection("fuel_command_v66").doc(globalState.username).set({
                 name: globalState.username,
                 score: globalState.currentFuel,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -815,7 +796,7 @@
             list.innerHTML = "Fetching Data...";
             if(!db) { list.innerHTML = "⚠️ Database not connected."; return; }
 
-            db.collection("fuel_command_v6").orderBy("score", "desc").limit(20).get()
+            db.collection("fuel_command_v66").orderBy("score", "desc").limit(20).get()
             .then((querySnapshot) => {
                 let html = "";
                 let rank = 1;
@@ -833,7 +814,7 @@
 
         function loadState() {
             try {
-                const saved = localStorage.getItem('fuelQuizState_v65'); 
+                const saved = localStorage.getItem('fuelQuizState_v66'); 
                 if (saved) {
                     globalState = JSON.parse(saved);
                     if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
@@ -857,7 +838,7 @@
             }
         }
 
-        function saveState() { try { localStorage.setItem('fuelQuizState_v65', JSON.stringify(globalState)); } catch(e){} }
+        function saveState() { try { localStorage.setItem('fuelQuizState_v66', JSON.stringify(globalState)); } catch(e){} }
         
         function isHangarComplete(hNum) { return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed); }
         function isAllWorldsComplete() { return globalState.levels.every(l => l.completed); }
@@ -922,7 +903,7 @@
                     const idx = levelData.originalIndex;
                     const card = document.createElement('div');
                     
-                    if (levelData.type === 'trivia' || levelData.type === 'takeoff') card.className = "level-strip special";
+                    if (levelData.type === 'trivia') card.className = "level-strip special";
                     else if (levelData.isClassified) card.className = "level-strip classified";
                     else card.className = "level-strip";
 
@@ -931,7 +912,6 @@
                     let title = `Flight ${idx + 1}`;
                     
                     if (levelData.type === 'trivia') { iconSvg = ICONS.folder; iconColor = "#3498db"; title = "Incident Report"; } 
-                    else if (levelData.type === 'takeoff') { iconSvg = ICONS.takeoff; iconColor = "#3498db"; title = "Takeoff Calibration"; }
                     else if (levelData.isClassified) { iconSvg = ICONS.jet; iconColor = "var(--brand-red)"; title = "Classified"; }
 
                     let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
@@ -940,8 +920,6 @@
                         iconSvg = ICONS.cross; iconColor = "var(--brand-red)"; statusHtml = `<div class="strip-status" style="color:var(--brand-red)">FAILED</div>`;
                     } else if (levelData.completed) {
                         title = levelData.name; iconSvg = ICONS.star; iconColor = "var(--brand-gold)"; statusHtml = `<div class="strip-status status-done">Cleared</div>`;
-                    } else if (levelData.type === 'takeoff') {
-                        let triesLeft = 3 - (levelData.attempts || 0); statusHtml = `<div class="strip-status status-ready">Tries: ${triesLeft}</div>`;
                     } else if (levelData.type === 'image' && levelData.revealedTiles && levelData.revealedTiles.length > 0) {
                         statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
                     }
@@ -990,7 +968,6 @@
 
             let title = `Flight ${idx+1}`;
             if (lState.type === 'trivia') title = "Incident Report";
-            else if (lState.type === 'takeoff') title = "Takeoff Calibration";
             else if (lState.isClassified) title = "Classified";
             
             if (lState.completed) title = lState.name;
@@ -1000,13 +977,11 @@
 
             const imgArea = document.getElementById('image-game-area');
             const triviaArea = document.getElementById('trivia-game-area');
-            const takeoffArea = document.getElementById('takeoff-game-area');
             const container = document.getElementById('game-container');
             const bombBtn = document.getElementById('smart-bomb-btn');
             
             imgArea.style.display = 'none';
             triviaArea.style.display = 'none';
-            takeoffArea.style.display = 'none';
 
             if (lState.type === 'image') {
                 imgArea.style.display = 'flex';
@@ -1253,6 +1228,7 @@
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 2500);
 
+            // Pool of 3 to 15 cities so duplicates are guaranteed in higher levels
             const numCities = Math.min(15, Math.max(3, Math.floor(config.planes / 3)));
             const roundCities = CITIES.sort(() => 0.5 - Math.random()).slice(0, numCities);
 

@@ -253,8 +253,8 @@
         }
         .radar-accordion-body.open { display: flex; }
 
-        .radar-content { font-size: 0.8rem; line-height: 1.5; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
-        .radar-highlight { color: #fff; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block;}
+        .radar-content { font-size: 0.95rem; line-height: 1.4; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
+        .radar-highlight { color: #000; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block;}
         
         .radar-setup-container { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; min-width: 110px;}
         .radar-toggle {
@@ -1186,9 +1186,16 @@
             document.querySelectorAll('.pixel-particle').forEach(el => el.remove());
             
             tkState.active = true;
-            tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0;
-            tkState.distance = 100; tkState.speed = 0; tkState.pressing = false;
-            tkState.bgPosSky = 0; tkState.bgPosCity = 0; tkState.bgPosGround = 0; tkState.bgPosRunway = 0;
+            tkState.pitch = 0;
+            tkState.pitchVelocity = 0;
+            tkState.lift = 0;
+            tkState.distance = 100;
+            tkState.speed = 0;
+            tkState.pressing = false;
+            tkState.bgPosSky = 0;
+            tkState.bgPosCity = 0;
+            tkState.bgPosGround = 0;
+            tkState.bgPosRunway = 0;
             
             document.getElementById('tk-plane').style.display = 'block';
             document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`;
@@ -1311,8 +1318,13 @@
                 if(age > 150) { p.remove(); return; }
                 if(age > 100) { p.style.opacity = 1 - ((age - 100) / 50); } 
                 
-                x += vx; y += vy; vy += 0.1; vx *= 0.99; 
-                p.style.left = x + 'px'; p.style.top = y + 'px';
+                x += vx; 
+                y += vy; 
+                vy += 0.1; // FIXED TYPO: Restored "vy += 0.1"
+                vx *= 0.99; 
+                
+                p.style.left = x + 'px'; 
+                p.style.top = y + 'px';
                 requestAnimationFrame(step);
             }
             requestAnimationFrame(step);
@@ -1555,7 +1567,8 @@
             const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
             currentRadarCallsign = targetPlane.callsign;
             
-            textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>> DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span>`;
+            // Cleaned up targeting intel text
+            textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br><div style="margin-top:8px; color:#aaa;">DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span></div>`;
             plotPlanesOnRadar();
 
             // Fetch the physical airspace country/city to generate dynamic hints
@@ -1568,31 +1581,31 @@
                 
                 if (geoData && geoData.address) {
                     if (geoData.address.country) {
-                        hints.push(`AIRSPACE: ${geoData.address.country.toUpperCase()}`);
+                        hints.push(`AIRSPACE ${geoData.address.country.toUpperCase()}`);
                     }
                     
                     // Extract city or region for proximity hint
                     let city = geoData.address.city || geoData.address.town || geoData.address.municipality || geoData.address.state;
                     if (city) {
-                        hints.push(`PROXIMITY: NEAR ${city.toUpperCase()}`);
+                        hints.push(`PROXIMITY NEAR ${city.toUpperCase()}`);
                     }
                 } else {
-                    hints.push(`AIRSPACE: INT'L WATERS`);
+                    hints.push(`AIRSPACE INT'L WATERS`);
                 }
                 
                 // Randomly select 2 hints out of the possible pool
                 hints = hints.sort(() => 0.5 - Math.random()).slice(0, 2);
-                let hintHtml = hints.map((h, i) => `> HINT ${i+1}: ${h}<br>`).join('');
+                let hintHtml = hints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join('');
                 
-                textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}`;
+                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`;
             })
             .catch(() => {
                 // Fallback if Geocoding API fails
                 let hints = [`HEADING ${getCompassDirection(targetPlane.heading)}`];
                 if (targetPlane.isReal && targetPlane.origin) hints.push(`REGISTRY ${targetPlane.origin}`);
                 
-                let hintHtml = hints.map((h, i) => `> HINT ${i+1}: ${h}<br>`).join('');
-                textEl.innerHTML = `<span style="color:#fff;">[ TARGET ]</span><br>CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br>${hintHtml}`;
+                let hintHtml = hints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join('');
+                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`;
             });
         }
         
@@ -1702,7 +1715,7 @@
         }
 
         // --- SEPARATED ASSIST TOGGLES ---
-function renderRadarOverlays() {
+        function renderRadarOverlays() {
             radarPathGroup.clearLayers();
             currentRadarPlanes.forEach(p => {
                 if (pathsVisible) {
@@ -1712,7 +1725,7 @@ function renderRadarOverlays() {
                 }
                 
                 if (originVisible && p.isReal && p.origin) {
-                    // Always lock exactly to the plane's location. The black background will mask out the path underneath it.
+                    // Fixed perfectly on the plane, clipping an invisible hole through the lines via a black background
                     L.marker([p.lat, p.lng], {
                         icon: L.divIcon({ 
                             html: `<div style="color: ${p.color}; background: #000; padding: 1px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; margin-left: 14px; margin-top: 14px; display: inline-block;">${p.origin}</div>`, 

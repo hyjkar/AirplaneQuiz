@@ -152,8 +152,8 @@
         .grid-piece.exploded { z-index: 9999 !important; border: 2px solid var(--gauge-orange) !important; box-shadow: 0 0 20px var(--brand-red) !important; background: var(--brand-red) !important; }
         .grid-piece.exploded::after { color: #fff; }
         
-        .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; align-items: center; }
-        #image-options-container .trivia-option { text-align: center; }
+        .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; }
+        #image-options-container .trivia-option { text-align: center; } /* Image answers strictly centered */
 
         /* FLOATING TEXT & REVEAL ANIMATIONS */
         .float-text {
@@ -182,7 +182,7 @@
         #trivia-question { font-size: 1.2rem; font-weight: 500; color: var(--brand-dark); margin-bottom: 20px; line-height: 1.4; }
         
         #trivia-options-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-        #trivia-options-container .trivia-option { text-align: left; }
+        #trivia-options-container .trivia-option { text-align: left; } /* Text answers neatly aligned left */
         
         .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: all 0.2s; cursor: pointer; display: block; width: 100%; line-height: 1.4; white-space: normal; word-wrap: break-word; }
         .trivia-option:active { transform: scale(0.98); background: #eee; }
@@ -196,7 +196,7 @@
             font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #333; 
             margin-top: 5px; padding: 10px 15px; background: rgba(255,255,255,0.9); 
             border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 20; position: relative;
-            backdrop-filter: blur(4px); flex-shrink: 0; pointer-events: none;
+            backdrop-filter: blur(4px); flex-shrink: 0;
         }
         #tk-speed-val { display: inline-block; transition: transform 0.1s ease; }
         .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
@@ -207,13 +207,13 @@
             border: none; border-radius: 0; overflow: hidden; margin: 0; 
             image-rendering: pixelated; background-color: #87CEEB; z-index: 5; 
             touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+            cursor: pointer;
         }
         
-        /* Set fixed sizes for SVGs so they never collapse on mobile WebKit */
-        .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 60px; background-repeat: repeat-x; }
-        #tk-bg-sky { background-size: 1024px 100%; z-index: 0; }
-        #tk-bg-city { background-size: 1024px 100%; background-position: bottom left; z-index: 1; }
-        #tk-bg-ground { background-size: 1024px 100%; background-position: bottom left; z-index: 2; }
+        .parallax-layer { position: absolute; left: 0; right: 0; background-repeat: repeat-x; }
+        #tk-bg-sky { top: 0; bottom: 60px; background-size: auto 100%; z-index: 0; }
+        #tk-bg-city { bottom: 60px; height: 50%; background-size: auto 100%; background-position: bottom left; z-index: 1; }
+        #tk-bg-ground { bottom: 60px; height: 25%; background-size: auto 100%; background-position: bottom left; z-index: 2; }
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; z-index: 3;}
         #tk-runway-surface { width: 100%; height: 100%; background-repeat: repeat-x; background-size: 256px 60px; }
         #tk-mountain { position: absolute; bottom: 60px; left: 100%; width: 200px; height: 200px; z-index: 3; display: none; }
@@ -649,12 +649,13 @@
     </div>
 
     <script>
+        // --- 1. DECLARE GLOBAL VARIABLES FIRST ---
         let db = null;
         let radarMap = null;
         let radarLayerGroup = null;
         let radarPathGroup = null;
         let radarCountdown = null;
-        let radarTimeMs = 600000; 
+        let radarTimeMs = 600000; // 10 minutes
         let lastTimerTick = 0;
         let encryptionInterval = null;
         let radarLevel = 1;
@@ -706,7 +707,10 @@
             bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0
         };
 
-        const firebaseConfig = {};
+        // --- 2. FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            // PASTE YOUR KEYS HERE
+        };
 
         try {
             if (typeof firebase !== 'undefined') {
@@ -715,6 +719,7 @@
             }
         } catch(e) { console.warn("Firebase uninitialized or blocked.", e); }
 
+        // --- 3. GAME DATA CONSTANTS ---
         const ICONS = {
             plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
             jet: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12,2 L14,10 L22,14 L22,16 L14,15 L14,19 L16,21 L16,22 L12,21 L8,22 L8,21 L10,19 L10,15 L2,16 L2,14 L10,10 Z"/></svg>`,
@@ -770,6 +775,7 @@
         const cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
         const cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
 
+        // --- 4. GAME ENGINE LOGIC ---
         function getOptionsForImage(correctName, isClassified) {
             const pool = isClassified ? AIRCRAFT_DATA.classified : AIRCRAFT_DATA.standard;
             let options = [correctName];
@@ -778,6 +784,7 @@
             return options.sort(() => Math.random() - 0.5);
         }
 
+        // --- FUEL DRAIN HELPER ---
         function drainFuel(amount) {
             if (globalState.extraFuel > 0) {
                 if (globalState.extraFuel >= amount) {
@@ -831,25 +838,30 @@
                     }
                 });
                 
-                const tkViewport = document.getElementById('takeoff-viewport');
+                // NEW TAKEOFF TAP ANYWHERE LOGIC
+                const tkArea = document.getElementById('takeoff-game-area');
                 const handlePress = (e) => { 
                     if (!tkState.active) return;
-                    if (e.target.closest('button') || e.target.closest('.takeoff-hud') || e.target.closest('.game-header')) return;
+                    if (e.target.closest('button') || e.target.closest('.takeoff-hud') || e.target.closest('.game-header') || e.target.closest('.footer-buttons')) return;
                     
                     if (e.cancelable) e.preventDefault();
                     if (tkState.speed < 140) {
                         const speedVal = document.getElementById('tk-speed-val');
                         speedVal.style.transform = "scale(1.5)";
-                        setTimeout(() => speedVal.style.transform = "scale(1)", 150);
+                        speedVal.style.color = "orange";
+                        setTimeout(() => {
+                            speedVal.style.transform = "scale(1)";
+                            speedVal.style.color = "var(--brand-red)";
+                        }, 150);
                         return;
                     }
                     tkState.pressing = true; 
                 };
                 const handleRelease = () => { if(tkState.active) tkState.pressing = false; };
                 
-                if(tkViewport) {
-                    tkViewport.addEventListener('pointerdown', handlePress);
-                    tkViewport.addEventListener('touchstart', handlePress, {passive: false});
+                if(tkArea) {
+                    tkArea.addEventListener('pointerdown', handlePress);
+                    tkArea.addEventListener('touchstart', handlePress, {passive: false});
                     window.addEventListener('pointerup', handleRelease);
                     window.addEventListener('touchend', handleRelease);
                     window.addEventListener('pointercancel', handleRelease);
@@ -1218,7 +1230,7 @@
             globalState.hasSeenTakeoffTutorial = true;
             saveState();
             document.getElementById('takeoff-tutorial-overlay').style.display = 'none';
-            startTakeoff();
+            setTimeout(() => { startTakeoff(); }, 100);
         }
 
         function startTakeoff() {
@@ -1670,6 +1682,7 @@
             }
         }
 
+        // --- CUSTOM MODAL LOGIC & PROGRESSION ---
         function openInterceptModal(plane, marker) {
             if (radarTimeMs <= 0) return;
             pendingInterceptPlane = { data: plane, marker: marker };
@@ -2003,7 +2016,7 @@
         function cancelReset() { document.getElementById('restart-overlay').style.display = 'none'; }
         
         function confirmReset() { 
-            const lastUser = globalState.username;
+            const lastUser = globalState.username || localStorage.getItem('last_pilot_name');
             localStorage.clear(); 
             if (lastUser) localStorage.setItem('last_pilot_name', lastUser);
             location.reload(); 

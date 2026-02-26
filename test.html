@@ -228,15 +228,15 @@
         .pop-reveal { animation: quickPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes quickPop { 0% { opacity: 0; transform: scale(0.5); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
 
-        /* SCAN REWARD ANIMATION */
+        /* POWERUP REWARD TOAST */
         .scan-reward-toast {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: #fff; font-weight: bold; text-align: center;
             text-shadow: 0 0 20px var(--aux-blue), 2px 2px 0 #000; z-index: 100000; pointer-events: none; opacity: 0;
             animation: scanPop 2.5s ease-out forwards; display: flex; flex-direction: column; align-items: center;
-            background: rgba(0,0,0,0.85); padding: 25px; border-radius: 15px; border: 2px solid var(--aux-blue); box-shadow: 0 0 30px rgba(52, 152, 219, 0.5);
+            background: rgba(0,0,0,0.85); padding: 25px; border-radius: 15px; border: 2px solid var(--aux-blue); box-shadow: 0 0 20px rgba(52, 152, 219, 0.4);
         }
-        .scan-icon-anim { width: 60px; height: 60px; color: var(--aux-blue); margin-bottom: 10px; animation: scanPulse 0.5s infinite alternate; }
+        .scan-icon-anim { width: 40px; height: 40px; color: var(--aux-blue); margin-bottom: 10px; animation: scanPulse 0.5s infinite alternate; }
         @keyframes scanPop { 0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 20% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -70%) scale(1.1); } }
         @keyframes scanPulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
 
@@ -336,7 +336,7 @@
         }
         .radar-accordion-body.open { display: flex; }
 
-        .radar-content { font-size: 0.85rem; line-height: 1.4; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
+        .radar-content { font-size: 0.85rem; line-height: 1.4; text-transform: uppercase; word-wrap: break-word;}
         .radar-highlight { color: #000; background: var(--radar-green); padding: 0 4px; font-weight: bold; display: inline-block;}
         
         .radar-toggle-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; width: 100%; }
@@ -1552,119 +1552,6 @@
             renderDashboard();
         }
 
-        // ==========================================
-        // POWERUP FUNCTIONS
-        // ==========================================
-        function updatePowerupsUI() {
-            const p = globalState.powerups;
-            
-            const btnScan = document.getElementById('btn-pu-scan');
-            const btnDrone = document.getElementById('btn-pu-drone');
-            const btnFuel = document.getElementById('btn-pu-fuel');
-            
-            document.getElementById('badge-pu-scan').textContent = p.scans;
-            document.getElementById('badge-pu-drone').textContent = p.drones;
-            document.getElementById('badge-pu-fuel').textContent = p.fuelPods;
-
-            if(p.scans > 0) btnScan.classList.remove('empty'); else btnScan.classList.add('empty');
-            if(p.drones > 0) btnDrone.classList.remove('empty'); else btnDrone.classList.add('empty');
-            if(p.fuelPods > 0) btnFuel.classList.remove('empty'); else btnFuel.classList.add('empty');
-        }
-
-        function useIntelScan() {
-            const lState = globalState.levels[activeLevelIdx];
-            if (lState.completed || globalState.powerups.scans <= 0) return;
-            
-            globalState.powerups.scans -= 1;
-            saveState();
-            updatePowerupsUI();
-
-            if (lState.type === 'image') {
-                const wrapper = document.getElementById('game-wrapper');
-                wrapper.classList.add('flash-screen'); 
-                setTimeout(() => wrapper.classList.remove('flash-screen'), 1000); 
-
-                const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
-                hiddenTiles.forEach(p => {
-                    p.style.transition = 'background 0.3s ease, opacity 1s ease 0.3s, transform 1s ease 0.3s';
-                    p.style.background = 'rgba(52, 152, 219, 0.4)';
-                    p.style.borderColor = 'var(--aux-blue)';
-                    p.style.boxShadow = '0 0 10px var(--aux-blue)';
-                    p.style.pointerEvents = 'none';
-                    setTimeout(() => { p.style.opacity = '0'; p.style.transform = 'scale(0.8)'; }, 50);
-                });
-                
-                lState.revealedTiles = [...Array(100).keys()];
-                saveState();
-                showFloat(window.innerWidth/2, window.innerHeight/3, "INTEL SCAN COMPLETE");
-            } else if (lState.type === 'trivia') {
-                showFloat(window.innerWidth/2, window.innerHeight/3, "INTEL SCAN COMPLETE");
-                setTimeout(() => submitTrivia(lState.correctIdx), 500);
-            }
-        }
-
-        function usePrecisionDrone() {
-            const lState = globalState.levels[activeLevelIdx];
-            if (lState.completed || globalState.powerups.drones <= 0) return;
-            
-            globalState.powerups.drones -= 1;
-            saveState();
-            updatePowerupsUI();
-
-            if (lState.type === 'image') {
-                if(!lState.revealedTiles) lState.revealedTiles = [];
-                let unrevealed = [];
-                for(let i=0; i<100; i++) { if(!lState.revealedTiles.includes(i)) unrevealed.push(i); }
-                
-                // Shuffle and pick 15
-                unrevealed.sort(() => Math.random() - 0.5);
-                let toReveal = unrevealed.slice(0, 15);
-                
-                lState.revealedTiles.push(...toReveal);
-                saveState();
-
-                const grid = document.getElementById('cover-grid');
-                toReveal.forEach(idx => {
-                    let tile = grid.children[idx];
-                    if(tile) {
-                        tile.style.transition = 'opacity 0.5s ease, background 0.2s';
-                        tile.style.background = 'var(--brand-red)';
-                        setTimeout(() => tile.classList.add('revealed'), 200);
-                    }
-                });
-                showFloat(window.innerWidth/2, window.innerHeight/3, "TARGETS ACQUIRED");
-            } else if (lState.type === 'trivia') {
-                let wrongIndices = [];
-                lState.options.forEach((opt, i) => {
-                    if(i !== lState.correctIdx) {
-                        const btn = document.getElementById('btn-opt-' + i);
-                        if(btn && !btn.disabled) wrongIndices.push(i);
-                    }
-                });
-                if(wrongIndices.length > 0) {
-                    let target = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
-                    const btn = document.getElementById('btn-opt-' + target);
-                    btn.disabled = true;
-                    btn.style.opacity = '0.3';
-                    btn.style.textDecoration = 'line-through';
-                    showFloat(window.innerWidth/2, window.innerHeight/3, "TARGET ELIMINATED");
-                }
-            }
-        }
-
-        function useFuelPod() {
-            const lState = globalState.levels[activeLevelIdx];
-            if (lState.completed || globalState.powerups.fuelPods <= 0) return;
-            
-            globalState.powerups.fuelPods -= 1;
-            globalState.currentFuel += 300;
-            saveState();
-            
-            updatePowerupsUI();
-            updateMiniFuelUI();
-            showFloat(window.innerWidth/2, window.innerHeight/3, "+300 FUEL");
-        }
-
         function handleInteraction(e) {
             const lState = globalState.levels[activeLevelIdx];
             if (lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
@@ -1765,7 +1652,7 @@
             const hangarView = document.getElementById('hangar-view');
             
             gameView.classList.remove('active');
-            renderDashboard(); // Always sync state
+            renderDashboard(); 
             
             if (activeLevelIdx !== null && activeLevelIdx !== undefined && globalState.levels[activeLevelIdx]) {
                 let hNum = globalState.levels[activeLevelIdx].hangar;

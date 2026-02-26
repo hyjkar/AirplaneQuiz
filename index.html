@@ -29,8 +29,7 @@
             --radar-green: #33ff33;
             --aux-blue: #3498db;
         }
-        
-        /* -webkit-tap-highlight-color removes the mobile tap flash globally */
+        /* Tap highlight color transparent removes the mobile screen flash */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
@@ -103,7 +102,7 @@
             color: var(--brand-dark); cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             transition: transform 0.1s, background-color 0.1s; flex-shrink: 0;
         }
-        .icon-btn:active { transform: scale(0.92); background-color: #f0f0f0; }
+        .icon-btn:active { transform: scale(0.92); }
         
         .icon-btn.logout { background-color: var(--brand-red); color: white; border-color: #b01015; }
         .icon-btn.logout:active { background-color: #b01015; }
@@ -150,7 +149,7 @@
         /* --- BUTTONS --- */
         .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 5px; z-index: 20; position: relative;}
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; transition: visibility 0s; }
-        button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none; text-transform: uppercase; }
+        button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none; -webkit-tap-highlight-color: transparent; }
         .primary-btn { background-color: var(--brand-red); color: white; }
         .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
         .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
@@ -166,10 +165,8 @@
         .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; z-index: 10; position: relative; }
         .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; display: flex; align-items: center; gap: 6px; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
-        
-        /* UPDATED: Intel Scan Button Container */
-        #scan-wrapper { margin-bottom: 5px; width: 100%; text-align: center; flex-shrink: 0; position: relative; z-index: 10;}
-        #intel-scan-btn { background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; border: 1px solid #74b9ff; box-shadow: 0 0 10px rgba(52, 152, 219, 0.4); padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; text-transform: uppercase; border-radius: 4px; }
+        #bomb-wrapper { margin-bottom: 5px; width: 100%; text-align: center; flex-shrink: 0; position: relative; z-index: 10;}
+        #smart-bomb-btn { background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; border: 1px solid #74b9ff; box-shadow: 0 0 10px rgba(52, 152, 219, 0.4); padding: 8px; font-size: 0.9rem; letter-spacing: 1px; display: none; text-transform: uppercase; border-radius: 4px; }
 
         /* --- IMAGE MODE --- */
         #image-game-area { width: 100%; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; z-index: 10; position: relative; }
@@ -181,8 +178,6 @@
         .grid-piece { background: linear-gradient(135deg, #2a2a2a 0%, #151515 100%); border: 1px solid #333; border-top-color: #444; border-left-color: #444; display: flex; justify-content: center; align-items: center; position: relative; transition: opacity 0.3s ease; touch-action: none; }
         .grid-piece::after { content: 'FC'; font-family: 'Share Tech Mono', monospace; color: rgba(207, 168, 110, 0.15); font-size: 14px; font-weight: bold; }
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
-        
-        /* UPDATED: Scanned tiles style instead of Exploded */
         .grid-piece.scanned { z-index: 9999 !important; border: 2px solid var(--aux-blue) !important; box-shadow: 0 0 20px var(--aux-blue) !important; background: var(--aux-blue) !important; }
         .grid-piece.scanned::after { color: #fff; }
         
@@ -199,15 +194,15 @@
         .pop-reveal { animation: quickPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes quickPop { 0% { opacity: 0; transform: scale(0.5); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
 
-        /* SCAN REWARD ANIMATION (Updated from Bomb) */
+        /* SCAN REWARD ANIMATION */
         .scan-reward-toast {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: #fff; font-weight: bold; text-align: center;
             text-shadow: 0 0 20px var(--aux-blue), 2px 2px 0 #000; z-index: 100000; pointer-events: none; opacity: 0;
             animation: scanPop 2.5s ease-out forwards; display: flex; flex-direction: column; align-items: center;
-            background: rgba(0,0,0,0.85); padding: 25px; border-radius: 15px; border: 2px solid var(--aux-blue); box-shadow: 0 0 20px rgba(52, 152, 219, 0.4);
+            background: rgba(0,0,0,0.85); padding: 25px; border-radius: 15px; border: 2px solid var(--aux-blue); box-shadow: 0 0 30px rgba(52, 152, 219, 0.5);
         }
-        .scan-icon-anim { width: 40px; height: 40px; color: var(--aux-blue); margin-bottom: 10px; animation: scanPulse 0.5s infinite alternate; }
+        .scan-icon-anim { margin-bottom: 10px; animation: scanPulse 0.5s infinite alternate; }
         @keyframes scanPop { 0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 20% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -70%) scale(1.1); } }
         @keyframes scanPulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
 
@@ -286,7 +281,7 @@
         .radar-panel {
             background: rgba(5, 16, 5, 0.9); border: 1px solid var(--radar-green); border-radius: 8px;
             font-family: 'Share Tech Mono', monospace; color: var(--radar-green); overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.8), inset 0 0 10px rgba(51, 255, 51, 0.05); backdrop-filter: blur(5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8), inset 0 0 15px rgba(51, 255, 51, 0.05); backdrop-filter: blur(5px);
         }
         
         .radar-accordion-header {
@@ -561,8 +556,8 @@
             </div>
         </div>
         
-        <div id="scan-wrapper">
-            <button id="intel-scan-btn" onclick="triggerIntelScan()">
+        <div id="bomb-wrapper">
+            <button id="smart-bomb-btn" onclick="triggerSmartBomb()">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="vertical-align: text-bottom; margin-right: 5px;"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg> 
                 INITIATE DEEP SCAN
             </button>
@@ -686,20 +681,30 @@
 
     <div id="radar-view" class="view-section">
         
-        <div class="radar-top-accordion">
-            <div class="radar-accordion-header open" id="radar-intel-header" onclick="toggleRadarInfo()">
-                <div class="radar-accordion-title">
-                    <span class="acc-icon">[-]</span> TARGET INTEL
-                    <div style="font-size:0.75rem; color:#aaa; margin-top:2px;" class="lvl-text">LEVEL 1 OF 10</div>
+        <div class="radar-panels-wrapper">
+            <div class="radar-panel">
+                <div class="radar-accordion-header open" id="radar-intel-header" onclick="toggleRadarIntel()">
+                    <div class="radar-accordion-title">
+                        <span class="acc-icon-intel">[-]</span> TARGET INTEL
+                        <div style="font-size:0.7rem; color:#aaa; margin-top:2px;" class="lvl-text">LEVEL 1 OF 10</div>
+                    </div>
+                    <div id="radar-timer">30:00:00</div>
                 </div>
-                <div id="radar-timer">30:00:00</div>
+                <div class="radar-accordion-body open" id="radar-intel-body">
+                    <div class="radar-content" id="radar-screen-text">
+                        ESTABLISHING UPLINK...<br>
+                        SCANNING SECTOR...<span class="blinking-cursor">_</span>
+                    </div>
+                </div>
             </div>
-            <div class="radar-accordion-body open" id="radar-info-body">
-                <div class="radar-content" id="radar-screen-text">
-                    ESTABLISHING UPLINK...<br>
-                    SCANNING SECTOR...<span class="blinking-cursor">_</span>
+
+            <div class="radar-panel">
+                <div class="radar-accordion-header" id="radar-filters-header" onclick="toggleRadarFilters()">
+                    <div class="radar-accordion-title">
+                        <span class="acc-icon-filters">[+]</span> SENSOR FILTERS
+                    </div>
                 </div>
-                <div class="radar-setup-container">
+                <div class="radar-accordion-body" id="radar-filters-body">
                     <div class="radar-toggle-group">
                         <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
                         <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">CITIES: OFF</button>
@@ -898,6 +903,7 @@
             setTimeout(() => { document.getElementById('refuel-overlay').style.display = 'flex'; }, 500);
         }
 
+        // ====== MODIFIED TO INTEL SCAN REWARD ======
         function awardIntelScan() {
             globalState.smartBombs = (globalState.smartBombs || 0) + 1;
             const bombEl = document.createElement('div');
@@ -922,6 +928,10 @@
             let toReveal = unrevealed.slice(0, count);
             globalState.passwordRevealed.push(...toReveal);
             saveState();
+        }
+
+        function showCatModal() {
+            document.getElementById('cat-modal').style.display = 'flex';
         }
 
         window.onload = function() {
@@ -1007,7 +1017,7 @@
                 
             } catch(e) { 
                 console.error("Critical Load Error", e); 
-                document.body.innerHTML = `<div style='color:red; background:white; padding:20px; font-family:monospace; border-radius:10px;'><h3>Game Crash</h3><p>${e.message}</p></div>`;
+                document.body.innerHTML = `<div style='color:red; background:rgba(0,0,0,0.9); border:2px solid red; padding:20px; font-family:monospace; border-radius:10px;'><h3>Game Crash</h3><p>${e.message}</p></div>`;
             }
         };
 
@@ -1313,7 +1323,7 @@
             const triviaArea = document.getElementById('trivia-game-area');
             const takeoffArea = document.getElementById('takeoff-game-area');
             const container = document.getElementById('game-container');
-            const scanBtn = document.getElementById('intel-scan-btn');
+            const bombBtn = document.getElementById('smart-bomb-btn');
             
             imgArea.style.display = 'none';
             triviaArea.style.display = 'none';
@@ -1342,10 +1352,11 @@
                 });
                 
                 if (globalState.smartBombs > 0 && !lState.completed) {
-                    scanBtn.style.display = "inline-block";
-                    scanBtn.innerHTML = `${ICONS.magGlass} INITIATE DEEP SCAN (${globalState.smartBombs})`;
+                    bombBtn.style.display = "inline-block";
+                    // REPLACED BOMB WITH MAGNIFYING GLASS
+                    bombBtn.innerHTML = `${ICONS.magGlass} INITIATE DEEP SCAN (${globalState.smartBombs})`;
                 } else {
-                    scanBtn.style.display = "none";
+                    bombBtn.style.display = "none";
                 }
 
                 const grid = document.getElementById('cover-grid');
@@ -1365,7 +1376,7 @@
                 }
             } else if (lState.type === 'trivia') {
                 triviaArea.style.display = 'flex';
-                scanBtn.style.display = "none";
+                bombBtn.style.display = "none";
 
                 document.getElementById('trivia-question').textContent = lState.question;
                 
@@ -1384,7 +1395,7 @@
                 });
             } else if (lState.type === 'takeoff') {
                 takeoffArea.style.display = 'flex';
-                scanBtn.style.display = "none";
+                bombBtn.style.display = "none";
                 
                 const sky = document.getElementById('tk-bg-sky');
                 const city = document.getElementById('tk-bg-city');
@@ -2397,9 +2408,9 @@
             renderDashboard();
         }
 
-        function triggerIntelScan() {
+        function triggerSmartBomb() {
             if (globalState.smartBombs <= 0) return;
-            const scanBtn = document.getElementById('intel-scan-btn');
+            const bombBtn = document.getElementById('smart-bomb-btn');
             const wrapper = document.getElementById('game-wrapper');
             const container = document.getElementById('game-container');
             
@@ -2420,7 +2431,7 @@
             globalState.smartBombs -= 1; 
             if(!globalState.levels[activeLevelIdx].revealedTiles) globalState.levels[activeLevelIdx].revealedTiles = [];
             globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()];
-            saveState(); scanBtn.style.display = "none";
+            saveState(); bombBtn.style.display = "none";
         }
 
         function handleInteraction(e) {
@@ -2448,7 +2459,7 @@
             if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
             if(selectedIndex === lState.correctIdx) {
                 const btn = document.getElementById('img-opt-' + selectedIndex);
-                btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "#000";
+                btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
                 endGame(true, "Target Verified");
             } else {
                 drainFuel(WRONG_GUESS_PENALTY);
@@ -2463,7 +2474,7 @@
             if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
             if(selectedIndex === lState.correctIdx) {
                 const btn = document.getElementById('btn-opt-' + selectedIndex);
-                btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "#000";
+                btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
                 endGame(true, "Analysis Correct");
             } else {
                 drainFuel(WRONG_GUESS_PENALTY);
@@ -2483,7 +2494,7 @@
                 const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
                 if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
                 triggerConfetti(); document.getElementById('level-title').textContent = lState.name; 
-                document.getElementById('intel-scan-btn').style.display = "none"; 
+                document.getElementById('smart-bomb-btn').style.display = "none"; 
                 
                 saveState();
                 if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);
@@ -2521,12 +2532,14 @@
             const hangarView = document.getElementById('hangar-view');
             
             gameView.classList.remove('active');
-            renderDashboard(); 
+            renderDashboard(); // Always sync state
             
             if (activeLevelIdx !== null && activeLevelIdx !== undefined && globalState.levels[activeLevelIdx]) {
+                // Return directly to the active Hangar
                 let hNum = globalState.levels[activeLevelIdx].hangar;
                 openHangar(hNum);
             } else {
+                // Failsafe
                 hangarView.classList.remove('active');
                 selectorView.classList.remove('active');
                 void selectorView.offsetWidth; 

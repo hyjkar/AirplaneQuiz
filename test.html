@@ -1,0 +1,2774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#d71920">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <title>Fuel Command</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --brand-red: #d71920;
+            --brand-gold: #cfa86e;
+            --brand-dark: #1a1a1a;
+            --bg-sand: #fcfbf9;
+            --gauge-green: #2ecc71;
+            --gauge-orange: #f39c12;
+            --radar-green: #33ff33;
+            --aux-blue: #3498db;
+        }
+        
+        /* Removes mobile tap flash globally */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-sand);
+            color: var(--brand-dark);
+            margin: 0; padding: 15px; 
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            overflow: hidden; user-select: none; -webkit-user-select: none;
+        }
+
+        /* --- OVERLAYS --- */
+        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay, #cat-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #111; color: var(--brand-gold); z-index: 10000;
+            flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
+        }
+        #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
+        #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
+        #takeoff-tutorial-overlay { background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); }
+        #cat-modal { background: rgba(0,0,0,0.95); z-index: 20000; overflow-y: auto; }
+        
+        /* SEAMLESS INTERCEPT HUD */
+        #intercept-overlay { 
+            background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%); 
+            backdrop-filter: none; justify-content: flex-end; padding-bottom: 40px; pointer-events: auto;
+        }
+        #intercept-box { min-height: 220px; display: flex; flex-direction: column; justify-content: center; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(8px); }
+        
+        @media screen and (orientation: landscape) and (max-height: 600px) {
+            #orientation-lock { display: flex; }
+        }
+
+        h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--brand-dark); margin: 0; text-align: center; text-transform: uppercase; }
+        h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
+
+        /* --- APP SWIPE ANIMATION --- */
+        .view-section { 
+            width: 100%; max-width: 500px; height: 100%; 
+            display: none; flex-direction: column; align-items: center; 
+            min-height: 0; position: relative; z-index: 1;
+        }
+        .view-section.active { 
+            display: flex; 
+            animation: swipeIn 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes swipeIn {
+            0% { transform: translateX(30px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        .gray-out { filter: grayscale(100%) contrast(1.2); }
+
+        .modal-box {
+            background: #222; border: 2px solid var(--brand-gold);
+            padding: 25px; border-radius: 12px; width: 100%; max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s ease;
+        }
+        .modal-box.danger { border-color: var(--brand-red); box-shadow: 0 0 20px rgba(215, 25, 32, 0.2); }
+        .modal-box.success { border-color: var(--gauge-green); box-shadow: 0 0 20px rgba(46, 204, 113, 0.2); }
+
+        /* --- DASHBOARD --- */
+        .dashboard-header { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+        
+        .icon-btn {
+            background: #fff; border: 1px solid #ddd; border-radius: 8px;
+            width: 36px; height: 36px; display: flex; justify-content: center; align-items: center;
+            color: var(--brand-dark); cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.1s, background-color 0.1s; flex-shrink: 0;
+        }
+        .icon-btn:active { transform: scale(0.92); }
+        
+        .icon-btn.logout { background-color: var(--brand-red); color: white; border-color: #b01015; }
+        .icon-btn.logout:active { background-color: #b01015; }
+        
+        .icon-btn.leaderboard { background-color: var(--aux-blue); color: white; border-color: #2980b9; }
+        .icon-btn.leaderboard:active { background-color: #2980b9; }
+
+        .fuel-tank-container { background: #222; padding: 15px; border-radius: 12px; width: 100%; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #444; position: relative; flex-shrink: 0; }
+        .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
+        .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
+        .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
+        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
+
+        #password-container { background: #1a1a1a; padding: 8px; border-radius: 8px; width: 100%; text-align: center; border: 1px dashed #555; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); margin: 0; }
+
+        /* --- HANGAR LIST --- */
+        #level-list-container, #hangar-level-list { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 8px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 0; }
+        #level-list-container::-webkit-scrollbar, #hangar-level-list::-webkit-scrollbar { width: 5px; }
+        #level-list-container::-webkit-scrollbar-thumb, #hangar-level-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
+
+        .world-folder { border: 1px solid #ddd; border-radius: 10px; background: white; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; transition: transform 0.1s; cursor: pointer; }
+        .world-folder:active { transform: scale(0.98); background-color: #f8f8f8; }
+        .world-folder.locked-world { opacity: 0.6; pointer-events: none; background: #f0f0f0; }
+        .world-header { padding: 18px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .world-title-group { display: flex; align-items: center; gap: 8px; }
+        .world-title-group h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-dark); }
+        .arrow { font-size: 1.2rem; color: #888; }
+
+        .level-strip { background: white; border: 1px solid #eee; border-radius: 6px; padding: 12px; width: 100%; min-height: 60px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform 0.1s; }
+        .level-strip:active { transform: scale(0.98); background-color: #f9f9f9; }
+        .level-strip.classified { border: 1px solid var(--brand-red); background: #fff5f5; }
+        .level-strip.special { border: 1px solid #3498db; background: #f4f9fd; }
+        .strip-icon { display: flex; align-items: center; justify-content: center; width: 30px; margin-right: 12px; }
+        .strip-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .strip-title { font-size: 0.95rem; color: var(--brand-dark); font-weight: bold; margin: 0; }
+        .strip-status { font-size: 0.7rem; font-weight: bold; color: #888; text-align: right; min-width: 70px; }
+        .status-ready { color: var(--brand-red); }
+        .status-done { color: #27ae60; }
+        .status-locked { color: #bbb; }
+        .level-strip.locked { background: #f9f9f9; border-color: #eee; cursor: not-allowed; opacity: 0.7; }
+        .level-strip.locked .strip-title { color: #aaa; }
+        .level-strip.locked .strip-icon { color: #ccc !important; }
+
+        /* --- BUTTONS --- */
+        .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 5px; z-index: 20; position: relative;}
+        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; transition: visibility 0s; }
+        button { font-family: 'Share Tech Mono', monospace; width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none; text-transform: uppercase; }
+        .primary-btn { background-color: var(--brand-red); color: white; }
+        .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
+        .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
+        .danger-btn { background-color: var(--brand-red); color: white; font-weight: bold; }
+        .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
+        .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
+        
+        .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s; padding: 10px;}
+        .radar-btn:active { background: var(--radar-green); color: #000; }
+        .radar-abort-btn { background: rgba(10, 10, 10, 0.85) !important; border: 1px solid var(--brand-red) !important; color: var(--brand-red) !important; backdrop-filter: blur(4px); font-weight: bold;}
+
+        /* --- INVENTORY / POWERUPS BAR --- */
+        #powerups-bar {
+            display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; margin-bottom: 10px; z-index: 10;
+        }
+        .pu-btn {
+            background: #fff; border: 2px solid #ccc; border-radius: 8px; width: 48px; height: 48px;
+            display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1); transition: transform 0.1s ease;
+        }
+        .pu-btn:active { transform: scale(0.92); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .pu-btn.empty { filter: grayscale(100%); opacity: 0.3; pointer-events: none; }
+        .pu-badge {
+            position: absolute; top: -6px; right: -6px; background: var(--brand-red); color: white;
+            font-size: 0.75rem; font-family: 'Share Tech Mono', monospace; font-weight: bold;
+            width: 22px; height: 22px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; border: 2px solid #fff;
+        }
+        .pu-scan { color: var(--aux-blue); border-color: rgba(52,152,219,0.3); }
+        .pu-drone { color: var(--brand-red); border-color: rgba(215,25,32,0.3); }
+        .pu-fuel { color: var(--gauge-green); border-color: rgba(46,204,113,0.3); }
+
+        /* --- GAMEPLAY (Shared) --- */
+        .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; z-index: 10; position: relative; }
+        .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; display: flex; align-items: center; gap: 6px; }
+        .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
+
+        /* --- IMAGE MODE --- */
+        #image-game-area { width: 100%; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; z-index: 10; position: relative; }
+        #game-wrapper { background: transparent; box-shadow: none; border-radius: 0; padding: 0; width: 100%; margin-bottom: 10px; position: relative; flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center; }
+        #game-container { position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; background-color: #000; border: 2px solid #ccc; cursor: pointer; overflow: hidden; border-radius: 4px;}
+        #game-container img { object-fit: cover; width: 100%; height: 100%; }
+        #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        #cover-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; }
+        .grid-piece { background: linear-gradient(135deg, #2a2a2a 0%, #151515 100%); border: 1px solid #333; border-top-color: #444; border-left-color: #444; display: flex; justify-content: center; align-items: center; position: relative; transition: opacity 0.3s ease; touch-action: none; }
+        .grid-piece::after { content: 'FC'; font-family: 'Share Tech Mono', monospace; color: rgba(207, 168, 110, 0.15); font-size: 14px; font-weight: bold; }
+        .grid-piece.revealed { opacity: 0; pointer-events: none; }
+        .grid-piece.scanned { z-index: 9999 !important; border: 2px solid var(--aux-blue) !important; box-shadow: 0 0 20px var(--aux-blue) !important; background: var(--aux-blue) !important; }
+        .grid-piece.scanned::after { color: #fff; }
+        
+        .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; }
+        #image-options-container .trivia-option { text-align: center; }
+
+        /* FLOATING TEXT & REVEAL ANIMATIONS */
+        .float-text {
+            position: fixed; color: var(--brand-red); font-family: 'Share Tech Mono', monospace; font-size: 1.8rem;
+            font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 99999;
+            transform: translate(-50%, -50%); animation: floatUp 0.8s ease-out forwards; white-space: nowrap; text-align: center;
+        }
+        @keyframes floatUp { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -100px) scale(1.5); opacity: 0; } }
+        .pop-reveal { animation: quickPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes quickPop { 0% { opacity: 0; transform: scale(0.5); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+
+        /* --- TRIVIA MODE --- */
+        #trivia-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; justify-content: center; gap: 15px; z-index: 10; position: relative;}
+        .trivia-dossier { background: #fff; border: 2px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .trivia-title { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: #888; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        #trivia-question { font-size: 1.2rem; font-weight: 500; color: var(--brand-dark); margin-bottom: 20px; line-height: 1.4; }
+        
+        #trivia-options-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        #trivia-options-container .trivia-option { text-align: left; } 
+        
+        .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: all 0.2s; cursor: pointer; display: block; width: 100%; line-height: 1.4; white-space: normal; word-wrap: break-word; }
+        .trivia-option:active { transform: scale(0.98); background: #eee; }
+        .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
+
+        /* --- TAKEOFF MINI GAME --- */
+        #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; position: relative;}
+        
+        .takeoff-hud { 
+            display: flex; justify-content: space-between; align-items: center; width: 100%; 
+            font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #333; 
+            margin-top: 5px; margin-bottom: 10px; padding: 10px 15px; background: rgba(255,255,255,0.9); 
+            border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 20; position: relative;
+            backdrop-filter: blur(4px); flex-shrink: 0; pointer-events: none;
+        }
+        #tk-speed-val { display: inline-block; transition: transform 0.1s ease, color 0.1s ease; }
+        .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
+        .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
+        
+        #takeoff-viewport { 
+            position: relative; width: 100%; flex-grow: 1; min-height: 250px; max-height: 400px;
+            border: 4px solid #222; border-radius: 8px; overflow: hidden; margin: 0; 
+            image-rendering: pixelated; background-color: #87CEEB; z-index: 5; 
+            touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+            cursor: pointer; box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+        }
+        
+        .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; background-repeat: repeat-x; pointer-events: none; }
+        #tk-bg-sky { background-size: 1024px 100%; z-index: 0; }
+        #tk-bg-city { height: 50%; background-size: 1024px 100%; background-position: bottom left; z-index: 1; bottom: 32px; top: auto;}
+        #tk-bg-ground { height: 25%; background-size: 1024px 100%; background-position: bottom left; z-index: 2; bottom: 32px; top: auto;}
+        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 32px; z-index: 3; pointer-events: none;}
+        #tk-runway-surface { width: 100%; height: 100%; background-repeat: repeat-x; background-size: 128px 32px; }
+        #tk-mountain { position: absolute; bottom: 32px; left: 100%; width: 150px; height: 150px; z-index: 3; display: none; pointer-events: none;}
+        #tk-plane { position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px; transform-origin: 50% 90%; z-index: 4; pointer-events: none;}
+        
+        #tk-weather-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 5; }
+        .weather-rain { width: 150%; height: 150%; top: -25%; left: -25%; background-image: repeating-linear-gradient(-15deg, transparent, transparent 15px, rgba(255,255,255,0.4) 16px, transparent 17px); background-size: 100px 100%; animation: rainFall 0.3s linear infinite; }
+        .weather-fog { width: 200%; height: 100%; top: 0; left: -50%; background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 60%); background-size: 50% 100%; background-repeat: repeat-x; animation: fogDrift 5s linear infinite alternate; filter: blur(8px); opacity: 0.8; }
+        @keyframes fogDrift { from { transform: translateX(-15%); } to { transform: translateX(15%); } }
+        
+        #tk-gauge-container { position: absolute; right: 15px; top: 15px; bottom: 60px; width: 20px; background: rgba(0,0,0,0.5); border-radius: 4px; border: 2px solid #fff; z-index: 6; pointer-events: none;}
+        #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); }
+        #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; }
+        .pixel-particle { position: absolute; width: 6px; height: 6px; z-index: 10; pointer-events: none;}
+
+        .flash-screen { animation: whiteFlash 0.6s ease-out; }
+        @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
+
+        #tk-touch-prompt {
+            position: absolute; top: 45%; left: 0; width: 100%; text-align: center;
+            color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 1.3rem;
+            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; pointer-events: none;
+            animation: pulseText 1.5s infinite; transition: opacity 0.3s; z-index: 8;
+        }
+        @keyframes pulseText { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+        /* --- VISUAL RADAR MODE --- */
+        #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; gap: 0; }
+        
+        .radar-top-accordion {
+            width: 100%; flex-shrink: 0; background: rgba(5, 16, 5, 0.9); border: 1px solid var(--radar-green); border-radius: 8px;
+            font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8), inset 0 0 15px rgba(51, 255, 51, 0.05); z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+        
+        .radar-accordion-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; cursor: pointer; z-index: 3; position: relative;
+            background: rgba(51, 255, 51, 0.05); border-bottom: 1px solid transparent;
+        }
+        .radar-accordion-header:active { background: rgba(51, 255, 51, 0.1); }
+        .radar-accordion-header.open { border-bottom-color: #1f3d1f; }
+        .radar-accordion-title { font-weight: bold; font-size: 1rem; color: var(--brand-gold); line-height: 1.2; }
+        
+        #radar-timer { font-size: 1.2rem; font-weight: bold; text-align: right; transition: color 0.3s; margin: 0; }
+        .timer-penalty { color: var(--brand-red) !important; text-shadow: 0 0 10px rgba(215, 25, 32, 0.8); }
+
+        .radar-accordion-body {
+            display: none; padding: 15px; flex-direction: column; z-index: 3; position: relative; gap: 15px; 
+            max-height: 45vh; overflow-y: auto;
+        }
+        .radar-accordion-body.open { display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; }
+
+        .radar-content { font-size: 0.95rem; line-height: 1.4; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
+        .radar-highlight { color: #000; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block;}
+        
+        .radar-setup-container { display: flex; flex-direction: column; flex-shrink: 0; min-width: 140px;}
+        .radar-toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
+        .radar-toggle {
+            background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green);
+            font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; padding: 6px 4px; cursor: pointer;
+            outline: none; border-radius: 4px; transition: all 0.2s; text-align: center;
+            box-shadow: inset 0 0 5px rgba(51,255,51,0.1);
+        }
+        .radar-toggle:hover { background: rgba(51, 255, 51, 0.2); }
+
+        .blinking-cursor { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Full Bleed Map Container */
+        #radar-map-wrapper {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0; border: none; border-radius: 0; margin: 0; box-shadow: none; background: #000;
+        }
+        #radar-map-container { width: 100%; height: 100%; background: #000; z-index: 1; }
+
+        .compass-pt { 
+            position: absolute; color: var(--radar-green); font-family: 'Share Tech Mono', monospace; 
+            font-size: 1.4rem; font-weight: bold; z-index: 1000; pointer-events: none; 
+            text-shadow: 0 0 10px #000, 0 0 15px #000, 2px 2px 2px rgba(0,0,0,0.8);
+            display: none; 
+        }
+        .compass-n { top: 90px; left: 50%; transform: translateX(-50%); }
+        .compass-s { bottom: 80px; left: 50%; transform: translateX(-50%); }
+        .compass-e { top: 50%; right: 15px; transform: translateY(-50%); }
+        .compass-w { top: 50%; left: 15px; transform: translateY(-50%); }
+
+        /* Leaflet Overrides */
+        .radar-plane-icon { background: transparent; border: none; transition: transform 0.1s linear; }
+        .leaflet-popup-content-wrapper { background: rgba(5, 16, 5, 0.95); color: var(--radar-green); border: 1px solid var(--radar-green); border-radius: 4px; font-family: 'Share Tech Mono', monospace; text-align: center; }
+        .leaflet-popup-tip { background: var(--radar-green); }
+        .radar-target-ping {
+            position: absolute; width: 40px; height: 40px; top: -8px; left: -8px;
+            border-radius: 50%; border: 2px solid var(--brand-gold);
+            animation: ping 1s infinite ease-out; pointer-events: none;
+        }
+        @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        
+        .radar-dest-label { pointer-events: none; }
+
+        /* Floating messaging */
+        #radar-message-container {
+            position: relative; z-index: 10; margin-top: auto; display: flex; justify-content: center; width: 100%; height: 30px; pointer-events: none;
+        }
+        #radar-message { font-size: 1rem; text-align: center; font-weight: bold; padding: 4px 12px; border-radius: 4px; display: none; }
+        #radar-message.success { color: var(--gauge-green); text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.8); border: 1px solid var(--gauge-green); box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); display: inline-block;} 
+        #radar-message.fail { color: var(--brand-red); text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.8); border: 1px solid var(--brand-red); box-shadow: 0 0 10px rgba(215, 25, 32, 0.4); display: inline-block;}
+
+        /* Regular game message */
+        #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
+        .success { color: #27ae60; } .fail { color: var(--brand-red); }
+
+        /* DESKTOP FULL SCREEN LAYOUT */
+        @media (min-width: 768px) {
+            #radar-view { max-width: 100%; }
+            .radar-top-accordion { position: absolute; top: 20px; left: 20px; width: 320px; margin: 0; }
+            #radar-view .footer-buttons { position: absolute !important; bottom: 20px !important; right: 20px !important; left: auto !important; transform: none !important; width: 200px !important; max-width: none !important; }
+        }
+
+        @media (max-height: 500px) {
+            .game-header { display: none !important; }
+            #game-wrapper { margin-bottom: 5px; }
+            h1 { display: none; }
+            .compass-n { top: 60px; }
+        }
+
+        /* --- LEADERBOARD --- */
+        #leaderboard-list { width: 100%; flex-grow: 1; overflow-y: auto; text-align: left; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; min-height: 0; }
+        .lb-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; align-items: center; }
+        .lb-rank { font-weight: bold; width: 30px; color: var(--brand-red); }
+        .lb-name { flex-grow: 1; font-weight: 500;}
+        .lb-fuel { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--brand-dark); }
+        .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
+        .tutorial-text { color: #ccc; font-size: 1rem; margin-bottom: 20px; text-align: left; line-height: 1.5; }
+        .tutorial-text strong { color: #fff; }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop preload="auto">
+        <source src="ambient.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="orientation-lock">
+        <svg viewBox="0 0 24 24" width="60" height="60" fill="currentColor" style="margin-bottom:20px;"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.25-.77c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.46L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zm-7.31.29C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
+        <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2>
+        <p>This mission requires Portrait Mode.</p>
+    </div>
+
+    <div id="takeoff-tutorial-overlay">
+        <div class="modal-box">
+            <h1 style="color: var(--brand-gold); margin-bottom: 15px;">FLIGHT MANUAL</h1>
+            <p class="tutorial-text">
+                1. Wait for your speed to reach <strong style="color:var(--gauge-green)">140 KTS</strong>. <br>
+                2. Tap and <strong>HOLD ANYWHERE</strong> on the view screen to pull the nose up.<br><br>
+                3. Keep the needle in the <strong style="color:var(--gauge-green)">GREEN ZONE</strong> to gain lift before the runway ends!<br><br>
+                <span style="color:#aaa; font-size:0.9rem;">⚠️ You have 3 attempts to earn a fuel bonus. If you fail, the mission is aborted.</span>
+            </p>
+            <button class="gold-btn" onclick="startTakeoffFromTutorial()">START ENGINES</button>
+        </div>
+    </div>
+
+    <div id="intercept-overlay">
+        <div class="modal-box danger" id="intercept-box">
+            <h1 id="intercept-title" style="color: var(--brand-red); margin-bottom: 10px;">CONFIRM INTERCEPT</h1>
+            <p id="intercept-desc" style="color: #ccc; font-size: 0.9rem;">Target signature encrypted:</p>
+            <div id="encrypted-callsign" style="font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: #fff; margin: 15px 0; letter-spacing: 5px;">***</div>
+            <div class="modal-buttons" id="intercept-buttons">
+                <button class="cancel-btn" onclick="cancelIntercept()">CANCEL</button>
+                <button class="danger-btn" onclick="confirmIntercept()">AUTHORIZE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-over-overlay">
+        <div class="modal-box danger">
+            <h1 style="color: var(--brand-red); margin-bottom: 10px; font-size: 1.8rem;">MISSION FAILED</h1>
+            <p style="margin-bottom: 5px; color: #fff; font-size: 1rem; font-weight: bold;">FUEL DEPLETED</p>
+            <button class="gold-btn" onclick="confirmReset()">RETIRE & RESTART</button>
+        </div>
+    </div>
+
+    <div id="restart-overlay">
+        <div class="modal-box danger">
+            <h1 style="color: var(--brand-red); margin-bottom: 10px;">SYSTEM PURGE</h1>
+            <p style="margin-bottom: 10px; color: #ccc; font-size: 0.9rem;">Delete all data?</p>
+            <div class="modal-buttons">
+                <button class="cancel-btn" onclick="cancelReset()">CANCEL</button>
+                <button class="danger-btn" onclick="confirmReset()">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="refuel-overlay">
+        <div class="modal-box success">
+            <div style="display:flex; justify-content:center; align-items:center; gap:15px; margin-bottom: 10px;">
+                <svg viewBox="0 0 24 24" width="50" height="50" fill="var(--gauge-green)"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>
+                <svg viewBox="0 0 24 24" width="50" height="50" fill="var(--aux-blue)"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </div>
+            <h1 style="color: var(--gauge-green); margin-bottom: 10px;">SUPPLY DROP</h1>
+            <p style="margin-bottom: 15px; color: #fff; font-size: 1.1rem; line-height:1.5;">
+                Hangar Completed.<br>
+                <strong style="color: var(--gauge-green);">+2000L Fuel Reserves</strong><br>
+                <span style="color: var(--aux-blue); display:block; margin-top:5px; font-weight:bold;">+1 Intel Scan</span>
+                <span style="color: var(--brand-red); display:block; font-weight:bold;">+1 Precision Drone</span>
+                <span style="color: var(--gauge-green); display:block; font-weight:bold;">+1 Reserve Fuel Pod</span>
+            </p>
+            <button class="gold-btn" onclick="closeRefuel()">CONTINUE</button>
+        </div>
+    </div>
+
+    <div id="login-overlay">
+        <div class="modal-box">
+            <h1 style="color: var(--brand-gold); margin-bottom: 10px;">IDENTIFY PILOT</h1>
+            <input type="text" id="callsign-input" placeholder="Callsign" maxlength="12" style="margin-bottom: 15px;" autocomplete="off">
+            <button class="gold-btn" onclick="registerPilot()">CONFIRM IDENTITY</button>
+        </div>
+    </div>
+
+    <div id="cat-modal">
+        <h1 style="color:var(--brand-gold); margin-bottom:10px;">TOP SECRET: AVIATION FELINES</h1>
+        <p style="color:#ccc; margin-bottom:20px;">Operation "Queen of the Skies" Successful.</p>
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; max-width:500px; margin-bottom:20px;">
+            <img src="https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/BzyTuYCmvSORqs1Qks/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/l4KibWpBGWchSqCRy/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/3oEduV4SOS9mmmIOkw/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+        </div>
+        <button class="primary-btn" onclick="document.getElementById('cat-modal').style.display='none'">CLOSE DOSSIER</button>
+    </div>
+
+    <div id="selector-view" class="view-section">
+        <div class="dashboard-header">
+            
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <div class="icon-btn leaderboard" onclick="openLeaderboard()" title="Global Leaderboard">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg>
+                </div>
+                <div style="flex-grow: 1; text-align: center;">
+                    <h1 style="margin:0;">Fuel Command</h1>
+                    <h2 id="pilot-greeting" style="margin: 2px 0 0 0;">Welcome Pilot</h2>
+                </div>
+                <div class="icon-btn logout" onclick="triggerResetUI()" title="Sign Out / Restart">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                </div>
+            </div>
+
+            <div class="fuel-tank-container">
+                <div class="fuel-label">Global Fuel Reserves</div>
+                <div class="fuel-value">
+                    <span id="total-fuel-display">4000</span><span style="font-size:1.2rem; color:#aaa;">L</span>
+                </div>
+                <div class="fuel-bar-bg"><div class="fuel-bar-fill" id="fuel-bar"></div></div>
+                
+                <div id="aux-fuel-container" style="display:none; margin-top:10px; border-top: 1px dashed #444; padding-top:8px;">
+                    <div class="fuel-label" style="color:var(--aux-blue);">AUXILIARY TANK</div>
+                    <div class="fuel-value" style="font-size: 1.8rem; color:var(--aux-blue);">
+                        <span id="aux-fuel-value">1500</span><span style="font-size:0.9rem; color:#888;">L</span>
+                    </div>
+                    <div class="fuel-bar-bg" style="height:6px;"><div class="fuel-bar-fill" id="aux-fuel-bar" style="background:var(--aux-blue);"></div></div>
+                </div>
+                <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;"></div>
+            </div>
+
+        </div>
+
+        <div id="level-list-container"></div>
+        
+        <div class="footer-buttons">
+            <button class="radar-btn" onclick="openRadar()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4-8c0 2.21-1.79 4-4 4s-4-1.79-4-4 1.79-4 4-4 4 1.79 4 4z"/></svg>
+                LIVE RADAR OPS
+            </button>
+            
+            <div id="password-container"></div>
+            
+            <button id="install-btn" class="dark-btn">📲 Install App</button>
+        </div>
+    </div>
+
+    <div id="hangar-view" class="view-section">
+        <div class="dashboard-header">
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div class="icon-btn" onclick="closeHangar()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                </div>
+                <h1 id="hangar-title" style="margin:0;">Hangar X</h1>
+                <div style="width: 36px;"></div>
+            </div>
+        </div>
+        <div id="hangar-level-list"></div>
+    </div>
+
+    <div id="game-view" class="view-section">
+        <div class="game-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="icon-btn" onclick="saveAndExit()" style="width: 32px; height: 32px; flex-shrink: 0;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                </div>
+                <div id="level-title" style="font-weight:bold; font-size:1.1rem;">Flight 1</div>
+            </div>
+            
+            <div class="mini-fuel" id="current-fuel-display">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>
+                <span>4000</span>
+                <span id="aux-fuel-display" style="color:var(--aux-blue); font-size:1rem; margin-left:5px; display:none;">+1500</span>
+            </div>
+        </div>
+        
+        <div id="powerups-bar">
+            <div class="pu-btn pu-scan" id="btn-pu-scan" onclick="useIntelScan()" title="Intel Scan">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <div class="pu-badge" id="badge-pu-scan">1</div>
+            </div>
+            <div class="pu-btn pu-drone" id="btn-pu-drone" onclick="usePrecisionDrone()" title="Precision Drone">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>
+                <div class="pu-badge" id="badge-pu-drone">1</div>
+            </div>
+            <div class="pu-btn pu-fuel" id="btn-pu-fuel" onclick="useFuelPod()" title="Reserve Fuel Pod">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>
+                <div class="pu-badge" id="badge-pu-fuel">1</div>
+            </div>
+        </div>
+
+        <div id="image-game-area">
+            <div id="game-wrapper">
+                <div id="game-container">
+                    <img id="mystery-image" src="" alt="Mystery Airplane">
+                    <div id="cover-grid"></div>
+                </div>
+            </div>
+            <div class="options-container" id="image-options-container">
+                <button class="trivia-option" id="img-opt-0" onclick="submitImageGuess(0)"></button>
+                <button class="trivia-option" id="img-opt-1" onclick="submitImageGuess(1)"></button>
+                <button class="trivia-option" id="img-opt-2" onclick="submitImageGuess(2)"></button>
+            </div>
+        </div>
+
+        <div id="trivia-game-area">
+            <div class="trivia-dossier">
+                <div class="trivia-title">Incident Analysis Report</div>
+                <div id="trivia-question">Question text goes here?</div>
+                <div id="trivia-options-container">
+                    <button class="trivia-option" id="btn-opt-0" onclick="submitTrivia(0)">A</button>
+                    <button class="trivia-option" id="btn-opt-1" onclick="submitTrivia(1)">B</button>
+                    <button class="trivia-option" id="btn-opt-2" onclick="submitTrivia(2)">C</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="takeoff-game-area">
+            <div class="takeoff-hud">
+                <div style="min-width: 85px;">SPD: <span id="tk-speed-val" style="color:var(--brand-red); font-weight:bold;">0</span></div>
+                <div>DIST: <div class="tk-bar-bg" style="width: 50px;"><div class="tk-bar-fill" id="tk-runway-fill" style="background:#f39c12"></div></div></div>
+                <div>LIFT: <div class="tk-bar-bg" style="width: 50px;"><div class="tk-bar-fill" id="tk-lift-fill"></div></div></div>
+            </div>
+            
+            <div id="takeoff-viewport">
+                <div id="tk-touch-prompt">TAP & HOLD TO PULL UP</div>
+                
+                <div id="tk-bg-sky" class="parallax-layer"></div>
+                <div id="tk-bg-city" class="parallax-layer"></div>
+                <div id="tk-bg-ground" class="parallax-layer"></div>
+                
+                <div id="tk-weather-overlay"></div>
+                
+                <div id="tk-gauge-container">
+                    <div id="tk-target-zone"></div>
+                    <div id="tk-needle"></div>
+                </div>
+                
+                <div id="tk-mountain">
+                    <svg viewBox="0 0 100 100" shape-rendering="crispEdges" width="100%" height="100%">
+                        <rect x="50" y="40" width="10" height="60" fill="#3b3b3b"/>
+                        <rect x="40" y="50" width="30" height="50" fill="#4a4a4a"/>
+                        <rect x="20" y="60" width="70" height="40" fill="#2d2d2d"/>
+                        <rect x="0" y="70" width="100" height="30" fill="#1f1f1f"/>
+                        <rect x="50" y="40" width="10" height="10" fill="#fff"/>
+                        <rect x="40" y="50" width="10" height="10" fill="#eee"/>
+                        <rect x="60" y="50" width="10" height="10" fill="#eee"/>
+                    </svg>
+                </div>
+                
+                <div id="tk-plane">
+                    <svg viewBox="0 0 80 30" width="100%" height="100%" shape-rendering="crispEdges">
+                        <rect x="4" y="2" width="8" height="12" fill="var(--brand-red)" />
+                        <rect x="2" y="8" width="2" height="6" fill="var(--brand-red)" />
+                        <rect x="6" y="14" width="68" height="8" fill="#fff" />
+                        <rect x="8" y="22" width="60" height="2" fill="#e0e0e0" /> 
+                        <rect x="74" y="16" width="4" height="6" fill="#fff" />
+                        <rect x="78" y="18" width="2" height="4" fill="#fff" />
+                        <rect x="72" y="16" width="4" height="2" fill="#1a1a1a" />
+                        <rect x="20" y="17" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="24" y="17" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="28" y="17" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="32" y="17" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="44" y="17" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="48" y="17" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="52" y="17" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="56" y="17" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="60" y="17" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="64" y="17" width="2" height="2" fill="#1a1a1a" />
+                        <rect x="14" y="16" width="4" height="6" fill="var(--brand-red)" />
+                        <rect x="38" y="17" width="4" height="5" fill="var(--brand-red)" />
+                        <rect x="68" y="16" width="2" height="6" fill="var(--brand-red)" />
+                        <rect x="34" y="20" width="16" height="2" fill="#d0d0d0" />
+                        <rect x="30" y="22" width="24" height="2" fill="#a0a0a0" />
+                        <rect x="26" y="24" width="24" height="2" fill="#808080" />
+                        <rect x="38" y="22" width="10" height="6" fill="#333" />
+                        <rect x="36" y="24" width="2" height="4" fill="#111" /> 
+                        <rect x="48" y="24" width="2" height="2" fill="#555" /> 
+                        <rect x="68" y="24" width="2" height="4" fill="#555" />
+                        <rect x="66" y="28" width="4" height="2" fill="#111" />
+                        <rect x="24" y="24" width="4" height="4" fill="#555" />
+                        <rect x="22" y="28" width="8" height="2" fill="#111" />
+                    </svg>
+                </div>
+                
+                <div id="tk-runway">
+                    <div id="tk-runway-surface"></div>
+                </div>
+            </div>
+            
+        </div>
+
+        <div id="message"></div>
+        
+    </div>
+
+    <div id="leaderboard-view" class="view-section">
+        <div style="flex-shrink: 0; width:100%; text-align:center;">
+            <h1>Global Standings</h1>
+            <h2 style="margin-bottom: 10px;">Top Fuel Reserves</h2>
+        </div>
+        <div id="leaderboard-list">Connecting to HQ...</div>
+        <div class="footer-buttons">
+            <button class="primary-btn" onclick="closeLeaderboard()">Back to Command</button>
+        </div>
+    </div>
+
+    <div id="radar-view" class="view-section">
+        
+        <div class="radar-top-accordion">
+            <div class="radar-accordion-header open" id="radar-accordion-header" onclick="toggleRadarInfo()">
+                <div class="radar-accordion-title">
+                    <span class="acc-icon">[-]</span> TARGET INTEL
+                    <div style="font-size:0.75rem; color:#aaa; margin-top:2px;" class="lvl-text">LEVEL 1 OF 10</div>
+                </div>
+                <div id="radar-timer">30:00:00</div>
+            </div>
+            <div class="radar-accordion-body open" id="radar-info-body">
+                <div class="radar-content" id="radar-screen-text">
+                    ESTABLISHING UPLINK...<br>
+                    SCANNING SECTOR...<span class="blinking-cursor">_</span>
+                </div>
+                <div class="radar-setup-container">
+                    <div class="radar-toggle-group">
+                        <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
+                        <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">LABELS: OFF</button>
+                        <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">REG: OFF</button>
+                        <button id="toggle-compass-btn" class="radar-toggle" onclick="toggleCompass()">COMP: OFF</button>
+                        <button id="toggle-origcity-btn" class="radar-toggle" onclick="toggleOrigCity()">ORIG: OFF</button>
+                        <button id="toggle-destcity-btn" class="radar-toggle" onclick="toggleDestCity()">DEST: OFF</button>
+                        <button id="toggle-alt-btn" class="radar-toggle" onclick="toggleAlt()">ALT: OFF</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="radar-map-wrapper">
+            <div id="radar-map-container"></div>
+            
+            <div class="compass-pt compass-n">N</div>
+            <div class="compass-pt compass-e">E</div>
+            <div class="compass-pt compass-s">S</div>
+            <div class="compass-pt compass-w">W</div>
+        </div>
+        
+        <div class="footer-buttons radar-footer" style="border: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;">
+             <button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button>
+        </div>
+    </div>
+
+    <script>
+        let db = null;
+        let radarMap = null;
+        let radarLayerGroup = null;
+        let radarPathGroup = null;
+        let radarCountdown = null;
+        let radarTimeMs = 1800000; // 30 minutes
+        let lastTimerTick = 0;
+        let encryptionInterval = null;
+        let menuPasswordInterval = null;
+        let radarLevel = 1;
+        let bgMusicStarted = false;
+        
+        let currentRadarCallsign = "";
+        let currentRadarPlanes = [];
+        
+        let pathsVisible = false;
+        let originVisible = false;
+        let altVisible = false;
+        let origCityVisible = false;
+        let destCityVisible = false;
+        let compassVisible = false;
+        let currentMapStyle = 'CLEAN'; 
+        
+        let activeLevelIdx = null;
+        let pendingInterceptPlane = null;
+        let radarAnimFrame = null;
+        let radarAnimTime = 0;
+
+        const RADAR_COLORS = ['#33FF33', '#00FFFF', '#FFCC00', '#FF3366', '#CC99FF', '#00FFCC', '#FF9933', '#99FF33', '#33CCFF', '#FF6699', '#FFFF66', '#FF5555'];
+
+        const RADAR_CENTERS = [
+            { name: "EU-CENTRAL", lat: 50, lng: 10 },
+            { name: "US-EAST", lat: 38, lng: -78 },
+            { name: "US-WEST", lat: 38, lng: -118 },
+            { name: "ASIA-EAST", lat: 35, lng: 135 }
+        ];
+
+        const CITIES = ["LONDON", "NEW YORK", "TOKYO", "PARIS", "DUBAI", "SYDNEY", "LOS ANGELES", "CHICAGO", "HONG KONG", "SINGAPORE", "BERLIN", "ROME", "MADRID", "TORONTO", "MUMBAI", "SAO PAULO", "MEXICO CITY", "CAIRO", "MOSCOW", "BEIJING", "SEOUL", "AMSTERDAM", "ISTANBUL", "BANGKOK", "KUALA LUMPUR", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON", "MONTREAL", "VANCOUVER", "BUENOS AIRES", "BOGOTA", "SANTIAGO", "LIMA", "CAPE TOWN", "JOHANNESBURG", "NAIROBI", "DELHI", "JAKARTA", "MANILA", "SHANGHAI", "TAIPEI", "OSAKA"];
+        const US_CITIES = ["NEW YORK", "LOS ANGELES", "CHICAGO", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON"];
+        const INTL_CITIES = CITIES.filter(c => !US_CITIES.includes(c));
+
+        const TARGET_PASSWORD = "QUEEN OF THE SKIES";
+
+        // 10 Level Escalation Curve (Story Mode)
+        const RADAR_LEVEL_CONFIG = {
+            1: { latOffset: 5, lngOffset: 8, planes: 8, hints: 2 },
+            2: { latOffset: 6, lngOffset: 10, planes: 12, hints: 2 },
+            3: { latOffset: 8, lngOffset: 12, planes: 16, hints: 3 },
+            4: { latOffset: 10, lngOffset: 15, planes: 22, hints: 3 },
+            5: { latOffset: 12, lngOffset: 18, planes: 28, hints: 4 },
+            6: { latOffset: 15, lngOffset: 22, planes: 34, hints: 4 },
+            7: { latOffset: 18, lngOffset: 28, planes: 40, hints: 5 },
+            8: { latOffset: 22, lngOffset: 35, planes: 48, hints: 5 },
+            9: { latOffset: 26, lngOffset: 42, planes: 56, hints: 6 },
+            10: { latOffset: 30, lngOffset: 50, planes: 64, hints: 7 } 
+        };
+
+        const STARTING_GLOBAL_FUEL = 4000;
+        const REFUEL_AMOUNT = 2000; 
+        const TILE_COST = 15;
+        const WRONG_GUESS_PENALTY = 200;
+
+        let globalState = {
+            username: null,
+            currentFuel: STARTING_GLOBAL_FUEL,
+            extraFuel: 0,
+            powerups: { scans: 1, drones: 1, fuelPods: 1 },
+            levels: [],
+            hasSeenTakeoffTutorial: false,
+            world1Complete: false,
+            world2Complete: false,
+            world3Complete: false,
+            passwordRevealed: []
+        };
+
+        let tkState = { 
+            active: false, pitch: 0, pitchVelocity: 0, lift: 0, 
+            distance: 100, speed: 0, pressing: false, frameId: null,
+            bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0
+        };
+
+        const firebaseConfig = {};
+
+        try {
+            if (typeof firebase !== 'undefined') {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+            }
+        } catch(e) { console.warn("Firebase uninitialized or blocked.", e); }
+
+        const ICONS = {
+            plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
+            jet: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12,2 L14,10 L22,14 L22,16 L14,15 L14,19 L16,21 L16,22 L12,21 L8,22 L8,21 L10,19 L10,15 L2,16 L2,14 L10,10 Z"/></svg>`,
+            folder: `<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`,
+            lock: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="vertical-align: text-bottom; margin-right: 2px;"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>`,
+            star: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
+            fuel: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>`,
+            takeoff: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M2.5 19h19v2h-19zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 1.82 3.16.77 1.33 1.6-.43 5.31-1.42 4.35-1.16L21 11.49c.81-.23 1.28-1.05 1.07-1.85z"/></svg>`,
+            cross: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`,
+            magGlass: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`,
+            drone: `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>`
+        };
+
+        const AIRCRAFT_DATA = {
+            standard: [
+                { type: 'image', image: "747.jpg", name: "Boeing 747" },
+                { type: 'image', image: "a380.jpg", name: "Airbus A380" },
+                { type: 'image', image: "787.jpg", name: "Boeing 787" },
+                { type: 'image', image: "e175.jpg", name: "Embraer E175" },
+                { type: 'image', image: "concorde.jpg", name: "Concorde" },
+                { type: 'image', image: "antonov.jpg", name: "Antonov An-225" },
+                { type: 'image', image: "a350.jpg", name: "Airbus A350" }
+            ],
+            classified: [
+                { type: 'image', image: "f22.jpg", name: "F-22 Raptor" },
+                { type: 'image', image: "sr71.jpg", name: "SR-71 Blackbird" },
+                { type: 'image', image: "spitfire.jpg", name: "Supermarine Spitfire" },
+                { type: 'image', image: "p51.jpg", name: "P-51D Mustang" }
+            ]
+        };
+
+        const TRIVIA_DATA = [
+            { type: 'trivia', question: "What caused the 1977 Tenerife airport disaster, the deadliest accident in aviation history?", options: ["A runway collision in thick fog", "A mid-air collision over the Atlantic", "Dual engine failure due to volcanic ash"], correctIdx: 0, name: "Tenerife Disaster" },
+            { type: 'trivia', question: "What forced US Airways Flight 1549 (the 'Miracle on the Hudson') to ditch into the river?", options: ["Complete loss of hydraulic fluid", "A flock of geese struck both engines", "Fuel starvation due to a leak"], correctIdx: 1, name: "Hudson River Ditching" },
+            { type: 'trivia', question: "Why did Air Canada Flight 143 (the 'Gimli Glider') run out of fuel mid-flight?", options: ["The fuel tanks were punctured", "A mix-up between pounds and kilograms", "The pilots forgot to switch fuel tanks"], correctIdx: 1, name: "Gimli Glider Incident" },
+            { type: 'trivia', question: "The tragic 1985 crash of Japan Airlines Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" }
+        ];
+
+        const RUNWAY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="32" viewBox="0 0 128 32"><rect width="128" height="32" fill="#333"/><rect x="10" y="14" width="40" height="4" fill="#fff"/></svg>`;
+        const THEMES = {
+            1: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#87CEEB"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2E8B57"/></svg>` },
+            2: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#5F9EA0"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#556B2F"/></svg>` },
+            3: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2F4F4F"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#A9A9A9"/></svg>` }
+        };
+
+        function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
+
+        const cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
+        const cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
+
+        function getOptionsForImage(correctName, isClassified) {
+            const pool = isClassified ? AIRCRAFT_DATA.classified : AIRCRAFT_DATA.standard;
+            let options = [correctName];
+            let others = pool.filter(x => x.name !== correctName).sort(() => Math.random() - 0.5);
+            if(others.length >= 2) { options.push(others[0].name, others[1].name); }
+            return options.sort(() => Math.random() - 0.5);
+        }
+
+        function drainFuel(amount) {
+            if (globalState.extraFuel > 0) {
+                if (globalState.extraFuel >= amount) {
+                    globalState.extraFuel -= amount;
+                } else {
+                    let remainder = amount - globalState.extraFuel;
+                    globalState.extraFuel = 0;
+                    globalState.currentFuel = Math.max(0, globalState.currentFuel - remainder);
+                }
+            } else {
+                globalState.currentFuel = Math.max(0, globalState.currentFuel - amount);
+            }
+            saveState();
+            updateMiniFuelUI();
+        }
+
+        // ====== MODIFIED HANGAR REWARD LOGIC ======
+        function triggerHangarReward() {
+            globalState.currentFuel += REFUEL_AMOUNT;
+            if(!globalState.powerups) globalState.powerups = { scans: 0, drones: 0, fuelPods: 0 };
+            globalState.powerups.scans += 1;
+            globalState.powerups.drones += 1;
+            globalState.powerups.fuelPods += 1;
+            saveState();
+            setTimeout(() => { document.getElementById('refuel-overlay').style.display = 'flex'; }, 500);
+        }
+
+        // ====== SECRET PASSWORD LOGIC ======
+        function awardPasswordLetters(count) {
+            if (!globalState.passwordRevealed) globalState.passwordRevealed = [];
+            let unrevealed = [];
+            for (let i = 0; i < TARGET_PASSWORD.length; i++) {
+                if (TARGET_PASSWORD[i] !== ' ' && !globalState.passwordRevealed.includes(i)) {
+                    unrevealed.push(i);
+                }
+            }
+            if (unrevealed.length === 0) return;
+            
+            unrevealed.sort(() => Math.random() - 0.5);
+            let toReveal = unrevealed.slice(0, count);
+            globalState.passwordRevealed.push(...toReveal);
+            saveState();
+        }
+
+        window.onload = function() {
+            try { 
+                loadState(); 
+                
+                const lastUser = localStorage.getItem('last_pilot_name');
+                if (lastUser) {
+                    const ci = document.getElementById('callsign-input');
+                    if (ci) ci.value = lastUser;
+                }
+
+                if (!globalState.username) {
+                    document.getElementById('login-overlay').style.display = 'flex';
+                } else {
+                    document.getElementById('selector-view').classList.add('active');
+                    document.getElementById('pilot-greeting').textContent = `Pilot: ${globalState.username}`;
+                    renderDashboard();
+                    if (isAllWorldsComplete()) syncScoreToCloud();
+                }
+                
+                let ci = document.getElementById('callsign-input');
+                if(ci) ci.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') { this.blur(); registerPilot(); }
+                });
+
+                window.addEventListener('pointerdown', function initAudio() {
+                    if (!bgMusicStarted) {
+                        const bgm = document.getElementById('bg-music');
+                        if (bgm) {
+                            bgm.volume = 0.3;
+                            bgm.play().catch(e => console.log("Audio play blocked", e));
+                            bgMusicStarted = true;
+                        }
+                        window.removeEventListener('pointerdown', initAudio);
+                    }
+                });
+                
+                document.addEventListener("visibilitychange", () => {
+                    const bgm = document.getElementById('bg-music');
+                    if (bgm && bgMusicStarted) {
+                        if (document.hidden) {
+                            bgm.pause();
+                        } else {
+                            bgm.play().catch(e => console.log("Audio resume blocked", e));
+                        }
+                    }
+                });
+
+                const tkViewport = document.getElementById('takeoff-viewport');
+                const handlePress = (e) => { 
+                    if (!tkState.active) return;
+                    if (e.target && typeof e.target.closest === 'function') {
+                        if (e.target.closest('button') || e.target.closest('.takeoff-hud') || e.target.closest('.game-header') || e.target.closest('.footer-buttons') || e.target.closest('.pu-btn')) return;
+                    }
+                    if (e.cancelable) e.preventDefault();
+                    
+                    if (tkState.speed < 140) {
+                        const speedVal = document.getElementById('tk-speed-val');
+                        if(speedVal) {
+                            speedVal.style.transform = "scale(1.5)";
+                            speedVal.style.color = "var(--gauge-orange)";
+                            setTimeout(() => {
+                                speedVal.style.transform = "scale(1)";
+                                speedVal.style.color = "var(--brand-red)";
+                            }, 150);
+                        }
+                        return;
+                    }
+                    
+                    document.getElementById('tk-touch-prompt').style.opacity = '0';
+                    tkState.pressing = true; 
+                };
+                const handleRelease = () => { if(tkState.active) tkState.pressing = false; };
+                
+                if(tkViewport) {
+                    tkViewport.addEventListener('pointerdown', handlePress);
+                    tkViewport.addEventListener('touchstart', handlePress, {passive: false});
+                }
+                window.addEventListener('pointerup', handleRelease);
+                window.addEventListener('touchend', handleRelease);
+                window.addEventListener('pointercancel', handleRelease);
+                
+            } catch(e) { 
+                console.error("Critical Load Error", e); 
+                document.body.innerHTML = `<div style='color:red; background:white; padding:20px; font-family:monospace; border-radius:10px;'><h3>Game Crash</h3><p>${e.message}</p></div>`;
+            }
+        };
+
+        function generateGameLevels() {
+            let pool = [...AIRCRAFT_DATA.standard].sort(() => Math.random() - 0.5);
+            let classPool = [...AIRCRAFT_DATA.classified].sort(() => Math.random() - 0.5);
+            let tPool = [...TRIVIA_DATA].sort(() => Math.random() - 0.5);
+
+            let h1 = pool.slice(0, 4).map(p => {
+                let opts = getOptionsForImage(p.name, false);
+                return { ...p, hangar: 1, isClassified: false, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) };
+            });
+            let h2 = pool.slice(4, 7).map(p => {
+                let opts = getOptionsForImage(p.name, false);
+                return { ...p, hangar: 2, isClassified: false, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) };
+            });
+            let h3 = classPool.map(p => {
+                let opts = getOptionsForImage(p.name, true);
+                return { ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) };
+            });
+
+            h1.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 1, isClassified: false, completed: false, failed: false, attempts: 0 });
+            h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
+            
+            h2.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 2, isClassified: false, completed: false, failed: false, attempts: 0 });
+            h2.push({ ...tPool[1], hangar: 2, isClassified: false, completed: false });
+            
+            h3.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 3, isClassified: true, completed: false, failed: false, attempts: 0 });
+            h3.push({ ...tPool[2], hangar: 3, isClassified: true, completed: false }); 
+
+            return [...h1.sort(() => Math.random() - 0.5), ...h2.sort(() => Math.random() - 0.5), ...h3.sort(() => Math.random() - 0.5)];
+        }
+
+        function registerPilot() {
+            const name = document.getElementById('callsign-input').value.trim();
+            if (name.length < 2) { alert("Callsign too short."); return; }
+            globalState.username = name;
+            localStorage.setItem('last_pilot_name', name);
+            saveState();
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('selector-view').classList.add('active');
+            document.getElementById('pilot-greeting').textContent = `Pilot: ${globalState.username}`;
+            renderDashboard();
+        }
+
+        function syncScoreToCloud() {
+            if (!db || !globalState.username) return;
+            db.collection("fuel_command_v6").doc(globalState.username).set({
+                name: globalState.username,
+                score: globalState.currentFuel,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(console.error);
+        }
+
+        function openLeaderboard() {
+            document.getElementById('selector-view').classList.remove('active');
+            document.getElementById('leaderboard-view').classList.add('active');
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = "Fetching Data...";
+            if(!db) { list.innerHTML = "⚠️ Database not connected."; return; }
+
+            db.collection("fuel_command_v6").orderBy("score", "desc").limit(20).get()
+            .then((querySnapshot) => {
+                let html = "";
+                let rank = 1;
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const isMe = data.name === globalState.username;
+                    html += `<div class="lb-row ${isMe ? 'me' : ''}"><div class="lb-rank">#${rank++}</div><div class="lb-name">${data.name}</div><div class="lb-fuel">${data.score}L</div></div>`;
+                });
+                if(html === "") html = "<div style='text-align:center; padding:20px; color:#777;'>No completed missions yet.</div>";
+                list.innerHTML = html;
+            });
+        }
+
+        function closeLeaderboard() { document.getElementById('leaderboard-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('fuelQuizState_v65'); 
+                if (saved) {
+                    globalState = JSON.parse(saved);
+                    if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
+                    
+                    // Migrate old bombs to new powerups system
+                    if(!globalState.powerups) {
+                        globalState.powerups = { scans: 1, drones: 1, fuelPods: 1 };
+                        if(globalState.smartBombs !== undefined) {
+                            globalState.powerups.scans = globalState.smartBombs;
+                            delete globalState.smartBombs;
+                        }
+                    }
+                    
+                    if(globalState.hasSeenTakeoffTutorial === undefined) globalState.hasSeenTakeoffTutorial = false;
+                    if(globalState.extraFuel === undefined) globalState.extraFuel = 0;
+                    if(globalState.world3Complete === undefined) globalState.world3Complete = false;
+                    if(!globalState.passwordRevealed) globalState.passwordRevealed = [];
+                } else {
+                    throw new Error("No save");
+                }
+            } catch(e) {
+                globalState.currentFuel = STARTING_GLOBAL_FUEL;
+                globalState.extraFuel = 0;
+                globalState.levels = generateGameLevels();
+                globalState.powerups = { scans: 1, drones: 1, fuelPods: 1 };
+                globalState.hasSeenTakeoffTutorial = false;
+                globalState.username = null;
+                globalState.world1Complete = false;
+                globalState.world2Complete = false;
+                globalState.world3Complete = false;
+                globalState.passwordRevealed = [];
+            }
+        }
+
+        function saveState() { try { localStorage.setItem('fuelQuizState_v65', JSON.stringify(globalState)); } catch(e){} }
+        
+        function isHangarComplete(hNum) { return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed); }
+        function isAllWorldsComplete() { return globalState.levels.every(l => l.completed); }
+
+        function renderDashboard() {
+            document.getElementById('total-fuel-display').textContent = globalState.currentFuel;
+            const pct = Math.min(100, Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100));
+            document.getElementById('fuel-bar').style.width = pct + "%";
+            
+            const auxContainer = document.getElementById('aux-fuel-container');
+            if (globalState.extraFuel && globalState.extraFuel > 0) {
+                auxContainer.style.display = 'block';
+                document.getElementById('aux-fuel-value').textContent = globalState.extraFuel;
+                const auxPct = Math.min(100, Math.max(0, (globalState.extraFuel / 5000) * 100)); // Scales nicely for big rewards
+                document.getElementById('aux-fuel-bar').style.width = auxPct + "%";
+            } else {
+                auxContainer.style.display = 'none';
+            }
+            
+            const h1Done = isHangarComplete(1);
+            const h2Done = isHangarComplete(2);
+            const h3Done = isHangarComplete(3);
+            
+            if (h1Done && !globalState.world1Complete) { globalState.world1Complete = true; triggerHangarReward(); }
+            if (h2Done && !globalState.world2Complete) { globalState.world2Complete = true; triggerHangarReward(); }
+            if (h3Done && !globalState.world3Complete) { globalState.world3Complete = true; triggerHangarReward(); }
+
+            const unlockMsg = document.getElementById('unlock-message');
+            if(h2Done) unlockMsg.innerHTML = "Classified Ops: <span style='color:#2ecc71'>GRANTED</span>";
+            else if(h1Done) unlockMsg.innerHTML = "Hangar 2: <span style='color:#2ecc71'>UNLOCKED</span>";
+            else unlockMsg.innerHTML = "Complete Hangar 1 to advance";
+
+            // Update Password Container
+            const pwContainer = document.getElementById('password-container');
+            let targetNoSpace = TARGET_PASSWORD.replace(/ /g, '');
+            
+            if (globalState.passwordRevealed && globalState.passwordRevealed.length >= targetNoSpace.length) {
+                if(menuPasswordInterval) clearInterval(menuPasswordInterval);
+                pwContainer.innerHTML = `
+                    <div style="color:#aaa; font-size:0.65rem; margin-bottom:4px;">TRANSMISSION DECRYPTED</div>
+                    <div style="font-family:'Share Tech Mono', monospace; color:var(--gauge-green); font-size:1.1rem; letter-spacing:3px; margin-bottom:6px;">${TARGET_PASSWORD}</div>
+                    <button class="gold-btn" onclick="document.getElementById('cat-modal').style.display='flex'" style="font-size:0.8rem; padding:8px;">ACCESS CLASSIFIED DATA</button>
+                `;
+            } else {
+                pwContainer.innerHTML = `
+                    <div style="color:#aaa; font-size:0.65rem; margin-bottom:4px;">DECRYPTING TRANSMISSION...</div>
+                    <div id="anim-pw-text" style="font-family:'Share Tech Mono', monospace; color:var(--brand-gold); font-size:1.1rem; letter-spacing:2px;"></div>
+                `;
+                
+                if(menuPasswordInterval) clearInterval(menuPasswordInterval);
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
+                const pwTextEl = document.getElementById('anim-pw-text');
+                
+                menuPasswordInterval = setInterval(() => {
+                    let displayStr = "";
+                    for (let i = 0; i < TARGET_PASSWORD.length; i++) {
+                        if (TARGET_PASSWORD[i] === ' ') {
+                            displayStr += "&nbsp;&nbsp;";
+                        } else if (globalState.passwordRevealed && globalState.passwordRevealed.includes(i)) {
+                            displayStr += TARGET_PASSWORD[i];
+                        } else {
+                            displayStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                        }
+                    }
+                    if(pwTextEl) pwTextEl.innerHTML = displayStr;
+                }, 60);
+            }
+
+            const listContainer = document.getElementById('level-list-container');
+            listContainer.innerHTML = "";
+
+            const hangars = { 1: [], 2: [], 3: [] };
+            globalState.levels.forEach((level, index) => { hangars[level.hangar].push({ ...level, originalIndex: index }); });
+
+            [1, 2, 3].forEach(hNum => {
+                const levels = hangars[hNum];
+                if(levels.length === 0) return;
+
+                const folder = document.createElement('div');
+                let isFolderLocked = false;
+                if (hNum === 2 && !h1Done) isFolderLocked = true;
+                if (hNum === 3 && !h2Done) isFolderLocked = true;
+
+                folder.className = `world-folder ${isFolderLocked ? 'locked-world' : ''}`;
+                
+                const header = document.createElement('div');
+                header.className = 'world-header';
+                let lockSVG = isFolderLocked ? ICONS.lock : '';
+                header.innerHTML = `<div class="world-title-group"><h3>${lockSVG}Hangar ${hNum}</h3></div><div class="arrow">▶</div>`;
+                
+                if (!isFolderLocked) {
+                    folder.onclick = () => openHangar(hNum);
+                }
+
+                folder.appendChild(header);
+                listContainer.appendChild(folder);
+            });
+        }
+
+        function openHangar(hNum) {
+            document.getElementById('selector-view').classList.remove('active');
+            
+            const hangarView = document.getElementById('hangar-view');
+            hangarView.classList.remove('active');
+            void hangarView.offsetWidth; 
+            hangarView.classList.add('active');
+
+            document.getElementById('hangar-title').textContent = `Hangar ${hNum}`;
+
+            const listContainer = document.getElementById('hangar-level-list');
+            listContainer.innerHTML = "";
+
+            const levels = globalState.levels.map((l, i) => ({...l, originalIndex: i})).filter(l => l.hangar === hNum);
+
+            levels.forEach(levelData => {
+                const idx = levelData.originalIndex;
+                const card = document.createElement('div');
+                
+                if (levelData.type === 'trivia' || levelData.type === 'takeoff') card.className = "level-strip special";
+                else if (levelData.isClassified) card.className = "level-strip classified";
+                else card.className = "level-strip";
+
+                let iconSvg = ICONS.plane;
+                let iconColor = "var(--brand-dark)";
+                let title = `Flight ${idx + 1}`;
+                
+                if (levelData.type === 'trivia') { iconSvg = ICONS.folder; iconColor = "#3498db"; title = "Incident Report"; } 
+                else if (levelData.type === 'takeoff') { iconSvg = ICONS.takeoff; iconColor = "#3498db"; title = "Takeoff Calibration"; }
+                else if (levelData.isClassified) { iconSvg = ICONS.jet; iconColor = "var(--brand-red)"; title = "Classified"; }
+
+                let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
+                
+                if (levelData.failed) {
+                    iconSvg = ICONS.cross; iconColor = "var(--brand-red)"; statusHtml = `<div class="strip-status" style="color:var(--brand-red)">FAILED</div>`;
+                } else if (levelData.completed) {
+                    title = levelData.name; iconSvg = ICONS.star; iconColor = "var(--brand-gold)"; statusHtml = `<div class="strip-status status-done">Cleared</div>`;
+                } else if (levelData.type === 'takeoff') {
+                    let triesLeft = 3 - (levelData.attempts || 0); statusHtml = `<div class="strip-status status-ready">Tries: ${triesLeft}</div>`;
+                } else if (levelData.type === 'image' && levelData.revealedTiles && levelData.revealedTiles.length > 0) {
+                    statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
+                }
+
+                let isFuelLocked = false;
+                if (hNum === 3 && globalState.currentFuel < 1000 && !levelData.completed && !levelData.failed) isFuelLocked = true;
+
+                if (isFuelLocked) {
+                    card.className = "level-strip locked";
+                    card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${ICONS.fuel}</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
+                } else if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0 && !levelData.completed && !levelData.failed) {
+                     card.className += " locked"; statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
+                     card.onclick = () => triggerGameOver();
+                     card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
+                } else if (levelData.failed) {
+                    card.className = "level-strip locked"; 
+                    card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
+                } else {
+                    card.onclick = () => launchLevel(idx);
+                    card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
+                }
+                listContainer.appendChild(card);
+            });
+        }
+
+        function closeHangar() {
+            document.getElementById('hangar-view').classList.remove('active');
+            document.getElementById('selector-view').classList.add('active');
+            renderDashboard(); 
+        }
+
+        // ====== POWER-UP LOGIC & UI ======
+        function updatePowerupsUI() {
+            const p = globalState.powerups;
+            
+            const btnScan = document.getElementById('btn-pu-scan');
+            const btnDrone = document.getElementById('btn-pu-drone');
+            const btnFuel = document.getElementById('btn-pu-fuel');
+            
+            document.getElementById('badge-pu-scan').textContent = p.scans;
+            document.getElementById('badge-pu-drone').textContent = p.drones;
+            document.getElementById('badge-pu-fuel').textContent = p.fuelPods;
+
+            if(p.scans > 0) btnScan.classList.remove('empty'); else btnScan.classList.add('empty');
+            if(p.drones > 0) btnDrone.classList.remove('empty'); else btnDrone.classList.add('empty');
+            if(p.fuelPods > 0) btnFuel.classList.remove('empty'); else btnFuel.classList.add('empty');
+        }
+
+        function useIntelScan() {
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || globalState.powerups.scans <= 0) return;
+            
+            globalState.powerups.scans -= 1;
+            saveState();
+            updatePowerupsUI();
+
+            if (lState.type === 'image') {
+                const wrapper = document.getElementById('game-wrapper');
+                wrapper.classList.add('flash-screen'); 
+                setTimeout(() => wrapper.classList.remove('flash-screen'), 1000); 
+
+                const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
+                hiddenTiles.forEach(p => {
+                    p.style.transition = 'background 0.3s ease, opacity 1s ease 0.3s, transform 1s ease 0.3s';
+                    p.style.background = 'rgba(52, 152, 219, 0.4)';
+                    p.style.borderColor = 'var(--aux-blue)';
+                    p.style.boxShadow = '0 0 10px var(--aux-blue)';
+                    p.style.pointerEvents = 'none';
+                    setTimeout(() => { p.style.opacity = '0'; p.style.transform = 'scale(0.8)'; }, 50);
+                });
+                
+                lState.revealedTiles = [...Array(100).keys()];
+                saveState();
+                showFloat(window.innerWidth/2, window.innerHeight/3, "INTEL ACQUIRED");
+            } else if (lState.type === 'trivia') {
+                submitTrivia(lState.correctIdx);
+                showFloat(window.innerWidth/2, window.innerHeight/3, "INTEL ACQUIRED");
+            }
+        }
+
+        function usePrecisionDrone() {
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || globalState.powerups.drones <= 0) return;
+            
+            globalState.powerups.drones -= 1;
+            saveState();
+            updatePowerupsUI();
+
+            if (lState.type === 'image') {
+                if(!lState.revealedTiles) lState.revealedTiles = [];
+                let unrevealed = [];
+                for(let i=0; i<100; i++) { if(!lState.revealedTiles.includes(i)) unrevealed.push(i); }
+                
+                unrevealed.sort(() => Math.random() - 0.5);
+                let toReveal = unrevealed.slice(0, 15); // Reveal 15 random tiles
+                
+                lState.revealedTiles.push(...toReveal);
+                saveState();
+
+                const grid = document.getElementById('cover-grid');
+                toReveal.forEach(idx => {
+                    let tile = grid.children[idx];
+                    if(tile) {
+                        tile.style.transition = 'opacity 0.5s ease, background 0.2s';
+                        tile.style.background = 'var(--brand-red)';
+                        setTimeout(() => tile.classList.add('revealed'), 200);
+                    }
+                });
+                showFloat(window.innerWidth/2, window.innerHeight/3, "TARGETS ELIMINATED");
+            } else if (lState.type === 'trivia') {
+                let wrongIndices = [];
+                lState.options.forEach((opt, i) => {
+                    if(i !== lState.correctIdx) {
+                        const btn = document.getElementById('btn-opt-' + i);
+                        if(btn && !btn.disabled) wrongIndices.push(i);
+                    }
+                });
+                if(wrongIndices.length > 0) {
+                    let target = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
+                    const btn = document.getElementById('btn-opt-' + target);
+                    btn.disabled = true;
+                    btn.style.opacity = '0.3';
+                    btn.style.textDecoration = 'line-through';
+                    showFloat(window.innerWidth/2, window.innerHeight/3, "TARGET ELIMINATED");
+                }
+            }
+        }
+
+        function useFuelPod() {
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || globalState.powerups.fuelPods <= 0) return;
+            
+            globalState.powerups.fuelPods -= 1;
+            globalState.currentFuel += 300;
+            saveState();
+            
+            updatePowerupsUI();
+            updateMiniFuelUI();
+            showFloat(window.innerWidth/2, window.innerHeight/3, "+300 FUEL");
+        }
+
+        function launchLevel(idx) {
+            activeLevelIdx = idx;
+            const lState = globalState.levels[idx];
+            document.getElementById('selector-view').classList.remove('active');
+            document.getElementById('hangar-view').classList.remove('active');
+            
+            const gameView = document.getElementById('game-view');
+            gameView.classList.remove('active');
+            void gameView.offsetWidth; 
+            gameView.classList.add('active');
+
+            let title = `Flight ${idx+1}`;
+            if (lState.type === 'trivia') title = "Incident Report";
+            else if (lState.type === 'takeoff') title = "Takeoff Calibration";
+            else if (lState.isClassified) title = "Classified";
+            
+            if (lState.completed) title = lState.name;
+            document.getElementById('level-title').textContent = title;
+            document.getElementById('message').textContent = lState.completed ? "Cleared" : "";
+            updateMiniFuelUI();
+
+            const imgArea = document.getElementById('image-game-area');
+            const triviaArea = document.getElementById('trivia-game-area');
+            const takeoffArea = document.getElementById('takeoff-game-area');
+            const container = document.getElementById('game-container');
+            
+            const puBar = document.getElementById('powerups-bar');
+            
+            imgArea.style.display = 'none';
+            triviaArea.style.display = 'none';
+            takeoffArea.style.display = 'none';
+
+            if(tkState.frameId) { cancelAnimationFrame(tkState.frameId); tkState.active = false; }
+
+            // Hide powerups if level is takeoff or already completed
+            if (lState.completed || lState.type === 'takeoff') {
+                puBar.style.display = 'none';
+            } else {
+                puBar.style.display = 'flex';
+                updatePowerupsUI();
+            }
+
+            if (lState.type === 'image') {
+                imgArea.style.display = 'flex';
+                container.style.overflow = 'hidden';
+
+                document.getElementById('mystery-image').src = lState.image;
+                
+                lState.options.forEach((optText, i) => {
+                    const btn = document.getElementById('img-opt-' + i);
+                    if(btn) {
+                        btn.textContent = optText;
+                        btn.disabled = lState.completed;
+                        btn.style.backgroundColor = ""; 
+                        btn.style.color = ""; 
+                        if(lState.completed && i === lState.correctIdx) {
+                            btn.style.backgroundColor = "var(--gauge-green)";
+                            btn.style.color = "white";
+                        }
+                    }
+                });
+
+                const grid = document.getElementById('cover-grid');
+                grid.innerHTML = "";
+                for (let i = 0; i < 100; i++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'grid-piece';
+                    if (lState.revealedTiles && lState.revealedTiles.includes(i)) tile.classList.add('revealed');
+                    if (lState.completed) tile.classList.add('revealed');
+                    grid.appendChild(tile);
+                }
+
+                if (!lState.completed && (globalState.currentFuel > 0 || globalState.extraFuel > 0)) {
+                    grid.onpointerdown = handleInteraction; 
+                } else {
+                    grid.onpointerdown = null;
+                }
+            } else if (lState.type === 'trivia') {
+                triviaArea.style.display = 'flex';
+
+                document.getElementById('trivia-question').textContent = lState.question;
+                
+                lState.options.forEach((optText, i) => {
+                    const btn = document.getElementById('btn-opt-' + i);
+                    if(btn) {
+                        btn.textContent = String.fromCharCode(65 + i) + ". " + optText;
+                        btn.disabled = lState.completed;
+                        btn.style.backgroundColor = ""; 
+                        btn.style.color = ""; 
+                        btn.style.opacity = '1';
+                        btn.style.textDecoration = 'none';
+                        if(lState.completed && i === lState.correctIdx) {
+                            btn.style.backgroundColor = "var(--gauge-green)";
+                            btn.style.color = "white";
+                        }
+                    }
+                });
+            } else if (lState.type === 'takeoff') {
+                takeoffArea.style.display = 'flex';
+                
+                const sky = document.getElementById('tk-bg-sky');
+                const city = document.getElementById('tk-bg-city');
+                const ground = document.getElementById('tk-bg-ground');
+                const runwaySurf = document.getElementById('tk-runway-surface');
+                
+                const weather = document.getElementById('tk-weather-overlay');
+                const zone = document.getElementById('tk-target-zone');
+                
+                weather.className = '';
+                runwaySurf.style.backgroundImage = getSvgUri(RUNWAY_SVG);
+
+                const th = THEMES[lState.hangar] || THEMES[1];
+                sky.style.backgroundImage = getSvgUri(th.sky);
+                city.style.backgroundImage = getSvgUri(th.city);
+                ground.style.backgroundImage = getSvgUri(th.ground);
+
+                if (lState.hangar === 1) {
+                    tkState.minAngle = 9; tkState.maxAngle = 16;
+                    zone.style.bottom = '30%'; zone.style.height = '23.3%';
+                } else if (lState.hangar === 2) {
+                    weather.classList.add('weather-rain');
+                    tkState.minAngle = 10; tkState.maxAngle = 15;
+                    zone.style.bottom = '33.3%'; zone.style.height = '16.6%';
+                } else {
+                    weather.classList.add('weather-fog');
+                    tkState.minAngle = 11; tkState.maxAngle = 14;
+                    zone.style.bottom = '36.6%'; zone.style.height = '10%';
+                }
+                
+                if (!lState.completed && !lState.failed) {
+                    if (!globalState.hasSeenTakeoffTutorial) {
+                        document.getElementById('takeoff-tutorial-overlay').style.display = 'flex';
+                    } else {
+                        startTakeoff();
+                    }
+                } else {
+                    document.getElementById('tk-mountain').style.display = 'none';
+                    document.getElementById('tk-plane').style.display = 'block';
+                    document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-10deg)`;
+                    document.getElementById('tk-needle').style.bottom = `40%`;
+                    document.getElementById('tk-runway-fill').style.width = '0%';
+                    document.getElementById('tk-lift-fill').style.width = '100%';
+                    document.getElementById('tk-speed-val').textContent = "150";
+                    document.getElementById('tk-speed-val').style.color = "var(--gauge-green)";
+                    document.getElementById('tk-touch-prompt').style.display = "none";
+                }
+            }
+        }
+
+        function startTakeoffFromTutorial() {
+            globalState.hasSeenTakeoffTutorial = true;
+            saveState();
+            document.getElementById('takeoff-tutorial-overlay').style.display = 'none';
+            setTimeout(() => { startTakeoff(); }, 100);
+        }
+
+        function startTakeoff() {
+            document.querySelectorAll('.pixel-particle').forEach(el => el.remove());
+            if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
+            
+            tkState.active = true;
+            tkState.pitch = 0;
+            tkState.pitchVelocity = 0;
+            tkState.lift = 0;
+            tkState.distance = 100;
+            tkState.speed = 0;
+            tkState.pressing = false;
+            tkState.bgPosSky = 0;
+            tkState.bgPosCity = 0;
+            tkState.bgPosGround = 0;
+            tkState.bgPosRunway = 0;
+            
+            document.getElementById('tk-touch-prompt').style.display = 'block';
+            document.getElementById('tk-touch-prompt').style.opacity = '0.8';
+            document.getElementById('tk-plane').style.display = 'block';
+            document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`;
+            document.getElementById('tk-mountain').style.display = 'none';
+            document.getElementById('tk-needle').style.bottom = `0%`;
+            document.getElementById('tk-runway-fill').style.width = '100%';
+            document.getElementById('tk-lift-fill').style.width = '0%';
+            document.getElementById('tk-speed-val').textContent = "0";
+            document.getElementById('tk-speed-val').style.color = "var(--brand-red)";
+            
+            document.getElementById('tk-bg-sky').style.backgroundPositionX = '0px';
+            document.getElementById('tk-bg-city').style.backgroundPositionX = '0px';
+            document.getElementById('tk-bg-ground').style.backgroundPositionX = '0px';
+            document.getElementById('tk-runway-surface').style.backgroundPositionX = '0px';
+            
+            tkState.frameId = requestAnimationFrame(takeoffLoop);
+        }
+
+        function takeoffLoop() {
+            if (!tkState.active) return;
+
+            let acceleration = 1.0;
+            if (tkState.pitch > 0) acceleration -= (tkState.pitch * 0.05); 
+            tkState.speed += acceleration;
+            tkState.speed = Math.max(0, Math.min(220, tkState.speed));
+
+            if (tkState.pressing) tkState.pitchVelocity += 0.05; 
+            else tkState.pitchVelocity -= 0.03; 
+            
+            tkState.pitchVelocity *= 0.90; 
+            tkState.pitchVelocity = Math.max(-0.8, Math.min(1.0, tkState.pitchVelocity)); 
+            
+            tkState.pitch += tkState.pitchVelocity;
+            tkState.pitch = Math.max(0, Math.min(30, tkState.pitch));
+            if(tkState.pitch === 30 || tkState.pitch === 0) tkState.pitchVelocity = 0;
+
+            if (tkState.speed >= 140 && tkState.pitch >= tkState.minAngle && tkState.pitch <= tkState.maxAngle) {
+                tkState.lift += 0.5; 
+            } else {
+                tkState.lift = Math.max(0, tkState.lift - 0.2); 
+            }
+
+            const maxLiftY = 100; 
+            const liftY = (tkState.lift / 100) * maxLiftY; 
+            const planeEl = document.getElementById('tk-plane');
+            planeEl.style.transform = `translateY(-${liftY}px) rotate(-${tkState.pitch}deg)`;
+
+            const needle = document.getElementById('tk-needle');
+            needle.style.bottom = `${Math.max(0, Math.min(100, (tkState.pitch / 30) * 100))}%`;
+
+            const speedEl = document.getElementById('tk-speed-val');
+            speedEl.textContent = Math.floor(tkState.speed);
+            
+            if (speedEl.style.color !== "var(--gauge-orange)") {
+                if (tkState.speed >= 140) speedEl.style.color = "var(--gauge-green)";
+                else speedEl.style.color = "var(--brand-red)";
+            }
+
+            tkState.distance -= (tkState.speed / 1450); 
+
+            tkState.bgPosSky -= tkState.speed * 0.002;
+            tkState.bgPosCity -= tkState.speed * 0.008;
+            tkState.bgPosGround -= tkState.speed * 0.025;
+            tkState.bgPosRunway -= tkState.speed * 0.08;
+
+            document.getElementById('tk-bg-sky').style.backgroundPositionX = tkState.bgPosSky + 'px';
+            document.getElementById('tk-bg-city').style.backgroundPositionX = tkState.bgPosCity + 'px';
+            document.getElementById('tk-bg-ground').style.backgroundPositionX = tkState.bgPosGround + 'px';
+            document.getElementById('tk-runway-surface').style.backgroundPositionX = tkState.bgPosRunway + 'px';
+
+            document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%';
+            document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
+            
+            if (tkState.distance < 15) {
+                const mtn = document.getElementById('tk-mountain');
+                mtn.style.display = 'block';
+                mtn.style.left = `calc(${tkState.distance * 6}% + 40px)`; 
+            }
+
+            if (tkState.lift >= 100) return winTakeoff();
+            if (tkState.distance <= 0) return explodePlane("CRASHED INTO MOUNTAIN");
+
+            tkState.frameId = requestAnimationFrame(takeoffLoop);
+        }
+
+        function explodePlane(reason) {
+            tkState.active = false; 
+            const planeEl = document.getElementById('tk-plane');
+            planeEl.style.display = 'none'; 
+            
+            const vp = document.getElementById('takeoff-viewport');
+            const colors = ['#fff', 'var(--brand-red)', '#a0a0a0', '#1a1a1a', '#555'];
+            
+            const maxLiftY = 100;
+            const liftY = (tkState.lift / 100) * maxLiftY;
+            const baseY = vp.offsetHeight - 60 - liftY; 
+            
+            for(let i = 0; i < 80; i++) {
+                let p = document.createElement('div');
+                p.className = 'pixel-particle';
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                p.style.left = (30 + Math.random() * 80) + 'px'; 
+                p.style.top = baseY + Math.random() * 20 + 'px'; 
+                vp.appendChild(p);
+                
+                let vx = (Math.random() - 0.5) * 5;
+                let vy = (Math.random() - 0.8) * 5;
+                animateParticle(p, vx, vy);
+            }
+
+            vp.classList.add('wrong-flash');
+            setTimeout(() => vp.classList.remove('wrong-flash'), 500);
+            setTimeout(() => failTakeoff(reason), 3500); 
+        }
+
+        function animateParticle(p, vx, vy) {
+            let x = parseFloat(p.style.left);
+            let y = parseFloat(p.style.top);
+            let age = 0;
+            function step() {
+                age++;
+                if(age > 150) { p.remove(); return; }
+                if(age > 100) { p.style.opacity = 1 - ((age - 100) / 50); } 
+                
+                x += vx; 
+                y += vy; 
+                vy += 0.1; 
+                vx *= 0.99; 
+                
+                p.style.left = x + 'px'; 
+                p.style.top = y + 'px';
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function failTakeoff(reason) {
+            const lState = globalState.levels[activeLevelIdx];
+            lState.attempts = (lState.attempts || 0) + 1;
+            
+            drainFuel(WRONG_GUESS_PENALTY);
+
+            if (lState.attempts >= 3) {
+                lState.failed = true;
+                lState.completed = true; 
+                saveState();
+                const msgEl = document.getElementById('message');
+                msgEl.textContent = "SYSTEM LOCKED - MAX ATTEMPTS FAILED (-200L)";
+                msgEl.className = "fail pop-reveal";
+                void msgEl.offsetWidth; 
+                setTimeout(() => { if (isAllWorldsComplete()) syncScoreToCloud(); saveAndExit(); }, 2500);
+            } else {
+                let triesLeft = 3 - lState.attempts;
+                const msgEl = document.getElementById('message');
+                msgEl.textContent = `${reason} | TRIES LEFT: ${triesLeft} (-200L)`;
+                msgEl.className = "fail pop-reveal";
+                void msgEl.offsetWidth;
+                setTimeout(() => {
+                    if(!lState.completed && !lState.failed && (globalState.currentFuel > 0 || globalState.extraFuel > 0) && document.getElementById('takeoff-game-area').style.display !== 'none') {
+                        document.getElementById('message').textContent = "";
+                        startTakeoff();
+                    }
+                }, 1500);
+            }
+            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) setTimeout(triggerGameOver, 1500);
+        }
+
+        function winTakeoff() {
+            tkState.active = false;
+            const bonus = 500;
+            globalState.currentFuel += bonus; 
+            updateMiniFuelUI();
+            
+            const lState = globalState.levels[activeLevelIdx];
+            lState.completed = true;
+            
+            triggerConfetti();
+            document.getElementById('level-title').textContent = lState.name;
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = `PERFECT TAKEOFF! +${bonus}L BONUS`;
+            msgEl.className = "success pop-reveal";
+            void msgEl.offsetWidth; 
+            
+            saveState();
+            if (isAllWorldsComplete()) syncScoreToCloud();
+            setTimeout(saveAndExit, 2500);
+        }
+
+        function getCompassDirection(heading) {
+            if (heading === null || heading === undefined) return "UNKNOWN";
+            const dirs = ["NORTH", "NORTH-EAST", "EAST", "SOUTH-EAST", "SOUTH", "SOUTH-WEST", "WEST", "NORTH-WEST"];
+            return dirs[Math.round(((heading %= 360) < 0 ? heading + 360 : heading) / 45) % 8];
+        }
+
+        function toggleRadarIntel() {
+            const body = document.getElementById('radar-intel-body');
+            const header = document.getElementById('radar-intel-header');
+            const icon = header.querySelector('.acc-icon-intel');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+            icon.textContent = body.classList.contains('open') ? "[-]" : "[+]";
+            setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
+        }
+        
+        function toggleRadarFilters() {
+            const body = document.getElementById('radar-filters-body');
+            const header = document.getElementById('radar-filters-header');
+            const icon = header.querySelector('.acc-icon-filters');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+            icon.textContent = body.classList.contains('open') ? "[-]" : "[+]";
+            setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
+        }
+
+        function openRadar() {
+            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) { triggerGameOver(); return; }
+            
+            document.getElementById('selector-view').classList.remove('active');
+            const radarView = document.getElementById('radar-view');
+            radarView.classList.remove('active');
+            void radarView.offsetWidth;
+            radarView.classList.add('active');
+            
+            pathsVisible = false;
+            originVisible = false;
+            altVisible = false;
+            origCityVisible = false;
+            destCityVisible = false;
+            compassVisible = false;
+            currentMapStyle = 'CLEAN'; 
+            radarLevel = 1;
+            radarTimeMs = 1800000; 
+            
+            document.getElementById('radar-intel-body').classList.add('open');
+            document.getElementById('radar-intel-header').classList.add('open');
+            document.querySelector('.acc-icon-intel').textContent = "[-]";
+            
+            document.getElementById('radar-filters-body').classList.remove('open');
+            document.getElementById('radar-filters-header').classList.remove('open');
+            document.querySelector('.acc-icon-filters').textContent = "[+]";
+
+            document.querySelector('.lvl-text').textContent = "LEVEL 1 OF 10";
+            
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (!radarMap) {
+                        radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
+                        cleanMapBase.addTo(radarMap);
+                        radarLayerGroup = L.layerGroup().addTo(radarMap);
+                        radarPathGroup = L.layerGroup().addTo(radarMap);
+                    }
+                    radarMap.invalidateSize(); 
+                    
+                    startRadarTimer(); 
+                    startRadarMission();
+                });
+            });
+        }
+
+        function createPlaneIcon(p) {
+            let labels = [];
+            if (originVisible && p.origin) labels.push(`REG: ${p.origin}`);
+            if (altVisible && p.alt) labels.push(`${Math.round(p.alt)}M`);
+            if (origCityVisible && p.originCity) labels.push(`ORG: ${p.originCity}`);
+            if (destCityVisible && p.destCity) labels.push(`DST: ${p.destCity}`);
+            
+            let labelHtml = '';
+            if (labels.length > 0) {
+                let labelStr = labels.join('<br>');
+                labelHtml = `<div style="position:absolute; color: ${p.color}; background: #000; padding: 2px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; left: 14px; top: 14px; line-height: 1.2; z-index: 1000; pointer-events: none;">${labelStr}</div>`;
+            }
+
+            const planeSvg = `<div style="transform: rotate(${p.heading}deg); color: ${p.color}; width:24px; height:24px; position:absolute; top:0; left:0;"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
+            let pingHtml = p.showPing ? `<div class="radar-target-ping" style="border-color:${p.color}; position:absolute;"></div>` : '';
+
+            return L.divIcon({ 
+                html: `<div style="position:relative; width:24px; height:24px;">${planeSvg}${pingHtml}${labelHtml}</div>`, 
+                className: 'radar-plane-icon', 
+                iconSize: [24, 24], 
+                iconAnchor: [12, 12] 
+            });
+        }
+
+        function animateRadarPlanes() {
+            if (!radarMap || currentRadarPlanes.length === 0) return;
+            let now = Date.now();
+            let dt = (now - radarAnimTime) / 1000;
+            radarAnimTime = now;
+            
+            const speedDegPerSec = 0.0008; 
+
+            currentRadarPlanes.forEach(p => {
+                let rad = (90 - p.heading) * (Math.PI / 180);
+                p.lat += Math.sin(rad) * speedDegPerSec * dt;
+                p.lng += Math.cos(rad) * (speedDegPerSec / (Math.cos(p.lat * Math.PI / 180) || 1)) * dt;
+                
+                if (p.marker) {
+                    p.marker.setLatLng([p.lat, p.lng]);
+                }
+            });
+
+            radarAnimFrame = requestAnimationFrame(animateRadarPlanes);
+        }
+
+        function startRadarMission() {
+            const textEl = document.getElementById('radar-screen-text');
+            const config = RADAR_LEVEL_CONFIG[radarLevel];
+            
+            document.querySelector('.lvl-text').textContent = `LEVEL ${radarLevel} OF 10`;
+            
+            pathsVisible = false;
+            originVisible = false;
+            altVisible = false;
+            origCityVisible = false;
+            destCityVisible = false;
+            compassVisible = false;
+            currentMapStyle = 'CLEAN'; 
+
+            document.getElementById('toggle-paths-btn').textContent = "PATHS: OFF";
+            document.getElementById('toggle-paths-btn').style.background = "transparent";
+            document.getElementById('toggle-paths-btn').style.color = "var(--radar-green)";
+            
+            document.getElementById('toggle-origin-btn').textContent = "REG: OFF";
+            document.getElementById('toggle-origin-btn').style.background = "transparent";
+            document.getElementById('toggle-origin-btn').style.color = "var(--radar-green)";
+
+            document.getElementById('toggle-alt-btn').textContent = "ALT: OFF";
+            document.getElementById('toggle-alt-btn').style.background = "transparent";
+            document.getElementById('toggle-alt-btn').style.color = "var(--radar-green)";
+
+            document.getElementById('toggle-origcity-btn').textContent = "ORIG: OFF";
+            document.getElementById('toggle-origcity-btn').style.background = "transparent";
+            document.getElementById('toggle-origcity-btn').style.color = "var(--radar-green)";
+
+            document.getElementById('toggle-destcity-btn').textContent = "DEST: OFF";
+            document.getElementById('toggle-destcity-btn').style.background = "transparent";
+            document.getElementById('toggle-destcity-btn').style.color = "var(--radar-green)";
+            
+            document.getElementById('toggle-compass-btn').textContent = "COMP: OFF";
+            document.getElementById('toggle-compass-btn').style.background = "transparent";
+            document.getElementById('toggle-compass-btn').style.color = "var(--radar-green)";
+            document.querySelectorAll('.compass-pt').forEach(el => el.style.display = 'none');
+
+            document.getElementById('toggle-map-btn').textContent = "CITIES: OFF";
+            document.getElementById('toggle-map-btn').style.background = "transparent";
+            document.getElementById('toggle-map-btn').style.color = "var(--radar-green)";
+            if (radarMap && radarMap.hasLayer(cleanMapLabels)) radarMap.removeLayer(cleanMapLabels);
+            
+            const center = RADAR_CENTERS[Math.floor(Math.random() * RADAR_CENTERS.length)];
+            const rLat = center.lat + (Math.random() * 10 - 5);
+            const rLng = center.lng + (Math.random() * 10 - 5);
+            const centerName = center.name;
+            const isUS = centerName.includes("US-");
+            
+            const lamin = rLat - config.latOffset;
+            const lamax = rLat + config.latOffset;
+            const lomin = rLng - config.lngOffset;
+            const lomax = rLng + config.lngOffset;
+            
+            textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${centerName}...<span class='blinking-cursor'>_</span>`;
+            
+            if (radarAnimFrame) cancelAnimationFrame(radarAnimFrame);
+            radarLayerGroup.clearLayers();
+            radarPathGroup.clearLayers();
+            currentRadarPlanes = [];
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+            const numCities = Math.min(15, Math.max(3, Math.floor(config.planes / 3)));
+            const roundCitiesUS = US_CITIES.sort(() => 0.5 - Math.random()).slice(0, numCities);
+            const roundCitiesIntl = INTL_CITIES.sort(() => 0.5 - Math.random()).slice(0, numCities);
+
+            fetch(`https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`, { signal: controller.signal })
+            .then(res => {
+                clearTimeout(timeoutId);
+                if (!res.ok) throw new Error("API error");
+                return res.json();
+            })
+            .then(data => {
+                if(!data.states || data.states.length === 0) throw new Error("Empty airspace");
+                
+                let validAPIPlanes = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "");
+                if(validAPIPlanes.length === 0) throw new Error("No valid planes");
+                
+                validAPIPlanes = validAPIPlanes.sort(() => Math.random() - 0.5);
+
+                for (let p of validAPIPlanes) {
+                    if (currentRadarPlanes.length >= config.planes) break; 
+                    
+                    const lat = p[6]; const lng = p[5]; const heading = p[10] || 0;
+                    const alt = p[7] !== null ? p[7] : Math.floor(Math.random() * 10000 + 2000);
+                    
+                    let isOverlapping = false;
+                    for (let cp of currentRadarPlanes) {
+                        if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) {
+                            isOverlapping = true; break;
+                        }
+                    }
+                    if (isOverlapping) continue;
+
+                    let originCountry = p[2] && p[2].trim() !== "" ? p[2].trim().toUpperCase() : "CLASSIFIED";
+                    
+                    // DOMESTIC USA LOGIC
+                    let isDomestic = isUS && (Math.random() < 0.9);
+                    let c1, c2;
+                    if (isDomestic) {
+                        c1 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)] || US_CITIES[0];
+                        c2 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)] || US_CITIES[1];
+                        while (c1 === c2 && roundCitiesUS.length > 1) c2 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)];
+                    } else {
+                        c1 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)] || INTL_CITIES[0];
+                        c2 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)] || INTL_CITIES[1];
+                        while (c1 === c2 && roundCitiesIntl.length > 1) c2 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)];
+                    }
+                    
+                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
+                    const radBack = (heading + 180) * (Math.PI / 180);
+                    const startLat = lat + Math.cos(radBack) * trailLen;
+                    const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
+
+                    const radFwd = heading * (Math.PI / 180);
+                    const endLat = lat + Math.cos(radFwd) * fwdLen;
+                    const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+                    
+                    const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length];
+
+                    currentRadarPlanes.push({
+                        callsign: p[1].trim(), lat: lat, lng: lng, heading: heading, alt: alt, origin: originCountry,
+                        originCity: c1, destCity: c2,
+                        route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng,
+                        isReal: true, color: pColor, showPing: false
+                    });
+                }
+                
+                if (currentRadarPlanes.length === 0) throw new Error("No spaced planes found");
+                initTargetAndPlot();
+            })
+            .catch(err => {
+                console.warn("Radar API fallback. Launching local simulation.");
+                
+                const prefixes = ["LHT", "AFR", "SWR", "BAW", "RYR", "FIN", "NOR", "KLM", "EZY", "WZZ", "DAL", "UAL", "AAL", "SWA", "JBU", "QFA", "UAE", "VIR", "CCA", "ACA", "ANA", "THY", "SIA", "JAL"];
+                const fakeOrigins = ["GERMANY", "FRANCE", "UK", "SPAIN", "ITALY", "SWEDEN", "FINLAND", "NORWAY", "JAPAN", "CHINA", "CANADA", "BRAZIL"];
+
+                let attempts = 0;
+                
+                while(currentRadarPlanes.length < config.planes && attempts < 2000) {
+                    attempts++;
+                    const lat = lamin + Math.random() * (lamax - lamin); 
+                    const lng = lomin + Math.random() * (lomax - lomin);
+                    const alt = Math.floor(Math.random() * 8000 + 2000);
+                    
+                    let isOverlapping = false;
+                    for (let cp of currentRadarPlanes) {
+                        if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) {
+                            isOverlapping = true; break;
+                        }
+                    }
+                    if (isOverlapping) continue;
+
+                    let randCall;
+                    do {
+                        randCall = prefixes[Math.floor(Math.random()*prefixes.length)] + Math.floor(10 + Math.random()*90);
+                    } while (currentRadarPlanes.find(p => p.callsign === randCall));
+
+                    // DOMESTIC USA LOGIC FOR FALLBACK
+                    let isDomestic = isUS && (Math.random() < 0.9);
+                    let c1, c2;
+                    if (isDomestic) {
+                        c1 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)] || US_CITIES[0];
+                        c2 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)] || US_CITIES[1];
+                        while (c1 === c2 && roundCitiesUS.length > 1) c2 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)];
+                    } else {
+                        c1 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)] || INTL_CITIES[0];
+                        c2 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)] || INTL_CITIES[1];
+                        while (c1 === c2 && roundCitiesIntl.length > 1) c2 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)];
+                    }
+
+                    const heading = Math.random() * 360;
+                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
+                    
+                    const radBack = (heading + 180) * (Math.PI / 180);
+                    const startLat = lat + Math.cos(radBack) * trailLen;
+                    const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
+                    const radFwd = heading * (Math.PI / 180);
+                    const endLat = lat + Math.cos(radFwd) * fwdLen;
+                    const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+                    
+                    const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length];
+                    const randomOrigin = isDomestic ? "UNITED STATES" : fakeOrigins[Math.floor(Math.random() * fakeOrigins.length)];
+
+                    currentRadarPlanes.push({ 
+                        callsign: randCall, 
+                        origin: randomOrigin, lat: lat, lng: lng, heading: heading, alt: alt,
+                        originCity: c1, destCity: c2,
+                        route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng,
+                        isReal: false, color: pColor, showPing: false
+                    });
+                }
+                initTargetAndPlot();
+            });
+        }
+
+        // ==========================================
+        // SMART DYNAMIC HINT GENERATOR
+        // ==========================================
+        function evaluateAndSelectHints(targetPlane, geoData, config) {
+            let potentialHints = [];
+            const totalP = currentRadarPlanes.length;
+            
+            // 1. Heading
+            let targetDir = getCompassDirection(targetPlane.heading);
+            potentialHints.push({ text: `HEADING ${targetDir}`, test: p => getCompassDirection(p.heading) === targetDir });
+            
+            // 2. Registry
+            if (targetPlane.origin) potentialHints.push({ text: `REGISTRY ${targetPlane.origin}`, test: p => p.origin === targetPlane.origin });
+            
+            // 3. Origin City
+            if (targetPlane.originCity) potentialHints.push({ text: `ORIGIN ${targetPlane.originCity}`, test: p => p.originCity === targetPlane.originCity });
+            
+            // 4. Dest City
+            if (targetPlane.destCity) potentialHints.push({ text: `DESTINATION ${targetPlane.destCity}`, test: p => p.destCity === targetPlane.destCity });
+            
+            // 5. Altitude
+            if (targetPlane.alt) {
+                const isAbove = Math.random() > 0.5;
+                let bound = isAbove ? Math.floor((targetPlane.alt - 1) / 500) * 500 : Math.ceil((targetPlane.alt + 1) / 500) * 500;
+                potentialHints.push({ text: `ALT ${isAbove ? 'ABOVE' : 'BELOW'} ${bound}M`, test: p => isAbove ? p.alt > bound : p.alt < bound });
+            }
+
+            // Calculate "Uselessness" Ratio
+            potentialHints.forEach(h => { h.ratio = currentRadarPlanes.filter(h.test).length / totalP; });
+
+            // STRICT FILTER: Discard if it applies to more than 55% of the board
+            let goodHints = potentialHints.filter(h => h.ratio <= 0.55);
+            
+            // 6. Proximity (Usually highly specific, treat as very good)
+            if (geoData && geoData.address) {
+                // Ensure we only use localized city/town logic, NO broad state names
+                let city = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.municipality || geoData.address.suburb;
+                if (city) goodHints.push({ text: `PROXIMITY NEAR ${city.toUpperCase()}`, ratio: 0.1 });
+            } else if (geoData === null) {
+                goodHints.push({ text: `AIRSPACE INT'L WATERS`, ratio: 0.1 });
+            }
+
+            // Sort by Best filtering power
+            goodHints.sort((a, b) => a.ratio - b.ratio);
+            
+            // Fallback if we filtered out too much
+            if (goodHints.length < config.hints) {
+                goodHints = potentialHints.sort((a, b) => a.ratio - b.ratio);
+                if (geoData && geoData.address) {
+                    let city = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.municipality || geoData.address.suburb;
+                    if (city) goodHints.unshift({ text: `PROXIMITY NEAR ${city.toUpperCase()}` });
+                } else if (geoData === null) {
+                    goodHints.unshift({ text: `AIRSPACE INT'L WATERS` });
+                }
+            }
+
+            // Pick top N, then shuffle so they appear in random order to player
+            return goodHints.slice(0, config.hints).map(h => h.text).sort(() => 0.5 - Math.random());
+        }
+
+        function initTargetAndPlot() {
+            const textEl = document.getElementById('radar-screen-text');
+            const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)];
+            currentRadarCallsign = targetPlane.callsign;
+            const config = RADAR_LEVEL_CONFIG[radarLevel];
+            
+            textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br><div style="margin-top:8px; color:#aaa;">DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span></div>`;
+            plotPlanesOnRadar();
+
+            const nomController = new AbortController();
+            const nomTimeout = setTimeout(() => nomController.abort(), 2500);
+
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${targetPlane.lat}&lon=${targetPlane.lng}&zoom=10`, { signal: nomController.signal })
+            .then(res => {
+                clearTimeout(nomTimeout);
+                return res.json();
+            })
+            .then(geoData => {
+                let selectedHints = evaluateAndSelectHints(targetPlane, geoData, config);
+                let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join('');
+                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`;
+            })
+            .catch(() => {
+                let selectedHints = evaluateAndSelectHints(targetPlane, null, config);
+                let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join('');
+                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`;
+            });
+        }
+        
+        function plotPlanesOnRadar() {
+            currentRadarPlanes.forEach(p => {
+                let marker = L.marker([p.lat, p.lng], {icon: createPlaneIcon(p)}).addTo(radarLayerGroup);
+                p.marker = marker;
+                
+                marker.on('click', () => {
+                    openInterceptModal(p, marker);
+                });
+            });
+
+            if(currentRadarPlanes.length > 0) {
+                let lats = currentRadarPlanes.map(p => p.lat).filter(l => l != null && !isNaN(l));
+                let lngs = currentRadarPlanes.map(p => p.lng).filter(l => l != null && !isNaN(l));
+                
+                if (lats.length > 0 && lngs.length > 0) {
+                    let safeBounds = [[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]];
+                    radarMap.fitBounds(safeBounds, { padding: [40, 40] });
+                }
+            }
+            
+            radarAnimTime = Date.now();
+            animateRadarPlanes();
+        }
+
+        function openInterceptModal(plane, marker) {
+            if (radarTimeMs <= 0) return;
+            pendingInterceptPlane = { data: plane, marker: marker };
+            
+            radarMap.flyTo([plane.lat, plane.lng], 12, { animate: true, duration: 1.5 });
+            
+            const titleEl = document.querySelector('#intercept-overlay h1');
+            const descEl = document.querySelector('#intercept-overlay p');
+            const boxEl = document.querySelector('#intercept-overlay .modal-box');
+            const buttonsEl = document.getElementById('intercept-buttons');
+            const el = document.getElementById('encrypted-callsign');
+
+            titleEl.textContent = "CONFIRM INTERCEPT";
+            titleEl.style.color = "var(--brand-red)";
+            descEl.innerHTML = "Target signature encrypted:";
+            descEl.style.color = "#ccc";
+            boxEl.style.borderColor = "var(--brand-red)";
+            boxEl.style.boxShadow = "0 0 20px rgba(215, 25, 32, 0.2)";
+            buttonsEl.style.visibility = "visible";
+            el.style.color = "#fff";
+            
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
+            const callsignLength = plane.callsign.length;
+            
+            if (encryptionInterval) clearInterval(encryptionInterval);
+            
+            encryptionInterval = setInterval(() => {
+                let encrypted = '';
+                for(let i=0; i<callsignLength; i++) {
+                    encrypted += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                el.textContent = encrypted;
+            }, 60); 
+            
+            document.getElementById('intercept-overlay').style.display = 'flex';
+        }
+
+        function cancelIntercept() {
+            if (encryptionInterval) clearInterval(encryptionInterval);
+            document.getElementById('intercept-overlay').style.display = 'none';
+            pendingInterceptPlane = null;
+            
+            let lats = currentRadarPlanes.map(p => p.lat);
+            let lngs = currentRadarPlanes.map(p => p.lng);
+            if(lats.length) radarMap.flyToBounds([[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]], { padding: [40, 40], duration: 1.0 });
+        }
+
+        function confirmIntercept() {
+            if (encryptionInterval) clearInterval(encryptionInterval);
+            if (!pendingInterceptPlane) return;
+            
+            let p = pendingInterceptPlane.data;
+            let marker = pendingInterceptPlane.marker;
+            
+            const titleEl = document.querySelector('#intercept-overlay h1');
+            const descEl = document.querySelector('#intercept-overlay p');
+            const boxEl = document.querySelector('#intercept-overlay .modal-box');
+            const el = document.getElementById('encrypted-callsign');
+            
+            document.getElementById('intercept-buttons').style.visibility = 'hidden';
+            
+            titleEl.textContent = "DECRYPTING...";
+            titleEl.style.color = "var(--gauge-orange)";
+            boxEl.style.borderColor = "var(--gauge-orange)";
+            boxEl.style.boxShadow = "0 0 20px rgba(243, 156, 18, 0.4)";
+            descEl.textContent = "Matching signatures...";
+            
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
+            let iterations = 0;
+            let revealedIndex = 0;
+            const actualCallsign = p.callsign;
+            
+            encryptionInterval = setInterval(() => {
+                let displayStr = "";
+                for (let i = 0; i < actualCallsign.length; i++) {
+                    if (i < revealedIndex) {
+                        displayStr += actualCallsign[i];
+                    } else {
+                        displayStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
+                }
+                el.textContent = displayStr;
+                
+                iterations++;
+                if (iterations % 4 === 0) {
+                    revealedIndex++;
+                }
+                
+                if (revealedIndex > actualCallsign.length) {
+                    clearInterval(encryptionInterval);
+                    
+                    if (p.callsign === currentRadarCallsign) {
+                        titleEl.textContent = "TARGET LOCKED";
+                        titleEl.style.color = "var(--gauge-green)";
+                        boxEl.style.borderColor = "var(--gauge-green)";
+                        boxEl.style.boxShadow = "0 0 20px rgba(46, 204, 113, 0.4)";
+                        el.style.color = p.color;
+                        
+                        p.showPing = true;
+                        if(p.marker) p.marker.setIcon(createPlaneIcon(p));
+
+                        // DECRYPT PASSWORD PROGRESS
+                        let unrevealedCount = 0;
+                        for(let i=0; i<TARGET_PASSWORD.length; i++){
+                            if(TARGET_PASSWORD[i] !== ' ' && !globalState.passwordRevealed.includes(i)) unrevealedCount++;
+                        }
+                        let lettersToAward = Math.min(unrevealedCount, Math.floor(Math.random() * 2) + 1); // 1 or 2 letters
+                        if (lettersToAward > 0) awardPasswordLetters(lettersToAward);
+
+                        if (radarLevel < 10) {
+                            descEl.innerHTML = `<span style='color:var(--brand-gold)'>PROCEED TO NEXT SECTOR...</span><br><span style="font-size:0.75rem; color:#aaa;">(+${lettersToAward} Password Datablocks)</span>`;
+                            setTimeout(() => {
+                                document.getElementById('intercept-overlay').style.display = 'none';
+                                radarLevel++;
+                                startRadarMission();
+                                pendingInterceptPlane = null;
+                            }, 3000);
+                        } else {
+                            radarTimeMs = 0; 
+                            clearInterval(radarCountdown);
+                            
+                            globalState.extraFuel += 5000;
+                            saveState(); updateMiniFuelUI();
+                            
+                            descEl.innerHTML = `MISSION COMPLETE<br><strong style='color:var(--brand-gold)'>+5000L AUX TANK SECURED</strong><br><span style="font-size:0.75rem; color:#aaa;">(+${lettersToAward} Password Datablocks)</span>`;
+
+                            setTimeout(() => {
+                                document.getElementById('intercept-overlay').style.display = 'none';
+                                closeRadar();
+                                pendingInterceptPlane = null;
+                            }, 4000);
+                        }
+                    } else {
+                        titleEl.textContent = "WRONG TARGET";
+                        titleEl.style.color = "var(--brand-red)";
+                        descEl.innerHTML = "Signature mismatch.<br>Penalty: -15s";
+                        el.style.color = "var(--brand-red)";
+                        boxEl.style.borderColor = "var(--brand-red)";
+                        boxEl.style.boxShadow = "0 0 20px rgba(215, 25, 32, 0.4)";
+                        
+                        radarTimeMs = Math.max(0, radarTimeMs - 15000); 
+                        updateTimerDisplay(getAssistPenalty());
+                        
+                        const tDiv = document.getElementById('radar-timer');
+                        tDiv.style.color = "red";
+                        setTimeout(() => updateTimerDisplay(getAssistPenalty()), 500); 
+                        
+                        setTimeout(() => {
+                            document.getElementById('intercept-overlay').style.display = 'none';
+                            cancelIntercept(); 
+                        }, 2500);
+                    }
+                }
+            }, 40);
+        }
+
+        function renderRadarOverlays() {
+            radarPathGroup.clearLayers();
+            currentRadarPlanes.forEach(p => {
+                if (pathsVisible) {
+                    L.polyline(p.route, { color: p.color, weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup);
+                }
+                if (p.marker) {
+                    p.marker.setIcon(createPlaneIcon(p));
+                }
+            });
+            updateTimerDisplay(getAssistPenalty());
+        }
+
+        function toggleFlightPaths() {
+            pathsVisible = !pathsVisible;
+            const btn = document.getElementById('toggle-paths-btn');
+            btn.textContent = "PATHS: " + (pathsVisible ? "ON" : "OFF");
+            btn.style.background = pathsVisible ? "var(--radar-green)" : "transparent";
+            btn.style.color = pathsVisible ? "#000" : "var(--radar-green)";
+            renderRadarOverlays();
+        }
+
+        function toggleOrigin() {
+            originVisible = !originVisible;
+            const btn = document.getElementById('toggle-origin-btn');
+            btn.textContent = "REG: " + (originVisible ? "ON" : "OFF");
+            btn.style.background = originVisible ? "var(--radar-green)" : "transparent";
+            btn.style.color = originVisible ? "#000" : "var(--radar-green)";
+            renderRadarOverlays();
+        }
+
+        function toggleAlt() {
+            altVisible = !altVisible;
+            const btn = document.getElementById('toggle-alt-btn');
+            btn.textContent = "ALT: " + (altVisible ? "ON" : "OFF");
+            btn.style.background = altVisible ? "var(--radar-green)" : "transparent";
+            btn.style.color = altVisible ? "#000" : "var(--radar-green)";
+            renderRadarOverlays();
+        }
+
+        function toggleOrigCity() {
+            origCityVisible = !origCityVisible;
+            const btn = document.getElementById('toggle-origcity-btn');
+            btn.textContent = "ORIG: " + (origCityVisible ? "ON" : "OFF");
+            btn.style.background = origCityVisible ? "var(--radar-green)" : "transparent";
+            btn.style.color = origCityVisible ? "#000" : "var(--radar-green)";
+            renderRadarOverlays();
+        }
+
+        function toggleDestCity() {
+            destCityVisible = !destCityVisible;
+            const btn = document.getElementById('toggle-destcity-btn');
+            btn.textContent = "DEST: " + (destCityVisible ? "ON" : "OFF");
+            btn.style.background = destCityVisible ? "var(--radar-green)" : "transparent";
+            btn.style.color = destCityVisible ? "#000" : "var(--radar-green)";
+            renderRadarOverlays();
+        }
+
+        function toggleCompass() {
+            compassVisible = !compassVisible;
+            const btn = document.getElementById('toggle-compass-btn');
+            btn.textContent = "COMP: " + (compassVisible ? "ON" : "OFF");
+            btn.style.background = compassVisible ? "var(--radar-green)" : "transparent";
+            btn.style.color = compassVisible ? "#000" : "var(--radar-green)";
+            document.querySelectorAll('.compass-pt').forEach(el => {
+                el.style.display = compassVisible ? 'block' : 'none';
+            });
+            updateTimerDisplay(getAssistPenalty());
+        }
+
+        function toggleMapStyle() {
+            const btn = document.getElementById('toggle-map-btn');
+            if (currentMapStyle === 'CLEAN') {
+                cleanMapLabels.addTo(radarMap);
+                currentMapStyle = 'LABELS';
+                btn.textContent = "CITIES: ON";
+                btn.style.background = "var(--radar-green)";
+                btn.style.color = "#000";
+            } else {
+                radarMap.removeLayer(cleanMapLabels);
+                currentMapStyle = 'CLEAN';
+                btn.textContent = "CITIES: OFF";
+                btn.style.background = "transparent";
+                btn.style.color = "var(--radar-green)";
+            }
+            updateTimerDisplay(getAssistPenalty());
+        }
+
+        function getAssistPenalty() {
+            let p = 1; 
+            if (pathsVisible) p += 1;
+            if (originVisible) p += 1;
+            if (altVisible) p += 1;
+            if (origCityVisible) p += 1;
+            if (destCityVisible) p += 1;
+            if (compassVisible) p += 1;
+            if (currentMapStyle === 'LABELS') p += 1;
+            return p; 
+        }
+
+        function updateTimerDisplay(penalty) {
+            let tDiv = document.getElementById('radar-timer');
+            if (penalty > 1) tDiv.classList.add('timer-penalty');
+            else tDiv.classList.remove('timer-penalty');
+
+            let totalSeconds = Math.floor(radarTimeMs / 1000);
+            let m = Math.floor(totalSeconds / 60);
+            let s = totalSeconds % 60;
+            let ms = Math.floor((radarTimeMs % 1000) / 10); 
+            
+            tDiv.textContent = `${m < 10 ? "0"+m : m}:${s < 10 ? "0"+s : s}:${ms < 10 ? "0"+ms : ms}`;
+        }
+
+        function startRadarTimer() {
+            lastTimerTick = Date.now();
+            updateTimerDisplay(getAssistPenalty());
+            
+            if(radarCountdown) clearInterval(radarCountdown);
+            radarCountdown = setInterval(() => {
+                let now = Date.now();
+                let delta = now - lastTimerTick;
+                lastTimerTick = now;
+
+                let penalty = getAssistPenalty();
+                radarTimeMs -= (delta * penalty);
+
+                if(radarTimeMs <= 0) {
+                    radarTimeMs = 0;
+                    updateTimerDisplay(penalty);
+                    clearInterval(radarCountdown);
+                    document.getElementById('intercept-overlay').style.display = 'none'; 
+                    
+                    const msgEl = document.createElement('div');
+                    msgEl.className = 'float-text';
+                    msgEl.style.fontSize = '1.2rem';
+                    msgEl.style.color = 'var(--brand-red)';
+                    msgEl.textContent = "TIME OUT! MISSION ABORTED";
+                    msgEl.style.left = '50%';
+                    msgEl.style.top = '50%';
+                    document.body.appendChild(msgEl);
+                    setTimeout(() => msgEl.remove(), 2000);
+                    
+                    setTimeout(closeRadar, 2000);
+                } else {
+                    updateTimerDisplay(penalty);
+                }
+            }, 30); 
+        }
+
+        function closeRadar() {
+            if(radarCountdown) clearInterval(radarCountdown);
+            if(radarAnimFrame) cancelAnimationFrame(radarAnimFrame);
+            document.getElementById('intercept-overlay').style.display = 'none';
+            
+            const radarView = document.getElementById('radar-view');
+            const selectorView = document.getElementById('selector-view');
+            
+            radarView.classList.remove('active');
+            
+            selectorView.classList.remove('active');
+            void selectorView.offsetWidth; 
+            selectorView.classList.add('active');
+            
+            renderDashboard();
+        }
+
+        // ==========================================
+        // POWERUP FUNCTIONS
+        // ==========================================
+        function updatePowerupsUI() {
+            const p = globalState.powerups;
+            
+            const btnScan = document.getElementById('btn-pu-scan');
+            const btnDrone = document.getElementById('btn-pu-drone');
+            const btnFuel = document.getElementById('btn-pu-fuel');
+            
+            document.getElementById('badge-pu-scan').textContent = p.scans;
+            document.getElementById('badge-pu-drone').textContent = p.drones;
+            document.getElementById('badge-pu-fuel').textContent = p.fuelPods;
+
+            if(p.scans > 0) btnScan.classList.remove('empty'); else btnScan.classList.add('empty');
+            if(p.drones > 0) btnDrone.classList.remove('empty'); else btnDrone.classList.add('empty');
+            if(p.fuelPods > 0) btnFuel.classList.remove('empty'); else btnFuel.classList.add('empty');
+        }
+
+        function useIntelScan() {
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || globalState.powerups.scans <= 0) return;
+            
+            globalState.powerups.scans -= 1;
+            saveState();
+            updatePowerupsUI();
+
+            if (lState.type === 'image') {
+                const wrapper = document.getElementById('game-wrapper');
+                wrapper.classList.add('flash-screen'); 
+                setTimeout(() => wrapper.classList.remove('flash-screen'), 1000); 
+
+                const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
+                hiddenTiles.forEach(p => {
+                    p.style.transition = 'background 0.3s ease, opacity 1s ease 0.3s, transform 1s ease 0.3s';
+                    p.style.background = 'rgba(52, 152, 219, 0.4)';
+                    p.style.borderColor = 'var(--aux-blue)';
+                    p.style.boxShadow = '0 0 10px var(--aux-blue)';
+                    p.style.pointerEvents = 'none';
+                    setTimeout(() => { p.style.opacity = '0'; p.style.transform = 'scale(0.8)'; }, 50);
+                });
+                
+                lState.revealedTiles = [...Array(100).keys()];
+                saveState();
+                showFloat(window.innerWidth/2, window.innerHeight/3, "INTEL SCAN COMPLETE");
+            } else if (lState.type === 'trivia') {
+                showFloat(window.innerWidth/2, window.innerHeight/3, "INTEL SCAN COMPLETE");
+                setTimeout(() => submitTrivia(lState.correctIdx), 500);
+            }
+        }
+
+        function usePrecisionDrone() {
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || globalState.powerups.drones <= 0) return;
+            
+            globalState.powerups.drones -= 1;
+            saveState();
+            updatePowerupsUI();
+
+            if (lState.type === 'image') {
+                if(!lState.revealedTiles) lState.revealedTiles = [];
+                let unrevealed = [];
+                for(let i=0; i<100; i++) { if(!lState.revealedTiles.includes(i)) unrevealed.push(i); }
+                
+                // Shuffle and pick 15
+                unrevealed.sort(() => Math.random() - 0.5);
+                let toReveal = unrevealed.slice(0, 15);
+                
+                lState.revealedTiles.push(...toReveal);
+                saveState();
+
+                const grid = document.getElementById('cover-grid');
+                toReveal.forEach(idx => {
+                    let tile = grid.children[idx];
+                    if(tile) {
+                        tile.style.transition = 'opacity 0.5s ease, background 0.2s';
+                        tile.style.background = 'var(--brand-red)';
+                        setTimeout(() => tile.classList.add('revealed'), 200);
+                    }
+                });
+                showFloat(window.innerWidth/2, window.innerHeight/3, "TARGETS ACQUIRED");
+            } else if (lState.type === 'trivia') {
+                let wrongIndices = [];
+                lState.options.forEach((opt, i) => {
+                    if(i !== lState.correctIdx) {
+                        const btn = document.getElementById('btn-opt-' + i);
+                        if(btn && !btn.disabled) wrongIndices.push(i);
+                    }
+                });
+                if(wrongIndices.length > 0) {
+                    let target = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
+                    const btn = document.getElementById('btn-opt-' + target);
+                    btn.disabled = true;
+                    btn.style.opacity = '0.3';
+                    btn.style.textDecoration = 'line-through';
+                    showFloat(window.innerWidth/2, window.innerHeight/3, "TARGET ELIMINATED");
+                }
+            }
+        }
+
+        function useFuelPod() {
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || globalState.powerups.fuelPods <= 0) return;
+            
+            globalState.powerups.fuelPods -= 1;
+            globalState.currentFuel += 300;
+            saveState();
+            
+            updatePowerupsUI();
+            updateMiniFuelUI();
+            showFloat(window.innerWidth/2, window.innerHeight/3, "+300 FUEL");
+        }
+
+        function handleInteraction(e) {
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
+            const hidden = Array.from(document.querySelectorAll('.grid-piece:not(.revealed)'));
+            if (hidden.length === 0) return;
+            const tile = hidden[Math.floor(Math.random() * hidden.length)];
+            const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile);
+            tile.classList.add('revealed'); 
+            if(!lState.revealedTiles) lState.revealedTiles = [];
+            lState.revealedTiles.push(idx);
+            
+            drainFuel(TILE_COST);
+            
+            let cx = e.clientX; let cy = e.clientY;
+            if(e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
+            if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
+            
+            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver();
+        }
+
+        function submitImageGuess(selectedIndex) {
+            const lState = globalState.levels[activeLevelIdx];
+            if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
+            if(selectedIndex === lState.correctIdx) {
+                const btn = document.getElementById('img-opt-' + selectedIndex);
+                btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
+                endGame(true, "Target Verified");
+            } else {
+                drainFuel(WRONG_GUESS_PENALTY);
+                const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash');
+                setTimeout(() => btn.classList.remove('wrong-flash'), 500);
+                if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver();
+            }
+        }
+
+        function submitTrivia(selectedIndex) {
+            const lState = globalState.levels[activeLevelIdx];
+            if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
+            if(selectedIndex === lState.correctIdx) {
+                const btn = document.getElementById('btn-opt-' + selectedIndex);
+                btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
+                endGame(true, "Analysis Correct");
+            } else {
+                drainFuel(WRONG_GUESS_PENALTY);
+                const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash');
+                setTimeout(() => btn.classList.remove('wrong-flash'), 500);
+                if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver();
+            }
+        }
+
+        function endGame(win, msg) {
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = msg;
+            msgEl.className = win ? "success pop-reveal" : "fail pop-reveal";
+            void msgEl.offsetWidth; 
+            
+            if (win) {
+                const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
+                if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
+                triggerConfetti(); document.getElementById('level-title').textContent = lState.name; 
+                
+                // Hide powerups upon win
+                document.getElementById('powerups-bar').style.display = 'none';
+                
+                saveState();
+                if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);
+            }
+        }
+
+        function triggerGameOver() {
+            document.getElementById('game-view').classList.add('gray-out'); 
+            document.getElementById('selector-view').classList.add('gray-out'); 
+            document.getElementById('hangar-view').classList.add('gray-out'); 
+            document.getElementById('radar-view').classList.add('gray-out'); 
+            setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500);
+        }
+
+        function closeRefuel() { document.getElementById('refuel-overlay').style.display = 'none'; saveAndExit(); }
+        
+        function updateMiniFuelUI() {
+            const el = document.getElementById('current-fuel-display'); 
+            el.querySelector('span:nth-of-type(1)').textContent = globalState.currentFuel;
+            const auxEl = document.getElementById('aux-fuel-display');
+            if (globalState.extraFuel > 0) {
+                auxEl.style.display = 'inline';
+                auxEl.textContent = `+${globalState.extraFuel}`;
+            } else {
+                auxEl.style.display = 'none';
+            }
+            if (globalState.currentFuel <= 200 && globalState.extraFuel === 0) el.classList.add('danger'); else el.classList.remove('danger');
+        }
+
+        function saveAndExit() { 
+            tkState.active = false; if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
+            
+            const gameView = document.getElementById('game-view');
+            const selectorView = document.getElementById('selector-view');
+            const hangarView = document.getElementById('hangar-view');
+            
+            gameView.classList.remove('active');
+            renderDashboard(); 
+            
+            if (activeLevelIdx !== null && activeLevelIdx !== undefined && globalState.levels[activeLevelIdx]) {
+                let hNum = globalState.levels[activeLevelIdx].hangar;
+                openHangar(hNum);
+            } else {
+                hangarView.classList.remove('active');
+                selectorView.classList.remove('active');
+                void selectorView.offsetWidth; 
+                selectorView.classList.add('active');
+            }
+        }
+        
+        function triggerResetUI() { document.getElementById('restart-overlay').style.display = 'flex'; }
+        function cancelReset() { document.getElementById('restart-overlay').style.display = 'none'; }
+        
+        function confirmReset() { 
+            const lastUser = globalState.username || localStorage.getItem('last_pilot_name');
+            localStorage.clear(); 
+            if (lastUser) localStorage.setItem('last_pilot_name', lastUser);
+            location.reload(); 
+        }
+
+        function showFloat(x, y, text) {
+            const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text;
+            el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
+        }
+
+        function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block';
+            btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; });
+        });
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+    </script>
+</body>
+</html>

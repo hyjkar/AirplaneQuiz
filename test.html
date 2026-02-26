@@ -124,7 +124,7 @@
         #level-list-container::-webkit-scrollbar, #hangar-level-list::-webkit-scrollbar { width: 5px; }
         #level-list-container::-webkit-scrollbar-thumb, #hangar-level-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
 
-        .world-folder { border: 1px solid #ddd; border-radius: 10px; background: white; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; transition: opacity 0.3s, transform 0.1s; cursor: pointer; }
+        .world-folder { border: 1px solid #ddd; border-radius: 10px; background: white; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; transition: transform 0.1s; cursor: pointer; }
         .world-folder:active { transform: scale(0.98); background-color: #f8f8f8; }
         .world-folder.locked-world { opacity: 0.6; pointer-events: none; background: #f0f0f0; }
         .world-header { padding: 18px 15px; display: flex; justify-content: space-between; align-items: center; }
@@ -228,6 +228,18 @@
         @keyframes floatUp { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -100px) scale(1.5); opacity: 0; } }
         .pop-reveal { animation: quickPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes quickPop { 0% { opacity: 0; transform: scale(0.5); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+
+        /* SCAN REWARD ANIMATION */
+        .scan-reward-toast {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: #fff; font-weight: bold; text-align: center;
+            text-shadow: 0 0 20px var(--aux-blue), 2px 2px 0 #000; z-index: 100000; pointer-events: none; opacity: 0;
+            animation: scanPop 2.5s ease-out forwards; display: flex; flex-direction: column; align-items: center;
+            background: rgba(0,0,0,0.85); padding: 25px; border-radius: 15px; border: 2px solid var(--aux-blue); box-shadow: 0 0 30px rgba(52, 152, 219, 0.5);
+        }
+        .scan-icon-anim { width: 40px; height: 40px; color: var(--aux-blue); margin-bottom: 10px; animation: scanPulse 0.5s infinite alternate; }
+        @keyframes scanPop { 0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 20% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -70%) scale(1.1); } }
+        @keyframes scanPulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
 
         /* --- TRIVIA MODE --- */
         #trivia-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; justify-content: center; gap: 15px; z-index: 10; position: relative;}
@@ -376,7 +388,9 @@
             position: relative; z-index: 10; margin-top: auto; display: flex; justify-content: center; width: 100%; height: 30px; pointer-events: none;
         }
         #radar-message { font-size: 1rem; text-align: center; font-weight: bold; padding: 4px 12px; border-radius: 4px; display: none; }
-        
+        #radar-message.success { color: var(--gauge-green); text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.8); border: 1px solid var(--gauge-green); box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); display: inline-block;} 
+        #radar-message.fail { color: var(--brand-red); text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.8); border: 1px solid var(--brand-red); box-shadow: 0 0 10px rgba(215, 25, 32, 0.4); display: inline-block;}
+
         /* Regular game message */
         #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
@@ -487,6 +501,19 @@
             <input type="text" id="callsign-input" placeholder="Callsign" maxlength="12" style="margin-bottom: 15px;" autocomplete="off">
             <button class="gold-btn" onclick="registerPilot()">CONFIRM IDENTITY</button>
         </div>
+    </div>
+
+    <div id="cat-modal">
+        <h1 style="color:var(--brand-gold); margin-bottom:10px;">TOP SECRET: AVIATION FELINES</h1>
+        <p style="color:#ccc; margin-bottom:20px;">Operation "Queen of the Skies" Successful.</p>
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; max-width:500px; margin-bottom:20px;">
+            <img src="https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/BzyTuYCmvSORqs1Qks/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/l4KibWpBGWchSqCRy/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/3oEduV4SOS9mmmIOkw/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+        </div>
+        <button class="primary-btn" onclick="document.getElementById('cat-modal').style.display='none'">CLOSE DOSSIER</button>
     </div>
 
     <div id="selector-view" class="view-section">
@@ -816,7 +843,6 @@
 
         const TARGET_PASSWORD = "QUEEN OF THE SKIES";
 
-        // 10 Level Escalation Curve (Story Mode)
         const RADAR_LEVEL_CONFIG = {
             1: { latOffset: 5, lngOffset: 8, planes: 8, hints: 2 },
             2: { latOffset: 6, lngOffset: 10, planes: 12, hints: 2 },
@@ -837,7 +863,7 @@
             body.classList.toggle('open');
             header.classList.toggle('open');
             icon.textContent = body.classList.contains('open') ? "[-]" : "[+]";
-            setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
+            if(radarMap) { setTimeout(() => { radarMap.invalidateSize(); }, 300); }
         }
         
         function toggleRadarFilters() {
@@ -847,7 +873,7 @@
             body.classList.toggle('open');
             header.classList.toggle('open');
             icon.textContent = body.classList.contains('open') ? "[-]" : "[+]";
-            setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
+            if(radarMap) { setTimeout(() => { radarMap.invalidateSize(); }, 300); }
         }
 
         function createPlaneIcon(p) {
@@ -937,6 +963,7 @@
             document.getElementById('toggle-map-btn').textContent = "CITIES: OFF";
             document.getElementById('toggle-map-btn').style.background = "transparent";
             document.getElementById('toggle-map-btn').style.color = "var(--radar-green)";
+            
             if (radarMap && cleanMapLabels && radarMap.hasLayer(cleanMapLabels)) {
                 radarMap.removeLayer(cleanMapLabels);
             }
@@ -1096,52 +1123,35 @@
             });
         }
 
-        // ==========================================
-        // SMART DYNAMIC HINT GENERATOR
-        // ==========================================
         function evaluateAndSelectHints(targetPlane, geoData, config) {
             let potentialHints = [];
             const totalP = currentRadarPlanes.length;
             
-            // 1. Heading
             let targetDir = getCompassDirection(targetPlane.heading);
             potentialHints.push({ text: `HEADING ${targetDir}`, test: p => getCompassDirection(p.heading) === targetDir });
             
-            // 2. Registry
             if (targetPlane.origin) potentialHints.push({ text: `REGISTRY ${targetPlane.origin}`, test: p => p.origin === targetPlane.origin });
-            
-            // 3. Origin City
             if (targetPlane.originCity) potentialHints.push({ text: `ORIGIN ${targetPlane.originCity}`, test: p => p.originCity === targetPlane.originCity });
-            
-            // 4. Dest City
             if (targetPlane.destCity) potentialHints.push({ text: `DESTINATION ${targetPlane.destCity}`, test: p => p.destCity === targetPlane.destCity });
             
-            // 5. Altitude
             if (targetPlane.alt) {
                 const isAbove = Math.random() > 0.5;
                 let bound = isAbove ? Math.floor((targetPlane.alt - 1) / 500) * 500 : Math.ceil((targetPlane.alt + 1) / 500) * 500;
                 potentialHints.push({ text: `ALT ${isAbove ? 'ABOVE' : 'BELOW'} ${bound}M`, test: p => isAbove ? p.alt > bound : p.alt < bound });
             }
 
-            // Calculate "Uselessness" Ratio
             potentialHints.forEach(h => { h.ratio = currentRadarPlanes.filter(h.test).length / totalP; });
-
-            // STRICT FILTER: Discard if it applies to more than 55% of the board
             let goodHints = potentialHints.filter(h => h.ratio <= 0.55);
             
-            // 6. Proximity (Usually highly specific, treat as very good)
             if (geoData && geoData.address) {
-                // Ensure we only use localized city/town logic, NO broad state names
                 let city = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.municipality || geoData.address.suburb;
                 if (city) goodHints.push({ text: `PROXIMITY NEAR ${city.toUpperCase()}`, ratio: 0.1 });
             } else if (geoData === null) {
                 goodHints.push({ text: `AIRSPACE INT'L WATERS`, ratio: 0.1 });
             }
 
-            // Sort by Best filtering power
             goodHints.sort((a, b) => a.ratio - b.ratio);
             
-            // Fallback if we filtered out too much
             if (goodHints.length < config.hints) {
                 goodHints = potentialHints.sort((a, b) => a.ratio - b.ratio);
                 if (geoData && geoData.address) {
@@ -1152,7 +1162,6 @@
                 }
             }
 
-            // Pick top N, then shuffle so they appear in random order to player
             return goodHints.slice(0, config.hints).map(h => h.text).sort(() => 0.5 - Math.random());
         }
 
@@ -1437,13 +1446,13 @@
         function toggleMapStyle() {
             const btn = document.getElementById('toggle-map-btn');
             if (currentMapStyle === 'CLEAN') {
-                if (cleanMapLabels) cleanMapLabels.addTo(radarMap);
+                if(cleanMapLabels) cleanMapLabels.addTo(radarMap);
                 currentMapStyle = 'LABELS';
                 btn.textContent = "CITIES: ON";
                 btn.style.background = "var(--radar-green)";
                 btn.style.color = "#000";
             } else {
-                if (cleanMapLabels && radarMap.hasLayer(cleanMapLabels)) radarMap.removeLayer(cleanMapLabels);
+                if(cleanMapLabels && radarMap.hasLayer(cleanMapLabels)) radarMap.removeLayer(cleanMapLabels);
                 currentMapStyle = 'CLEAN';
                 btn.textContent = "CITIES: OFF";
                 btn.style.background = "transparent";
@@ -1530,141 +1539,6 @@
             renderDashboard();
         }
 
-        function handleInteraction(e) {
-            const lState = globalState.levels[activeLevelIdx];
-            if (lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            const hidden = Array.from(document.querySelectorAll('.grid-piece:not(.revealed)'));
-            if (hidden.length === 0) return;
-            const tile = hidden[Math.floor(Math.random() * hidden.length)];
-            const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile);
-            tile.classList.add('revealed'); 
-            if(!lState.revealedTiles) lState.revealedTiles = [];
-            lState.revealedTiles.push(idx);
-            
-            drainFuel(TILE_COST);
-            
-            let cx = e.clientX; let cy = e.clientY;
-            if(e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
-            if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
-            
-            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver();
-        }
-
-        function submitImageGuess(selectedIndex) {
-            const lState = globalState.levels[activeLevelIdx];
-            if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            if(selectedIndex === lState.correctIdx) {
-                const btn = document.getElementById('img-opt-' + selectedIndex);
-                btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
-                endGame(true, "Target Verified");
-            } else {
-                drainFuel(WRONG_GUESS_PENALTY);
-                const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash');
-                setTimeout(() => btn.classList.remove('wrong-flash'), 500);
-                if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver();
-            }
-        }
-
-        function submitTrivia(selectedIndex) {
-            const lState = globalState.levels[activeLevelIdx];
-            if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            if(selectedIndex === lState.correctIdx) {
-                const btn = document.getElementById('btn-opt-' + selectedIndex);
-                btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white";
-                endGame(true, "Analysis Correct");
-            } else {
-                drainFuel(WRONG_GUESS_PENALTY);
-                const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash');
-                setTimeout(() => btn.classList.remove('wrong-flash'), 500);
-                if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver();
-            }
-        }
-
-        function endGame(win, msg) {
-            const msgEl = document.getElementById('message');
-            msgEl.textContent = msg;
-            msgEl.className = win ? "success pop-reveal" : "fail pop-reveal";
-            void msgEl.offsetWidth; 
-            
-            if (win) {
-                const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
-                if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
-                triggerConfetti(); document.getElementById('level-title').textContent = lState.name; 
-                
-                document.getElementById('powerups-bar').style.display = "none"; 
-                
-                saveState();
-                if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);
-            }
-        }
-
-        function triggerGameOver() {
-            document.getElementById('game-view').classList.add('gray-out'); 
-            document.getElementById('selector-view').classList.add('gray-out'); 
-            document.getElementById('hangar-view').classList.add('gray-out'); 
-            document.getElementById('radar-view').classList.add('gray-out'); 
-            setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500);
-        }
-
-        function closeRefuel() { document.getElementById('refuel-overlay').style.display = 'none'; saveAndExit(); }
-        
-        function updateMiniFuelUI() {
-            const el = document.getElementById('current-fuel-display'); 
-            el.querySelector('span:nth-of-type(1)').textContent = globalState.currentFuel;
-            const auxEl = document.getElementById('aux-fuel-display');
-            if (globalState.extraFuel > 0) {
-                auxEl.style.display = 'inline';
-                auxEl.textContent = `+${globalState.extraFuel}`;
-            } else {
-                auxEl.style.display = 'none';
-            }
-            if (globalState.currentFuel <= 200 && globalState.extraFuel === 0) el.classList.add('danger'); else el.classList.remove('danger');
-        }
-
-        function saveAndExit() { 
-            tkState.active = false; if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
-            
-            const gameView = document.getElementById('game-view');
-            const selectorView = document.getElementById('selector-view');
-            const hangarView = document.getElementById('hangar-view');
-            
-            gameView.classList.remove('active');
-            renderDashboard(); 
-            
-            if (activeLevelIdx !== null && activeLevelIdx !== undefined && globalState.levels[activeLevelIdx]) {
-                let hNum = globalState.levels[activeLevelIdx].hangar;
-                openHangar(hNum);
-            } else {
-                hangarView.classList.remove('active');
-                selectorView.classList.remove('active');
-                void selectorView.offsetWidth; 
-                selectorView.classList.add('active');
-            }
-        }
-        
-        function triggerResetUI() { document.getElementById('restart-overlay').style.display = 'flex'; }
-        function cancelReset() { document.getElementById('restart-overlay').style.display = 'none'; }
-        
-        function confirmReset() { 
-            const lastUser = globalState.username || localStorage.getItem('last_pilot_name');
-            localStorage.clear(); 
-            if (lastUser) localStorage.setItem('last_pilot_name', lastUser);
-            location.reload(); 
-        }
-
-        function showFloat(x, y, text) {
-            const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text;
-            el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
-        }
-
-        function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
-
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block';
-            btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; });
-        });
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
     </script>
 </body>
 </html>

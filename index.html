@@ -111,21 +111,21 @@
 
         .fuel-tank-container { background: #222; padding: 15px; border-radius: 12px; width: 100%; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #444; position: relative; flex-shrink: 0; }
         .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
-        .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.5rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
+        .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
 
         #password-container { background: #1a1a1a; padding: 8px; border-radius: 8px; width: 100%; text-align: center; border: 1px solid #333; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); margin: 0; }
 
         /* --- HANGAR LIST --- */
-        #level-list-container, #hangar-level-list { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 0; }
+        #level-list-container, #hangar-level-list { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 8px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 0; }
         #level-list-container::-webkit-scrollbar, #hangar-level-list::-webkit-scrollbar { width: 5px; }
         #level-list-container::-webkit-scrollbar-thumb, #hangar-level-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
 
         .world-folder { border: 1px solid #ddd; border-radius: 10px; background: white; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; transition: opacity 0.3s, transform 0.1s; cursor: pointer; }
         .world-folder:active { transform: scale(0.98); }
         .world-folder.locked-world { opacity: 0.6; pointer-events: none; background: #f0f0f0; }
-        .world-header { padding: 20px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .world-header { padding: 18px 15px; display: flex; justify-content: space-between; align-items: center; }
         .world-title-group { display: flex; align-items: center; gap: 8px; }
         .world-title-group h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-dark); }
         .arrow { font-size: 1.2rem; color: #888; }
@@ -146,7 +146,7 @@
         .level-strip.locked .strip-icon { color: #ccc !important; }
 
         /* --- BUTTONS --- */
-        .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-top: 10px; z-index: 20; position: relative;}
+        .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 5px; z-index: 20; position: relative;}
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; transition: visibility 0s; }
         button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none; -webkit-tap-highlight-color: transparent; }
         .primary-btn { background-color: var(--brand-red); color: white; }
@@ -156,7 +156,7 @@
         .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
         .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
         
-        .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s;}
+        .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s; padding: 10px;}
         .radar-btn:active { background: var(--radar-green); color: #000; }
         .radar-abort-btn { background: rgba(10, 10, 10, 0.85) !important; border: 1px solid var(--brand-red) !important; color: var(--brand-red) !important; backdrop-filter: blur(4px); font-weight: bold;}
 
@@ -270,44 +270,45 @@
         }
         @keyframes pulseText { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
-        /* --- VISUAL RADAR MODE --- */
+        /* --- VISUAL RADAR MODE NEW SPLIT PANELS --- */
         #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; gap: 0; }
         
-        .radar-top-accordion {
-            width: 100%; flex-shrink: 0; background: rgba(5, 16, 5, 0.9); border: 1px solid var(--radar-green); border-radius: 8px;
-            font-family: 'Share Tech Mono', monospace; color: var(--radar-green); position: relative; overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.8), inset 0 0 15px rgba(51, 255, 51, 0.05); z-index: 10;
-            backdrop-filter: blur(5px);
+        .radar-panels-wrapper {
+            width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; z-index: 10;
+        }
+        
+        .radar-panel {
+            background: rgba(5, 16, 5, 0.9); border: 1px solid var(--radar-green); border-radius: 8px;
+            font-family: 'Share Tech Mono', monospace; color: var(--radar-green); overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8), inset 0 0 10px rgba(51, 255, 51, 0.05); backdrop-filter: blur(5px);
         }
         
         .radar-accordion-header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 15px; cursor: pointer; z-index: 3; position: relative;
-            background: rgba(51, 255, 51, 0.05); border-bottom: 1px solid transparent;
+            padding: 8px 12px; cursor: pointer; background: rgba(51, 255, 51, 0.05); border-bottom: 1px solid transparent;
         }
         .radar-accordion-header:active { background: rgba(51, 255, 51, 0.1); }
         .radar-accordion-header.open { border-bottom-color: #1f3d1f; }
-        .radar-accordion-title { font-weight: bold; font-size: 1rem; color: var(--brand-gold); line-height: 1.2; }
+        .radar-accordion-title { font-weight: bold; font-size: 0.95rem; color: var(--brand-gold); line-height: 1.2; }
         
-        #radar-timer { font-size: 1.2rem; font-weight: bold; text-align: right; transition: color 0.3s; margin: 0; }
+        #radar-timer { font-size: 1.1rem; font-weight: bold; text-align: right; transition: color 0.3s; margin: 0; }
         .timer-penalty { color: var(--brand-red) !important; text-shadow: 0 0 10px rgba(215, 25, 32, 0.8); }
 
         .radar-accordion-body {
-            display: none; padding: 15px; flex-direction: column; z-index: 3; position: relative; gap: 15px; 
-            max-height: 45vh; overflow-y: auto;
+            display: none; padding: 10px 12px; flex-direction: column; gap: 10px; 
+            max-height: 30vh; overflow-y: auto;
         }
-        .radar-accordion-body.open { display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; }
+        .radar-accordion-body.open { display: flex; }
 
-        .radar-content { font-size: 0.95rem; line-height: 1.4; text-transform: uppercase; flex-grow: 1; word-wrap: break-word;}
-        .radar-highlight { color: #000; background: var(--radar-green); padding: 0 5px; font-weight: bold; display: inline-block;}
+        .radar-content { font-size: 0.85rem; line-height: 1.4; text-transform: uppercase; word-wrap: break-word;}
+        .radar-highlight { color: #000; background: var(--radar-green); padding: 0 4px; font-weight: bold; display: inline-block;}
         
-        .radar-setup-container { display: flex; flex-direction: column; flex-shrink: 0; min-width: 140px;}
-        .radar-toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
+        .radar-toggle-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; width: 100%; }
         .radar-toggle {
             background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green);
-            font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; padding: 6px 4px; cursor: pointer;
+            font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; padding: 6px 2px; cursor: pointer;
             outline: none; border-radius: 4px; transition: all 0.2s; text-align: center;
-            box-shadow: inset 0 0 5px rgba(51,255,51,0.1);
+            box-shadow: inset 0 0 5px rgba(51,255,51,0.1); white-space: nowrap;
         }
         .radar-toggle:hover { background: rgba(51, 255, 51, 0.2); }
 
@@ -360,7 +361,7 @@
         /* DESKTOP FULL SCREEN LAYOUT */
         @media (min-width: 768px) {
             #radar-view { max-width: 100%; }
-            .radar-top-accordion { position: absolute; top: 20px; left: 20px; width: 320px; margin: 0; }
+            .radar-panels-wrapper { position: absolute; top: 10px; left: 10px; width: 340px; margin: 0; }
             #radar-view .footer-buttons { position: absolute !important; bottom: 20px !important; right: 20px !important; left: auto !important; transform: none !important; width: 200px !important; max-width: none !important; }
         }
 
@@ -478,20 +479,17 @@
     <div id="selector-view" class="view-section">
         <div class="dashboard-header">
             
-            <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                <div style="display: flex; gap: 8px; width: 80px;">
-                    <div class="icon-btn logout" onclick="triggerResetUI()" title="Sign Out / Restart">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
-                    </div>
-                    <div class="icon-btn leaderboard" onclick="openLeaderboard()" title="Global Leaderboard">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg>
-                    </div>
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <div class="icon-btn leaderboard" onclick="openLeaderboard()" title="Global Leaderboard">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg>
                 </div>
                 <div style="flex-grow: 1; text-align: center;">
                     <h1 style="margin:0;">Fuel Command</h1>
                     <h2 id="pilot-greeting" style="margin: 2px 0 0 0;">Welcome Pilot</h2>
                 </div>
-                <div style="width: 80px;"></div>
+                <div class="icon-btn logout" onclick="triggerResetUI()" title="Sign Out / Restart">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                </div>
             </div>
 
             <div class="fuel-tank-container">
@@ -501,16 +499,15 @@
                 </div>
                 <div class="fuel-bar-bg"><div class="fuel-bar-fill" id="fuel-bar"></div></div>
                 
-                <div id="aux-fuel-container" style="display:none; margin-top:15px; border-top: 1px dashed #444; padding-top:10px;">
+                <div id="aux-fuel-container" style="display:none; margin-top:10px; border-top: 1px dashed #444; padding-top:8px;">
                     <div class="fuel-label" style="color:var(--aux-blue);">AUXILIARY TANK</div>
                     <div class="fuel-value" style="font-size: 1.8rem; color:var(--aux-blue);">
                         <span id="aux-fuel-value">1500</span><span style="font-size:0.9rem; color:#888;">L</span>
                     </div>
                     <div class="fuel-bar-bg" style="height:6px;"><div class="fuel-bar-fill" id="aux-fuel-bar" style="background:var(--aux-blue);"></div></div>
                 </div>
-                <div id="unlock-message" style="font-size: 0.75rem; margin-top:10px; color:#888;"></div>
+                <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;"></div>
             </div>
-
         </div>
 
         <div id="level-list-container"></div>
@@ -681,20 +678,30 @@
 
     <div id="radar-view" class="view-section">
         
-        <div class="radar-top-accordion">
-            <div class="radar-accordion-header open" id="radar-accordion-header" onclick="toggleRadarInfo()">
-                <div class="radar-accordion-title">
-                    <span class="acc-icon">[-]</span> TARGET INTEL
-                    <div style="font-size:0.75rem; color:#aaa; margin-top:2px;" class="lvl-text">LEVEL 1 OF 10</div>
+        <div class="radar-panels-wrapper">
+            <div class="radar-panel">
+                <div class="radar-accordion-header open" id="radar-intel-header" onclick="toggleRadarIntel()">
+                    <div class="radar-accordion-title">
+                        <span class="acc-icon-intel">[-]</span> TARGET INTEL
+                        <div style="font-size:0.7rem; color:#aaa; margin-top:2px;" class="lvl-text">LEVEL 1 OF 10</div>
+                    </div>
+                    <div id="radar-timer">30:00:00</div>
                 </div>
-                <div id="radar-timer">30:00:00</div>
+                <div class="radar-accordion-body open" id="radar-intel-body">
+                    <div class="radar-content" id="radar-screen-text">
+                        ESTABLISHING UPLINK...<br>
+                        SCANNING SECTOR...<span class="blinking-cursor">_</span>
+                    </div>
+                </div>
             </div>
-            <div class="radar-accordion-body open" id="radar-info-body">
-                <div class="radar-content" id="radar-screen-text">
-                    ESTABLISHING UPLINK...<br>
-                    SCANNING SECTOR...<span class="blinking-cursor">_</span>
+
+            <div class="radar-panel">
+                <div class="radar-accordion-header" id="radar-filters-header" onclick="toggleRadarFilters()">
+                    <div class="radar-accordion-title">
+                        <span class="acc-icon-filters">[+]</span> SENSOR FILTERS
+                    </div>
                 </div>
-                <div class="radar-setup-container">
+                <div class="radar-accordion-body" id="radar-filters-body">
                     <div class="radar-toggle-group">
                         <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button>
                         <button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">CITIES: OFF</button>
@@ -746,7 +753,7 @@
         let compassVisible = false;
         let currentMapStyle = 'CLEAN'; 
         
-        let activeLevelIdx = 0;
+        let activeLevelIdx = null;
         let pendingInterceptPlane = null;
         let radarAnimFrame = null;
         let radarAnimTime = 0;
@@ -1278,6 +1285,12 @@
             renderDashboard(); 
         }
 
+        function triggerRefuel() {
+            globalState.currentFuel += REFUEL_AMOUNT;
+            saveState();
+            setTimeout(() => { document.getElementById('refuel-overlay').style.display = 'flex'; }, 500);
+        }
+
         function launchLevel(idx) {
             activeLevelIdx = idx;
             const lState = globalState.levels[idx];
@@ -1643,20 +1656,23 @@
             return dirs[Math.round(((heading %= 360) < 0 ? heading + 360 : heading) / 45) % 8];
         }
 
-        function toggleRadarInfo() {
-            const body = document.getElementById('radar-info-body');
-            const header = document.getElementById('radar-accordion-header');
-            const icon = header.querySelector('.acc-icon');
-            
-            if (body.classList.contains('open')) {
-                body.classList.remove('open');
-                header.classList.remove('open');
-                icon.textContent = "[+]";
-            } else {
-                body.classList.add('open');
-                header.classList.add('open');
-                icon.textContent = "[-]";
-            }
+        function toggleRadarIntel() {
+            const body = document.getElementById('radar-intel-body');
+            const header = document.getElementById('radar-intel-header');
+            const icon = header.querySelector('.acc-icon-intel');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+            icon.textContent = body.classList.contains('open') ? "[-]" : "[+]";
+            setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
+        }
+        
+        function toggleRadarFilters() {
+            const body = document.getElementById('radar-filters-body');
+            const header = document.getElementById('radar-filters-header');
+            const icon = header.querySelector('.acc-icon-filters');
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+            icon.textContent = body.classList.contains('open') ? "[-]" : "[+]";
             setTimeout(() => { if (radarMap) radarMap.invalidateSize(); }, 300);
         }
 
@@ -1679,9 +1695,14 @@
             radarLevel = 1;
             radarTimeMs = 1800000; 
             
-            document.getElementById('radar-info-body').classList.add('open');
-            document.getElementById('radar-accordion-header').classList.add('open');
-            document.querySelector('.acc-icon').textContent = "[-]";
+            document.getElementById('radar-intel-body').classList.add('open');
+            document.getElementById('radar-intel-header').classList.add('open');
+            document.querySelector('.acc-icon-intel').textContent = "[-]";
+            
+            document.getElementById('radar-filters-body').classList.remove('open');
+            document.getElementById('radar-filters-header').classList.remove('open');
+            document.querySelector('.acc-icon-filters').textContent = "[+]";
+
             document.querySelector('.lvl-text').textContent = "LEVEL 1 OF 10";
             
             requestAnimationFrame(() => {
@@ -2507,13 +2528,19 @@
             const hangarView = document.getElementById('hangar-view');
             
             gameView.classList.remove('active');
-            hangarView.classList.remove('active');
+            renderDashboard(); // Always sync state
             
-            selectorView.classList.remove('active');
-            void selectorView.offsetWidth; 
-            selectorView.classList.add('active');
-            
-            renderDashboard(); 
+            if (activeLevelIdx !== null && activeLevelIdx !== undefined && globalState.levels[activeLevelIdx]) {
+                // Return directly to the active Hangar
+                let hNum = globalState.levels[activeLevelIdx].hangar;
+                openHangar(hNum);
+            } else {
+                // Failsafe
+                hangarView.classList.remove('active');
+                selectorView.classList.remove('active');
+                void selectorView.offsetWidth; 
+                selectorView.classList.add('active');
+            }
         }
         
         function triggerResetUI() { document.getElementById('restart-overlay').style.display = 'flex'; }

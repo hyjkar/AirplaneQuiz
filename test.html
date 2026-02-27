@@ -717,14 +717,14 @@
 
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
-            db.collection("fuel_command_v77").doc(globalState.username).set({ name: globalState.username, score: globalState.currentFuel, timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(console.error);
+            db.collection("fuel_command_v78").doc(globalState.username).set({ name: globalState.username, score: globalState.currentFuel, timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(console.error);
         }
 
         function openLeaderboard() {
             document.getElementById('selector-view').classList.remove('active'); document.getElementById('leaderboard-view').classList.add('active');
             const list = document.getElementById('leaderboard-list'); list.innerHTML = "Fetching Data...";
             if(!db) { list.innerHTML = "⚠️ Database not connected."; return; }
-            db.collection("fuel_command_v77").orderBy("score", "desc").limit(20).get().then((querySnapshot) => {
+            db.collection("fuel_command_v78").orderBy("score", "desc").limit(20).get().then((querySnapshot) => {
                 let html = ""; let rank = 1;
                 querySnapshot.forEach((doc) => {
                     const data = doc.data(); const isMe = data.name === globalState.username;
@@ -739,7 +739,7 @@
 
         function loadState() {
             try {
-                const saved = localStorage.getItem('fuelQuizState_v77'); 
+                const saved = localStorage.getItem('fuelQuizState_v78'); 
                 if (saved) {
                     globalState = JSON.parse(saved);
                     if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
@@ -756,7 +756,7 @@
             }
         }
 
-        function saveState() { try { localStorage.setItem('fuelQuizState_v77', JSON.stringify(globalState)); } catch(e){} }
+        function saveState() { try { localStorage.setItem('fuelQuizState_v78', JSON.stringify(globalState)); } catch(e){} }
         
         function isHangarComplete(hNum) { 
             const hLevels = globalState.levels.filter(l => l.hangar === hNum);

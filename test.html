@@ -266,7 +266,7 @@
             overflow: hidden; white-space: nowrap; z-index: 1000; border-top: 1px solid #333;
             padding-bottom: max(6px, env(safe-area-inset-bottom));
         }
-        #news-ticker { display: inline-block; padding-left: 100%; animation: ticker 55s linear infinite; }
+        #news-ticker { display: inline-block; padding-left: 100%; animation: ticker 35s linear infinite; }
         @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
         @media (min-width: 768px) {
@@ -664,19 +664,31 @@
             if(radarMap) { setTimeout(() => { radarMap.invalidateSize(); }, 300); }
         }
 
-        function fetchAviationNews() {
+       function fetchAviationNews() {
             const tickerEl = document.getElementById('news-ticker');
             if(!tickerEl) return;
             fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fsimpleflying.com%2Ffeed%2F')
             .then(res => res.json())
             .then(data => {
+                let fullText = "";
                 if (data && data.items && data.items.length > 0) {
                     const headlines = data.items.slice(0, 10).map(item => "/// " + item.title.toUpperCase() + " ");
-                    tickerEl.textContent = headlines.join(" ") + "///";
+                    fullText = headlines.join(" ") + "///";
                 } else { throw new Error("No items"); }
+                
+                tickerEl.textContent = fullText;
+                
+                // DYNAMIC SPEED: 0.15 seconds per character. 
+                // Increase 0.15 to 0.20 to make it slower, or decrease to 0.10 to make it faster.
+                let scrollDuration = fullText.length * 0.15; 
+                tickerEl.style.animationDuration = scrollDuration + "s";
             })
             .catch(err => {
-                tickerEl.textContent = "/// GLOBAL FUEL RESERVES STABLE /// NEW HANGARS UNDER CONSTRUCTION /// RADAR OPS MONITORING UNIDENTIFIED BOGEYS /// ALL PILOTS CLEARED FOR DEPARTURE ///";
+                let fallbackText = "/// GLOBAL FUEL RESERVES STABLE /// NEW HANGARS UNDER CONSTRUCTION /// RADAR OPS MONITORING UNIDENTIFIED BOGEYS /// ALL PILOTS CLEARED FOR DEPARTURE ///";
+                tickerEl.textContent = fallbackText;
+                
+                // Keep the exact same reading speed for the fallback text
+                tickerEl.style.animationDuration = (fallbackText.length * 0.15) + "s";
             });
         }
 

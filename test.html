@@ -261,10 +261,16 @@
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
         @media (min-width: 768px) {
-            #radar-view { max-width: 100%; } .radar-panels-wrapper { position: absolute; top: 10px; left: 10px; width: 340px; margin: 0; }
+            #radar-view { max-width: 100%; }
+            .radar-panels-wrapper { position: absolute; top: 10px; left: 10px; width: 340px; margin: 0; }
             #radar-view .footer-buttons { position: absolute !important; bottom: 20px !important; right: 20px !important; left: auto !important; transform: none !important; width: 200px !important; max-width: none !important; }
         }
-        @media (max-height: 500px) { .game-header { display: none !important; } #game-wrapper { margin-bottom: 5px; } h1 { display: none; } .compass-n { top: 60px; } }
+        @media (max-height: 500px) {
+            .game-header { display: none !important; }
+            #game-wrapper { margin-bottom: 5px; }
+            h1 { display: none; }
+            .compass-n { top: 60px; }
+        }
         #leaderboard-list { width: 100%; flex-grow: 1; overflow-y: auto; text-align: left; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; min-height: 0; }
         .lb-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; align-items: center; }
         .lb-rank { font-weight: bold; width: 30px; color: var(--brand-red); }
@@ -281,7 +287,8 @@
 
     <div id="orientation-lock">
         <svg viewBox="0 0 24 24" width="60" height="60" fill="currentColor" style="margin-bottom:20px;"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.25-.77c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.46L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zm-7.31.29C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
-        <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2><p>This mission requires Portrait Mode.</p>
+        <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2>
+        <p>This mission requires Portrait Mode.</p>
     </div>
 
     <div id="takeoff-tutorial-overlay">
@@ -359,11 +366,11 @@
         <h1 style="color:var(--brand-gold); margin-bottom:10px;">TOP SECRET: AVIATION FELINES</h1>
         <p style="color:#ccc; margin-bottom:20px;">Operation "Queen of the Skies" Successful.</p>
         <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; max-width:500px; margin-bottom:20px;">
-            <img src="trophy1.gif" onerror="this.src='https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="trophy2.gif" onerror="this.src='https://media.giphy.com/media/BzyTuYCmvSORqs1Qks/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="trophy3.gif" onerror="this.src='https://media.giphy.com/media/l4KibWpBGWchSqCRy/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="trophy4.gif" onerror="this.src='https://media.giphy.com/media/3oEduV4SOS9mmmIOkw/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="trophy5.gif" onerror="this.src='https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/BzyTuYCmvSORqs1Qks/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/l4KibWpBGWchSqCRy/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/3oEduV4SOS9mmmIOkw/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
         </div>
         <button class="primary-btn" onclick="document.getElementById('cat-modal').style.display='none'">CLOSE DOSSIER</button>
     </div>
@@ -497,7 +504,7 @@
         <div id="radar-map-wrapper"><div id="radar-map-container"></div><div class="compass-pt compass-n">N</div><div class="compass-pt compass-e">E</div><div class="compass-pt compass-s">S</div><div class="compass-pt compass-w">W</div></div>
         <div class="footer-buttons radar-footer" style="border: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;"><button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button></div>
     </div>
-    <script>
+<script>
         let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
         let radarTimeMs = 1800000; let lastTimerTick = 0; let encryptionInterval = null; let menuPasswordInterval = null;
         let radarLevel = 1; let bgMusicStarted = false; let currentRadarCallsign = ""; let currentRadarPlanes = [];

@@ -29,7 +29,6 @@
             --aux-blue: #3498db;
         }
         
-        /* Removes mobile tap flash globally */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
@@ -88,7 +87,7 @@
         .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
         .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
-        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
+        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); }
 
         #password-container { background: #1a1a1a; padding: 8px; border-radius: 8px; width: 100%; text-align: center; border: 1px dashed #555; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); margin: 0; }
 
@@ -261,16 +260,10 @@
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
 
         @media (min-width: 768px) {
-            #radar-view { max-width: 100%; }
-            .radar-panels-wrapper { position: absolute; top: 10px; left: 10px; width: 340px; margin: 0; }
+            #radar-view { max-width: 100%; } .radar-panels-wrapper { position: absolute; top: 10px; left: 10px; width: 340px; margin: 0; }
             #radar-view .footer-buttons { position: absolute !important; bottom: 20px !important; right: 20px !important; left: auto !important; transform: none !important; width: 200px !important; max-width: none !important; }
         }
-        @media (max-height: 500px) {
-            .game-header { display: none !important; }
-            #game-wrapper { margin-bottom: 5px; }
-            h1 { display: none; }
-            .compass-n { top: 60px; }
-        }
+        @media (max-height: 500px) { .game-header { display: none !important; } #game-wrapper { margin-bottom: 5px; } h1 { display: none; } .compass-n { top: 60px; } }
         #leaderboard-list { width: 100%; flex-grow: 1; overflow-y: auto; text-align: left; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; min-height: 0; }
         .lb-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; align-items: center; }
         .lb-rank { font-weight: bold; width: 30px; color: var(--brand-red); }
@@ -287,8 +280,7 @@
 
     <div id="orientation-lock">
         <svg viewBox="0 0 24 24" width="60" height="60" fill="currentColor" style="margin-bottom:20px;"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.25-.77c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.46L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zm-7.31.29C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
-        <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2>
-        <p>This mission requires Portrait Mode.</p>
+        <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2><p>This mission requires Portrait Mode.</p>
     </div>
 
     <div id="takeoff-tutorial-overlay">
@@ -366,11 +358,11 @@
         <h1 style="color:var(--brand-gold); margin-bottom:10px;">TOP SECRET: AVIATION FELINES</h1>
         <p style="color:#ccc; margin-bottom:20px;">Operation "Queen of the Skies" Successful.</p>
         <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; max-width:500px; margin-bottom:20px;">
-            <img src="https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="https://media.giphy.com/media/BzyTuYCmvSORqs1Qks/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="https://media.giphy.com/media/l4KibWpBGWchSqCRy/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="https://media.giphy.com/media/3oEduV4SOS9mmmIOkw/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="trophy1.gif" onerror="this.src='https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="trophy2.gif" onerror="this.src='https://media.giphy.com/media/BzyTuYCmvSORqs1Qks/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="trophy3.gif" onerror="this.src='https://media.giphy.com/media/l4KibWpBGWchSqCRy/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="trophy4.gif" onerror="this.src='https://media.giphy.com/media/3oEduV4SOS9mmmIOkw/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+            <img src="trophy5.gif" onerror="this.src='https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
         </div>
         <button class="primary-btn" onclick="document.getElementById('cat-modal').style.display='none'">CLOSE DOSSIER</button>
     </div>
@@ -504,7 +496,7 @@
         <div id="radar-map-wrapper"><div id="radar-map-container"></div><div class="compass-pt compass-n">N</div><div class="compass-pt compass-e">E</div><div class="compass-pt compass-s">S</div><div class="compass-pt compass-w">W</div></div>
         <div class="footer-buttons radar-footer" style="border: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;"><button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button></div>
     </div>
-<script>
+    <script>
         let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
         let radarTimeMs = 1800000; let lastTimerTick = 0; let encryptionInterval = null; let menuPasswordInterval = null;
         let radarLevel = 1; let bgMusicStarted = false; let currentRadarCallsign = ""; let currentRadarPlanes = [];
@@ -1020,7 +1012,7 @@
             const speedEl = document.getElementById('tk-speed-val'); speedEl.textContent = Math.floor(tkState.speed);
             if (speedEl.style.color !== "var(--gauge-orange)") { if (tkState.speed >= 140) speedEl.style.color = "var(--gauge-green)"; else speedEl.style.color = "var(--brand-red)"; }
             tkState.distance -= (tkState.speed / 1450); tkState.bgPosSky -= tkState.speed * 0.002; tkState.bgPosCity -= tkState.speed * 0.008; tkState.bgPosGround -= tkState.speed * 0.025; tkState.bgPosRunway -= tkState.speed * 0.08;
-            document.getElementById('tk-bg-sky').style.backgroundPositionX = tkState.bgPosSky + 'px'; document.getElementById('tk-bg-city').style.backgroundPositionX = tkState.bgPosCity + 'px'; document.getElementById('tk-bg-ground').style.backgroundPositionX = tkState.bgPosGround + 'px'; document.getElementById('tk-runway-surface').style.backgroundPositionX = tkState.bgPosRunway + 'px';
+            document.getElementById('tk-bg-sky').style.backgroundPositionX = tkState.bgPosSky + 'px'; document.getElementById('tk-bg-city').style.backgroundPositionX = tkState.bgPosCity + 'px'; document.getElementById('tk-bg-ground').style.backgroundPositionX = tkState.bgPosGround + 'px'; document.getElementById('tk-runway-surface').style.backgroundPositionX = '0px';
             document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%'; document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
             if (tkState.distance < 15) { const mtn = document.getElementById('tk-mountain'); mtn.style.display = 'block'; mtn.style.left = `calc(${tkState.distance * 6}% + 40px)`; }
             if (tkState.lift >= 100) return winTakeoff();
@@ -1311,15 +1303,16 @@
 
         function submitImageGuess(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('img-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(); }
+            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('img-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(); }
         }
 
         function submitTrivia(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(); }
+            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(); }
         }
 
-        function endGame(win) {
+        function endGame(win, msg) {
+            const msgEl = document.getElementById('message'); msgEl.textContent = msg; msgEl.className = win ? "success pop-reveal" : "fail pop-reveal"; void msgEl.offsetWidth; 
             if (win) {
                 const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
                 if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
@@ -1348,3 +1341,5 @@
         let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block'; btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; }); });
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
     </script>
+</body>
+</html>

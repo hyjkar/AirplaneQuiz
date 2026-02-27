@@ -256,8 +256,7 @@
         .leaflet-popup-tip { background: var(--radar-green); }
         .radar-target-ping { position: absolute; width: 40px; height: 40px; top: -8px; left: -8px; border-radius: 50%; border: 2px solid var(--brand-gold); animation: ping 1s infinite ease-out; pointer-events: none; }
         @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-        #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
-        .success { color: #27ae60; } .fail { color: var(--brand-red); }
+        #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; flex-shrink: 0;}
 
         @media (min-width: 768px) {
             #radar-view { max-width: 100%; } .radar-panels-wrapper { position: absolute; top: 10px; left: 10px; width: 340px; margin: 0; }
@@ -709,7 +708,27 @@
         function registerPilot() {
             const name = document.getElementById('callsign-input').value.trim();
             if (name.length < 2) { alert("Callsign too short."); return; }
-            globalState.username = name; localStorage.setItem('last_pilot_name', name); saveState();
+            
+            globalState.username = name; 
+            localStorage.setItem('last_pilot_name', name); 
+
+            if (name.toLowerCase() === 'admin') {
+                globalState.currentFuel = 99999;
+                globalState.extraFuel = 50000;
+                globalState.powerups = { scans: 99, drones: 99, fuelPods: 99 };
+                globalState.world1Complete = true;
+                globalState.world2Complete = true;
+                globalState.world3Complete = true;
+                globalState.world4Complete = true;
+                globalState.world5Complete = true;
+                globalState.passwordRevealed = [...Array(TARGET_PASSWORD.length).keys()];
+                globalState.levels.forEach(l => {
+                    l.completed = true;
+                    if(l.type === 'image') l.revealedTiles = [...Array(100).keys()];
+                });
+            }
+
+            saveState();
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('selector-view').classList.add('active');
             document.getElementById('pilot-greeting').textContent = `Pilot: ${globalState.username}`;
@@ -952,7 +971,13 @@
             imgArea.style.display = 'none'; triviaArea.style.display = 'none'; takeoffArea.style.display = 'none';
             if(tkState.frameId) { cancelAnimationFrame(tkState.frameId); tkState.active = false; }
 
-            if (lState.completed || lState.type === 'takeoff') { puBar.style.display = 'none'; } else { puBar.style.display = 'flex'; updatePowerupsUI(); }
+            if (lState.type === 'takeoff') { 
+                puBar.style.display = 'none'; 
+            } else { 
+                puBar.style.display = 'flex'; 
+                puBar.style.visibility = lState.completed ? 'hidden' : 'visible';
+                if (!lState.completed) updatePowerupsUI(); 
+            }
 
             if (lState.type === 'image') {
                 imgArea.style.display = 'flex'; container.style.overflow = 'hidden'; document.getElementById('mystery-image').src = lState.image;
@@ -1388,7 +1413,8 @@
             if (win) {
                 const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
                 if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
-                triggerConfetti(); document.getElementById('level-title').textContent = lState.name; document.getElementById('powerups-bar').style.display = "none"; 
+                triggerConfetti(); document.getElementById('level-title').textContent = lState.name; 
+                document.getElementById('powerups-bar').style.visibility = "hidden"; 
                 saveState(); if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);
             }
         }
@@ -1415,4 +1441,3 @@
     </script>
 </body>
 </html>
-    

@@ -504,7 +504,8 @@
         <div id="radar-map-wrapper"><div id="radar-map-container"></div><div class="compass-pt compass-n">N</div><div class="compass-pt compass-e">E</div><div class="compass-pt compass-s">S</div><div class="compass-pt compass-w">W</div></div>
         <div class="footer-buttons radar-footer" style="border: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;"><button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button></div>
     </div>
-    let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
+    <script>
+        let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
         let radarTimeMs = 1800000; let lastTimerTick = 0; let encryptionInterval = null; let menuPasswordInterval = null;
         let radarLevel = 1; let bgMusicStarted = false; let currentRadarCallsign = ""; let currentRadarPlanes = [];
         let pathsVisible = false; let originVisible = false; let altVisible = false; let origCityVisible = false; let destCityVisible = false; let compassVisible = false; let currentMapStyle = 'CLEAN'; 
@@ -1302,4 +1303,5 @@
         
         let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block'; btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; }); });
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+    </script>
     </script>

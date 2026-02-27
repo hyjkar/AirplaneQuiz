@@ -530,7 +530,12 @@
 
         let tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0 };
 
-        try { if (typeof firebase !== 'undefined') { firebase.initializeApp({}); db = firebase.firestore(); } } catch(e) {}
+        try { if (typeof firebase !== 'undefined') { firebase.initializeApp({  apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
+  authDomain: "fuelcommand.firebaseapp.com",
+  projectId: "fuelcommand",
+  storageBucket: "fuelcommand.firebasestorage.app",
+  messagingSenderId: "211722292779",
+  appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore(); } } catch(e) {}
 
         const ICONS = {
             plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,

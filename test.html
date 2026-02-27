@@ -36,7 +36,7 @@
             background-color: var(--bg-sand);
             color: var(--brand-dark);
             margin: 0; padding: 15px; 
-            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            padding-bottom: max(45px, env(safe-area-inset-bottom));
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%;
             display: flex; flex-direction: column; align-items: center;
             overflow: hidden; user-select: none; -webkit-user-select: none;
@@ -87,9 +87,9 @@
         .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
         .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
-        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
+        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); }
 
-        #password-container { background: #1a1a1a; padding: 8px; border-radius: 8px; width: 100%; text-align: center; border: 1px dashed #555; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); margin: 0; }
+        #password-container { background: #1a1a1a; padding: 8px; border-radius: 8px; width: 100%; text-align: center; border: 1px dashed #555; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); margin: 0; flex-shrink: 0; }
 
         #level-list-container, #hangar-level-list { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 8px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 0; }
         #level-list-container::-webkit-scrollbar, #hangar-level-list::-webkit-scrollbar { width: 5px; }
@@ -256,7 +256,18 @@
         .leaflet-popup-tip { background: var(--radar-green); }
         .radar-target-ping { position: absolute; width: 40px; height: 40px; top: -8px; left: -8px; border-radius: 50%; border: 2px solid var(--brand-gold); animation: ping 1s infinite ease-out; pointer-events: none; }
         @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-        #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; flex-shrink: 0;}
+        #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
+        .success { color: #27ae60; } .fail { color: var(--brand-red); }
+
+        /* SCROLLING NEWS TICKER */
+        #news-ticker-container {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: #111; color: var(--brand-gold);
+            font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; padding: 6px 0;
+            overflow: hidden; white-space: nowrap; z-index: 1000; border-top: 1px solid #333;
+            padding-bottom: max(6px, env(safe-area-inset-bottom));
+        }
+        #news-ticker { display: inline-block; padding-left: 100%; animation: ticker 35s linear infinite; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
         @media (min-width: 768px) {
             #radar-view { max-width: 100%; } .radar-panels-wrapper { position: absolute; top: 10px; left: 10px; width: 340px; margin: 0; }
@@ -390,7 +401,6 @@
         <div class="footer-buttons">
             <button class="radar-btn" onclick="openRadar()"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4-8c0 2.21-1.79 4-4 4s-4-1.79-4-4 1.79-4 4-4 4 1.79 4 4z"/></svg> LIVE RADAR OPS</button>
             <button class="gold-btn" onclick="openTrophyRoom()"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19,3H5C3.9,3,3,3.9,3,5v3c0,2.21,1.79,4,4,4v0.5c0,1.96,1.31,3.62,3.13,4.28L8.3,19.5C8.11,19.78,8,20.13,8,20.5V21h8v-0.5c0-0.37-0.11-0.72-0.3-1l-1.83-2.72C15.69,16.12,17,14.46,17,12.5V12c2.21,0,4-1.79,4-4V5C21,3.9,20.1,3,19,3z M7,9C5.9,9,5,8.1,5,7V5h2V9z M19,7c0,1.1-0.9,2-2,2V5h2V7z"/></svg> TROPHY ROOM</button>
-            <div id="password-container"></div>
             <button id="install-btn" class="dark-btn">📲 Install App</button>
         </div>
     </div>
@@ -404,6 +414,9 @@
             </div>
         </div>
         <div id="trophy-list"></div>
+        <div style="width: 100%; flex-shrink: 0; margin-top: 10px;">
+            <div id="password-container"></div>
+        </div>
     </div>
 
     <div id="hangar-view" class="view-section">
@@ -495,6 +508,10 @@
         <div id="radar-map-wrapper"><div id="radar-map-container"></div><div class="compass-pt compass-n">N</div><div class="compass-pt compass-e">E</div><div class="compass-pt compass-s">S</div><div class="compass-pt compass-w">W</div></div>
         <div class="footer-buttons radar-footer" style="border: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;"><button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button></div>
     </div>
+    
+    <div id="news-ticker-container">
+        <div id="news-ticker">ESTABLISHING SECURE COMMS... STANDBY FOR AVIATION INTEL...</div>
+    </div>
     <script>
         let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
         let radarTimeMs = 1800000; let lastTimerTick = 0; let encryptionInterval = null; let menuPasswordInterval = null;
@@ -530,12 +547,7 @@
 
         let tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0 };
 
-        try { if (typeof firebase !== 'undefined') { firebase.initializeApp({  apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
-  authDomain: "fuelcommand.firebaseapp.com",
-  projectId: "fuelcommand",
-  storageBucket: "fuelcommand.firebasestorage.app",
-  messagingSenderId: "211722292779",
-  appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore(); } } catch(e) {}
+        try { if (typeof firebase !== 'undefined') { firebase.initializeApp({}); db = firebase.firestore(); } } catch(e) {}
 
         const ICONS = {
             plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
@@ -652,6 +664,22 @@
             if(radarMap) { setTimeout(() => { radarMap.invalidateSize(); }, 300); }
         }
 
+        function fetchAviationNews() {
+            const tickerEl = document.getElementById('news-ticker');
+            if(!tickerEl) return;
+            fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fsimpleflying.com%2Ffeed%2F')
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.items && data.items.length > 0) {
+                    const headlines = data.items.slice(0, 10).map(item => "/// " + item.title.toUpperCase() + " ");
+                    tickerEl.textContent = headlines.join(" ") + "///";
+                } else { throw new Error("No items"); }
+            })
+            .catch(err => {
+                tickerEl.textContent = "/// GLOBAL FUEL RESERVES STABLE /// NEW HANGARS UNDER CONSTRUCTION /// RADAR OPS MONITORING UNIDENTIFIED BOGEYS /// ALL PILOTS CLEARED FOR DEPARTURE ///";
+            });
+        }
+
         function handleTkPress(e) { 
             if (!tkState.active) return;
             if (e.target && typeof e.target.closest === 'function') { if (e.target.closest('button') || e.target.closest('.takeoff-hud') || e.target.closest('.game-header') || e.target.closest('.footer-buttons') || e.target.closest('.pu-btn')) return; }
@@ -668,6 +696,7 @@
         window.onload = function() {
             try { 
                 loadState(); 
+                fetchAviationNews();
                 const lastUser = localStorage.getItem('last_pilot_name');
                 if (lastUser) { const ci = document.getElementById('callsign-input'); if (ci) ci.value = lastUser; }
 
@@ -764,7 +793,7 @@
 
         function loadState() {
             try {
-                const saved = localStorage.getItem('fuelQuizState_v78'); 
+                const saved = localStorage.getItem('fuelQuizState_v79'); 
                 if (saved) {
                     globalState = JSON.parse(saved);
                     if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
@@ -781,7 +810,7 @@
             }
         }
 
-        function saveState() { try { localStorage.setItem('fuelQuizState_v78', JSON.stringify(globalState)); } catch(e){} }
+        function saveState() { try { localStorage.setItem('fuelQuizState_v79', JSON.stringify(globalState)); } catch(e){} }
         
         function isHangarComplete(hNum) { 
             const hLevels = globalState.levels.filter(l => l.hangar === hNum);

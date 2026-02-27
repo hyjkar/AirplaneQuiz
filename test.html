@@ -579,6 +579,15 @@
 
         function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
 
+        // --- RESTORED FUNCTION ---
+        function getOptionsForImage(correctName, isClassified) {
+            const pool = isClassified ? AIRCRAFT_DATA.classified : AIRCRAFT_DATA.standard;
+            let options = [correctName];
+            let others = pool.filter(x => x.name !== correctName).sort(() => Math.random() - 0.5);
+            if(others.length >= 2) { options.push(others[0].name, others[1].name); }
+            return options.sort(() => Math.random() - 0.5);
+        }
+
         function animateFuelNumber(id, start, end, duration) {
             let obj = document.getElementById(id); if (!obj) return; let startTimestamp = null;
             const step = (timestamp) => {
@@ -1303,16 +1312,15 @@
 
         function submitImageGuess(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('img-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(); }
+            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('img-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(); }
         }
 
         function submitTrivia(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(); }
+            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(); }
         }
 
-        function endGame(win, msg) {
-            const msgEl = document.getElementById('message'); msgEl.textContent = msg; msgEl.className = win ? "success pop-reveal" : "fail pop-reveal"; void msgEl.offsetWidth; 
+        function endGame(win) {
             if (win) {
                 const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
                 if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
@@ -1341,5 +1349,5 @@
         let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block'; btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; }); });
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
     </script>
-</body>
+    </body>
 </html>

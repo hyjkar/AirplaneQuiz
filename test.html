@@ -5,48 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#d71920">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
     <title>Fuel Command</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
     <style>
-        :root { --brand-red: #d71920; --brand-gold: #cfa86e; --brand-dark: #1a1a1a; --bg-sand: #fcfbf9; --gauge-green: #2ecc71; --gauge-orange: #f39c12; --radar-green: #33ff33; --aux-blue: #3498db; }
+        :root {
+            --brand-red: #d71920;
+            --brand-gold: #cfa86e;
+            --brand-dark: #1a1a1a;
+            --bg-sand: #fcfbf9;
+            --gauge-green: #2ecc71;
+            --gauge-orange: #f39c12;
+            --radar-green: #33ff33;
+            --aux-blue: #3498db;
+        }
+        
+        /* Removes mobile tap flash globally */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-sand); color: var(--brand-dark); margin: 0; padding: 15px; padding-bottom: max(15px, env(safe-area-inset-bottom)); position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; display: flex; flex-direction: column; align-items: center; overflow: hidden; user-select: none; -webkit-user-select: none; }
-        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay, #cat-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; color: var(--brand-gold); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-sand);
+            color: var(--brand-dark);
+            margin: 0; padding: 15px; 
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            overflow: hidden; user-select: none; -webkit-user-select: none;
+        }
+
+        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay, #cat-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #111; color: var(--brand-gold); z-index: 10000;
+            flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
+        }
         #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
         #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
         #takeoff-tutorial-overlay { background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); }
         #cat-modal { background: rgba(0,0,0,0.95); z-index: 20000; overflow-y: auto; }
-        #intercept-overlay { background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%); backdrop-filter: none; justify-content: flex-end; padding-bottom: 40px; pointer-events: auto; }
+        
+        #intercept-overlay { 
+            background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%); 
+            backdrop-filter: none; justify-content: flex-end; padding-bottom: 40px; pointer-events: auto;
+        }
         #intercept-box { min-height: 220px; display: flex; flex-direction: column; justify-content: center; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(8px); }
-        @media screen and (orientation: landscape) and (max-height: 600px) { #orientation-lock { display: flex; } }
+        
+        @media screen and (orientation: landscape) and (max-height: 600px) {
+            #orientation-lock { display: flex; }
+        }
+
         h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--brand-dark); margin: 0; text-align: center; text-transform: uppercase; }
         h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
+
         .view-section { width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; min-height: 0; position: relative; z-index: 1; }
         .view-section.active { display: flex; animation: swipeIn 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
         @keyframes swipeIn { 0% { transform: translateX(30px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+
         .gray-out { filter: grayscale(100%) contrast(1.2); }
+
         .modal-box { background: #222; border: 2px solid var(--brand-gold); padding: 25px; border-radius: 12px; width: 100%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s ease; }
         .modal-box.danger { border-color: var(--brand-red); box-shadow: 0 0 20px rgba(215, 25, 32, 0.2); }
         .modal-box.success { border-color: var(--gauge-green); box-shadow: 0 0 20px rgba(46, 204, 113, 0.2); }
+
         .dashboard-header { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
         .icon-btn { background: #fff; border: 1px solid #ddd; border-radius: 8px; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; color: var(--brand-dark); cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s, background-color 0.1s; flex-shrink: 0; }
         .icon-btn:active { transform: scale(0.92); background-color: #f0f0f0; }
         .icon-btn.logout { background-color: var(--brand-red); color: white; border-color: #b01015; }
+        .icon-btn.logout:active { background-color: #b01015; }
         .icon-btn.leaderboard { background-color: var(--aux-blue); color: white; border-color: #2980b9; }
+        .icon-btn.leaderboard:active { background-color: #2980b9; }
+
         .fuel-tank-container { background: #222; padding: 15px; border-radius: 12px; width: 100%; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #444; position: relative; flex-shrink: 0; }
         .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
         .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
+
         #password-container { background: #1a1a1a; padding: 8px; border-radius: 8px; width: 100%; text-align: center; border: 1px dashed #555; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); margin: 0; }
+
         #level-list-container, #hangar-level-list { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 8px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 0; }
         #level-list-container::-webkit-scrollbar, #hangar-level-list::-webkit-scrollbar { width: 5px; }
         #level-list-container::-webkit-scrollbar-thumb, #hangar-level-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
+
         .world-folder { border: 1px solid #ddd; border-radius: 10px; background: white; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; transition: transform 0.1s; cursor: pointer; }
         .world-folder:active { transform: scale(0.98); background-color: #f8f8f8; }
         .world-folder.locked-world { opacity: 0.6; pointer-events: none; background: #f0f0f0; }
@@ -54,6 +103,7 @@
         .world-title-group { display: flex; align-items: center; gap: 8px; }
         .world-title-group h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-dark); }
         .arrow { font-size: 1.2rem; color: #888; }
+
         .level-strip { background: white; border: 1px solid #eee; border-radius: 6px; padding: 12px; width: 100%; min-height: 60px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform 0.1s; }
         .level-strip:active { transform: scale(0.98); background-color: #f9f9f9; }
         .level-strip.classified { border: 1px solid var(--brand-red); background: #fff5f5; }
@@ -68,9 +118,11 @@
         .level-strip.locked { background: #f9f9f9; border-color: #eee; cursor: not-allowed; opacity: 0.7; }
         .level-strip.locked .strip-title { color: #aaa; }
         .level-strip.locked .strip-icon { color: #ccc !important; }
+
         #trophy-list { display: flex; flex-direction: column; gap: 12px; width: 100%; overflow-y: auto; padding-right: 5px; margin-top: 10px; flex-grow: 1; min-height: 0;}
         #trophy-list::-webkit-scrollbar { width: 4px; }
         #trophy-list::-webkit-scrollbar-thumb { background: var(--brand-gold); border-radius: 4px; }
+        
         .trophy-card { background: white; border: 2px solid var(--brand-gold); border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s;}
         .trophy-card.locked { border-color: #ddd; background: #f8f8f8; box-shadow: none; filter: grayscale(100%); opacity: 0.6;}
         .trophy-img-box { width: 70px; height: 70px; background: #222; border: 2px solid var(--brand-gold); border-radius: 6px; display: flex; justify-content: center; align-items: center; overflow: hidden; flex-shrink: 0; color: var(--brand-gold);}
@@ -79,6 +131,7 @@
         .trophy-desc { display: flex; flex-direction: column; justify-content: center; }
         .trophy-desc h3 { margin: 0 0 5px 0; color: var(--brand-dark); font-size: 1.1rem; text-transform: uppercase; }
         .trophy-desc p { margin: 0; color: #666; font-size: 0.85rem; line-height: 1.3; }
+
         .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 5px; z-index: 20; position: relative;}
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
         button { font-family: 'Share Tech Mono', monospace; width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none; text-transform: uppercase; }
@@ -88,9 +141,12 @@
         .danger-btn { background-color: var(--brand-red); color: white; font-weight: bold; }
         .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
         .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
+        
         .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s; padding: 10px;}
         .radar-btn:active { background: var(--radar-green); color: #000; }
         .radar-abort-btn { background: rgba(10, 10, 10, 0.85) !important; border: 1px solid var(--brand-red) !important; color: var(--brand-red) !important; backdrop-filter: blur(4px); font-weight: bold;}
+
+        /* POWERUPS BAR */
         #powerups-bar { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; margin-bottom: 10px; z-index: 10; }
         .pu-btn { background: #fff; border: 2px solid #ccc; border-radius: 8px; width: 48px; height: 48px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; box-shadow: 0 3px 6px rgba(0,0,0,0.1); transition: transform 0.1s ease; }
         .pu-btn:active { transform: scale(0.92); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
@@ -99,9 +155,12 @@
         .pu-scan { color: var(--aux-blue); border-color: rgba(52,152,219,0.3); }
         .pu-drone { color: var(--brand-red); border-color: rgba(215,25,32,0.3); }
         .pu-fuel { color: var(--gauge-green); border-color: rgba(46,204,113,0.3); }
+
         .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; z-index: 10; position: relative; }
         .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; display: flex; align-items: center; gap: 6px; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
+
+        /* IMAGE MODE */
         #image-game-area { width: 100%; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; z-index: 10; position: relative; }
         #game-wrapper { background: transparent; box-shadow: none; border-radius: 0; padding: 0; width: 100%; margin-bottom: 10px; position: relative; flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center; }
         #game-container { position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; background-color: #000; border: 2px solid #ccc; cursor: pointer; overflow: hidden; border-radius: 4px;}
@@ -113,12 +172,22 @@
         .grid-piece.revealed { opacity: 0; pointer-events: none; }
         .grid-piece.scanned { z-index: 9999 !important; border: 2px solid var(--aux-blue) !important; box-shadow: 0 0 20px var(--aux-blue) !important; background: var(--aux-blue) !important; }
         .grid-piece.scanned::after { color: #fff; }
+        
         .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; }
         #image-options-container .trivia-option { text-align: center; }
+
         .float-text { position: fixed; color: var(--brand-red); font-family: 'Share Tech Mono', monospace; font-size: 1.8rem; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 99999; transform: translate(-50%, -50%); animation: floatUp 0.8s ease-out forwards; white-space: nowrap; text-align: center; }
         @keyframes floatUp { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -100px) scale(1.5); opacity: 0; } }
         .pop-reveal { animation: quickPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes quickPop { 0% { opacity: 0; transform: scale(0.5); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+
+        /* SCAN REWARD ANIMATION */
+        .scan-reward-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: #fff; font-weight: bold; text-align: center; text-shadow: 0 0 20px var(--aux-blue), 2px 2px 0 #000; z-index: 100000; pointer-events: none; opacity: 0; animation: scanPop 2.5s ease-out forwards; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.85); padding: 25px; border-radius: 15px; border: 2px solid var(--aux-blue); box-shadow: 0 0 30px rgba(52, 152, 219, 0.5); }
+        .scan-icon-anim { width: 60px; height: 60px; color: var(--aux-blue); margin-bottom: 10px; animation: scanPulse 0.5s infinite alternate; }
+        @keyframes scanPop { 0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 20% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -70%) scale(1.1); } }
+        @keyframes scanPulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+
+        /* TRIVIA MODE */
         #trivia-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; justify-content: center; gap: 15px; z-index: 10; position: relative;}
         .trivia-dossier { background: #fff; border: 2px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .trivia-title { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: #888; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
@@ -128,6 +197,8 @@
         .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: all 0.2s; cursor: pointer; display: block; width: 100%; line-height: 1.4; white-space: normal; word-wrap: break-word; text-transform: none; font-weight: normal;}
         .trivia-option:active { transform: scale(0.98); background: #eee; }
         .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
+
+        /* TAKEOFF MINI GAME */
         #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; position: relative;}
         .takeoff-hud { display: flex; justify-content: space-between; align-items: center; width: 100%; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #333; margin-top: 5px; margin-bottom: 10px; padding: 10px 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 20; position: relative; backdrop-filter: blur(4px); flex-shrink: 0; pointer-events: none; }
         #tk-speed-val { display: inline-block; transition: transform 0.1s ease, color 0.1s ease; }
@@ -155,6 +226,8 @@
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
         #tk-touch-prompt { position: absolute; top: 45%; left: 0; width: 100%; text-align: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 1.3rem; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; pointer-events: none; animation: pulseText 1.5s infinite; z-index: 8; }
         @keyframes pulseText { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+        /* RADAR MODE */
         #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; gap: 0; }
         .radar-panels-wrapper { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; z-index: 10; }
         .radar-panel { background: rgba(5, 16, 5, 0.9); border: 1px solid var(--radar-green); border-radius: 8px; font-family: 'Share Tech Mono', monospace; color: var(--radar-green); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.8), inset 0 0 10px rgba(51, 255, 51, 0.05); backdrop-filter: blur(5px); }
@@ -186,6 +259,7 @@
         @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
         #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
         .success { color: #27ae60; } .fail { color: var(--brand-red); }
+
         @media (min-width: 768px) {
             #radar-view { max-width: 100%; } .radar-panels-wrapper { position: absolute; top: 10px; left: 10px; width: 340px; margin: 0; }
             #radar-view .footer-buttons { position: absolute !important; bottom: 20px !important; right: 20px !important; left: auto !important; transform: none !important; width: 200px !important; max-width: none !important; }
@@ -202,6 +276,7 @@
     </style>
 </head>
 <body>
+
     <audio id="bg-music" loop preload="auto"><source src="ambient.mp3" type="audio/mpeg"></audio>
 
     <div id="orientation-lock">
@@ -422,7 +497,6 @@
         <div id="radar-map-wrapper"><div id="radar-map-container"></div><div class="compass-pt compass-n">N</div><div class="compass-pt compass-e">E</div><div class="compass-pt compass-s">S</div><div class="compass-pt compass-w">W</div></div>
         <div class="footer-buttons radar-footer" style="border: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;"><button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button></div>
     </div>
-
     <script>
         let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
         let radarTimeMs = 1800000; let lastTimerTick = 0; let encryptionInterval = null; let menuPasswordInterval = null;
@@ -636,14 +710,14 @@
 
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
-            db.collection("fuel_command_v76").doc(globalState.username).set({ name: globalState.username, score: globalState.currentFuel, timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(console.error);
+            db.collection("fuel_command_v77").doc(globalState.username).set({ name: globalState.username, score: globalState.currentFuel, timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(console.error);
         }
 
         function openLeaderboard() {
             document.getElementById('selector-view').classList.remove('active'); document.getElementById('leaderboard-view').classList.add('active');
             const list = document.getElementById('leaderboard-list'); list.innerHTML = "Fetching Data...";
             if(!db) { list.innerHTML = "⚠️ Database not connected."; return; }
-            db.collection("fuel_command_v76").orderBy("score", "desc").limit(20).get().then((querySnapshot) => {
+            db.collection("fuel_command_v77").orderBy("score", "desc").limit(20).get().then((querySnapshot) => {
                 let html = ""; let rank = 1;
                 querySnapshot.forEach((doc) => {
                     const data = doc.data(); const isMe = data.name === globalState.username;
@@ -658,7 +732,7 @@
 
         function loadState() {
             try {
-                const saved = localStorage.getItem('fuelQuizState_v76'); 
+                const saved = localStorage.getItem('fuelQuizState_v77'); 
                 if (saved) {
                     globalState = JSON.parse(saved);
                     if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
@@ -675,7 +749,7 @@
             }
         }
 
-        function saveState() { try { localStorage.setItem('fuelQuizState_v76', JSON.stringify(globalState)); } catch(e){} }
+        function saveState() { try { localStorage.setItem('fuelQuizState_v77', JSON.stringify(globalState)); } catch(e){} }
         
         function isHangarComplete(hNum) { 
             const hLevels = globalState.levels.filter(l => l.hangar === hNum);
@@ -714,7 +788,7 @@
             let targetNoSpace = TARGET_PASSWORD.replace(/ /g, '');
             if (globalState.passwordRevealed && globalState.passwordRevealed.length >= targetNoSpace.length) {
                 if(menuPasswordInterval) clearInterval(menuPasswordInterval);
-                pwContainer.innerHTML = `<div style="color:#aaa; font-size:0.65rem; margin-bottom:4px;">TRANSMISSION DECRYPTED</div><div style="font-family:'Share Tech Mono', monospace; color:var(--gauge-green); font-size:1.1rem; letter-spacing:3px; margin-bottom:6px;">${TARGET_PASSWORD}</div><button class="gold-btn" onclick="document.getElementById('cat-modal').style.display='flex'" style="font-size:0.8rem; padding:8px;">ACCESS CLASSIFIED DATA</button>`;
+                pwContainer.innerHTML = `<div style="color:#aaa; font-size:0.65rem; margin-bottom:4px;">TRANSMISSION DECRYPTED</div><div style="font-family:'Share Tech Mono', monospace; color:var(--gauge-green); font-size:1.1rem; letter-spacing:3px; margin-bottom:6px;">${TARGET_PASSWORD}</div><button class="gold-btn" onclick="document.getElementById('cat-modal').style.display='flex'" style="font-size:0.8rem; padding:8px; width:auto; margin:0 auto;">ACCESS CLASSIFIED DATA</button>`;
             } else {
                 pwContainer.innerHTML = `<div style="color:#aaa; font-size:0.65rem; margin-bottom:4px;">DECRYPTING TRANSMISSION...</div><div id="anim-pw-text" style="font-family:'Share Tech Mono', monospace; color:var(--brand-gold); font-size:1.1rem; letter-spacing:2px;"></div>`;
                 if(menuPasswordInterval) clearInterval(menuPasswordInterval);
@@ -810,7 +884,8 @@
         }
 
         function useIntelScan() {
-            const lState = globalState.levels[activeLevelIdx]; if (lState.completed || globalState.powerups.scans <= 0) return;
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || globalState.powerups.scans <= 0) return;
             globalState.powerups.scans -= 1; saveState(); updatePowerupsUI();
 
             if (lState.type === 'image') {
@@ -824,23 +899,32 @@
         }
 
         function usePrecisionDrone() {
-            const lState = globalState.levels[activeLevelIdx]; if (lState.completed || globalState.powerups.drones <= 0) return;
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || globalState.powerups.drones <= 0) return;
             globalState.powerups.drones -= 1; saveState(); updatePowerupsUI();
 
             if (lState.type === 'image') {
-                if(!lState.revealedTiles) lState.revealedTiles = []; let unrevealed = []; for(let i=0; i<100; i++) { if(!lState.revealedTiles.includes(i)) unrevealed.push(i); }
-                unrevealed.sort(() => Math.random() - 0.5); let toReveal = unrevealed.slice(0, 15); lState.revealedTiles.push(...toReveal); saveState();
+                if(!lState.revealedTiles) lState.revealedTiles = [];
+                let unrevealed = []; for(let i=0; i<100; i++) { if(!lState.revealedTiles.includes(i)) unrevealed.push(i); }
+                unrevealed.sort(() => Math.random() - 0.5); let toReveal = unrevealed.slice(0, 15);
+                lState.revealedTiles.push(...toReveal); saveState();
                 const grid = document.getElementById('cover-grid');
                 toReveal.forEach(idx => { let tile = grid.children[idx]; if(tile) { tile.style.transition = 'opacity 0.5s ease, background 0.2s'; tile.style.background = 'var(--brand-red)'; setTimeout(() => tile.classList.add('revealed'), 200); } });
             } else if (lState.type === 'trivia') {
-                let wrongIndices = []; lState.options.forEach((opt, i) => { if(i !== lState.correctIdx) { const btn = document.getElementById('btn-opt-' + i); if(btn && !btn.disabled) wrongIndices.push(i); } });
-                if(wrongIndices.length > 0) { let target = wrongIndices[Math.floor(Math.random() * wrongIndices.length)]; const btn = document.getElementById('btn-opt-' + target); btn.disabled = true; btn.style.opacity = '0.3'; btn.style.textDecoration = 'line-through'; }
+                let wrongIndices = [];
+                lState.options.forEach((opt, i) => { if(i !== lState.correctIdx) { const btn = document.getElementById('btn-opt-' + i); if(btn && !btn.disabled) wrongIndices.push(i); } });
+                if(wrongIndices.length > 0) {
+                    let target = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
+                    const btn = document.getElementById('btn-opt-' + target); btn.disabled = true; btn.style.opacity = '0.3'; btn.style.textDecoration = 'line-through';
+                }
             }
         }
 
         function useFuelPod() {
-            const lState = globalState.levels[activeLevelIdx]; if (lState.completed || globalState.powerups.fuelPods <= 0) return;
-            globalState.powerups.fuelPods -= 1; globalState.currentFuel += 300; saveState(); updatePowerupsUI(); updateMiniFuelUI();
+            const lState = globalState.levels[activeLevelIdx];
+            if (lState.completed || globalState.powerups.fuelPods <= 0) return;
+            globalState.powerups.fuelPods -= 1; globalState.currentFuel += 300; saveState();
+            updatePowerupsUI(); updateMiniFuelUI();
         }
 
         function launchLevel(idx) {
@@ -848,7 +932,8 @@
             document.getElementById('selector-view').classList.remove('active'); document.getElementById('hangar-view').classList.remove('active');
             const gameView = document.getElementById('game-view'); gameView.classList.remove('active'); void gameView.offsetWidth; gameView.classList.add('active');
 
-            let title = `Flight ${idx+1}`; if (lState.type === 'trivia') title = "Incident Report"; else if (lState.type === 'takeoff') title = "Takeoff Calibration"; else if (lState.isClassified) title = "Classified";
+            let title = `Flight ${idx+1}`;
+            if (lState.type === 'trivia') title = "Incident Report"; else if (lState.type === 'takeoff') title = "Takeoff Calibration"; else if (lState.isClassified) title = "Classified";
             if (lState.completed) title = lState.name;
             document.getElementById('level-title').textContent = title; document.getElementById('message').textContent = "";
             updateMiniFuelUI();
@@ -858,24 +943,48 @@
             
             imgArea.style.display = 'none'; triviaArea.style.display = 'none'; takeoffArea.style.display = 'none';
             if(tkState.frameId) { cancelAnimationFrame(tkState.frameId); tkState.active = false; }
+
             if (lState.completed || lState.type === 'takeoff') { puBar.style.display = 'none'; } else { puBar.style.display = 'flex'; updatePowerupsUI(); }
 
             if (lState.type === 'image') {
                 imgArea.style.display = 'flex'; container.style.overflow = 'hidden'; document.getElementById('mystery-image').src = lState.image;
-                lState.options.forEach((optText, i) => { const btn = document.getElementById('img-opt-' + i); if(btn) { btn.textContent = optText; btn.disabled = lState.completed; btn.style.backgroundColor = ""; btn.style.color = ""; if(lState.completed && i === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; } } });
+                lState.options.forEach((optText, i) => {
+                    const btn = document.getElementById('img-opt-' + i);
+                    if(btn) { btn.textContent = optText; btn.disabled = lState.completed; btn.style.backgroundColor = ""; btn.style.color = ""; if(lState.completed && i === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; } }
+                });
+
                 const grid = document.getElementById('cover-grid'); grid.innerHTML = "";
-                for (let i = 0; i < 100; i++) { const tile = document.createElement('div'); tile.className = 'grid-piece'; if (lState.revealedTiles && lState.revealedTiles.includes(i)) tile.classList.add('revealed'); if (lState.completed) tile.classList.add('revealed'); grid.appendChild(tile); }
+                for (let i = 0; i < 100; i++) {
+                    const tile = document.createElement('div'); tile.className = 'grid-piece';
+                    if (lState.revealedTiles && lState.revealedTiles.includes(i)) tile.classList.add('revealed');
+                    if (lState.completed) tile.classList.add('revealed');
+                    grid.appendChild(tile);
+                }
+
                 if (!lState.completed && (globalState.currentFuel > 0 || globalState.extraFuel > 0)) { grid.onpointerdown = handleInteraction; } else { grid.onpointerdown = null; }
             } else if (lState.type === 'trivia') {
                 triviaArea.style.display = 'flex'; document.getElementById('trivia-question').textContent = lState.question;
-                lState.options.forEach((optText, i) => { const btn = document.getElementById('btn-opt-' + i); if(btn) { btn.textContent = String.fromCharCode(65 + i) + ". " + optText; btn.disabled = lState.completed; btn.style.backgroundColor = ""; btn.style.color = ""; btn.style.opacity = '1'; btn.style.textDecoration = 'none'; if(lState.completed && i === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; } } });
+                lState.options.forEach((optText, i) => {
+                    const btn = document.getElementById('btn-opt-' + i);
+                    if(btn) {
+                        btn.textContent = String.fromCharCode(65 + i) + ". " + optText; btn.disabled = lState.completed; btn.style.backgroundColor = ""; btn.style.color = ""; btn.style.opacity = '1'; btn.style.textDecoration = 'none';
+                        if(lState.completed && i === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; }
+                    }
+                });
             } else if (lState.type === 'takeoff') {
                 takeoffArea.style.display = 'flex';
                 const sky = document.getElementById('tk-bg-sky'); const city = document.getElementById('tk-bg-city'); const ground = document.getElementById('tk-bg-ground'); const runwaySurf = document.getElementById('tk-runway-surface');
                 const weather = document.getElementById('tk-weather-overlay'); const zone = document.getElementById('tk-target-zone');
+                
                 weather.className = ''; runwaySurf.style.backgroundImage = getSvgUri(RUNWAY_SVG);
                 const th = THEMES[lState.hangar] || THEMES[1]; sky.style.backgroundImage = getSvgUri(th.sky); city.style.backgroundImage = getSvgUri(th.city); ground.style.backgroundImage = getSvgUri(th.ground);
-                if (lState.hangar === 1) { tkState.minAngle = 9; tkState.maxAngle = 16; zone.style.bottom = '30%'; zone.style.height = '23.3%'; } else if (lState.hangar === 2) { weather.classList.add('weather-rain'); tkState.minAngle = 10; tkState.maxAngle = 15; zone.style.bottom = '33.3%'; zone.style.height = '16.6%'; } else if (lState.hangar === 3) { weather.classList.add('weather-fog'); tkState.minAngle = 11; tkState.maxAngle = 14; zone.style.bottom = '36.6%'; zone.style.height = '10%'; } else if (lState.hangar === 4) { tkState.minAngle = 12; tkState.maxAngle = 14; zone.style.bottom = '40%'; zone.style.height = '6.6%'; } else { weather.classList.add('weather-fog'); weather.classList.add('weather-rain'); tkState.minAngle = 13; tkState.maxAngle = 14; zone.style.bottom = '43.3%'; zone.style.height = '3.3%'; }
+
+                if (lState.hangar === 1) { tkState.minAngle = 9; tkState.maxAngle = 16; zone.style.bottom = '30%'; zone.style.height = '23.3%'; } 
+                else if (lState.hangar === 2) { weather.classList.add('weather-rain'); tkState.minAngle = 10; tkState.maxAngle = 15; zone.style.bottom = '33.3%'; zone.style.height = '16.6%'; } 
+                else if (lState.hangar === 3) { weather.classList.add('weather-fog'); tkState.minAngle = 11; tkState.maxAngle = 14; zone.style.bottom = '36.6%'; zone.style.height = '10%'; } 
+                else if (lState.hangar === 4) { tkState.minAngle = 12; tkState.maxAngle = 14; zone.style.bottom = '40%'; zone.style.height = '6.6%'; } 
+                else { weather.classList.add('weather-fog'); weather.classList.add('weather-rain'); tkState.minAngle = 13; tkState.maxAngle = 14; zone.style.bottom = '43.3%'; zone.style.height = '3.3%'; }
+                
                 if (!lState.completed && !lState.failed) { if (!globalState.hasSeenTakeoffTutorial) { document.getElementById('takeoff-tutorial-overlay').style.display = 'flex'; } else { startTakeoff(); } } 
                 else { document.getElementById('tk-mountain').style.display = 'none'; document.getElementById('tk-plane').style.display = 'block'; document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-10deg)`; document.getElementById('tk-needle').style.bottom = `40%`; document.getElementById('tk-runway-fill').style.width = '0%'; document.getElementById('tk-lift-fill').style.width = '100%'; document.getElementById('tk-speed-val').textContent = "150"; document.getElementById('tk-speed-val').style.color = "var(--gauge-green)"; document.getElementById('tk-touch-prompt').style.display = "none"; }
             }
@@ -1232,5 +1341,3 @@
         let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block'; btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; }); });
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
     </script>
-</body>
-</html>

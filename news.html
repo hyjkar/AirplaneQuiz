@@ -735,57 +735,69 @@
 
         function closeTrophyRoom() { document.getElementById('trophy-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); renderDashboard(); }
 
-        function openNewsRoom() {
-            document.getElementById('selector-view').classList.remove('active'); 
-            const newsView = document.getElementById('news-view'); 
-            newsView.classList.remove('active'); void newsView.offsetWidth; newsView.classList.add('active');
-            
-            const listContainer = document.getElementById('news-list'); 
-            listContainer.innerHTML = "";
+function openNewsRoom() {
+        document.getElementById('selector-view').classList.remove('active'); 
+        const newsView = document.getElementById('news-view'); 
+        newsView.classList.remove('active'); void newsView.offsetWidth; newsView.classList.add('active');
+        
+        const listContainer = document.getElementById('news-list'); 
+        listContainer.innerHTML = "";
 
-            if (cachedNewsArticles.length === 0) {
-                listContainer.innerHTML = "<p style='text-align:center; color:#777; margin-top: 20px;'>No signal. Check connection to HQ.</p>";
-                return;
+        if (!cachedNewsArticles || cachedNewsArticles.length === 0) {
+            listContainer.innerHTML = "<p style='text-align:center; color:#777; margin-top: 20px;'>No signal. Check connection to HQ.</p>";
+            return;
+        }
+
+        cachedNewsArticles.forEach(item => {
+            // 1. Format the Release Date safely
+            let dateStr = "UNKNOWN DATE";
+            if (item.pubDate) {
+                const pubDate = new Date(item.pubDate.replace(/-/g, '/'));
+                if (!isNaN(pubDate)) {
+                    dateStr = pubDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                } else {
+                    dateStr = item.pubDate.split(' ')[0];
+                }
             }
 
-            cachedNewsArticles.forEach(item => {
-                const el = document.createElement('a');
-                el.className = 'news-card';
-                el.href = item.link;
-                el.target = "_blank"; 
-                
-                let dateStr = "UNKNOWN DATE";
-                if (item.pubDate) {
-                    const pubDate = new Date(item.pubDate.replace(/-/g, '/'));
-                    if (!isNaN(pubDate)) {
-                        dateStr = pubDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-                    } else {
-                        dateStr = item.pubDate.split(' ')[0];
-                    }
-                }
+            // 2. Grab the Thumbnail safely
+            let imgSrc = item.thumbnail || (item.enclosure && item.enclosure.link);
+            if (!imgSrc && item.description) {
+                const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
+                if (imgMatch) imgSrc = imgMatch[1];
+            }
+            
+            // 3. Image block (Hardcoded styling to guarantee it doesn't push text out)
+            let imgHtml = imgSrc 
+                ? `<img src="${imgSrc}" alt="News Image" style="width: 100%; height: 140px; object-fit: cover; display: block; border-bottom: 1px solid #eee;" onerror="this.style.display='none'">` 
+                : `<div style="width: 100%; height: 140px; display: flex; justify-content: center; align-items: center; background: #111; color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>`;
+            
+            let title = item.title || "ENCRYPTED TRANSMISSION";
 
-                let imgSrc = item.thumbnail || (item.enclosure && item.enclosure.link);
-                if (!imgSrc && item.description) {
-                    const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
-                    if (imgMatch) imgSrc = imgMatch[1];
-                }
-                
-                let imgHtml = imgSrc 
-                    ? `<img src="${imgSrc}" class="news-img" alt="News Image" onerror="this.style.display='none'">` 
-                    : `<div class="news-img" style="display:flex; justify-content:center; align-items:center; background:#111; color:var(--brand-gold);"><svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>`;
-                
-                let title = item.title || "ENCRYPTED TRANSMISSION";
+            // 4. Create the link element and apply styles directly to it
+            const el = document.createElement('a');
+            el.href = item.link || "#";
+            el.target = "_blank"; 
+            
+            // BULLETPROOF CSS: Forces standard block layout, absolutely preventing height collapse
+            el.style.cssText = "display: block; width: 100%; background: #ffffff; border: 2px solid var(--aux-blue); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-decoration: none; margin-bottom: 15px; flex-shrink: 0; cursor: pointer;";
+            
+            el.innerHTML = `
+                ${imgHtml}
+                <div style="padding: 15px; display: block;">
+                    <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; font-weight: bold; line-height: 1.4; color: #000000; font-family: 'Roboto', sans-serif;">${title}</h3>
+                    <div style="margin: 0; font-size: 0.8rem; color: #d71920; font-family: 'Share Tech Mono', monospace; font-weight: bold; text-transform: uppercase;">📅 ${dateStr}</div>
+                </div>
+            `;
+            
+            // Add slight hover effect via JS
+            el.onmousedown = () => el.style.transform = "scale(0.98)";
+            el.onmouseup = () => el.style.transform = "scale(1)";
+            el.onmouseleave = () => el.style.transform = "scale(1)";
 
-                el.innerHTML = `
-                    ${imgHtml}
-                    <div class="news-info">
-                        <h3 class="news-title">${title}</h3>
-                        <div class="news-date">📅 ISSUED: ${dateStr}</div>
-                    </div>
-                `;
-                listContainer.appendChild(el);
-            });
-        }
+            listContainer.appendChild(el);
+        });
+    }
 
         function closeNewsRoom() { 
             document.getElementById('news-view').classList.remove('active'); 

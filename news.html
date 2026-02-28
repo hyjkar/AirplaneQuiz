@@ -1144,7 +1144,7 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             updatePowerupsUI(); updateMiniFuelUI();
         }
 
-        function launchLevel(idx) {
+       function launchLevel(idx) {
             activeLevelIdx = idx; const lState = globalState.levels[idx];
             document.getElementById('selector-view').classList.remove('active'); document.getElementById('hangar-view').classList.remove('active');
             const gameView = document.getElementById('game-view'); gameView.classList.remove('active'); void gameView.offsetWidth; gameView.classList.add('active');
@@ -1161,12 +1161,20 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             imgArea.style.display = 'none'; triviaArea.style.display = 'none'; takeoffArea.style.display = 'none';
             if(tkState.frameId) { cancelAnimationFrame(tkState.frameId); tkState.active = false; }
 
+            // UPDATED: Never hide the visibility of the powerups bar, just update its numbers!
             if (lState.type === 'takeoff') { 
                 puBar.style.display = 'none'; 
             } else { 
                 puBar.style.display = 'flex'; 
-                puBar.style.visibility = lState.completed ? 'hidden' : 'visible';
-                if (!lState.completed) updatePowerupsUI(); 
+                puBar.style.visibility = 'visible'; 
+                updatePowerupsUI();
+                
+                // If looking at an already completed level, just dim the buttons so they look disabled
+                if (lState.completed) {
+                    document.getElementById('btn-pu-scan').classList.add('empty');
+                    document.getElementById('btn-pu-drone').classList.add('empty');
+                    document.getElementById('btn-pu-fuel').classList.add('empty');
+                }
             }
 
             if (lState.type === 'image') {
@@ -1212,7 +1220,6 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
                 else { document.getElementById('tk-mountain').style.display = 'none'; document.getElementById('tk-plane').style.display = 'block'; document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-10deg)`; document.getElementById('tk-needle').style.bottom = `40%`; document.getElementById('tk-runway-fill').style.width = '0%'; document.getElementById('tk-lift-fill').style.width = '100%'; document.getElementById('tk-speed-val').textContent = "150"; document.getElementById('tk-speed-val').style.color = "var(--gauge-green)"; document.getElementById('tk-touch-prompt').style.display = "none"; }
             }
         }
-
         function startTakeoffFromTutorial() { globalState.hasSeenTakeoffTutorial = true; saveState(); document.getElementById('takeoff-tutorial-overlay').style.display = 'none'; setTimeout(() => { startTakeoff(); }, 100); }
 
         function startTakeoff() {
@@ -1599,22 +1606,24 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false); }
         }
 
-      function endGame(win, msg) {
-    if (win) {
-        const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
-        
-        if (lState.type === 'image') {
-            document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
+     function endGame(win, msg) {
+            if (win) {
+                const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
+                if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
+                triggerConfetti(); 
+                document.getElementById('level-title').textContent = lState.name; 
+                
+                // Simply grey-out the buttons so they look inactive during the confetti 
+                // DO NOT HIDE the powerups bar container anymore!
+                document.getElementById('btn-pu-scan').classList.add('empty');
+                document.getElementById('btn-pu-drone').classList.add('empty');
+                document.getElementById('btn-pu-fuel').classList.add('empty');
+                
+                saveState(); 
+                if (isAllWorldsComplete()) syncScoreToCloud(); 
+                setTimeout(saveAndExit, 2500);
+            }
         }
-        
-        triggerConfetti(); 
-        document.getElementById('level-title').textContent = lState.name; 
-        
-        // Removed the line that hides the powerups-bar so it stays visible during the celebration
-        
-        saveState(); 
-        if (isAllWorldsComplete()) syncScoreToCloud(); 
-        setTimeout(saveAndExit, 2500);
     }
 }
 

@@ -1599,15 +1599,24 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false); }
         }
 
-        function endGame(win, msg) {
-            if (win) {
-                const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
-                if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
-                triggerConfetti(); document.getElementById('level-title').textContent = lState.name; 
-                document.getElementById('powerups-bar').style.visibility = "hidden"; 
-                saveState(); if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);
-            }
+      function endGame(win, msg) {
+    if (win) {
+        const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
+        
+        if (lState.type === 'image') {
+            document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
         }
+        
+        triggerConfetti(); 
+        document.getElementById('level-title').textContent = lState.name; 
+        
+        // Removed the line that hides the powerups-bar so it stays visible during the celebration
+        
+        saveState(); 
+        if (isAllWorldsComplete()) syncScoreToCloud(); 
+        setTimeout(saveAndExit, 2500);
+    }
+}
 
         // TRIGGER GAME OVER / STATS SCREEN
         function triggerGameOver(isWin = false) { 

@@ -1620,8 +1620,6 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
                 saveState(); 
                 if (isAllWorldsComplete()) syncScoreToCloud(); 
                 setTimeout(saveAndExit, 2500);
-            }
-        }
 
         // TRIGGER GAME OVER / STATS SCREEN
         function triggerGameOver(isWin = false) { 

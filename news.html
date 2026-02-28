@@ -87,7 +87,7 @@
         .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
         .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
-        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
+        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); }
 
         #password-container { background: #1a1a1a; padding: 8px; border-radius: 8px; width: 100%; text-align: center; border: 1px dashed #555; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); margin: 0; }
 
@@ -132,13 +132,13 @@
         .trophy-desc h3 { margin: 0 0 5px 0; color: var(--brand-dark); font-size: 1.1rem; text-transform: uppercase; }
         .trophy-desc p { margin: 0; color: #666; font-size: 0.85rem; line-height: 1.3; }
 
-        /* BEAUTIFIED NEWS CARDS */
-        .news-card { background: white; border: 2px solid var(--aux-blue); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.1s; text-decoration: none; display: flex; flex-direction: column; color: var(--brand-dark); min-height: 240px; margin-bottom: 5px; }
+        /* News Cards */
+        .news-card { background: white; border: 2px solid var(--aux-blue); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.1s; text-decoration: none; display: flex; flex-direction: column; color: var(--brand-dark); }
         .news-card:active { transform: scale(0.98); background-color: #f9f9f9; }
-        .news-img { width: 100%; height: 150px; background: #1a1a1a; object-fit: cover; border-bottom: 2px solid var(--aux-blue); display: block; flex-shrink: 0; }
-        .news-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; justify-content: flex-start; gap: 8px; }
-        .news-title { font-size: 1.05rem; font-weight: bold; margin: 0; line-height: 1.35; overflow-wrap: break-word; }
-        .news-date { font-size: 0.75rem; color: #888; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; margin-top: auto; }
+        .news-img { width: 100%; height: 140px; background: #eee; object-fit: cover; }
+        .news-info { padding: 12px; }
+        .news-title { font-size: 1rem; font-weight: bold; margin: 0 0 5px 0; line-height: 1.2; }
+        .news-date { font-size: 0.75rem; color: #888; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; }
 
         .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 5px; z-index: 20; position: relative;}
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
@@ -188,6 +188,12 @@
         @keyframes floatUp { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -100px) scale(1.5); opacity: 0; } }
         .pop-reveal { animation: quickPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes quickPop { 0% { opacity: 0; transform: scale(0.5); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+
+        /* SCAN REWARD ANIMATION */
+        .scan-reward-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: #fff; font-weight: bold; text-align: center; text-shadow: 0 0 20px var(--aux-blue), 2px 2px 0 #000; z-index: 100000; pointer-events: none; opacity: 0; animation: scanPop 2.5s ease-out forwards; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.85); padding: 25px; border-radius: 15px; border: 2px solid var(--aux-blue); box-shadow: 0 0 30px rgba(52, 152, 219, 0.5); }
+        .scan-icon-anim { width: 60px; height: 60px; color: var(--aux-blue); margin-bottom: 10px; animation: scanPulse 0.5s infinite alternate; }
+        @keyframes scanPop { 0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 20% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -70%) scale(1.1); } }
+        @keyframes scanPulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
 
         /* TRIVIA MODE */
         #trivia-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; justify-content: center; gap: 15px; z-index: 10; position: relative;}
@@ -525,7 +531,11 @@
         <div id="radar-map-wrapper"><div id="radar-map-container"></div><div class="compass-pt compass-n">N</div><div class="compass-pt compass-e">E</div><div class="compass-pt compass-s">S</div><div class="compass-pt compass-w">W</div></div>
         <div class="footer-buttons radar-footer" style="border: none; position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;"><button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button></div>
     </div>
-<script>
+    
+    <div id="news-ticker-container">
+        <div id="news-ticker">ESTABLISHING SECURE COMMS... STANDBY FOR AVIATION INTEL...</div>
+    </div>
+    <script>
         let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
         let radarTimeMs = 1800000; let lastTimerTick = 0; let encryptionInterval = null; let menuPasswordInterval = null;
         let radarLevel = 1; let bgMusicStarted = false; let currentRadarCallsign = ""; let currentRadarPlanes = [];
@@ -689,16 +699,12 @@
                 const dateStr = isNaN(pubDate) ? item.pubDate : pubDate.toLocaleDateString();
 
                 let imgSrc = item.thumbnail;
-                if (!imgSrc && item.enclosure && item.enclosure.link) {
-                    imgSrc = item.enclosure.link;
-                }
                 if (!imgSrc) {
-                    const imgMatch = item.description.match(/<img[^>]+src=["']([^"']+)["']/);
+                    const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
                     if (imgMatch) imgSrc = imgMatch[1];
                 }
-                if (!imgSrc) imgSrc = "icon.svg"; 
                 
-                let imgHtml = `<img src="${imgSrc}" class="news-img" alt="News Image" onerror="this.src='icon.svg'">`;
+                let imgHtml = imgSrc ? `<img src="${imgSrc}" class="news-img" alt="News Image" onerror="this.style.display='none'">` : '';
                 el.innerHTML = `${imgHtml}<div class="news-info"><h3 class="news-title">${item.title}</h3><div class="news-date">${dateStr}</div></div>`;
                 listContainer.appendChild(el);
             });
@@ -713,42 +719,52 @@
         function fetchAviationNews() {
             const tickerEl = document.getElementById('news-ticker');
             if(!tickerEl) return;
-            
-            const todayStr = new Date().toDateString();
-            const cachedNewsStr = localStorage.getItem('aviation_news_cache');
-            const cachedDate = localStorage.getItem('aviation_news_date');
-            
-            if (cachedNewsStr && cachedDate === todayStr) {
-                try {
-                    cachedNewsArticles = JSON.parse(cachedNewsStr);
-                    applyNewsToTicker(cachedNewsArticles, tickerEl);
-                    return; 
-                } catch(e) {}
+
+            const applyNews = (items) => {
+                cachedNewsArticles = items;
+                const headlines = items.slice(0, 10).map(item => "/// " + item.title.toUpperCase() + " ");
+                const fullText = headlines.join(" ") + "///";
+                tickerEl.textContent = fullText;
+                
+                let scrollDuration = fullText.length * 0.15; 
+                tickerEl.style.animation = 'none';
+                void tickerEl.offsetWidth;
+                tickerEl.style.animation = `ticker ${scrollDuration}s linear infinite`;
+            };
+
+            const fallbackItems = [
+                { title: "GLOBAL FUEL RESERVES STABLE ACROSS ALL SECTORS", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
+                { title: "NEW CLASSIFIED HANGARS UNDER CONSTRUCTION", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
+                { title: "RADAR OPS MONITORING UNIDENTIFIED BOGEYS", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
+                { title: "ALL FLIGHT CREWS CLEARED FOR DEPARTURE", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" }
+            ];
+
+            const cacheKey = 'fuel_news_cache_v2';
+            const timeKey = 'fuel_news_time_v2';
+            const now = Date.now();
+            const cachedTime = localStorage.getItem(timeKey);
+            const cachedData = localStorage.getItem(cacheKey);
+
+            if (cachedData && cachedTime && (now - parseInt(cachedTime)) < 6 * 60 * 60 * 1000) {
+                try { applyNews(JSON.parse(cachedData)); return; } catch(e) {}
             }
 
             fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fsimpleflying.com%2Ffeed%2F')
             .then(res => res.json())
             .then(data => {
                 if (data && data.items && data.items.length > 0) {
-                    cachedNewsArticles = data.items; 
-                    localStorage.setItem('aviation_news_cache', JSON.stringify(cachedNewsArticles));
-                    localStorage.setItem('aviation_news_date', todayStr);
-                    applyNewsToTicker(cachedNewsArticles, tickerEl);
+                    localStorage.setItem(cacheKey, JSON.stringify(data.items));
+                    localStorage.setItem(timeKey, now.toString());
+                    applyNews(data.items);
                 } else { throw new Error("No items"); }
             })
             .catch(err => {
-                let fallbackText = "/// GLOBAL FUEL RESERVES STABLE /// NEW HANGARS UNDER CONSTRUCTION /// RADAR OPS MONITORING UNIDENTIFIED BOGEYS /// ALL PILOTS CLEARED FOR DEPARTURE ///";
-                tickerEl.textContent = fallbackText;
-                tickerEl.style.animationDuration = (fallbackText.length * 0.15) + "s";
+                if (cachedData) {
+                    try { applyNews(JSON.parse(cachedData)); } catch(e) { applyNews(fallbackItems); }
+                } else {
+                    applyNews(fallbackItems);
+                }
             });
-        }
-
-        function applyNewsToTicker(items, tickerEl) {
-            const headlines = items.slice(0, 10).map(item => "/// " + item.title.toUpperCase() + " ");
-            let fullText = headlines.join(" ") + "///";
-            tickerEl.textContent = fullText;
-            let scrollDuration = fullText.length * 0.15; 
-            tickerEl.style.animationDuration = scrollDuration + "s";
         }
 
         function toggleRadarIntel() {
@@ -854,14 +870,14 @@
 
         function syncScoreToCloud() {
             if (!db || !globalState.username) return;
-            db.collection("fuel_command_v80").doc(globalState.username).set({ name: globalState.username, score: globalState.currentFuel, timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(console.error);
+            db.collection("fuel_command_v78").doc(globalState.username).set({ name: globalState.username, score: globalState.currentFuel, timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(console.error);
         }
 
         function openLeaderboard() {
             document.getElementById('selector-view').classList.remove('active'); document.getElementById('leaderboard-view').classList.add('active');
             const list = document.getElementById('leaderboard-list'); list.innerHTML = "Fetching Data...";
             if(!db) { list.innerHTML = "⚠️ Database not connected."; return; }
-            db.collection("fuel_command_v80").orderBy("score", "desc").limit(20).get().then((querySnapshot) => {
+            db.collection("fuel_command_v78").orderBy("score", "desc").limit(20).get().then((querySnapshot) => {
                 let html = ""; let rank = 1;
                 querySnapshot.forEach((doc) => {
                     const data = doc.data(); const isMe = data.name === globalState.username;
@@ -876,7 +892,7 @@
 
         function loadState() {
             try {
-                const saved = localStorage.getItem('fuelQuizState_v80'); 
+                const saved = localStorage.getItem('fuelQuizState_v79'); 
                 if (saved) {
                     globalState = JSON.parse(saved);
                     if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
@@ -893,7 +909,7 @@
             }
         }
 
-        function saveState() { try { localStorage.setItem('fuelQuizState_v80', JSON.stringify(globalState)); } catch(e){} }
+        function saveState() { try { localStorage.setItem('fuelQuizState_v79', JSON.stringify(globalState)); } catch(e){} }
         
         function isHangarComplete(hNum) { 
             const hLevels = globalState.levels.filter(l => l.hangar === hNum);

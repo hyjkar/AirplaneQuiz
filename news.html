@@ -565,75 +565,6 @@
     <div id="news-ticker-container">
         <div id="news-ticker">ESTABLISHING SECURE COMMS... STANDBY FOR AVIATION INTEL...</div>
     </div>
-    <script>
-    let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
-    let radarTimeMs = 1800000; let lastTimerTick = 0; let encryptionInterval = null; let menuPasswordInterval = null;
-    let radarLevel = 1; let bgMusicStarted = false; let currentRadarCallsign = ""; let currentRadarPlanes = [];
-    let pathsVisible = false; let originVisible = false; let altVisible = false; let origCityVisible = false; let destCityVisible = false; let compassVisible = false; let currentMapStyle = 'CLEAN'; 
-    let activeLevelIdx = null; let pendingInterceptPlane = null; let radarAnimFrame = null; let radarAnimTime = 0;
-    let cleanMapBase = null; let cleanMapLabels = null;
-    let cachedNewsArticles = [];
-
-    const RADAR_COLORS = ['#33FF33', '#00FFFF', '#FFCC00', '#FF3366', '#CC99FF', '#00FFCC', '#FF9933', '#99FF33', '#33CCFF', '#FF6699', '#FFFF66', '#FF5555'];
-    const RADAR_CENTERS = [{ name: "EU-CENTRAL", lat: 50, lng: 10 }, { name: "US-EAST", lat: 38, lng: -78 }, { name: "US-WEST", lat: 38, lng: -118 }, { name: "ASIA-EAST", lat: 35, lng: 135 }];
-    const CITIES = ["LONDON", "NEW YORK", "TOKYO", "PARIS", "DUBAI", "SYDNEY", "LOS ANGELES", "CHICAGO", "HONG KONG", "SINGAPORE", "BERLIN", "ROME", "MADRID", "TORONTO", "MUMBAI", "SAO PAULO", "MEXICO CITY", "CAIRO", "MOSCOW", "BEIJING", "SEOUL", "AMSTERDAM", "ISTANBUL", "BANGKOK", "KUALA LUMPUR", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON", "MONTREAL", "VANCOUVER", "BUENOS AIRES", "BOGOTA", "SANTIAGO", "LIMA", "CAPE TOWN", "JOHANNESBURG", "NAIROBI", "DELHI", "JAKARTA", "MANILA", "SHANGHAI", "TAIPEI", "OSAKA"];
-    const US_CITIES = ["NEW YORK", "LOS ANGELES", "CHICAGO", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON"];
-    const INTL_CITIES = CITIES.filter(c => !US_CITIES.includes(c));
-    const TARGET_PASSWORD = "QUEEN OF THE SKIES";
-
-    const RADAR_LEVEL_CONFIG = {
-        1: { latOffset: 5, lngOffset: 8, planes: 8, hints: 2 }, 2: { latOffset: 6, lngOffset: 10, planes: 12, hints: 2 },
-        3: { latOffset: 8, lngOffset: 12, planes: 16, hints: 3 }, 4: { latOffset: 10, lngOffset: 15, planes: 22, hints: 3 },
-        5: { latOffset: 12, lngOffset: 18, planes: 28, hints: 4 }, 6: { latOffset: 15, lngOffset: 22, planes: 34, hints: 4 },
-        7: { latOffset: 18, lngOffset: 28, planes: 40, hints: 5 }, 8: { latOffset: 22, lngOffset: 35, planes: 48, hints: 5 },
-        9: { latOffset: 26, lngOffset: 42, planes: 56, hints: 6 }, 10: { latOffset: 30, lngOffset: 50, planes: 64, hints: 7 } 
-    };
-
-    const STARTING_GLOBAL_FUEL = 4000; const REFUEL_AMOUNT = 2000; const TILE_COST = 15; const WRONG_GUESS_PENALTY = 200;
-
-    let globalState = {
-        username: null, currentFuel: STARTING_GLOBAL_FUEL, extraFuel: 0,
-        powerups: { scans: 1, drones: 1, fuelPods: 1 },
-        levels: [], hasSeenTakeoffTutorial: false,
-        world1Complete: false, world2Complete: false, world3Complete: false, world4Complete: false, world5Complete: false,
-        passwordRevealed: [],
-        totalPlayTime: 0,
-        gameWonShown: false
-    };
-
-    // INTERNAL GLOBAL TIMER - Runs 1 tick per second when active
-    let globalTimerInterval = setInterval(() => {
-        if (globalState && globalState.username && document.getElementById('game-over-overlay').style.display !== 'flex') {
-            globalState.totalPlayTime = (globalState.totalPlayTime || 0) + 1;
-        }
-    }, 1000);
-
-    let tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0 };
-
-    try { 
-        if (typeof firebase !== 'undefined') { 
-            firebase.initializeApp({
-                apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
-                authDomain: "fuelcommand.firebaseapp.com",
-                projectId: "fuelcommand",
-                storageBucket: "fuelcommand.firebasestorage.app",
-                messagingSenderId: "211722292779",
-                appId: "1:211722292779:web:5dec358fc0693c7126246e"
-            }); 
-            db = firebase.firestore(); 
-        } 
-    } catch(e) {}
-
-    function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
-
-    function getOptionsForImage(correctName, isClassified) {
-        const pool = isClassified ? AIRCRAFT_DATA.classified : AIRCRAFT_DATA.standard;
-        let options = [correctName];
-        let others = pool.filter(x => x.name !== correctName).sort(() => Math.random() - 0.5);
-        if(others.length >= 2) { options.push(others[0].name, others[1].name); }
-        return options.sort(() => Math.random() - 0.5);
-    }
-
     function animateFuelNumber(id, start, end, duration) {
         let obj = document.getElementById(id); if (!obj) return; let startTimestamp = null;
         const step = (timestamp) => {
@@ -702,7 +633,6 @@
             el.href = item.link;
             el.target = "_blank"; 
             
-            // Format Release Date nicely
             let dateStr = "UNKNOWN DATE";
             if (item.pubDate) {
                 const pubDate = new Date(item.pubDate.replace(/-/g, '/'));
@@ -713,7 +643,6 @@
                 }
             }
 
-            // Fallback for Thumbnail Images
             let imgSrc = item.thumbnail || (item.enclosure && item.enclosure.link);
             if (!imgSrc && item.description) {
                 const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
@@ -966,7 +895,6 @@
         if (h4Done && !globalState.world4Complete) { globalState.world4Complete = true; triggerHangarReward(); }
         if (h5Done && !globalState.world5Complete) { globalState.world5Complete = true; triggerHangarReward(); }
 
-        // Trigger Campaign Won
         if (isAllWorldsComplete() && !globalState.gameWonShown) {
             globalState.gameWonShown = true;
             saveState();

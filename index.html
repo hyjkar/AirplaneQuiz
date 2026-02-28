@@ -36,7 +36,7 @@
             background-color: var(--bg-sand);
             color: var(--brand-dark);
             margin: 0; padding: 15px; 
-            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            padding-bottom: max(45px, env(safe-area-inset-bottom));
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%;
             display: flex; flex-direction: column; align-items: center;
             overflow: hidden; user-select: none; -webkit-user-select: none;
@@ -87,7 +87,7 @@
         .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
         .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
-        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
+        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); }
 
         #password-container { background: #1a1a1a; padding: 8px; border-radius: 8px; width: 100%; text-align: center; border: 1px dashed #555; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); margin: 0; }
 
@@ -118,9 +118,10 @@
         .level-strip.locked .strip-title { color: #aaa; }
         .level-strip.locked .strip-icon { color: #ccc !important; }
 
-        #trophy-list { display: flex; flex-direction: column; gap: 12px; width: 100%; overflow-y: auto; padding-right: 5px; margin-top: 10px; flex-grow: 1; min-height: 0;}
-        #trophy-list::-webkit-scrollbar { width: 4px; }
+        #trophy-list, #news-list { display: flex; flex-direction: column; gap: 12px; width: 100%; overflow-y: auto; padding-right: 5px; margin-top: 10px; flex-grow: 1; min-height: 0;}
+        #trophy-list::-webkit-scrollbar, #news-list::-webkit-scrollbar { width: 4px; }
         #trophy-list::-webkit-scrollbar-thumb { background: var(--brand-gold); border-radius: 4px; }
+        #news-list::-webkit-scrollbar-thumb { background: var(--aux-blue); border-radius: 4px; }
         
         .trophy-card { background: white; border: 2px solid var(--brand-gold); border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s;}
         .trophy-card.locked { border-color: #ddd; background: #f8f8f8; box-shadow: none; filter: grayscale(100%); opacity: 0.6;}
@@ -130,6 +131,14 @@
         .trophy-desc { display: flex; flex-direction: column; justify-content: center; }
         .trophy-desc h3 { margin: 0 0 5px 0; color: var(--brand-dark); font-size: 1.1rem; text-transform: uppercase; }
         .trophy-desc p { margin: 0; color: #666; font-size: 0.85rem; line-height: 1.3; }
+
+        /* News Cards */
+        .news-card { background: white; border: 2px solid var(--aux-blue); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.1s; text-decoration: none; display: flex; flex-direction: column; color: var(--brand-dark); }
+        .news-card:active { transform: scale(0.98); background-color: #f9f9f9; }
+        .news-img { width: 100%; height: 140px; background: #eee; object-fit: cover; }
+        .news-info { padding: 12px; }
+        .news-title { font-size: 1rem; font-weight: bold; margin: 0 0 5px 0; line-height: 1.2; }
+        .news-date { font-size: 0.75rem; color: #888; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; }
 
         .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 5px; z-index: 20; position: relative;}
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
@@ -256,11 +265,22 @@
         .leaflet-popup-tip { background: var(--radar-green); }
         .radar-target-ping { position: absolute; width: 40px; height: 40px; top: -8px; left: -8px; border-radius: 50%; border: 2px solid var(--brand-gold); animation: ping 1s infinite ease-out; pointer-events: none; }
         @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-        #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; flex-shrink: 0;}
+        #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
+        .success { color: #27ae60; } .fail { color: var(--brand-red); }
+
+        /* SCROLLING NEWS TICKER */
+        #news-ticker-container {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: #111; color: var(--brand-gold);
+            font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; padding: 6px 0;
+            overflow: hidden; white-space: nowrap; z-index: 1000; border-top: 1px solid #333;
+            padding-bottom: max(6px, env(safe-area-inset-bottom));
+        }
+        #news-ticker { display: inline-block; padding-left: 100%; animation: ticker linear infinite; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
         @media (min-width: 768px) {
             #radar-view { max-width: 100%; } .radar-panels-wrapper { position: absolute; top: 10px; left: 10px; width: 340px; margin: 0; }
-            #radar-view .footer-buttons { position: absolute !important; bottom: 20px !important; right: 20px !important; left: auto !important; transform: none !important; width: 200px !important; max-width: none !important; }
+            #radar-view .footer-buttons { position: absolute !important; bottom: 35px !important; right: 20px !important; left: auto !important; transform: none !important; width: 200px !important; max-width: none !important; }
         }
         @media (max-height: 500px) { .game-header { display: none !important; } #game-wrapper { margin-bottom: 5px; } h1 { display: none; } .compass-n { top: 60px; } }
         #leaderboard-list { width: 100%; flex-grow: 1; overflow-y: auto; text-align: left; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; min-height: 0; }
@@ -272,7 +292,7 @@
         .tutorial-text { color: #ccc; font-size: 1rem; margin-bottom: 20px; text-align: left; line-height: 1.5; }
         .tutorial-text strong { color: #fff; }
     </style>
-</head>
+    </head>
 <body>
 
     <audio id="bg-music" loop preload="auto"><source src="ambient.mp3" type="audio/mpeg"></audio>
@@ -308,10 +328,16 @@
     </div>
 
     <div id="game-over-overlay">
-        <div class="modal-box danger">
-            <h1 style="color: var(--brand-red); margin-bottom: 10px; font-size: 1.8rem;">MISSION FAILED</h1>
-            <p style="margin-bottom: 5px; color: #fff; font-size: 1rem; font-weight: bold;">FUEL DEPLETED</p>
-            <button class="gold-btn" onclick="confirmReset()">RETIRE & RESTART</button>
+        <div class="modal-box danger" id="stats-box">
+            <h1 id="stats-title" style="color: var(--brand-red); margin-bottom: 10px; font-size: 1.8rem;">MISSION FAILED</h1>
+            <p id="stats-reason" style="margin-bottom: 5px; color: #fff; font-size: 1rem; font-weight: bold;">FUEL DEPLETED</p>
+            
+            <div style="margin: 15px 0; text-align: left; background: #111; padding: 15px; border-radius: 8px; font-family: 'Share Tech Mono', monospace; color: #ccc; border: 1px solid #333;">
+                <p style="margin: 5px 0; font-size: 1.1rem;">TIME ALIVE: <span id="stat-time" style="color: var(--brand-gold); float: right;">00:00</span></p>
+                <p style="margin: 10px 0 5px 0; font-size: 1.1rem;">HANGARS: <span id="stat-hangars" style="color: var(--gauge-green); float: right;">0 / 5</span></p>
+            </div>
+
+            <button class="gold-btn" onclick="closeStatsAndRetire()">RETURN TO COMMAND</button>
         </div>
     </div>
 
@@ -368,11 +394,13 @@
 
     <div id="selector-view" class="view-section">
         <div class="dashboard-header">
-            <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div class="icon-btn leaderboard" onclick="openLeaderboard()" title="Global Leaderboard"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg></div>
-                <div style="flex-grow: 1; text-align: center;"><h1 style="margin:0;">Fuel Command</h1><h2 id="pilot-greeting" style="margin: 2px 0 0 0;">Welcome Pilot</h2></div>
-                <div class="icon-btn logout" onclick="triggerResetUI()" title="Sign Out / Restart"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></div>
-            </div>
+           <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+    <div class="icon-btn logout" onclick="triggerResetUI()" title="Sign Out / Restart"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></div>
+    
+    <div style="flex-grow: 1; text-align: center;"><h1 style="margin:0;">Fuel Command</h1><h2 id="pilot-greeting" style="margin: 2px 0 0 0;">Welcome Pilot</h2></div>
+    
+    <div style="width: 36px; height: 36px;"></div>
+</div>
 
             <div class="fuel-tank-container">
                 <div class="fuel-label">Global Fuel Reserves</div>
@@ -389,8 +417,19 @@
         <div id="level-list-container"></div>
         <div class="footer-buttons">
             <button class="radar-btn" onclick="openRadar()"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4-8c0 2.21-1.79 4-4 4s-4-1.79-4-4 1.79-4 4-4 4 1.79 4 4z"/></svg> LIVE RADAR OPS</button>
-            <button class="gold-btn" onclick="openTrophyRoom()"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19,3H5C3.9,3,3,3.9,3,5v3c0,2.21,1.79,4,4,4v0.5c0,1.96,1.31,3.62,3.13,4.28L8.3,19.5C8.11,19.78,8,20.13,8,20.5V21h8v-0.5c0-0.37-0.11-0.72-0.3-1l-1.83-2.72C15.69,16.12,17,14.46,17,12.5V12c2.21,0,4-1.79,4-4V5C21,3.9,20.1,3,19,3z M7,9C5.9,9,5,8.1,5,7V5h2V9z M19,7c0,1.1-0.9,2-2,2V5h2V7z"/></svg> TROPHY ROOM</button>
-            <div id="password-container"></div>
+           <div style="display: flex; gap: 6px; width: 100%;">
+    <button class="gold-btn" style="flex: 1; padding: 12px 2px; font-size: 0.8rem;" onclick="openTrophyRoom()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19,3H5C3.9,3,3,3.9,3,5v3c0,2.21,1.79,4,4,4v0.5c0,1.96,1.31,3.62,3.13,4.28L8.3,19.5C8.11,19.78,8,20.13,8,20.5V21h8v-0.5c0-0.37-0.11-0.72-0.3-1l-1.83-2.72C15.69,16.12,17,14.46,17,12.5V12c2.21,0,4-1.79,4-4V5C21,3.9,20.1,3,19,3z M7,9C5.9,9,5,8.1,5,7V5h2V9z M19,7c0,1.1-0.9,2-2,2V5h2V7z"/></svg> TROPHIES
+    </button>
+    
+    <button class="primary-btn" style="flex: 1; padding: 12px 2px; font-size: 0.8rem; background: var(--aux-blue);" onclick="openNewsRoom()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> INTEL
+    </button>
+
+    <button class="primary-btn" style="flex: 1; padding: 12px 2px; font-size: 0.8rem; background: #27ae60;" onclick="openLeaderboard()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg> RANKS
+    </button>
+</div>
             <button id="install-btn" class="dark-btn">📲 Install App</button>
         </div>
     </div>
@@ -404,6 +443,20 @@
             </div>
         </div>
         <div id="trophy-list"></div>
+        <div style="width: 100%; flex-shrink: 0; margin-top: 10px;">
+            <div id="password-container"></div>
+        </div>
+    </div>
+
+    <div id="news-view" class="view-section">
+        <div class="dashboard-header">
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div class="icon-btn" onclick="closeNewsRoom()"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></div>
+                <h1 style="margin:0; color:var(--brand-dark);">News Room</h1>
+                <div style="width: 36px;"></div>
+            </div>
+        </div>
+        <div id="news-list"></div>
     </div>
 
     <div id="hangar-view" class="view-section">
@@ -493,15 +546,37 @@
             </div>
         </div>
         <div id="radar-map-wrapper"><div id="radar-map-container"></div><div class="compass-pt compass-n">N</div><div class="compass-pt compass-e">E</div><div class="compass-pt compass-s">S</div><div class="compass-pt compass-w">W</div></div>
-        <div class="footer-buttons radar-footer" style="border: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;"><button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button></div>
+        <div class="footer-buttons radar-footer" style="border: none; position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;"><button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button></div>
+    </div>
+    
+    <div id="news-ticker-container">
+        <div id="news-ticker">ESTABLISHING SECURE COMMS... STANDBY FOR AVIATION INTEL...</div>
     </div>
     <script>
+        function closeStatsAndRetire() {
+    // 1. Hide the stats overlay
+    document.getElementById('game-over-overlay').style.display = 'none';
+    
+    // 2. Remove the gray-out effect from all views
+    document.getElementById('game-view').classList.remove('gray-out'); 
+    document.getElementById('selector-view').classList.remove('gray-out'); 
+    document.getElementById('hangar-view').classList.remove('gray-out'); 
+    document.getElementById('radar-view').classList.remove('gray-out'); 
+
+    // 3. Ensure we are looking at the main selector view (Dashboard)
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+    document.getElementById('selector-view').classList.add('active');
+    
+    // 4. Update the UI 
+    renderDashboard();
+}
         let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
         let radarTimeMs = 1800000; let lastTimerTick = 0; let encryptionInterval = null; let menuPasswordInterval = null;
         let radarLevel = 1; let bgMusicStarted = false; let currentRadarCallsign = ""; let currentRadarPlanes = [];
         let pathsVisible = false; let originVisible = false; let altVisible = false; let origCityVisible = false; let destCityVisible = false; let compassVisible = false; let currentMapStyle = 'CLEAN'; 
         let activeLevelIdx = null; let pendingInterceptPlane = null; let radarAnimFrame = null; let radarAnimTime = 0;
         let cleanMapBase = null; let cleanMapLabels = null;
+        let cachedNewsArticles = [];
 
         const RADAR_COLORS = ['#33FF33', '#00FFFF', '#FFCC00', '#FF3366', '#CC99FF', '#00FFCC', '#FF9933', '#99FF33', '#33CCFF', '#FF6699', '#FFFF66', '#FF5555'];
         const RADAR_CENTERS = [{ name: "EU-CENTRAL", lat: 50, lng: 10 }, { name: "US-EAST", lat: 38, lng: -78 }, { name: "US-WEST", lat: 38, lng: -118 }, { name: "ASIA-EAST", lat: 35, lng: 135 }];
@@ -525,17 +600,26 @@
             powerups: { scans: 1, drones: 1, fuelPods: 1 },
             levels: [], hasSeenTakeoffTutorial: false,
             world1Complete: false, world2Complete: false, world3Complete: false, world4Complete: false, world5Complete: false,
-            passwordRevealed: []
+            passwordRevealed: [],
+            totalPlayTime: 0,
+            gameWonShown: false
         };
+
+        // INTERNAL GLOBAL TIMER - Runs 1 tick per second when active
+        let globalTimerInterval = setInterval(() => {
+            if (globalState && globalState.username && document.getElementById('game-over-overlay').style.display !== 'flex') {
+                globalState.totalPlayTime = (globalState.totalPlayTime || 0) + 1;
+            }
+        }, 1000);
 
         let tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0 };
 
-        try { if (typeof firebase !== 'undefined') { firebase.initializeApp({  apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
-  authDomain: "fuelcommand.firebaseapp.com",
-  projectId: "fuelcommand",
-  storageBucket: "fuelcommand.firebasestorage.app",
-  messagingSenderId: "211722292779",
-  appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore(); } } catch(e) {}
+        try { if (typeof firebase !== 'undefined') { firebase.initializeApp({apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
+authDomain: "fuelcommand.firebaseapp.com",
+projectId: "fuelcommand",
+storageBucket: "fuelcommand.firebasestorage.app",
+messagingSenderId: "211722292779",
+appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore(); } } catch(e) {}
 
         const ICONS = {
             plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
@@ -640,6 +724,97 @@
 
         function closeTrophyRoom() { document.getElementById('trophy-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); renderDashboard(); }
 
+        function openNewsRoom() {
+            document.getElementById('selector-view').classList.remove('active'); 
+            const newsView = document.getElementById('news-view'); 
+            newsView.classList.remove('active'); void newsView.offsetWidth; newsView.classList.add('active');
+            
+            const listContainer = document.getElementById('news-list'); 
+            listContainer.innerHTML = "";
+
+            if (cachedNewsArticles.length === 0) {
+                listContainer.innerHTML = "<p style='text-align:center; color:#777; margin-top: 20px;'>No signal. Check connection to HQ.</p>";
+                return;
+            }
+
+            cachedNewsArticles.forEach(item => {
+                const el = document.createElement('a');
+                el.className = 'news-card';
+                el.href = item.link;
+                el.target = "_blank"; 
+                
+                const pubDate = new Date(item.pubDate.replace(/-/g, '/'));
+                const dateStr = isNaN(pubDate) ? item.pubDate : pubDate.toLocaleDateString();
+
+                let imgSrc = item.thumbnail;
+                if (!imgSrc) {
+                    const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
+                    if (imgMatch) imgSrc = imgMatch[1];
+                }
+                
+                let imgHtml = imgSrc ? `<img src="${imgSrc}" class="news-img" alt="News Image" onerror="this.style.display='none'">` : '';
+                el.innerHTML = `${imgHtml}<div class="news-info"><h3 class="news-title">${item.title}</h3><div class="news-date">${dateStr}</div></div>`;
+                listContainer.appendChild(el);
+            });
+        }
+
+        function closeNewsRoom() { 
+            document.getElementById('news-view').classList.remove('active'); 
+            document.getElementById('selector-view').classList.add('active'); 
+            renderDashboard(); 
+        }
+
+        function fetchAviationNews() {
+            const tickerEl = document.getElementById('news-ticker');
+            if(!tickerEl) return;
+
+            const applyNews = (items) => {
+                cachedNewsArticles = items;
+                const headlines = items.slice(0, 10).map(item => "/// " + item.title.toUpperCase() + " ");
+                const fullText = headlines.join(" ") + "///";
+                tickerEl.textContent = fullText;
+                
+                let scrollDuration = fullText.length * 0.15; 
+                tickerEl.style.animation = 'none';
+                void tickerEl.offsetWidth;
+                tickerEl.style.animation = `ticker ${scrollDuration}s linear infinite`;
+            };
+
+            const fallbackItems = [
+                { title: "GLOBAL FUEL RESERVES STABLE ACROSS ALL SECTORS", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
+                { title: "NEW CLASSIFIED HANGARS UNDER CONSTRUCTION", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
+                { title: "RADAR OPS MONITORING UNIDENTIFIED BOGEYS", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
+                { title: "ALL FLIGHT CREWS CLEARED FOR DEPARTURE", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" }
+            ];
+
+            const cacheKey = 'fuel_news_cache_v2';
+            const timeKey = 'fuel_news_time_v2';
+            const now = Date.now();
+            const cachedTime = localStorage.getItem(timeKey);
+            const cachedData = localStorage.getItem(cacheKey);
+
+            if (cachedData && cachedTime && (now - parseInt(cachedTime)) < 6 * 60 * 60 * 1000) {
+                try { applyNews(JSON.parse(cachedData)); return; } catch(e) {}
+            }
+
+            fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fsimpleflying.com%2Ffeed%2F')
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.items && data.items.length > 0) {
+                    localStorage.setItem(cacheKey, JSON.stringify(data.items));
+                    localStorage.setItem(timeKey, now.toString());
+                    applyNews(data.items);
+                } else { throw new Error("No items"); }
+            })
+            .catch(err => {
+                if (cachedData) {
+                    try { applyNews(JSON.parse(cachedData)); } catch(e) { applyNews(fallbackItems); }
+                } else {
+                    applyNews(fallbackItems);
+                }
+            });
+        }
+
         function toggleRadarIntel() {
             const body = document.getElementById('radar-intel-body'); const header = document.getElementById('radar-intel-header'); const icon = header.querySelector('.acc-icon-intel');
             body.classList.toggle('open'); header.classList.toggle('open'); icon.textContent = body.classList.contains('open') ? "[-]" : "[+]";
@@ -668,6 +843,7 @@
         window.onload = function() {
             try { 
                 loadState(); 
+                fetchAviationNews();
                 const lastUser = localStorage.getItem('last_pilot_name');
                 if (lastUser) { const ci = document.getElementById('callsign-input'); if (ci) ci.value = lastUser; }
 
@@ -764,7 +940,7 @@
 
         function loadState() {
             try {
-                const saved = localStorage.getItem('fuelQuizState_v78'); 
+                const saved = localStorage.getItem('fuelQuizState_v79'); 
                 if (saved) {
                     globalState = JSON.parse(saved);
                     if(!globalState.levels || globalState.levels.length === 0) { globalState.levels = generateGameLevels(); }
@@ -775,13 +951,15 @@
                     if(globalState.world4Complete === undefined) globalState.world4Complete = false;
                     if(globalState.world5Complete === undefined) globalState.world5Complete = false;
                     if(!globalState.passwordRevealed) globalState.passwordRevealed = [];
+                    if(globalState.totalPlayTime === undefined) globalState.totalPlayTime = 0;
+                    if(globalState.gameWonShown === undefined) globalState.gameWonShown = false;
                 } else { throw new Error("No save"); }
             } catch(e) {
-                globalState = { username: null, currentFuel: STARTING_GLOBAL_FUEL, extraFuel: 0, powerups: { scans: 1, drones: 1, fuelPods: 1 }, levels: generateGameLevels(), hasSeenTakeoffTutorial: false, world1Complete: false, world2Complete: false, world3Complete: false, world4Complete: false, world5Complete: false, passwordRevealed: [] };
+                globalState = { username: null, currentFuel: STARTING_GLOBAL_FUEL, extraFuel: 0, powerups: { scans: 1, drones: 1, fuelPods: 1 }, levels: generateGameLevels(), hasSeenTakeoffTutorial: false, world1Complete: false, world2Complete: false, world3Complete: false, world4Complete: false, world5Complete: false, passwordRevealed: [], totalPlayTime: 0, gameWonShown: false };
             }
         }
 
-        function saveState() { try { localStorage.setItem('fuelQuizState_v78', JSON.stringify(globalState)); } catch(e){} }
+        function saveState() { try { localStorage.setItem('fuelQuizState_v79', JSON.stringify(globalState)); } catch(e){} }
         
         function isHangarComplete(hNum) { 
             const hLevels = globalState.levels.filter(l => l.hangar === hNum);
@@ -808,6 +986,13 @@
             if (h3Done && !globalState.world3Complete) { globalState.world3Complete = true; triggerHangarReward(); }
             if (h4Done && !globalState.world4Complete) { globalState.world4Complete = true; triggerHangarReward(); }
             if (h5Done && !globalState.world5Complete) { globalState.world5Complete = true; triggerHangarReward(); }
+
+            // Trigger Campaign Won
+            if (isAllWorldsComplete() && !globalState.gameWonShown) {
+                globalState.gameWonShown = true;
+                saveState();
+                setTimeout(() => { triggerGameOver(true); }, 1500);
+            }
 
             const unlockMsg = document.getElementById('unlock-message');
             if(h4Done) unlockMsg.innerHTML = "Classified Ops (Hangar 5): <span style='color:#2ecc71'>GRANTED</span>";
@@ -1151,7 +1336,7 @@
                 let triesLeft = 3 - lState.attempts; const msgEl = document.getElementById('message'); msgEl.textContent = `${reason} | TRIES LEFT: ${triesLeft} (-200L)`; msgEl.className = "fail pop-reveal"; void msgEl.offsetWidth;
                 setTimeout(() => { if(!lState.completed && !lState.failed && (globalState.currentFuel > 0 || globalState.extraFuel > 0) && document.getElementById('takeoff-game-area').style.display !== 'none') { document.getElementById('message').textContent = ""; startTakeoff(); } }, 1500);
             }
-            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) setTimeout(triggerGameOver, 1500);
+            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) setTimeout(() => triggerGameOver(false), 1500);
         }
 
         function winTakeoff() {
@@ -1162,7 +1347,7 @@
         }
 
         function openRadar() {
-            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) { triggerGameOver(); return; }
+            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) { triggerGameOver(false); return; }
             document.getElementById('selector-view').classList.remove('active'); const radarView = document.getElementById('radar-view'); radarView.classList.remove('active'); void radarView.offsetWidth; radarView.classList.add('active');
             pathsVisible = false; originVisible = false; altVisible = false; origCityVisible = false; destCityVisible = false; compassVisible = false; currentMapStyle = 'CLEAN'; radarLevel = 1; radarTimeMs = 1800000; 
             document.getElementById('radar-intel-body').classList.add('open'); document.getElementById('radar-intel-header').classList.add('open'); document.querySelector('.acc-icon-intel').textContent = "[-]";
@@ -1401,20 +1586,20 @@
             const tile = hidden[Math.floor(Math.random() * hidden.length)]; const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile); tile.classList.add('revealed'); 
             if(!lState.revealedTiles) lState.revealedTiles = []; lState.revealedTiles.push(idx); drainFuel(TILE_COST);
             let cx = e.clientX; let cy = e.clientY; if(e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; } if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
-            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver();
+            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false);
         }
 
         function submitImageGuess(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('img-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(); }
+            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('img-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false); }
         }
 
         function submitTrivia(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(); }
+            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false); }
         }
 
-        function endGame(win) {
+        function endGame(win, msg) {
             if (win) {
                 const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
                 if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
@@ -1424,9 +1609,60 @@
             }
         }
 
-        function triggerGameOver() { document.getElementById('game-view').classList.add('gray-out'); document.getElementById('selector-view').classList.add('gray-out'); document.getElementById('hangar-view').classList.add('gray-out'); document.getElementById('radar-view').classList.add('gray-out'); setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500); }
+        // TRIGGER GAME OVER / STATS SCREEN
+        function triggerGameOver(isWin = false) { 
+            document.getElementById('game-view').classList.add('gray-out'); 
+            document.getElementById('selector-view').classList.add('gray-out'); 
+            document.getElementById('hangar-view').classList.add('gray-out'); 
+            document.getElementById('radar-view').classList.add('gray-out'); 
+            
+            // Format time elapsed
+            let totalSec = globalState.totalPlayTime || 0;
+            let m = Math.floor(totalSec / 60);
+            let s = totalSec % 60;
+            document.getElementById('stat-time').textContent = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+
+            // Calculate hangars cleared
+            let hangarsCleared = 0;
+            if (globalState.world1Complete) hangarsCleared++;
+            if (globalState.world2Complete) hangarsCleared++;
+            if (globalState.world3Complete) hangarsCleared++;
+            if (globalState.world4Complete) hangarsCleared++;
+            if (globalState.world5Complete) hangarsCleared++;
+            document.getElementById('stat-hangars').textContent = `${hangarsCleared} / 5`;
+
+            // Update UI based on Win or Loss
+            const box = document.getElementById('stats-box');
+            const title = document.getElementById('stats-title');
+            const reason = document.getElementById('stats-reason');
+
+            if (isWin) {
+                title.textContent = "CAMPAIGN COMPLETE";
+                title.style.color = "var(--gauge-green)";
+                reason.textContent = "ALL HANGARS CLEARED";
+                box.classList.remove('danger');
+                box.classList.add('success');
+                box.style.borderColor = "var(--gauge-green)";
+            } else {
+                title.textContent = "MISSION FAILED";
+                title.style.color = "var(--brand-red)";
+                reason.textContent = "FUEL DEPLETED";
+                box.classList.remove('success');
+                box.classList.add('danger');
+                box.style.borderColor = "var(--brand-red)";
+            }
+
+            setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500); 
+        }
+
         function closeRefuel() { document.getElementById('refuel-overlay').style.display = 'none'; saveAndExit(); }
-        function updateMiniFuelUI() { const el = document.getElementById('current-fuel-display'); el.querySelector('span:nth-of-type(1)').textContent = globalState.currentFuel; const auxEl = document.getElementById('aux-fuel-display'); if (globalState.extraFuel > 0) { auxEl.style.display = 'inline'; auxEl.textContent = `+${globalState.extraFuel}`; } else { auxEl.style.display = 'none'; } if (globalState.currentFuel <= 200 && globalState.extraFuel === 0) el.classList.add('danger'); else el.classList.remove('danger'); }
+        
+        function updateMiniFuelUI() { 
+            const el = document.getElementById('current-fuel-display'); el.querySelector('span:nth-of-type(1)').textContent = globalState.currentFuel; 
+            const auxEl = document.getElementById('aux-fuel-display'); 
+            if (globalState.extraFuel > 0) { auxEl.style.display = 'inline'; auxEl.textContent = `+${globalState.extraFuel}`; } else { auxEl.style.display = 'none'; } 
+            if (globalState.currentFuel <= 200 && globalState.extraFuel === 0) el.classList.add('danger'); else el.classList.remove('danger'); 
+        }
         
         function saveAndExit() { 
             tkState.active = false; if(tkState.frameId) cancelAnimationFrame(tkState.frameId);

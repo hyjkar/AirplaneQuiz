@@ -292,7 +292,7 @@
         .tutorial-text { color: #ccc; font-size: 1rem; margin-bottom: 20px; text-align: left; line-height: 1.5; }
         .tutorial-text strong { color: #fff; }
     </style>
-</head>
+    </head>
 <body>
 
     <audio id="bg-music" loop preload="auto"><source src="ambient.mp3" type="audio/mpeg"></audio>
@@ -328,9 +328,15 @@
     </div>
 
     <div id="game-over-overlay">
-        <div class="modal-box danger">
-            <h1 style="color: var(--brand-red); margin-bottom: 10px; font-size: 1.8rem;">MISSION FAILED</h1>
-            <p style="margin-bottom: 5px; color: #fff; font-size: 1rem; font-weight: bold;">FUEL DEPLETED</p>
+        <div class="modal-box danger" id="stats-box">
+            <h1 id="stats-title" style="color: var(--brand-red); margin-bottom: 10px; font-size: 1.8rem;">MISSION FAILED</h1>
+            <p id="stats-reason" style="margin-bottom: 5px; color: #fff; font-size: 1rem; font-weight: bold;">FUEL DEPLETED</p>
+            
+            <div style="margin: 15px 0; text-align: left; background: #111; padding: 15px; border-radius: 8px; font-family: 'Share Tech Mono', monospace; color: #ccc; border: 1px solid #333;">
+                <p style="margin: 5px 0; font-size: 1.1rem;">TIME ALIVE: <span id="stat-time" style="color: var(--brand-gold); float: right;">00:00</span></p>
+                <p style="margin: 10px 0 5px 0; font-size: 1.1rem;">HANGARS: <span id="stat-hangars" style="color: var(--gauge-green); float: right;">0 / 5</span></p>
+            </div>
+
             <button class="gold-btn" onclick="confirmReset()">RETIRE & RESTART</button>
         </div>
     </div>
@@ -566,8 +572,17 @@
             powerups: { scans: 1, drones: 1, fuelPods: 1 },
             levels: [], hasSeenTakeoffTutorial: false,
             world1Complete: false, world2Complete: false, world3Complete: false, world4Complete: false, world5Complete: false,
-            passwordRevealed: []
+            passwordRevealed: [],
+            totalPlayTime: 0,
+            gameWonShown: false
         };
+
+        // INTERNAL GLOBAL TIMER - Runs 1 tick per second when active
+        let globalTimerInterval = setInterval(() => {
+            if (globalState && globalState.username && document.getElementById('game-over-overlay').style.display !== 'flex') {
+                globalState.totalPlayTime = (globalState.totalPlayTime || 0) + 1;
+            }
+        }, 1000);
 
         let tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0 };
 
@@ -903,9 +918,11 @@
                     if(globalState.world4Complete === undefined) globalState.world4Complete = false;
                     if(globalState.world5Complete === undefined) globalState.world5Complete = false;
                     if(!globalState.passwordRevealed) globalState.passwordRevealed = [];
+                    if(globalState.totalPlayTime === undefined) globalState.totalPlayTime = 0;
+                    if(globalState.gameWonShown === undefined) globalState.gameWonShown = false;
                 } else { throw new Error("No save"); }
             } catch(e) {
-                globalState = { username: null, currentFuel: STARTING_GLOBAL_FUEL, extraFuel: 0, powerups: { scans: 1, drones: 1, fuelPods: 1 }, levels: generateGameLevels(), hasSeenTakeoffTutorial: false, world1Complete: false, world2Complete: false, world3Complete: false, world4Complete: false, world5Complete: false, passwordRevealed: [] };
+                globalState = { username: null, currentFuel: STARTING_GLOBAL_FUEL, extraFuel: 0, powerups: { scans: 1, drones: 1, fuelPods: 1 }, levels: generateGameLevels(), hasSeenTakeoffTutorial: false, world1Complete: false, world2Complete: false, world3Complete: false, world4Complete: false, world5Complete: false, passwordRevealed: [], totalPlayTime: 0, gameWonShown: false };
             }
         }
 
@@ -936,6 +953,13 @@
             if (h3Done && !globalState.world3Complete) { globalState.world3Complete = true; triggerHangarReward(); }
             if (h4Done && !globalState.world4Complete) { globalState.world4Complete = true; triggerHangarReward(); }
             if (h5Done && !globalState.world5Complete) { globalState.world5Complete = true; triggerHangarReward(); }
+
+            // Trigger Campaign Won
+            if (isAllWorldsComplete() && !globalState.gameWonShown) {
+                globalState.gameWonShown = true;
+                saveState();
+                setTimeout(() => { triggerGameOver(true); }, 1500);
+            }
 
             const unlockMsg = document.getElementById('unlock-message');
             if(h4Done) unlockMsg.innerHTML = "Classified Ops (Hangar 5): <span style='color:#2ecc71'>GRANTED</span>";
@@ -1279,7 +1303,7 @@
                 let triesLeft = 3 - lState.attempts; const msgEl = document.getElementById('message'); msgEl.textContent = `${reason} | TRIES LEFT: ${triesLeft} (-200L)`; msgEl.className = "fail pop-reveal"; void msgEl.offsetWidth;
                 setTimeout(() => { if(!lState.completed && !lState.failed && (globalState.currentFuel > 0 || globalState.extraFuel > 0) && document.getElementById('takeoff-game-area').style.display !== 'none') { document.getElementById('message').textContent = ""; startTakeoff(); } }, 1500);
             }
-            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) setTimeout(triggerGameOver, 1500);
+            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) setTimeout(() => triggerGameOver(false), 1500);
         }
 
         function winTakeoff() {
@@ -1290,7 +1314,7 @@
         }
 
         function openRadar() {
-            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) { triggerGameOver(); return; }
+            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) { triggerGameOver(false); return; }
             document.getElementById('selector-view').classList.remove('active'); const radarView = document.getElementById('radar-view'); radarView.classList.remove('active'); void radarView.offsetWidth; radarView.classList.add('active');
             pathsVisible = false; originVisible = false; altVisible = false; origCityVisible = false; destCityVisible = false; compassVisible = false; currentMapStyle = 'CLEAN'; radarLevel = 1; radarTimeMs = 1800000; 
             document.getElementById('radar-intel-body').classList.add('open'); document.getElementById('radar-intel-header').classList.add('open'); document.querySelector('.acc-icon-intel').textContent = "[-]";
@@ -1529,17 +1553,17 @@
             const tile = hidden[Math.floor(Math.random() * hidden.length)]; const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile); tile.classList.add('revealed'); 
             if(!lState.revealedTiles) lState.revealedTiles = []; lState.revealedTiles.push(idx); drainFuel(TILE_COST);
             let cx = e.clientX; let cy = e.clientY; if(e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; } if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
-            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver();
+            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false);
         }
 
         function submitImageGuess(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('img-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(); }
+            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('img-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false); }
         }
 
         function submitTrivia(selectedIndex) {
             const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(); }
+            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false); }
         }
 
         function endGame(win, msg) {
@@ -1552,9 +1576,60 @@
             }
         }
 
-        function triggerGameOver() { document.getElementById('game-view').classList.add('gray-out'); document.getElementById('selector-view').classList.add('gray-out'); document.getElementById('hangar-view').classList.add('gray-out'); document.getElementById('radar-view').classList.add('gray-out'); setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500); }
+        // TRIGGER GAME OVER / STATS SCREEN
+        function triggerGameOver(isWin = false) { 
+            document.getElementById('game-view').classList.add('gray-out'); 
+            document.getElementById('selector-view').classList.add('gray-out'); 
+            document.getElementById('hangar-view').classList.add('gray-out'); 
+            document.getElementById('radar-view').classList.add('gray-out'); 
+            
+            // Format time elapsed
+            let totalSec = globalState.totalPlayTime || 0;
+            let m = Math.floor(totalSec / 60);
+            let s = totalSec % 60;
+            document.getElementById('stat-time').textContent = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+
+            // Calculate hangars cleared
+            let hangarsCleared = 0;
+            if (globalState.world1Complete) hangarsCleared++;
+            if (globalState.world2Complete) hangarsCleared++;
+            if (globalState.world3Complete) hangarsCleared++;
+            if (globalState.world4Complete) hangarsCleared++;
+            if (globalState.world5Complete) hangarsCleared++;
+            document.getElementById('stat-hangars').textContent = `${hangarsCleared} / 5`;
+
+            // Update UI based on Win or Loss
+            const box = document.getElementById('stats-box');
+            const title = document.getElementById('stats-title');
+            const reason = document.getElementById('stats-reason');
+
+            if (isWin) {
+                title.textContent = "CAMPAIGN COMPLETE";
+                title.style.color = "var(--gauge-green)";
+                reason.textContent = "ALL HANGARS CLEARED";
+                box.classList.remove('danger');
+                box.classList.add('success');
+                box.style.borderColor = "var(--gauge-green)";
+            } else {
+                title.textContent = "MISSION FAILED";
+                title.style.color = "var(--brand-red)";
+                reason.textContent = "FUEL DEPLETED";
+                box.classList.remove('success');
+                box.classList.add('danger');
+                box.style.borderColor = "var(--brand-red)";
+            }
+
+            setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500); 
+        }
+
         function closeRefuel() { document.getElementById('refuel-overlay').style.display = 'none'; saveAndExit(); }
-        function updateMiniFuelUI() { const el = document.getElementById('current-fuel-display'); el.querySelector('span:nth-of-type(1)').textContent = globalState.currentFuel; const auxEl = document.getElementById('aux-fuel-display'); if (globalState.extraFuel > 0) { auxEl.style.display = 'inline'; auxEl.textContent = `+${globalState.extraFuel}`; } else { auxEl.style.display = 'none'; } if (globalState.currentFuel <= 200 && globalState.extraFuel === 0) el.classList.add('danger'); else el.classList.remove('danger'); }
+        
+        function updateMiniFuelUI() { 
+            const el = document.getElementById('current-fuel-display'); el.querySelector('span:nth-of-type(1)').textContent = globalState.currentFuel; 
+            const auxEl = document.getElementById('aux-fuel-display'); 
+            if (globalState.extraFuel > 0) { auxEl.style.display = 'inline'; auxEl.textContent = `+${globalState.extraFuel}`; } else { auxEl.style.display = 'none'; } 
+            if (globalState.currentFuel <= 200 && globalState.extraFuel === 0) el.classList.add('danger'); else el.classList.remove('danger'); 
+        }
         
         function saveAndExit() { 
             tkState.active = false; if(tkState.frameId) cancelAnimationFrame(tkState.frameId);

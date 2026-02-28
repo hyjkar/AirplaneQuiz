@@ -337,7 +337,7 @@
                 <p style="margin: 10px 0 5px 0; font-size: 1.1rem;">HANGARS: <span id="stat-hangars" style="color: var(--gauge-green); float: right;">0 / 5</span></p>
             </div>
 
-            <button class="gold-btn" onclick="confirmReset()">RETIRE & RESTART</button>
+            <button class="gold-btn" onclick="closeStatsAndRetire()">RETURN TO COMMAND</button>
         </div>
     </div>
 
@@ -542,6 +542,23 @@
         <div id="news-ticker">ESTABLISHING SECURE COMMS... STANDBY FOR AVIATION INTEL...</div>
     </div>
     <script>
+        function closeStatsAndRetire() {
+    // 1. Hide the stats overlay
+    document.getElementById('game-over-overlay').style.display = 'none';
+    
+    // 2. Remove the gray-out effect from all views
+    document.getElementById('game-view').classList.remove('gray-out'); 
+    document.getElementById('selector-view').classList.remove('gray-out'); 
+    document.getElementById('hangar-view').classList.remove('gray-out'); 
+    document.getElementById('radar-view').classList.remove('gray-out'); 
+
+    // 3. Ensure we are looking at the main selector view (Dashboard)
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+    document.getElementById('selector-view').classList.add('active');
+    
+    // 4. Update the UI 
+    renderDashboard();
+}
         let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
         let radarTimeMs = 1800000; let lastTimerTick = 0; let encryptionInterval = null; let menuPasswordInterval = null;
         let radarLevel = 1; let bgMusicStarted = false; let currentRadarCallsign = ""; let currentRadarPlanes = [];

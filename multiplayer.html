@@ -292,6 +292,14 @@
         <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2><p>This mission requires Portrait Mode.</p>
     </div>
 
+    <div id="opponent-left-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; backdrop-filter: blur(5px);">
+        <div class="modal-box danger">
+            <h1 style="color: var(--brand-red); margin-bottom: 10px;">CONNECTION LOST</h1>
+            <p style="color: #ccc; font-size: 1rem; margin-bottom: 20px;">The opponent has abandoned the match.</p>
+            <button class="gold-btn" onclick="closeOpponentLeft()">RETURN TO COMMAND</button>
+        </div>
+    </div>
+
     <div id="takeoff-tutorial-overlay">
         <div class="modal-box">
             <h1 style="color: var(--brand-gold); margin-bottom: 15px;">FLIGHT MANUAL</h1>
@@ -381,9 +389,10 @@
                 </label>
             </div>
 
-            <button class="primary-btn" style="background:var(--aux-blue); margin-bottom: 15px;" onclick="hostNewGame()">HOST MATCH</button>
+            <button id="btn-host-match" class="primary-btn" style="background:var(--aux-blue); margin-bottom: 15px;" onclick="hostNewGame()">HOST MATCH</button>
+            <button id="btn-abort-match" class="danger-btn" style="display:none; margin-bottom: 15px;" onclick="abortMatch()">ABORT MATCH</button>
             
-            <div style="display:flex; gap:10px; align-items: center; justify-content: center; margin-bottom:15px;">
+            <div id="join-section" style="display:flex; gap:10px; align-items: center; justify-content: center; margin-bottom:15px;">
                 <span style="color:#777; font-weight: bold;">OR JOIN:</span>
                 <input type="number" id="join-code-input" placeholder="4-DIGIT CODE" style="width:120px; padding: 8px; text-align:center; font-family:'Share Tech Mono'; font-size: 1rem; border-radius: 4px; border: none;">
                 <button class="gold-btn" style="width: auto; padding: 8px 15px;" onclick="joinExistingGame()">JOIN</button>
@@ -1352,11 +1361,11 @@
             tkState.bgPosGround -= tkState.speed * 0.025; 
             tkState.bgPosRunway -= tkState.speed * 0.08;
             
-            // WEB-KIT FIX: Use Math.floor to strictly pass integer pixels to avoid fractional pixel rendering freezes
-            document.getElementById('tk-bg-sky').style.backgroundPosition = Math.floor(tkState.bgPosSky) + 'px 0px'; 
-            document.getElementById('tk-bg-city').style.backgroundPosition = Math.floor(tkState.bgPosCity) + 'px 100%'; 
-            document.getElementById('tk-bg-ground').style.backgroundPosition = Math.floor(tkState.bgPosGround) + 'px 100%'; 
-            document.getElementById('tk-runway-surface').style.backgroundPosition = Math.floor(tkState.bgPosRunway) + 'px 0px';
+            // Keeping fractional pixels for buttery smooth scrolling across all devices!
+            document.getElementById('tk-bg-sky').style.backgroundPosition = tkState.bgPosSky + 'px 0px'; 
+            document.getElementById('tk-bg-city').style.backgroundPosition = tkState.bgPosCity + 'px 100%'; 
+            document.getElementById('tk-bg-ground').style.backgroundPosition = tkState.bgPosGround + 'px 100%'; 
+            document.getElementById('tk-runway-surface').style.backgroundPosition = tkState.bgPosRunway + 'px 0px';
             
             document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%'; 
             document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
@@ -1743,7 +1752,6 @@
             if (globalState.extraFuel > 0) { auxEl.style.display = 'inline'; auxEl.textContent = `+${globalState.extraFuel}`; } else { auxEl.style.display = 'none'; } 
             if (globalState.currentFuel <= 200 && globalState.extraFuel === 0) el.classList.add('danger'); else el.classList.remove('danger'); 
             
-            // Sync Multiplayer if active
             if (typeof syncMultiplayerScore === "function") syncMultiplayerScore();
         }
         
@@ -1768,13 +1776,67 @@
         let mpTimeLimit = null;
         let mpGameEnded = false;
 
+        window.addEventListener('beforeunload', () => {
+            if (currentRoomCode && db && !mpGameEnded) {
+                db.collection("multiplayer_matches").doc(currentRoomCode).update({status: "abandoned"});
+            }
+        });
+
         function openMultiplayer() {
             document.getElementById('multiplayer-overlay').style.display = 'flex';
             document.getElementById('mp-status').innerHTML = "";
+            
+            if (currentRoomCode) {
+                document.getElementById('btn-abort-match').style.display = 'block';
+                document.getElementById('btn-host-match').style.display = 'none';
+                document.getElementById('join-section').style.display = 'none';
+            } else {
+                document.getElementById('btn-abort-match').style.display = 'none';
+                document.getElementById('btn-host-match').style.display = 'block';
+                document.getElementById('join-section').style.display = 'flex';
+            }
         }
 
         function closeMultiplayer() {
             document.getElementById('multiplayer-overlay').style.display = 'none';
+        }
+
+        function abortMatch() {
+            if (currentRoomCode && db) {
+                db.collection("multiplayer_matches").doc(currentRoomCode).update({status: "abandoned"});
+            }
+            showOpponentLeftPopup(); 
+            closeMultiplayer();
+        }
+
+        function showOpponentLeftPopup() {
+            mpGameEnded = true;
+            if (matchListener) matchListener();
+            currentRoomCode = null;
+            mpStartTime = null;
+            mpTimeLimit = null;
+            
+            document.getElementById('enemy-dashboard-tank').style.display = 'none';
+            document.getElementById('enemy-fuel-display').style.display = 'none';
+            
+            document.getElementById('game-view').classList.add('gray-out'); 
+            document.getElementById('selector-view').classList.add('gray-out'); 
+            document.getElementById('hangar-view').classList.add('gray-out'); 
+            document.getElementById('radar-view').classList.add('gray-out'); 
+            
+            document.getElementById('opponent-left-overlay').style.display = 'flex';
+        }
+
+        function closeOpponentLeft() {
+            document.getElementById('opponent-left-overlay').style.display = 'none';
+            document.getElementById('game-view').classList.remove('gray-out'); 
+            document.getElementById('selector-view').classList.remove('gray-out'); 
+            document.getElementById('hangar-view').classList.remove('gray-out'); 
+            document.getElementById('radar-view').classList.remove('gray-out'); 
+
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('selector-view').classList.add('active');
+            renderDashboard();
         }
 
         function hostNewGame() {
@@ -1796,6 +1858,10 @@
 
             document.getElementById("mp-status").innerHTML = `ROOM CREATED.<br>TELL OPPONENT TO JOIN CODE:<br><span style="color:var(--brand-gold); font-size: 2rem; display:block; margin-top:10px;">${currentRoomCode}</span>`;
             listenToMatch(currentRoomCode);
+            
+            document.getElementById('btn-abort-match').style.display = 'block';
+            document.getElementById('btn-host-match').style.display = 'none';
+            document.getElementById('join-section').style.display = 'none';
         }
 
         function joinExistingGame() {
@@ -1818,10 +1884,11 @@
                 setTimeout(closeMultiplayer, 1500);
             }).catch((err) => {
                 document.getElementById("mp-status").innerHTML = "<span style='color:red;'>ROOM NOT FOUND.</span>";
+                currentRoomCode = null;
             });
         }
 
-       function listenToMatch(roomCode) {
+        function listenToMatch(roomCode) {
             if (matchListener) matchListener();
             
             document.getElementById('enemy-fuel-display').style.display = 'block';
@@ -1831,6 +1898,11 @@
             matchListener = db.collection("multiplayer_matches").doc(roomCode).onSnapshot((doc) => {
                 if (doc.exists) {
                     let data = doc.data();
+                    
+                    if (data.status === "abandoned" && !mpGameEnded) {
+                        showOpponentLeftPopup();
+                        return;
+                    }
                     
                     let oppName = isHost ? data.guestName : data.hostName;
                     let oppScore = isHost ? data.guestScore : data.hostScore;
@@ -1845,12 +1917,10 @@
                         enemyBar.style.width = oppPct + "%";
                     }
 
-                    // --- FIX: Handle the "WAITING..." text ---
                     let dTimer = document.getElementById('mp-dashboard-timer');
 
                     if (data.status === "playing") {
                         if (data.timeLimit) {
-                            // It's a timed match, start the clock sync
                             if (data.startTime) {
                                 mpStartTime = data.startTime;
                                 mpTimeLimit = data.timeLimit;
@@ -1861,7 +1931,6 @@
                                 });
                             }
                         } else {
-                            // It's an UNTIMED match, change text to Active!
                             if (dTimer) {
                                 dTimer.innerText = "MATCH ACTIVE";
                                 dTimer.style.color = "var(--gauge-green)";
@@ -1873,7 +1942,6 @@
                              dTimer.style.color = "var(--brand-red)";
                          }
                     }
-                    // -----------------------------------------
 
                     if (isHost && data.status === "playing" && document.getElementById('multiplayer-overlay').style.display === 'flex') {
                          document.getElementById("mp-status").innerHTML = "OPPONENT JOINED! COMMENCE OPERATION.";
@@ -1884,7 +1952,7 @@
         }
 
         function syncMultiplayerScore() {
-            if (currentRoomCode && db) {
+            if (currentRoomCode && db && !mpGameEnded) {
                 let updateData = isHost ? { hostScore: globalState.currentFuel } : { guestScore: globalState.currentFuel };
                 db.collection("multiplayer_matches").doc(currentRoomCode).update(updateData).catch(e => console.log("Sync error", e));
             }

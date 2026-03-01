@@ -42,7 +42,7 @@
             overflow: hidden; user-select: none; -webkit-user-select: none;
         }
 
-        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay, #cat-modal {
+        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay, #cat-modal, #multiplayer-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #111; color: var(--brand-gold); z-index: 10000;
             flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
@@ -83,9 +83,9 @@
         .icon-btn.leaderboard { background-color: var(--aux-blue); color: white; border-color: #2980b9; }
         .icon-btn.leaderboard:active { background-color: #2980b9; }
 
-        .fuel-tank-container { background: #222; padding: 15px; border-radius: 12px; width: 100%; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #444; position: relative; flex-shrink: 0; }
+        .fuel-tank-container { background: #222; border-radius: 12px; width: 100%; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #444; position: relative; flex-shrink: 0; overflow: hidden;}
         .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
-        .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
+        .fuel-value { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
         .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
         .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); }
 
@@ -132,14 +132,6 @@
         .trophy-desc h3 { margin: 0 0 5px 0; color: var(--brand-dark); font-size: 1.1rem; text-transform: uppercase; }
         .trophy-desc p { margin: 0; color: #666; font-size: 0.85rem; line-height: 1.3; }
 
-        /* News Cards */
-        .news-card { background: white; border: 2px solid var(--aux-blue); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.1s; text-decoration: none; display: flex; flex-direction: column; color: var(--brand-dark); }
-        .news-card:active { transform: scale(0.98); background-color: #f9f9f9; }
-        .news-img { width: 100%; height: 140px; background: #eee; object-fit: cover; }
-        .news-info { padding: 12px; }
-        .news-title { font-size: 1rem; font-weight: bold; margin: 0 0 5px 0; line-height: 1.2; }
-        .news-date { font-size: 0.75rem; color: #888; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; }
-
         .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 5px; z-index: 20; position: relative;}
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
         button { font-family: 'Share Tech Mono', monospace; width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none; text-transform: uppercase; }
@@ -154,7 +146,6 @@
         .radar-btn:active { background: var(--radar-green); color: #000; }
         .radar-abort-btn { background: rgba(10, 10, 10, 0.85) !important; border: 1px solid var(--brand-red) !important; color: var(--brand-red) !important; backdrop-filter: blur(4px); font-weight: bold;}
 
-        /* POWERUPS BAR */
         #powerups-bar { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; margin-bottom: 10px; z-index: 10; }
         .pu-btn { background: #fff; border: 2px solid #ccc; border-radius: 8px; width: 48px; height: 48px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; box-shadow: 0 3px 6px rgba(0,0,0,0.1); transition: transform 0.1s ease; }
         .pu-btn:active { transform: scale(0.92); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
@@ -168,7 +159,6 @@
         .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; display: flex; align-items: center; gap: 6px; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
 
-        /* IMAGE MODE */
         #image-game-area { width: 100%; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; z-index: 10; position: relative; }
         #game-wrapper { background: transparent; box-shadow: none; border-radius: 0; padding: 0; width: 100%; margin-bottom: 10px; position: relative; flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center; }
         #game-container { position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; background-color: #000; border: 2px solid #ccc; cursor: pointer; overflow: hidden; border-radius: 4px;}
@@ -292,7 +282,7 @@
         .tutorial-text { color: #ccc; font-size: 1rem; margin-bottom: 20px; text-align: left; line-height: 1.5; }
         .tutorial-text strong { color: #fff; }
     </style>
-    </head>
+</head>
 <body>
 
     <audio id="bg-music" loop preload="auto"><source src="ambient.mp3" type="audio/mpeg"></audio>
@@ -300,6 +290,14 @@
     <div id="orientation-lock">
         <svg viewBox="0 0 24 24" width="60" height="60" fill="currentColor" style="margin-bottom:20px;"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.25-.77c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.46L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zm-7.31.29C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
         <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2><p>This mission requires Portrait Mode.</p>
+    </div>
+
+    <div id="opponent-left-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; backdrop-filter: blur(5px);">
+        <div class="modal-box danger">
+            <h1 style="color: var(--brand-red); margin-bottom: 10px;">CONNECTION LOST</h1>
+            <p style="color: #ccc; font-size: 1rem; margin-bottom: 20px;">The opponent has abandoned the match.</p>
+            <button class="gold-btn" onclick="closeOpponentLeft()">RETURN TO COMMAND</button>
+        </div>
     </div>
 
     <div id="takeoff-tutorial-overlay">
@@ -379,6 +377,33 @@
         </div>
     </div>
 
+    <div id="multiplayer-overlay">
+        <div class="modal-box">
+            <h1 style="color: var(--aux-blue); margin-bottom: 10px;">VERSUS MODE</h1>
+            <p style="color:#ccc; font-size:0.85rem; margin-bottom:15px;">Connect to another pilot's feed.</p>
+            
+            <div style="margin-bottom: 15px; text-align: left; background: #111; padding: 10px; border-radius: 8px;">
+                <label style="color:var(--gauge-green); font-family:'Share Tech Mono'; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="mp-timer-checkbox" style="transform: scale(1.3);">
+                    2-MINUTE TIMED MATCH
+                </label>
+            </div>
+
+            <button id="btn-host-match" class="primary-btn" style="background:var(--aux-blue); margin-bottom: 15px;" onclick="hostNewGame()">HOST MATCH</button>
+            <button id="btn-abort-match" class="danger-btn" style="display:none; margin-bottom: 15px;" onclick="abortMatch()">ABORT MATCH</button>
+            
+            <div id="join-section" style="display:flex; gap:10px; align-items: center; justify-content: center; margin-bottom:15px;">
+                <span style="color:#777; font-weight: bold;">OR JOIN:</span>
+                <input type="number" id="join-code-input" placeholder="4-DIGIT CODE" style="width:120px; padding: 8px; text-align:center; font-family:'Share Tech Mono'; font-size: 1rem; border-radius: 4px; border: none;">
+                <button class="gold-btn" style="width: auto; padding: 8px 15px;" onclick="joinExistingGame()">JOIN</button>
+            </div>
+            
+            <div id="mp-status" style="color:var(--gauge-green); font-family:'Share Tech Mono'; font-size:1rem; margin-bottom:15px; text-align: center;"></div>
+            
+            <button class="cancel-btn" onclick="closeMultiplayer()">CLOSE</button>
+        </div>
+    </div>
+
     <div id="cat-modal">
         <h1 style="color:var(--brand-gold); margin-bottom:10px;">TOP SECRET: AVIATION FELINES</h1>
         <p style="color:#ccc; margin-bottom:20px;">Operation "Queen of the Skies" Successful.</p>
@@ -394,42 +419,52 @@
 
     <div id="selector-view" class="view-section">
         <div class="dashboard-header">
-           <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-    <div class="icon-btn logout" onclick="triggerResetUI()" title="Sign Out / Restart"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></div>
-    
-    <div style="flex-grow: 1; text-align: center;"><h1 style="margin:0;">Fuel Command</h1><h2 id="pilot-greeting" style="margin: 2px 0 0 0;">Welcome Pilot</h2></div>
-    
-    <div style="width: 36px; height: 36px;"></div>
-</div>
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <div class="icon-btn logout" onclick="triggerResetUI()" title="Sign Out / Restart"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></div>
+                <div style="flex-grow: 1; text-align: center;"><h1 style="margin:0;">Fuel Command</h1><h2 id="pilot-greeting" style="margin: 2px 0 0 0;">Welcome Pilot</h2></div>
+                <div style="width: 36px; height: 36px;"></div>
+            </div>
 
-            <div class="fuel-tank-container">
-                <div class="fuel-label">Global Fuel Reserves</div>
-                <div class="fuel-value"><span id="total-fuel-display">0</span><span style="font-size:1.2rem; color:#aaa;">L</span></div>
-                <div class="fuel-bar-bg"><div class="fuel-bar-fill" id="fuel-bar" style="width:0%;"></div></div>
-                <div id="aux-fuel-container" style="display:none; margin-top:10px; border-top: 1px dashed #444; padding-top:8px;">
-                    <div class="fuel-label" style="color:var(--aux-blue);">AUXILIARY TANK</div>
-                    <div class="fuel-value" style="font-size: 1.8rem; color:var(--aux-blue);"><span id="aux-fuel-value">0</span><span style="font-size:0.9rem; color:#888;">L</span></div>
-                    <div class="fuel-bar-bg" style="height:6px;"><div class="fuel-bar-fill" id="aux-fuel-bar" style="background:var(--aux-blue); width:0%;"></div></div>
+            <div id="dashboard-tanks" style="display: flex; gap: 10px; width: 100%; margin-bottom: 5px;">
+                <div class="fuel-tank-container" style="flex: 1; padding: 12px 8px;">
+                    <div class="fuel-label">YOUR RESERVES</div>
+                    <div class="fuel-value" style="font-size: 1.6rem;"><span id="total-fuel-display">0</span><span style="font-size:0.8rem; color:#aaa;">L</span></div>
+                    <div class="fuel-bar-bg"><div class="fuel-bar-fill" id="fuel-bar" style="width:0%;"></div></div>
+                    <div id="aux-fuel-container" style="display:none; margin-top:10px; border-top: 1px dashed #444; padding-top:8px;">
+                        <div class="fuel-label" style="color:var(--aux-blue);">AUX TANK</div>
+                        <div class="fuel-value" style="font-size: 1.2rem; color:var(--aux-blue);"><span id="aux-fuel-value">0</span><span style="font-size:0.7rem; color:#888;">L</span></div>
+                        <div class="fuel-bar-bg" style="height:6px;"><div class="fuel-bar-fill" id="aux-fuel-bar" style="background:var(--aux-blue); width:0%;"></div></div>
+                    </div>
+                    <div id="unlock-message" style="font-size: 0.65rem; margin-top:8px; color:#888;"></div>
                 </div>
-                <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;"></div>
+
+                <div class="fuel-tank-container" id="enemy-dashboard-tank" style="display: none; flex: 1; padding: 12px 8px; border-color: var(--aux-blue);">
+                    <div class="fuel-label" id="enemy-dashboard-name" style="color:var(--aux-blue);">OPPONENT</div>
+                    <div class="fuel-value" style="font-size: 1.6rem; color:var(--aux-blue);"><span id="enemy-dashboard-score">0</span><span style="font-size:0.8rem; color:#888;">L</span></div>
+                    <div class="fuel-bar-bg" style="background: #111;"><div class="fuel-bar-fill" id="enemy-fuel-bar" style="background:var(--aux-blue); width:0%; transition: width 0.5s;"></div></div>
+                    <div id="mp-dashboard-timer" style="margin-top:12px; font-family:'Share Tech Mono'; font-size: 0.8rem; font-weight:bold; color:var(--brand-red);">WAITING...</div>
+                </div>
             </div>
         </div>
+        
         <div id="level-list-container"></div>
+        
         <div class="footer-buttons">
             <button class="radar-btn" onclick="openRadar()"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4-8c0 2.21-1.79 4-4 4s-4-1.79-4-4 1.79-4 4-4 4 1.79 4 4z"/></svg> LIVE RADAR OPS</button>
-           <div style="display: flex; gap: 6px; width: 100%;">
-    <button class="gold-btn" style="flex: 1; padding: 12px 2px; font-size: 0.8rem;" onclick="openTrophyRoom()">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19,3H5C3.9,3,3,3.9,3,5v3c0,2.21,1.79,4,4,4v0.5c0,1.96,1.31,3.62,3.13,4.28L8.3,19.5C8.11,19.78,8,20.13,8,20.5V21h8v-0.5c0-0.37-0.11-0.72-0.3-1l-1.83-2.72C15.69,16.12,17,14.46,17,12.5V12c2.21,0,4-1.79,4-4V5C21,3.9,20.1,3,19,3z M7,9C5.9,9,5,8.1,5,7V5h2V9z M19,7c0,1.1-0.9,2-2,2V5h2V7z"/></svg> TROPHIES
-    </button>
-    
-    <button class="primary-btn" style="flex: 1; padding: 12px 2px; font-size: 0.8rem; background: var(--aux-blue);" onclick="openNewsRoom()">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> INTEL
-    </button>
-
-    <button class="primary-btn" style="flex: 1; padding: 12px 2px; font-size: 0.8rem; background: #27ae60;" onclick="openLeaderboard()">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg> RANKS
-    </button>
-</div>
+            <div style="display: flex; gap: 6px; width: 100%;">
+                <button class="gold-btn" style="flex: 1; padding: 12px 2px; font-size: 0.75rem;" onclick="openTrophyRoom()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19,3H5C3.9,3,3,3.9,3,5v3c0,2.21,1.79,4,4,4v0.5c0,1.96,1.31,3.62,3.13,4.28L8.3,19.5C8.11,19.78,8,20.13,8,20.5V21h8v-0.5c0-0.37-0.11-0.72-0.3-1l-1.83-2.72C15.69,16.12,17,14.46,17,12.5V12c2.21,0,4-1.79,4-4V5C21,3.9,20.1,3,19,3z M7,9C5.9,9,5,8.1,5,7V5h2V9z M19,7c0,1.1-0.9,2-2,2V5h2V7z"/></svg> TROPHIES
+                </button>
+                <button class="primary-btn" style="flex: 1; padding: 12px 2px; font-size: 0.75rem; background: var(--aux-blue);" onclick="openNewsRoom()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> INTEL
+                </button>
+                <button class="primary-btn" style="flex: 1; padding: 12px 2px; font-size: 0.75rem; background: #27ae60;" onclick="openLeaderboard()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg> RANKS
+                </button>
+                <button class="primary-btn" style="flex: 1; padding: 12px 2px; font-size: 0.75rem; background: #8e44ad;" onclick="openMultiplayer()">
+                    ⚔️ VS MODE
+                </button>
+            </div>
             <button id="install-btn" class="dark-btn">📲 Install App</button>
         </div>
     </div>
@@ -476,7 +511,10 @@
                 <div class="icon-btn" onclick="saveAndExit()" style="width: 32px; height: 32px; flex-shrink: 0;"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></div>
                 <div id="level-title" style="font-weight:bold; font-size:1.1rem;">Flight 1</div>
             </div>
-            <div class="mini-fuel" id="current-fuel-display"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg><span>4000</span><span id="aux-fuel-display" style="color:var(--aux-blue); font-size:1rem; margin-left:5px; display:none;">+1500</span></div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                <div class="mini-fuel" id="current-fuel-display"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg><span>4000</span><span id="aux-fuel-display" style="color:var(--aux-blue); font-size:1rem; margin-left:5px; display:none;">+1500</span></div>
+                <div id="enemy-fuel-display" style="display:none; font-family:'Share Tech Mono', monospace; font-size:0.8rem; color:#888;">VS: <span id="enemy-fuel-val" style="color:var(--aux-blue); font-weight:bold;">0</span> <span id="mp-header-timer" style="color:var(--brand-red); font-weight:bold;"></span></div>
+            </div>
         </div>
         
         <div id="powerups-bar">
@@ -553,75 +591,7 @@
         <div id="news-ticker">ESTABLISHING SECURE COMMS... STANDBY FOR AVIATION INTEL...</div>
     </div>
     <script>
-        function closeStatsAndRetire() {
-    // 1. Hide the stats overlay
-    document.getElementById('game-over-overlay').style.display = 'none';
-    
-    // 2. Remove the gray-out effect from all views
-    document.getElementById('game-view').classList.remove('gray-out'); 
-    document.getElementById('selector-view').classList.remove('gray-out'); 
-    document.getElementById('hangar-view').classList.remove('gray-out'); 
-    document.getElementById('radar-view').classList.remove('gray-out'); 
-
-    // 3. Ensure we are looking at the main selector view (Dashboard)
-    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-    document.getElementById('selector-view').classList.add('active');
-    
-    // 4. Update the UI 
-    renderDashboard();
-}
-        let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
-        let radarTimeMs = 1800000; let lastTimerTick = 0; let encryptionInterval = null; let menuPasswordInterval = null;
-        let radarLevel = 1; let bgMusicStarted = false; let currentRadarCallsign = ""; let currentRadarPlanes = [];
-        let pathsVisible = false; let originVisible = false; let altVisible = false; let origCityVisible = false; let destCityVisible = false; let compassVisible = false; let currentMapStyle = 'CLEAN'; 
-        let activeLevelIdx = null; let pendingInterceptPlane = null; let radarAnimFrame = null; let radarAnimTime = 0;
-        let cleanMapBase = null; let cleanMapLabels = null;
-        let cachedNewsArticles = [];
-
-        const RADAR_COLORS = ['#33FF33', '#00FFFF', '#FFCC00', '#FF3366', '#CC99FF', '#00FFCC', '#FF9933', '#99FF33', '#33CCFF', '#FF6699', '#FFFF66', '#FF5555'];
-        const RADAR_CENTERS = [{ name: "EU-CENTRAL", lat: 50, lng: 10 }, { name: "US-EAST", lat: 38, lng: -78 }, { name: "US-WEST", lat: 38, lng: -118 }, { name: "ASIA-EAST", lat: 35, lng: 135 }];
-        const CITIES = ["LONDON", "NEW YORK", "TOKYO", "PARIS", "DUBAI", "SYDNEY", "LOS ANGELES", "CHICAGO", "HONG KONG", "SINGAPORE", "BERLIN", "ROME", "MADRID", "TORONTO", "MUMBAI", "SAO PAULO", "MEXICO CITY", "CAIRO", "MOSCOW", "BEIJING", "SEOUL", "AMSTERDAM", "ISTANBUL", "BANGKOK", "KUALA LUMPUR", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON", "MONTREAL", "VANCOUVER", "BUENOS AIRES", "BOGOTA", "SANTIAGO", "LIMA", "CAPE TOWN", "JOHANNESBURG", "NAIROBI", "DELHI", "JAKARTA", "MANILA", "SHANGHAI", "TAIPEI", "OSAKA"];
-        const US_CITIES = ["NEW YORK", "LOS ANGELES", "CHICAGO", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON"];
-        const INTL_CITIES = CITIES.filter(c => !US_CITIES.includes(c));
-        const TARGET_PASSWORD = "QUEEN OF THE SKIES";
-
-        const RADAR_LEVEL_CONFIG = {
-            1: { latOffset: 5, lngOffset: 8, planes: 8, hints: 2 }, 2: { latOffset: 6, lngOffset: 10, planes: 12, hints: 2 },
-            3: { latOffset: 8, lngOffset: 12, planes: 16, hints: 3 }, 4: { latOffset: 10, lngOffset: 15, planes: 22, hints: 3 },
-            5: { latOffset: 12, lngOffset: 18, planes: 28, hints: 4 }, 6: { latOffset: 15, lngOffset: 22, planes: 34, hints: 4 },
-            7: { latOffset: 18, lngOffset: 28, planes: 40, hints: 5 }, 8: { latOffset: 22, lngOffset: 35, planes: 48, hints: 5 },
-            9: { latOffset: 26, lngOffset: 42, planes: 56, hints: 6 }, 10: { latOffset: 30, lngOffset: 50, planes: 64, hints: 7 } 
-        };
-
-        const STARTING_GLOBAL_FUEL = 4000; const REFUEL_AMOUNT = 2000; const TILE_COST = 15; const WRONG_GUESS_PENALTY = 200;
-
-        let globalState = {
-            username: null, currentFuel: STARTING_GLOBAL_FUEL, extraFuel: 0,
-            powerups: { scans: 1, drones: 1, fuelPods: 1 },
-            levels: [], hasSeenTakeoffTutorial: false,
-            world1Complete: false, world2Complete: false, world3Complete: false, world4Complete: false, world5Complete: false,
-            passwordRevealed: [],
-            totalPlayTime: 0,
-            gameWonShown: false
-        };
-
-        // INTERNAL GLOBAL TIMER - Runs 1 tick per second when active
-        let globalTimerInterval = setInterval(() => {
-            if (globalState && globalState.username && document.getElementById('game-over-overlay').style.display !== 'flex') {
-                globalState.totalPlayTime = (globalState.totalPlayTime || 0) + 1;
-            }
-        }, 1000);
-
-        let tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0 };
-
-        try { if (typeof firebase !== 'undefined') { firebase.initializeApp({apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
-authDomain: "fuelcommand.firebaseapp.com",
-projectId: "fuelcommand",
-storageBucket: "fuelcommand.firebasestorage.app",
-messagingSenderId: "211722292779",
-appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore(); } } catch(e) {}
-
-        const ICONS = {
+        var ICONS = {
             plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
             jet: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12,2 L14,10 L22,14 L22,16 L14,15 L14,19 L16,21 L16,22 L12,21 L8,22 L8,21 L10,19 L10,15 L2,16 L2,14 L10,10 Z"/></svg>`,
             folder: `<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`,
@@ -634,7 +604,7 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             drone: `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>`
         };
 
-        const AIRCRAFT_DATA = {
+        var AIRCRAFT_DATA = {
             standard: [
                 { type: 'image', images: ["747.jpg"], name: "Boeing 747" }, { type: 'image', images: ["a380.jpg", "a380_2.jpg"], name: "Airbus A380" }, { type: 'image', images: ["787.jpg", "787_2.jpg"], name: "Boeing 787" },
                 { type: 'image', images: ["e175.jpg"], name: "Embraer E175" }, { type: 'image', images: ["concorde.jpg"], name: "Concorde" }, { type: 'image', images: ["antonov.jpg"], name: "Antonov An-225" },
@@ -646,7 +616,7 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             ]
         };
 
-        const TRIVIA_DATA = [
+        var TRIVIA_DATA = [
             { type: 'trivia', question: "What caused the 1977 Tenerife airport disaster?", options: ["A runway collision in thick fog", "A mid-air collision over the Atlantic", "Dual engine failure due to volcanic ash"], correctIdx: 0, name: "Tenerife Disaster" },
             { type: 'trivia', question: "What forced US Airways Flight 1549 to ditch into the river?", options: ["Complete loss of hydraulic fluid", "A flock of geese struck both engines", "Fuel starvation due to a leak"], correctIdx: 1, name: "Hudson River Ditching" },
             { type: 'trivia', question: "Why did Air Canada Flight 143 (the 'Gimli Glider') run out of fuel mid-flight?", options: ["The fuel tanks were punctured", "A mix-up between pounds and kilograms", "The pilots forgot to switch fuel tanks"], correctIdx: 1, name: "Gimli Glider Incident" },
@@ -656,14 +626,71 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             { type: 'trivia', question: "What is the primary function of the A-10 Warthog?", options: ["High-altitude interception", "Close air support", "Strategic bombing"], correctIdx: 1, name: "A-10 Warthog Role" }
         ];
 
-        const RUNWAY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="32" viewBox="0 0 128 32"><rect width="128" height="32" fill="#333"/><rect x="10" y="14" width="40" height="4" fill="#fff"/></svg>`;
-        const THEMES = {
+        var RUNWAY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="32" viewBox="0 0 128 32"><rect width="128" height="32" fill="#333"/><rect x="10" y="14" width="40" height="4" fill="#fff"/></svg>`;
+        var THEMES = {
             1: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#87CEEB"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2E8B57"/></svg>` },
             2: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#5F9EA0"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#556B2F"/></svg>` },
             3: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2F4F4F"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#A9A9A9"/></svg>` },
             4: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#FF7F50"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#8B4513"/></svg>` },
             5: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#191970"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2F4F4F"/></svg>` }
         };
+
+        var RADAR_COLORS = ['#33FF33', '#00FFFF', '#FFCC00', '#FF3366', '#CC99FF', '#00FFCC', '#FF9933', '#99FF33', '#33CCFF', '#FF6699', '#FFFF66', '#FF5555'];
+        var RADAR_CENTERS = [{ name: "EU-CENTRAL", lat: 50, lng: 10 }, { name: "US-EAST", lat: 38, lng: -78 }, { name: "US-WEST", lat: 38, lng: -118 }, { name: "ASIA-EAST", lat: 35, lng: 135 }];
+        var CITIES = ["LONDON", "NEW YORK", "TOKYO", "PARIS", "DUBAI", "SYDNEY", "LOS ANGELES", "CHICAGO", "HONG KONG", "SINGAPORE", "BERLIN", "ROME", "MADRID", "TORONTO", "MUMBAI", "SAO PAULO", "MEXICO CITY", "CAIRO", "MOSCOW", "BEIJING", "SEOUL", "AMSTERDAM", "ISTANBUL", "BANGKOK", "KUALA LUMPUR", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON", "MONTREAL", "VANCOUVER", "BUENOS AIRES", "BOGOTA", "SANTIAGO", "LIMA", "CAPE TOWN", "JOHANNESBURG", "NAIROBI", "DELHI", "JAKARTA", "MANILA", "SHANGHAI", "TAIPEI", "OSAKA"];
+        var US_CITIES = ["NEW YORK", "LOS ANGELES", "CHICAGO", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON"];
+        var INTL_CITIES = CITIES.filter(c => !US_CITIES.includes(c));
+        var TARGET_PASSWORD = "QUEEN OF THE SKIES";
+
+        var RADAR_LEVEL_CONFIG = {
+            1: { latOffset: 5, lngOffset: 8, planes: 8, hints: 2 }, 2: { latOffset: 6, lngOffset: 10, planes: 12, hints: 2 },
+            3: { latOffset: 8, lngOffset: 12, planes: 16, hints: 3 }, 4: { latOffset: 10, lngOffset: 15, planes: 22, hints: 3 },
+            5: { latOffset: 12, lngOffset: 18, planes: 28, hints: 4 }, 6: { latOffset: 15, lngOffset: 22, planes: 34, hints: 4 },
+            7: { latOffset: 18, lngOffset: 28, planes: 40, hints: 5 }, 8: { latOffset: 22, lngOffset: 35, planes: 48, hints: 5 },
+            9: { latOffset: 26, lngOffset: 42, planes: 56, hints: 6 }, 10: { latOffset: 30, lngOffset: 50, planes: 64, hints: 7 } 
+        };
+
+        var STARTING_GLOBAL_FUEL = 4000; var REFUEL_AMOUNT = 2000; var TILE_COST = 15; var WRONG_GUESS_PENALTY = 200;
+
+        let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
+        let radarTimeMs = 1800000; let lastTimerTick = 0; let encryptionInterval = null; let menuPasswordInterval = null;
+        let radarLevel = 1; let bgMusicStarted = false; let currentRadarCallsign = ""; let currentRadarPlanes = [];
+        let pathsVisible = false; let originVisible = false; let altVisible = false; let origCityVisible = false; let destCityVisible = false; let compassVisible = false; let currentMapStyle = 'CLEAN'; 
+        let activeLevelIdx = null; let pendingInterceptPlane = null; let radarAnimFrame = null; let radarAnimTime = 0;
+        let cleanMapBase = null; let cleanMapLabels = null;
+        let cachedNewsArticles = [];
+
+        let globalState = {
+            username: null, currentFuel: STARTING_GLOBAL_FUEL, extraFuel: 0,
+            powerups: { scans: 1, drones: 1, fuelPods: 1 },
+            levels: [], hasSeenTakeoffTutorial: false,
+            world1Complete: false, world2Complete: false, world3Complete: false, world4Complete: false, world5Complete: false,
+            passwordRevealed: [],
+            totalPlayTime: 0,
+            gameWonShown: false
+        };
+
+        let globalTimerInterval = setInterval(() => {
+            if (globalState && globalState.username && document.getElementById('game-over-overlay').style.display !== 'flex') {
+                globalState.totalPlayTime = (globalState.totalPlayTime || 0) + 1;
+            }
+        }, 1000);
+
+        let tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0 };
+
+        try { 
+            if (typeof firebase !== 'undefined') { 
+                firebase.initializeApp({
+                    apiKey: "AIzaSyCyXpPeYovY6SpDWhHHAETEUcZyBKOYwpI",
+                    authDomain: "fuelcommand.firebaseapp.com",
+                    projectId: "fuelcommand",
+                    storageBucket: "fuelcommand.firebasestorage.app",
+                    messagingSenderId: "211722292779",
+                    appId: "1:211722292779:web:5dec358fc0693c7126246e"
+                }); 
+                db = firebase.firestore(); 
+            } 
+        } catch(e) { console.error("Firebase Init Error", e); }
 
         function getSvgUri(svgStr) { return `url('data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}')`; }
 
@@ -732,28 +759,51 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             const listContainer = document.getElementById('news-list'); 
             listContainer.innerHTML = "";
 
-            if (cachedNewsArticles.length === 0) {
+            if (!cachedNewsArticles || cachedNewsArticles.length === 0) {
                 listContainer.innerHTML = "<p style='text-align:center; color:#777; margin-top: 20px;'>No signal. Check connection to HQ.</p>";
                 return;
             }
 
             cachedNewsArticles.forEach(item => {
-                const el = document.createElement('a');
-                el.className = 'news-card';
-                el.href = item.link;
-                el.target = "_blank"; 
-                
-                const pubDate = new Date(item.pubDate.replace(/-/g, '/'));
-                const dateStr = isNaN(pubDate) ? item.pubDate : pubDate.toLocaleDateString();
+                let dateStr = "UNKNOWN DATE";
+                if (item.pubDate) {
+                    const pubDate = new Date(item.pubDate.replace(/-/g, '/'));
+                    if (!isNaN(pubDate)) {
+                        dateStr = pubDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                    } else {
+                        dateStr = item.pubDate.split(' ')[0];
+                    }
+                }
 
-                let imgSrc = item.thumbnail;
-                if (!imgSrc) {
+                let imgSrc = item.thumbnail || (item.enclosure && item.enclosure.link);
+                if (!imgSrc && item.description) {
                     const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
                     if (imgMatch) imgSrc = imgMatch[1];
                 }
                 
-                let imgHtml = imgSrc ? `<img src="${imgSrc}" class="news-img" alt="News Image" onerror="this.style.display='none'">` : '';
-                el.innerHTML = `${imgHtml}<div class="news-info"><h3 class="news-title">${item.title}</h3><div class="news-date">${dateStr}</div></div>`;
+                let imgHtml = imgSrc 
+                    ? `<img src="${imgSrc}" alt="News Image" style="width: 100%; height: 140px; object-fit: cover; display: block; border-bottom: 1px solid #eee;" onerror="this.style.display='none'">` 
+                    : `<div style="width: 100%; height: 140px; display: flex; justify-content: center; align-items: center; background: #111; color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>`;
+                
+                let title = item.title || "ENCRYPTED TRANSMISSION";
+
+                const el = document.createElement('a');
+                el.href = item.link || "#";
+                el.target = "_blank"; 
+                el.style.cssText = "display: block; width: 100%; background: #ffffff; border: 2px solid var(--aux-blue); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-decoration: none; margin-bottom: 15px; flex-shrink: 0; cursor: pointer;";
+                
+                el.innerHTML = `
+                    ${imgHtml}
+                    <div style="padding: 15px; display: block;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; font-weight: bold; line-height: 1.4; color: #000000; font-family: 'Roboto', sans-serif;">${title}</h3>
+                        <div style="margin: 0; font-size: 0.8rem; color: #d71920; font-family: 'Share Tech Mono', monospace; font-weight: bold; text-transform: uppercase;">📅 ${dateStr}</div>
+                    </div>
+                `;
+                
+                el.onmousedown = () => el.style.transform = "scale(0.98)";
+                el.onmouseup = () => el.style.transform = "scale(1)";
+                el.onmouseleave = () => el.style.transform = "scale(1)";
+
                 listContainer.appendChild(el);
             });
         }
@@ -764,7 +814,7 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             renderDashboard(); 
         }
 
-        function fetchAviationNews() {
+function fetchAviationNews() {
             const tickerEl = document.getElementById('news-ticker');
             if(!tickerEl) return;
 
@@ -780,15 +830,17 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
                 tickerEl.style.animation = `ticker ${scrollDuration}s linear infinite`;
             };
 
+            // Adjusted fallbacks to sound strictly civilian/commercial
             const fallbackItems = [
                 { title: "GLOBAL FUEL RESERVES STABLE ACROSS ALL SECTORS", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
-                { title: "NEW CLASSIFIED HANGARS UNDER CONSTRUCTION", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
-                { title: "RADAR OPS MONITORING UNIDENTIFIED BOGEYS", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
-                { title: "ALL FLIGHT CREWS CLEARED FOR DEPARTURE", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" }
+                { title: "NEW COMMERCIAL TERMINALS UNDER CONSTRUCTION", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
+                { title: "RADAR OPS MONITORING HEAVY CIVILIAN TRAFFIC", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
+                { title: "ALL COMMERCIAL FLIGHT CREWS CLEARED FOR DEPARTURE", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" }
             ];
 
-            const cacheKey = 'fuel_news_cache_v2';
-            const timeKey = 'fuel_news_time_v2';
+            // Bumped cache keys to v3 so the browser forces a fresh download
+            const cacheKey = 'fuel_news_cache_v3';
+            const timeKey = 'fuel_news_time_v3';
             const now = Date.now();
             const cachedTime = localStorage.getItem(timeKey);
             const cachedData = localStorage.getItem(cacheKey);
@@ -801,9 +853,24 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             .then(res => res.json())
             .then(data => {
                 if (data && data.items && data.items.length > 0) {
-                    localStorage.setItem(cacheKey, JSON.stringify(data.items));
+                    
+                    // --- STRICT FILTERING LOGIC ---
+                    // Word boundaries (\b) ensure "war" doesn't accidentally block words like "software" or "award"
+                    const militaryRegex = /\b(military|war|fighter|bomber|air force|defense|combat|stealth|tactical|usaf|navy|army|marines)\b/i;
+                    
+                    let filteredItems = data.items.filter(item => {
+                        let textToSearch = (item.title + " " + (item.description || "")).toLowerCase();
+                        // Only keep the article if it DOES NOT match the blacklist
+                        return !militaryRegex.test(textToSearch);
+                    });
+                    
+                    // Fallback to our dummy news if the filter accidentally wipes out everything
+                    if (filteredItems.length === 0) filteredItems = fallbackItems;
+                    // ------------------------------
+
+                    localStorage.setItem(cacheKey, JSON.stringify(filteredItems));
                     localStorage.setItem(timeKey, now.toString());
-                    applyNews(data.items);
+                    applyNews(filteredItems);
                 } else { throw new Error("No items"); }
             })
             .catch(err => {
@@ -890,9 +957,27 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             const name = document.getElementById('callsign-input').value.trim();
             if (name.length < 2) { alert("Callsign too short."); return; }
             
+            // CHEAT CODE: Wipe Leaderboard
+            if (name.toLowerCase() === 'clearleaderboard') {
+                if (!db) { alert("Database not connected!"); return; }
+                if (confirm("WARNING: Are you sure you want to wipe the entire global leaderboard?")) {
+                    db.collection("fuel_command_v78").get().then((querySnapshot) => {
+                        querySnapshot.forEach((doc) => {
+                            db.collection("fuel_command_v78").doc(doc.id).delete();
+                        });
+                        alert("Leaderboard successfully wiped!");
+                    }).catch((error) => {
+                        console.error("Error wiping leaderboard: ", error);
+                    });
+                }
+                document.getElementById('callsign-input').value = ""; 
+                return;
+            }
+
             globalState.username = name; 
             localStorage.setItem('last_pilot_name', name); 
 
+            // CHEAT CODE: Admin Boost
             if (name.toLowerCase() === 'admin') {
                 globalState.currentFuel = 99999;
                 globalState.extraFuel = 50000;
@@ -987,7 +1072,6 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             if (h4Done && !globalState.world4Complete) { globalState.world4Complete = true; triggerHangarReward(); }
             if (h5Done && !globalState.world5Complete) { globalState.world5Complete = true; triggerHangarReward(); }
 
-            // Trigger Campaign Won
             if (isAllWorldsComplete() && !globalState.gameWonShown) {
                 globalState.gameWonShown = true;
                 saveState();
@@ -1076,7 +1160,7 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
                     card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${ICONS.fuel}</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
                 } else if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0 && !levelData.completed && !levelData.failed) {
                      card.className += " locked"; statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
-                     card.onclick = () => triggerGameOver();
+                     card.onclick = () => triggerGameOver(false);
                      card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                 } else if (levelData.failed) {
                     card.className = "level-strip locked"; 
@@ -1165,9 +1249,15 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
                 puBar.style.display = 'none'; 
             } else { 
                 puBar.style.display = 'flex'; 
-                puBar.style.visibility = lState.completed ? 'hidden' : 'visible';
-                if (!lState.completed) updatePowerupsUI(); 
-            }
+                puBar.style.visibility = 'visible'; 
+                updatePowerupsUI();
+                
+                if (lState.completed) {
+                    document.getElementById('btn-pu-scan').classList.add('empty');
+                    document.getElementById('btn-pu-drone').classList.add('empty');
+                    document.getElementById('btn-pu-fuel').classList.add('empty');
+                }
+            } 
 
             if (lState.type === 'image') {
                 imgArea.style.display = 'flex'; container.style.overflow = 'hidden'; document.getElementById('mystery-image').src = lState.image;
@@ -1288,6 +1378,7 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             tkState.bgPosGround -= tkState.speed * 0.025; 
             tkState.bgPosRunway -= tkState.speed * 0.08;
             
+            // Keeping fractional pixels for buttery smooth scrolling across all devices!
             document.getElementById('tk-bg-sky').style.backgroundPosition = tkState.bgPosSky + 'px 0px'; 
             document.getElementById('tk-bg-city').style.backgroundPosition = tkState.bgPosCity + 'px 100%'; 
             document.getElementById('tk-bg-ground').style.backgroundPosition = tkState.bgPosGround + 'px 100%'; 
@@ -1603,26 +1694,42 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             if (win) {
                 const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
                 if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
-                triggerConfetti(); document.getElementById('level-title').textContent = lState.name; 
-                document.getElementById('powerups-bar').style.visibility = "hidden"; 
-                saveState(); if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);
+                triggerConfetti(); 
+                document.getElementById('level-title').textContent = lState.name; 
+                
+                document.getElementById('btn-pu-scan').classList.add('empty');
+                document.getElementById('btn-pu-drone').classList.add('empty');
+                document.getElementById('btn-pu-fuel').classList.add('empty');
+                
+                saveState(); 
+                if (isAllWorldsComplete()) syncScoreToCloud(); 
+                setTimeout(saveAndExit, 2500);
             }
         }
 
-        // TRIGGER GAME OVER / STATS SCREEN
+        function closeStatsAndRetire() {
+            document.getElementById('game-over-overlay').style.display = 'none';
+            document.getElementById('game-view').classList.remove('gray-out'); 
+            document.getElementById('selector-view').classList.remove('gray-out'); 
+            document.getElementById('hangar-view').classList.remove('gray-out'); 
+            document.getElementById('radar-view').classList.remove('gray-out'); 
+
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('selector-view').classList.add('active');
+            renderDashboard();
+        }
+
         function triggerGameOver(isWin = false) { 
             document.getElementById('game-view').classList.add('gray-out'); 
             document.getElementById('selector-view').classList.add('gray-out'); 
             document.getElementById('hangar-view').classList.add('gray-out'); 
             document.getElementById('radar-view').classList.add('gray-out'); 
             
-            // Format time elapsed
             let totalSec = globalState.totalPlayTime || 0;
             let m = Math.floor(totalSec / 60);
             let s = totalSec % 60;
             document.getElementById('stat-time').textContent = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
 
-            // Calculate hangars cleared
             let hangarsCleared = 0;
             if (globalState.world1Complete) hangarsCleared++;
             if (globalState.world2Complete) hangarsCleared++;
@@ -1631,7 +1738,6 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             if (globalState.world5Complete) hangarsCleared++;
             document.getElementById('stat-hangars').textContent = `${hangarsCleared} / 5`;
 
-            // Update UI based on Win or Loss
             const box = document.getElementById('stats-box');
             const title = document.getElementById('stats-title');
             const reason = document.getElementById('stats-reason');
@@ -1662,6 +1768,8 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
             const auxEl = document.getElementById('aux-fuel-display'); 
             if (globalState.extraFuel > 0) { auxEl.style.display = 'inline'; auxEl.textContent = `+${globalState.extraFuel}`; } else { auxEl.style.display = 'none'; } 
             if (globalState.currentFuel <= 200 && globalState.extraFuel === 0) el.classList.add('danger'); else el.classList.remove('danger'); 
+            
+            if (typeof syncMultiplayerScore === "function") syncMultiplayerScore();
         }
         
         function saveAndExit() { 
@@ -1677,6 +1785,268 @@ appId: "1:211722292779:web:5dec358fc0693c7126246e"}); db = firebase.firestore();
         function showFloat(x, y, text) { const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text; el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800); }
         function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
         
+        // --- MULTIPLAYER SYSTEM ---
+        let currentRoomCode = null;
+        let isHost = false;
+        let matchListener = null;
+        let mpStartTime = null;
+        let mpTimeLimit = null;
+        let mpGameEnded = false;
+
+        window.addEventListener('beforeunload', () => {
+            if (currentRoomCode && db && !mpGameEnded) {
+                db.collection("multiplayer_matches").doc(currentRoomCode).update({status: "abandoned"});
+            }
+        });
+
+        function openMultiplayer() {
+            document.getElementById('multiplayer-overlay').style.display = 'flex';
+            document.getElementById('mp-status').innerHTML = "";
+            
+            if (currentRoomCode) {
+                document.getElementById('btn-abort-match').style.display = 'block';
+                document.getElementById('btn-host-match').style.display = 'none';
+                document.getElementById('join-section').style.display = 'none';
+            } else {
+                document.getElementById('btn-abort-match').style.display = 'none';
+                document.getElementById('btn-host-match').style.display = 'block';
+                document.getElementById('join-section').style.display = 'flex';
+            }
+        }
+
+        function closeMultiplayer() {
+            document.getElementById('multiplayer-overlay').style.display = 'none';
+        }
+
+        function abortMatch() {
+            if (currentRoomCode && db) {
+                db.collection("multiplayer_matches").doc(currentRoomCode).update({status: "abandoned"});
+            }
+            showOpponentLeftPopup(); 
+            closeMultiplayer();
+        }
+
+        function showOpponentLeftPopup() {
+            mpGameEnded = true;
+            if (matchListener) matchListener();
+            currentRoomCode = null;
+            mpStartTime = null;
+            mpTimeLimit = null;
+            
+            document.getElementById('enemy-dashboard-tank').style.display = 'none';
+            document.getElementById('enemy-fuel-display').style.display = 'none';
+            
+            document.getElementById('game-view').classList.add('gray-out'); 
+            document.getElementById('selector-view').classList.add('gray-out'); 
+            document.getElementById('hangar-view').classList.add('gray-out'); 
+            document.getElementById('radar-view').classList.add('gray-out'); 
+            
+            document.getElementById('opponent-left-overlay').style.display = 'flex';
+        }
+
+        function closeOpponentLeft() {
+            document.getElementById('opponent-left-overlay').style.display = 'none';
+            document.getElementById('game-view').classList.remove('gray-out'); 
+            document.getElementById('selector-view').classList.remove('gray-out'); 
+            document.getElementById('hangar-view').classList.remove('gray-out'); 
+            document.getElementById('radar-view').classList.remove('gray-out'); 
+
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('selector-view').classList.add('active');
+            renderDashboard();
+        }
+
+        function hostNewGame() {
+            if (!db) { alert("HQ Database Offline!"); return; }
+            let isTimed = document.getElementById("mp-timer-checkbox").checked;
+            
+            currentRoomCode = Math.floor(1000 + Math.random() * 9000).toString();
+            isHost = true;
+            
+            db.collection("multiplayer_matches").doc(currentRoomCode).set({
+                hostName: globalState.username,
+                hostScore: globalState.currentFuel,
+                guestName: "Waiting...",
+                guestScore: 0,
+                status: "waiting",
+                timeLimit: isTimed ? 120 : null,
+                startTime: null
+            });
+
+            document.getElementById("mp-status").innerHTML = `ROOM CREATED.<br>TELL OPPONENT TO JOIN CODE:<br><span style="color:var(--brand-gold); font-size: 2rem; display:block; margin-top:10px;">${currentRoomCode}</span>`;
+            listenToMatch(currentRoomCode);
+            
+            document.getElementById('btn-abort-match').style.display = 'block';
+            document.getElementById('btn-host-match').style.display = 'none';
+            document.getElementById('join-section').style.display = 'none';
+        }
+
+        function joinExistingGame() {
+            if (!db) { alert("HQ Database Offline!"); return; }
+            
+            let code = document.getElementById("join-code-input").value.trim();
+            if (code.length !== 4) { alert("Enter a valid 4-digit code."); return; }
+            
+            currentRoomCode = code;
+            isHost = false;
+            document.getElementById("mp-status").innerHTML = "CONNECTING...";
+            
+            db.collection("multiplayer_matches").doc(currentRoomCode).update({
+                guestName: globalState.username,
+                guestScore: globalState.currentFuel,
+                status: "playing"
+            }).then(() => {
+                document.getElementById("mp-status").innerHTML = "LINK ESTABLISHED!";
+                listenToMatch(currentRoomCode);
+                setTimeout(closeMultiplayer, 1500);
+            }).catch((err) => {
+                document.getElementById("mp-status").innerHTML = "<span style='color:red;'>ROOM NOT FOUND.</span>";
+                currentRoomCode = null;
+            });
+        }
+
+        function listenToMatch(roomCode) {
+            if (matchListener) matchListener();
+            
+            document.getElementById('enemy-fuel-display').style.display = 'block';
+            document.getElementById('enemy-dashboard-tank').style.display = 'flex';
+            document.getElementById('enemy-dashboard-tank').style.flexDirection = 'column';
+            
+            matchListener = db.collection("multiplayer_matches").doc(roomCode).onSnapshot((doc) => {
+                if (doc.exists) {
+                    let data = doc.data();
+                    
+                    if (data.status === "abandoned" && !mpGameEnded) {
+                        showOpponentLeftPopup();
+                        return;
+                    }
+                    
+                    let oppName = isHost ? data.guestName : data.hostName;
+                    let oppScore = isHost ? data.guestScore : data.hostScore;
+                    
+                    document.getElementById('enemy-fuel-val').innerText = `${oppName} [${oppScore}]`;
+                    document.getElementById('enemy-dashboard-name').innerText = oppName.toUpperCase();
+                    document.getElementById('enemy-dashboard-score').innerText = oppScore;
+                    
+                    let enemyBar = document.getElementById('enemy-fuel-bar');
+                    if (enemyBar) {
+                        let oppPct = Math.min(100, Math.max(0, (oppScore / 4000) * 100));
+                        enemyBar.style.width = oppPct + "%";
+                    }
+
+                    let dTimer = document.getElementById('mp-dashboard-timer');
+
+                    if (data.status === "playing") {
+                        if (data.timeLimit) {
+                            if (data.startTime) {
+                                mpStartTime = data.startTime;
+                                mpTimeLimit = data.timeLimit;
+                                mpGameEnded = false;
+                            } else if (isHost && !data.startTime) {
+                                db.collection("multiplayer_matches").doc(roomCode).update({
+                                    startTime: Date.now()
+                                });
+                            }
+                        } else {
+                            if (dTimer) {
+                                dTimer.innerText = "MATCH ACTIVE";
+                                dTimer.style.color = "var(--gauge-green)";
+                            }
+                        }
+                    } else if (data.status === "waiting") {
+                         if (dTimer) {
+                             dTimer.innerText = "WAITING FOR OPPONENT...";
+                             dTimer.style.color = "var(--brand-red)";
+                         }
+                    }
+
+                    if (isHost && data.status === "playing" && document.getElementById('multiplayer-overlay').style.display === 'flex') {
+                         document.getElementById("mp-status").innerHTML = "OPPONENT JOINED! COMMENCE OPERATION.";
+                         setTimeout(closeMultiplayer, 1500);
+                    }
+                }
+            });
+        }
+
+        function syncMultiplayerScore() {
+            if (currentRoomCode && db && !mpGameEnded) {
+                let updateData = isHost ? { hostScore: globalState.currentFuel } : { guestScore: globalState.currentFuel };
+                db.collection("multiplayer_matches").doc(currentRoomCode).update(updateData).catch(e => console.log("Sync error", e));
+            }
+        }
+
+        setInterval(() => {
+            if (currentRoomCode && mpStartTime && mpTimeLimit && !mpGameEnded) {
+                let elapsed = Math.floor((Date.now() - mpStartTime) / 1000);
+                let left = mpTimeLimit - elapsed;
+                
+                let dTimer = document.getElementById('mp-dashboard-timer');
+                let hTimer = document.getElementById('mp-header-timer');
+                
+                if (left <= 0) {
+                    left = 0;
+                    if(dTimer) dTimer.innerText = "TIME UP!";
+                    if(hTimer) hTimer.innerText = "";
+                    if (!mpGameEnded) {
+                        endMultiplayerMatch();
+                    }
+                } else {
+                    let m = Math.floor(left / 60);
+                    let s = left % 60;
+                    let timeStr = `${m}:${s < 10 ? '0'+s : s}`;
+                    if(dTimer) dTimer.innerText = "TIME LEFT: " + timeStr;
+                    if(hTimer) hTimer.innerText = " | ⏱ " + timeStr;
+                }
+            }
+        }, 1000);
+
+        function endMultiplayerMatch() {
+            mpGameEnded = true;
+            
+            let oppScore = parseInt(document.getElementById('enemy-dashboard-score').innerText) || 0;
+            let myScore = globalState.currentFuel;
+            
+            document.getElementById('game-view').classList.add('gray-out'); 
+            document.getElementById('selector-view').classList.add('gray-out'); 
+            document.getElementById('hangar-view').classList.add('gray-out'); 
+            document.getElementById('radar-view').classList.add('gray-out'); 
+            
+            const box = document.getElementById('stats-box');
+            const title = document.getElementById('stats-title');
+            const reason = document.getElementById('stats-reason');
+
+            if (myScore > oppScore) {
+                title.textContent = "VICTORY!";
+                title.style.color = "var(--gauge-green)";
+                reason.textContent = "YOU OUTPERFORMED THE ENEMY";
+                box.className = "modal-box success";
+            } else if (myScore < oppScore) {
+                title.textContent = "DEFEAT!";
+                title.style.color = "var(--brand-red)";
+                reason.textContent = "ENEMY SECURED MORE FUEL";
+                box.className = "modal-box danger";
+            } else {
+                title.textContent = "DRAW!";
+                title.style.color = "var(--brand-gold)";
+                reason.textContent = "TIE GAME";
+                box.className = "modal-box"; 
+                box.style.borderColor = "var(--brand-gold)";
+            }
+
+            document.getElementById('stat-time').textContent = "2:00";
+            document.getElementById('stat-hangars').textContent = "VS MODE";
+
+            setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500); 
+
+            if(matchListener) matchListener();
+            currentRoomCode = null;
+            mpStartTime = null;
+            mpTimeLimit = null;
+            document.getElementById('enemy-dashboard-tank').style.display = 'none';
+            document.getElementById('enemy-fuel-display').style.display = 'none';
+        }
+        // --- END MULTIPLAYER SYSTEM ---
+
         let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block'; btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; }); });
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
     </script>

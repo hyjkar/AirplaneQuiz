@@ -1305,11 +1305,18 @@ function fetchAviationNews() {
 
         function startTakeoffFromTutorial() { globalState.hasSeenTakeoffTutorial = true; saveState(); document.getElementById('takeoff-tutorial-overlay').style.display = 'none'; setTimeout(() => { startTakeoff(); }, 100); }
 
-        function startTakeoff() {
+function startTakeoff() {
             document.querySelectorAll('.pixel-particle').forEach(el => el.remove()); 
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
             
-            tkState.active = true; tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0; tkState.distance = 100; tkState.speed = 0; tkState.pressing = false; 
+            // --- FIX: 50% longer runway for Hangars 3, 4, and 5 ---
+            let hNum = globalState.levels[activeLevelIdx].hangar;
+            tkState.initialDistance = (hNum >= 3) ? 150 : 100; 
+            // ------------------------------------------------------
+            
+            tkState.active = true; tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0; 
+            tkState.distance = tkState.initialDistance; // Starts at the new distance
+            tkState.speed = 0; tkState.pressing = false; 
             tkState.bgPosSky = 0; tkState.bgPosCity = 0; tkState.bgPosGround = 0; tkState.bgPosRunway = 0;
             
             document.getElementById('tk-touch-prompt').style.display = 'block'; 
@@ -1378,13 +1385,15 @@ function fetchAviationNews() {
             tkState.bgPosGround -= tkState.speed * 0.025; 
             tkState.bgPosRunway -= tkState.speed * 0.08;
             
-            // Keeping fractional pixels for buttery smooth scrolling across all devices!
             document.getElementById('tk-bg-sky').style.backgroundPosition = tkState.bgPosSky + 'px 0px'; 
             document.getElementById('tk-bg-city').style.backgroundPosition = tkState.bgPosCity + 'px 100%'; 
             document.getElementById('tk-bg-ground').style.backgroundPosition = tkState.bgPosGround + 'px 100%'; 
             document.getElementById('tk-runway-surface').style.backgroundPosition = tkState.bgPosRunway + 'px 0px';
             
-            document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%'; 
+            // --- FIX: UI progress bar scales perfectly to the newly assigned runway length ---
+            document.getElementById('tk-runway-fill').style.width = Math.max(0, (tkState.distance / tkState.initialDistance) * 100) + '%'; 
+            // --------------------------------------------------------------------------------
+            
             document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
             
             if (tkState.distance < 15) { 
@@ -1398,7 +1407,7 @@ function fetchAviationNews() {
             
             tkState.frameId = requestAnimationFrame(takeoffLoop);
         }
-
+        
         function explodePlane(reason) {
             tkState.active = false; document.getElementById('tk-plane').style.display = 'none'; const vp = document.getElementById('takeoff-viewport'); const colors = ['#fff', 'var(--brand-red)', '#a0a0a0', '#1a1a1a', '#555'];
             const liftY = (tkState.lift / 100) * 100; const baseY = vp.offsetHeight - 60 - liftY; 

@@ -549,7 +549,8 @@
                 <div id="tk-touch-prompt">TAP & HOLD TO PULL UP</div><div id="tk-bg-sky" class="parallax-layer"></div><div id="tk-bg-city" class="parallax-layer"></div><div id="tk-bg-ground" class="parallax-layer"></div>
                 <div id="tk-weather-overlay"></div><div id="tk-gauge-container"><div id="tk-target-zone"></div><div id="tk-needle"></div></div>
                 <div id="tk-mountain"><svg viewBox="0 0 100 100" shape-rendering="crispEdges" width="100%" height="100%"><rect x="50" y="40" width="10" height="60" fill="#3b3b3b"/><rect x="40" y="50" width="30" height="50" fill="#4a4a4a"/><rect x="20" y="60" width="70" height="40" fill="#2d2d2d"/><rect x="0" y="70" width="100" height="30" fill="#1f1f1f"/><rect x="50" y="40" width="10" height="10" fill="#fff"/><rect x="40" y="50" width="10" height="10" fill="#eee"/><rect x="60" y="50" width="10" height="10" fill="#eee"/></svg></div>
-                <div id="tk-plane"><svg viewBox="0 0 80 30" width="100%" height="100%" shape-rendering="crispEdges"><rect x="4" y="2" width="8" height="12" fill="var(--brand-red)"/><rect x="2" y="8" width="2" height="6" fill="var(--brand-red)"/><rect x="6" y="14" width="68" height="8" fill="#fff"/><rect x="8" y="22" width="60" height="2" fill="#e0e0e0"/><rect x="74" y="16" width="4" height="6" fill="#fff"/><rect x="78" y="18" width="2" height="4" fill="#fff"/><rect x="72" y="16" width="4" height="2" fill="#1a1a1a"/><rect x="20" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="24" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="28" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="32" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="44" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="48" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="52" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="56" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="60" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="64" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="14" y="16" width="4" height="6" fill="var(--brand-red)"/><rect x="38" y="17" width="4" height="5" fill="var(--brand-red)"/><rect x="68" y="16" width="2" height="6" fill="var(--brand-red)"/><rect x="34" y="20" width="16" height="2" fill="#d0d0d0"/><rect x="30" y="22" width="24" height="2" fill="#a0a0a0"/><rect x="26" y="24" width="24" height="2" fill="#808080"/><rect x="38" y="22" width="10" height="6" fill="#333"/><rect x="36" y="24" width="2" height="4" fill="#111"/><rect x="48" y="24" width="2" height="2" fill="#555"/><rect x="68" y="24" width="2" height="4" fill="#555"/><rect x="66" y="28" width="4" height="2" fill="#111"/><rect x="24" y="24" width="4" height="4" fill="#555"/><rect x="22" y="28" width="8" height="2" fill="#111"/></svg></div>
+                <div id="tk-plane"><img src="my-plane.png" alt="Player Plane" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;">
+</div>
                 <div id="tk-runway"><div id="tk-runway-surface"></div></div>
             </div>
         </div>
@@ -735,7 +736,7 @@
             document.getElementById('selector-view').classList.remove('active'); const trophyView = document.getElementById('trophy-view'); trophyView.classList.remove('active'); void trophyView.offsetWidth; trophyView.classList.add('active');
             const listContainer = document.getElementById('trophy-list'); listContainer.innerHTML = "";
             const trophies = [
-                { id: 1, title: 'Hangar 1 Cleared', desc: 'Feline Intelligence Acquired.', img: 'trophy1.gif' },
+                { id: 1, title: 'Hangar 1 Cleared', desc: 'Feline Intelligence Acquired.', img: 'trophy1.gif', fb: 'https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif' },
                 { id: 2, title: 'Hangar 2 Cleared', desc: 'Advanced Feline Tactics Unlocked.', img: 'trophy2.gif', fb: 'https://media.giphy.com/media/BzyTuYCmvSORqs1Qks/giphy.gif' },
                 { id: 3, title: 'Hangar 3 Cleared', desc: 'Top Secret Furry Asset Secured.', img: 'trophy3.gif', fb: 'https://media.giphy.com/media/l4KibWpBGWchSqCRy/giphy.gif' },
                 { id: 4, title: 'Hangar 4 Cleared', desc: 'Stealth Feline Division Activated.', img: 'trophy4.gif', fb: 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif' },
@@ -1305,11 +1306,18 @@ function fetchAviationNews() {
 
         function startTakeoffFromTutorial() { globalState.hasSeenTakeoffTutorial = true; saveState(); document.getElementById('takeoff-tutorial-overlay').style.display = 'none'; setTimeout(() => { startTakeoff(); }, 100); }
 
-        function startTakeoff() {
+function startTakeoff() {
             document.querySelectorAll('.pixel-particle').forEach(el => el.remove()); 
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
             
-            tkState.active = true; tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0; tkState.distance = 100; tkState.speed = 0; tkState.pressing = false; 
+            // --- FIX: 50% longer runway for Hangars 3, 4, and 5 ---
+            let hNum = globalState.levels[activeLevelIdx].hangar;
+            tkState.initialDistance = (hNum >= 3) ? 150 : 100; 
+            // ------------------------------------------------------
+            
+            tkState.active = true; tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0; 
+            tkState.distance = tkState.initialDistance; // Starts at the new distance
+            tkState.speed = 0; tkState.pressing = false; 
             tkState.bgPosSky = 0; tkState.bgPosCity = 0; tkState.bgPosGround = 0; tkState.bgPosRunway = 0;
             
             document.getElementById('tk-touch-prompt').style.display = 'block'; 
@@ -1378,13 +1386,15 @@ function fetchAviationNews() {
             tkState.bgPosGround -= tkState.speed * 0.025; 
             tkState.bgPosRunway -= tkState.speed * 0.08;
             
-            // Keeping fractional pixels for buttery smooth scrolling across all devices!
             document.getElementById('tk-bg-sky').style.backgroundPosition = tkState.bgPosSky + 'px 0px'; 
             document.getElementById('tk-bg-city').style.backgroundPosition = tkState.bgPosCity + 'px 100%'; 
             document.getElementById('tk-bg-ground').style.backgroundPosition = tkState.bgPosGround + 'px 100%'; 
             document.getElementById('tk-runway-surface').style.backgroundPosition = tkState.bgPosRunway + 'px 0px';
             
-            document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%'; 
+            // --- FIX: UI progress bar scales perfectly to the newly assigned runway length ---
+            document.getElementById('tk-runway-fill').style.width = Math.max(0, (tkState.distance / tkState.initialDistance) * 100) + '%'; 
+            // --------------------------------------------------------------------------------
+            
             document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
             
             if (tkState.distance < 15) { 
@@ -1398,7 +1408,7 @@ function fetchAviationNews() {
             
             tkState.frameId = requestAnimationFrame(takeoffLoop);
         }
-
+        
         function explodePlane(reason) {
             tkState.active = false; document.getElementById('tk-plane').style.display = 'none'; const vp = document.getElementById('takeoff-viewport'); const colors = ['#fff', 'var(--brand-red)', '#a0a0a0', '#1a1a1a', '#555'];
             const liftY = (tkState.lift / 100) * 100; const baseY = vp.offsetHeight - 60 - liftY; 
@@ -1785,19 +1795,38 @@ function fetchAviationNews() {
         function showFloat(x, y, text) { const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text; el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800); }
         function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
         
-        // --- MULTIPLAYER SYSTEM ---
+       // --- MULTIPLAYER SYSTEM ---
         let currentRoomCode = null;
         let isHost = false;
         let matchListener = null;
         let mpStartTime = null;
         let mpTimeLimit = null;
         let mpGameEnded = false;
+        let mpHasResetForMatch = false; // Tracks if we've wiped the board for the new game
 
         window.addEventListener('beforeunload', () => {
             if (currentRoomCode && db && !mpGameEnded) {
                 db.collection("multiplayer_matches").doc(currentRoomCode).update({status: "abandoned"});
             }
         });
+
+        // Wipes the local board clean so it's a fair race from Hangar 1
+        function resetGameStateForMultiplayer() {
+            globalState.currentFuel = STARTING_GLOBAL_FUEL;
+            globalState.extraFuel = 0;
+            globalState.powerups = { scans: 1, drones: 1, fuelPods: 1 };
+            globalState.levels = generateGameLevels(); // Generates fresh new levels
+            globalState.world1Complete = false;
+            globalState.world2Complete = false;
+            globalState.world3Complete = false;
+            globalState.world4Complete = false;
+            globalState.world5Complete = false;
+            globalState.passwordRevealed = [];
+            globalState.totalPlayTime = 0;
+            globalState.gameWonShown = false;
+            saveState();
+            renderDashboard();
+        }
 
         function openMultiplayer() {
             document.getElementById('multiplayer-overlay').style.display = 'flex';
@@ -1832,6 +1861,7 @@ function fetchAviationNews() {
             currentRoomCode = null;
             mpStartTime = null;
             mpTimeLimit = null;
+            mpHasResetForMatch = false;
             
             document.getElementById('enemy-dashboard-tank').style.display = 'none';
             document.getElementById('enemy-fuel-display').style.display = 'none';
@@ -1862,6 +1892,7 @@ function fetchAviationNews() {
             
             currentRoomCode = Math.floor(1000 + Math.random() * 9000).toString();
             isHost = true;
+            mpHasResetForMatch = false;
             
             db.collection("multiplayer_matches").doc(currentRoomCode).set({
                 hostName: globalState.username,
@@ -1889,11 +1920,12 @@ function fetchAviationNews() {
             
             currentRoomCode = code;
             isHost = false;
+            mpHasResetForMatch = false;
             document.getElementById("mp-status").innerHTML = "CONNECTING...";
             
             db.collection("multiplayer_matches").doc(currentRoomCode).update({
                 guestName: globalState.username,
-                guestScore: globalState.currentFuel,
+                guestScore: STARTING_GLOBAL_FUEL,
                 status: "playing"
             }).then(() => {
                 document.getElementById("mp-status").innerHTML = "LINK ESTABLISHED!";
@@ -1919,6 +1951,13 @@ function fetchAviationNews() {
                     if (data.status === "abandoned" && !mpGameEnded) {
                         showOpponentLeftPopup();
                         return;
+                    }
+
+                    // TRIGGER FRESH START WHEN GAME BEGINS
+                    if (data.status === "playing" && !mpHasResetForMatch) {
+                        mpHasResetForMatch = true;
+                        resetGameStateForMultiplayer();
+                        syncMultiplayerScore(); // Instantly tell the database our score is reset
                     }
                     
                     let oppName = isHost ? data.guestName : data.hostName;
@@ -2042,11 +2081,12 @@ function fetchAviationNews() {
             currentRoomCode = null;
             mpStartTime = null;
             mpTimeLimit = null;
+            mpHasResetForMatch = false;
             document.getElementById('enemy-dashboard-tank').style.display = 'none';
             document.getElementById('enemy-fuel-display').style.display = 'none';
         }
         // --- END MULTIPLAYER SYSTEM ---
-
+        
         let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block'; btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; }); });
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
     </script>

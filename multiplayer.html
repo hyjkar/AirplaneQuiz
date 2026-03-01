@@ -1821,7 +1821,7 @@
             });
         }
 
-        function listenToMatch(roomCode) {
+       function listenToMatch(roomCode) {
             if (matchListener) matchListener();
             
             document.getElementById('enemy-fuel-display').style.display = 'block';
@@ -1845,17 +1845,35 @@
                         enemyBar.style.width = oppPct + "%";
                     }
 
+                    // --- FIX: Handle the "WAITING..." text ---
+                    let dTimer = document.getElementById('mp-dashboard-timer');
+
                     if (data.status === "playing") {
-                        if (data.timeLimit && data.startTime) {
-                            mpStartTime = data.startTime;
-                            mpTimeLimit = data.timeLimit;
-                            mpGameEnded = false;
-                        } else if (isHost && data.timeLimit && !data.startTime) {
-                            db.collection("multiplayer_matches").doc(roomCode).update({
-                                startTime: Date.now()
-                            });
+                        if (data.timeLimit) {
+                            // It's a timed match, start the clock sync
+                            if (data.startTime) {
+                                mpStartTime = data.startTime;
+                                mpTimeLimit = data.timeLimit;
+                                mpGameEnded = false;
+                            } else if (isHost && !data.startTime) {
+                                db.collection("multiplayer_matches").doc(roomCode).update({
+                                    startTime: Date.now()
+                                });
+                            }
+                        } else {
+                            // It's an UNTIMED match, change text to Active!
+                            if (dTimer) {
+                                dTimer.innerText = "MATCH ACTIVE";
+                                dTimer.style.color = "var(--gauge-green)";
+                            }
                         }
+                    } else if (data.status === "waiting") {
+                         if (dTimer) {
+                             dTimer.innerText = "WAITING FOR OPPONENT...";
+                             dTimer.style.color = "var(--brand-red)";
+                         }
                     }
+                    // -----------------------------------------
 
                     if (isHost && data.status === "playing" && document.getElementById('multiplayer-overlay').style.display === 'flex') {
                          document.getElementById("mp-status").innerHTML = "OPPONENT JOINED! COMMENCE OPERATION.";

@@ -1352,10 +1352,11 @@
             tkState.bgPosGround -= tkState.speed * 0.025; 
             tkState.bgPosRunway -= tkState.speed * 0.08;
             
-            document.getElementById('tk-bg-sky').style.backgroundPosition = tkState.bgPosSky + 'px 0px'; 
-            document.getElementById('tk-bg-city').style.backgroundPosition = tkState.bgPosCity + 'px 100%'; 
-            document.getElementById('tk-bg-ground').style.backgroundPosition = tkState.bgPosGround + 'px 100%'; 
-            document.getElementById('tk-runway-surface').style.backgroundPosition = '0px 0px';
+            // WEB-KIT FIX: Use Math.floor to strictly pass integer pixels to avoid fractional pixel rendering freezes
+            document.getElementById('tk-bg-sky').style.backgroundPosition = Math.floor(tkState.bgPosSky) + 'px 0px'; 
+            document.getElementById('tk-bg-city').style.backgroundPosition = Math.floor(tkState.bgPosCity) + 'px 100%'; 
+            document.getElementById('tk-bg-ground').style.backgroundPosition = Math.floor(tkState.bgPosGround) + 'px 100%'; 
+            document.getElementById('tk-runway-surface').style.backgroundPosition = Math.floor(tkState.bgPosRunway) + 'px 0px';
             
             document.getElementById('tk-runway-fill').style.width = Math.max(0, tkState.distance) + '%'; 
             document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';

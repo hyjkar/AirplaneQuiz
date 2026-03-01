@@ -1,563 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#d71920">
-    <link rel="icon" type="image/svg+xml" href="icon.svg">
-    <title>Fuel Command</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
-    <style>
-        :root {
-            --brand-red: #d71920;
-            --brand-gold: #cfa86e;
-            --brand-dark: #1a1a1a;
-            --bg-sand: #fcfbf9;
-            --gauge-green: #2ecc71;
-            --gauge-orange: #f39c12;
-            --radar-green: #33ff33;
-            --aux-blue: #3498db;
-        }
-        
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--bg-sand);
-            color: var(--brand-dark);
-            margin: 0; padding: 15px; 
-            padding-bottom: max(45px, env(safe-area-inset-bottom));
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%;
-            display: flex; flex-direction: column; align-items: center;
-            overflow: hidden; user-select: none; -webkit-user-select: none;
-        }
-
-        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay, #cat-modal, #multiplayer-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #111; color: var(--brand-gold); z-index: 10000;
-            flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
-        }
-        #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
-        #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
-        #takeoff-tutorial-overlay { background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); }
-        #cat-modal { background: rgba(0,0,0,0.95); z-index: 20000; overflow-y: auto; }
-        
-        #intercept-overlay { 
-            background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%); 
-            backdrop-filter: none; justify-content: flex-end; padding-bottom: 40px; pointer-events: auto;
-        }
-        #intercept-box { min-height: 220px; display: flex; flex-direction: column; justify-content: center; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(8px); }
-        
-        @media screen and (orientation: landscape) and (max-height: 600px) {
-            #orientation-lock { display: flex; }
-        }
-
-        h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--brand-dark); margin: 0; text-align: center; text-transform: uppercase; }
-        h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
-
-        .view-section { width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; min-height: 0; position: relative; z-index: 1; }
-        .view-section.active { display: flex; animation: swipeIn 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-        @keyframes swipeIn { 0% { transform: translateX(30px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
-
-        .gray-out { filter: grayscale(100%) contrast(1.2); }
-
-        .modal-box { background: #222; border: 2px solid var(--brand-gold); padding: 25px; border-radius: 12px; width: 100%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s ease; }
-        .modal-box.danger { border-color: var(--brand-red); box-shadow: 0 0 20px rgba(215, 25, 32, 0.2); }
-        .modal-box.success { border-color: var(--gauge-green); box-shadow: 0 0 20px rgba(46, 204, 113, 0.2); }
-
-        .dashboard-header { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
-        .icon-btn { background: #fff; border: 1px solid #ddd; border-radius: 8px; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; color: var(--brand-dark); cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s, background-color 0.1s; flex-shrink: 0; }
-        .icon-btn:active { transform: scale(0.92); background-color: #f0f0f0; }
-        .icon-btn.logout { background-color: var(--brand-red); color: white; border-color: #b01015; }
-        .icon-btn.logout:active { background-color: #b01015; }
-        .icon-btn.leaderboard { background-color: var(--aux-blue); color: white; border-color: #2980b9; }
-        .icon-btn.leaderboard:active { background-color: #2980b9; }
-
-        .fuel-tank-container { background: #222; padding: 15px; border-radius: 12px; width: 100%; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #444; position: relative; flex-shrink: 0; }
-        .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
-        .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
-        .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
-        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); }
-
-        #password-container { background: #1a1a1a; padding: 8px; border-radius: 8px; width: 100%; text-align: center; border: 1px dashed #555; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); margin: 0; }
-
-        #level-list-container, #hangar-level-list { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 8px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 0; }
-        #level-list-container::-webkit-scrollbar, #hangar-level-list::-webkit-scrollbar { width: 5px; }
-        #level-list-container::-webkit-scrollbar-thumb, #hangar-level-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
-
-        .world-folder { border: 1px solid #ddd; border-radius: 10px; background: white; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; transition: transform 0.1s; cursor: pointer; }
-        .world-folder:active { transform: scale(0.98); background-color: #f8f8f8; }
-        .world-folder.locked-world { opacity: 0.6; pointer-events: none; background: #f0f0f0; }
-        .world-header { padding: 18px 15px; display: flex; justify-content: space-between; align-items: center; }
-        .world-title-group { display: flex; align-items: center; gap: 8px; }
-        .world-title-group h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-dark); }
-        .arrow { font-size: 1.2rem; color: #888; }
-
-        .level-strip { background: white; border: 1px solid #eee; border-radius: 6px; padding: 12px; width: 100%; min-height: 60px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: transform 0.1s; }
-        .level-strip:active { transform: scale(0.98); background-color: #f9f9f9; }
-        .level-strip.classified { border: 1px solid var(--brand-red); background: #fff5f5; }
-        .level-strip.special { border: 1px solid #3498db; background: #f4f9fd; }
-        .strip-icon { display: flex; align-items: center; justify-content: center; width: 30px; margin-right: 12px; }
-        .strip-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-        .strip-title { font-size: 0.95rem; color: var(--brand-dark); font-weight: bold; margin: 0; }
-        .strip-status { font-size: 0.7rem; font-weight: bold; color: #888; text-align: right; min-width: 70px; }
-        .status-ready { color: var(--brand-red); }
-        .status-done { color: #27ae60; }
-        .status-locked { color: #bbb; }
-        .level-strip.locked { background: #f9f9f9; border-color: #eee; cursor: not-allowed; opacity: 0.7; }
-        .level-strip.locked .strip-title { color: #aaa; }
-        .level-strip.locked .strip-icon { color: #ccc !important; }
-
-        #trophy-list, #news-list { display: flex; flex-direction: column; gap: 12px; width: 100%; overflow-y: auto; padding-right: 5px; margin-top: 10px; flex-grow: 1; min-height: 0;}
-        #trophy-list::-webkit-scrollbar, #news-list::-webkit-scrollbar { width: 4px; }
-        #trophy-list::-webkit-scrollbar-thumb { background: var(--brand-gold); border-radius: 4px; }
-        #news-list::-webkit-scrollbar-thumb { background: var(--aux-blue); border-radius: 4px; }
-        
-        .trophy-card { background: white; border: 2px solid var(--brand-gold); border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s;}
-        .trophy-card.locked { border-color: #ddd; background: #f8f8f8; box-shadow: none; filter: grayscale(100%); opacity: 0.6;}
-        .trophy-img-box { width: 70px; height: 70px; background: #222; border: 2px solid var(--brand-gold); border-radius: 6px; display: flex; justify-content: center; align-items: center; overflow: hidden; flex-shrink: 0; color: var(--brand-gold);}
-        .trophy-card.locked .trophy-img-box { border-color: #aaa; color: #aaa; background: #eee;}
-        .trophy-img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .trophy-desc { display: flex; flex-direction: column; justify-content: center; }
-        .trophy-desc h3 { margin: 0 0 5px 0; color: var(--brand-dark); font-size: 1.1rem; text-transform: uppercase; }
-        .trophy-desc p { margin: 0; color: #666; font-size: 0.85rem; line-height: 1.3; }
-
-        .footer-buttons { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 5px; z-index: 20; position: relative;}
-        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        button { font-family: 'Share Tech Mono', monospace; width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none; text-transform: uppercase; }
-        .primary-btn { background-color: var(--brand-red); color: white; }
-        .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
-        .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
-        .danger-btn { background-color: var(--brand-red); color: white; font-weight: bold; }
-        .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
-        .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
-        
-        .radar-btn { background: #051a05; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-weight: bold; box-shadow: 0 0 10px rgba(51, 255, 51, 0.2); transition: all 0.2s; padding: 10px;}
-        .radar-btn:active { background: var(--radar-green); color: #000; }
-        .radar-abort-btn { background: rgba(10, 10, 10, 0.85) !important; border: 1px solid var(--brand-red) !important; color: var(--brand-red) !important; backdrop-filter: blur(4px); font-weight: bold;}
-
-        /* POWERUPS BAR */
-        #powerups-bar { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; margin-bottom: 10px; z-index: 10; }
-        .pu-btn { background: #fff; border: 2px solid #ccc; border-radius: 8px; width: 48px; height: 48px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; box-shadow: 0 3px 6px rgba(0,0,0,0.1); transition: transform 0.1s ease; }
-        .pu-btn:active { transform: scale(0.92); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .pu-btn.empty { filter: grayscale(100%); opacity: 0.3; pointer-events: none; }
-        .pu-badge { position: absolute; top: -6px; right: -6px; background: var(--brand-red); color: white; font-size: 0.75rem; font-family: 'Share Tech Mono', monospace; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #fff; }
-        .pu-scan { color: var(--aux-blue); border-color: rgba(52,152,219,0.3); }
-        .pu-drone { color: var(--brand-red); border-color: rgba(215,25,32,0.3); }
-        .pu-fuel { color: var(--gauge-green); border-color: rgba(46,204,113,0.3); }
-
-        .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; z-index: 10; position: relative; }
-        .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; display: flex; align-items: center; gap: 6px; }
-        .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
-
-        /* IMAGE MODE */
-        #image-game-area { width: 100%; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; z-index: 10; position: relative; }
-        #game-wrapper { background: transparent; box-shadow: none; border-radius: 0; padding: 0; width: 100%; margin-bottom: 10px; position: relative; flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center; }
-        #game-container { position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; background-color: #000; border: 2px solid #ccc; cursor: pointer; overflow: hidden; border-radius: 4px;}
-        #game-container img { object-fit: cover; width: 100%; height: 100%; }
-        #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-        #cover-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; }
-        .grid-piece { background: linear-gradient(135deg, #2a2a2a 0%, #151515 100%); border: 1px solid #333; border-top-color: #444; border-left-color: #444; display: flex; justify-content: center; align-items: center; position: relative; transition: opacity 0.3s ease; }
-        .grid-piece::after { content: 'FC'; font-family: 'Share Tech Mono', monospace; color: rgba(207, 168, 110, 0.15); font-size: 14px; font-weight: bold; }
-        .grid-piece.revealed { opacity: 0; pointer-events: none; }
-        .grid-piece.scanned { z-index: 9999 !important; border: 2px solid var(--aux-blue) !important; box-shadow: 0 0 20px var(--aux-blue) !important; background: var(--aux-blue) !important; }
-        .grid-piece.scanned::after { color: #fff; }
-        
-        .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; }
-        #image-options-container .trivia-option { text-align: center; }
-
-        .float-text { position: fixed; color: var(--brand-red); font-family: 'Share Tech Mono', monospace; font-size: 1.8rem; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 99999; transform: translate(-50%, -50%); animation: floatUp 0.8s ease-out forwards; white-space: nowrap; text-align: center; }
-        @keyframes floatUp { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -100px) scale(1.5); opacity: 0; } }
-        .pop-reveal { animation: quickPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes quickPop { 0% { opacity: 0; transform: scale(0.5); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
-
-        /* SCAN REWARD ANIMATION */
-        .scan-reward-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: #fff; font-weight: bold; text-align: center; text-shadow: 0 0 20px var(--aux-blue), 2px 2px 0 #000; z-index: 100000; pointer-events: none; opacity: 0; animation: scanPop 2.5s ease-out forwards; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.85); padding: 25px; border-radius: 15px; border: 2px solid var(--aux-blue); box-shadow: 0 0 30px rgba(52, 152, 219, 0.5); }
-        .scan-icon-anim { width: 60px; height: 60px; color: var(--aux-blue); margin-bottom: 10px; animation: scanPulse 0.5s infinite alternate; }
-        @keyframes scanPop { 0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 20% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -70%) scale(1.1); } }
-        @keyframes scanPulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
-
-        /* TRIVIA MODE */
-        #trivia-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; justify-content: center; gap: 15px; z-index: 10; position: relative;}
-        .trivia-dossier { background: #fff; border: 2px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .trivia-title { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: #888; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-        #trivia-question { font-size: 1.2rem; font-weight: 500; color: var(--brand-dark); margin-bottom: 20px; line-height: 1.4; }
-        #trivia-options-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-        #trivia-options-container .trivia-option { text-align: left; } 
-        .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: all 0.2s; cursor: pointer; display: block; width: 100%; line-height: 1.4; white-space: normal; word-wrap: break-word; text-transform: none; font-weight: normal;}
-        .trivia-option:active { transform: scale(0.98); background: #eee; }
-        .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
-
-        /* TAKEOFF MINI GAME */
-        #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; position: relative;}
-        .takeoff-hud { display: flex; justify-content: space-between; align-items: center; width: 100%; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #333; margin-top: 5px; margin-bottom: 10px; padding: 10px 15px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 20; position: relative; backdrop-filter: blur(4px); flex-shrink: 0; pointer-events: none; }
-        #tk-speed-val { display: inline-block; transition: transform 0.1s ease, color 0.1s ease; }
-        .tk-bar-bg { width: 60px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 5px;}
-        .tk-bar-fill { height: 100%; background: var(--gauge-green); width: 0%; transition: width 0.1s linear;}
-        #takeoff-viewport { position: relative; width: 100%; flex-grow: 1; min-height: 250px; max-height: 400px; border: 4px solid #222; border-radius: 8px; overflow: hidden; margin: 0; image-rendering: pixelated; background-color: #87CEEB; z-index: 5; touch-action: none; cursor: pointer; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); }
-        .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; background-repeat: repeat-x; pointer-events: none; }
-        #tk-bg-sky { background-size: 1024px 100%; z-index: 0; }
-        #tk-bg-city { height: 50%; background-size: 1024px 100%; background-position: bottom left; z-index: 1; bottom: 32px; top: auto;}
-        #tk-bg-ground { height: 25%; background-size: 1024px 100%; background-position: bottom left; z-index: 2; bottom: 32px; top: auto;}
-        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 32px; z-index: 3; pointer-events: none;}
-        #tk-runway-surface { width: 100%; height: 100%; background-repeat: repeat-x; background-size: 128px 32px; }
-        #tk-mountain { position: absolute; bottom: 32px; left: 100%; width: 150px; height: 150px; z-index: 3; display: none; pointer-events: none;}
-        #tk-plane { position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px; transform-origin: 50% 90%; z-index: 4; pointer-events: none;}
-        #tk-weather-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 5; }
-        .weather-rain { width: 150%; height: 150%; top: -25%; left: -25%; background-image: repeating-linear-gradient(-15deg, transparent, transparent 15px, rgba(255,255,255,0.4) 16px, transparent 17px); background-size: 100px 100%; animation: rainFall 0.3s linear infinite; }
-        .weather-fog { width: 200%; height: 100%; top: 0; left: -50%; background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 60%); background-size: 50% 100%; background-repeat: repeat-x; animation: fogDrift 5s linear infinite alternate; filter: blur(8px); opacity: 0.8; }
-        @keyframes rainFall { from { transform: translateY(-50px) translateX(10px); } to { transform: translateY(50px) translateX(-10px); } }
-        @keyframes fogDrift { from { transform: translateX(-15%); } to { transform: translateX(15%); } }
-        #tk-gauge-container { position: absolute; right: 15px; top: 15px; bottom: 60px; width: 20px; background: rgba(0,0,0,0.5); border-radius: 4px; border: 2px solid #fff; z-index: 6; pointer-events: none;}
-        #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); }
-        #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; }
-        .pixel-particle { position: absolute; width: 6px; height: 6px; z-index: 10; pointer-events: none; background: #fff;}
-        .flash-screen { animation: whiteFlash 0.6s ease-out; }
-        @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
-        #tk-touch-prompt { position: absolute; top: 45%; left: 0; width: 100%; text-align: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 1.3rem; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; pointer-events: none; animation: pulseText 1.5s infinite; z-index: 8; }
-        @keyframes pulseText { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-
-        /* RADAR MODE */
-        #radar-view { width: 100%; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; gap: 0; }
-        .radar-panels-wrapper { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; z-index: 10; }
-        .radar-panel { background: rgba(5, 16, 5, 0.9); border: 1px solid var(--radar-green); border-radius: 8px; font-family: 'Share Tech Mono', monospace; color: var(--radar-green); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.8), inset 0 0 10px rgba(51, 255, 51, 0.05); backdrop-filter: blur(5px); }
-        .radar-accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; cursor: pointer; z-index: 3; position: relative; background: rgba(51, 255, 51, 0.05); border-bottom: 1px solid transparent; }
-        .radar-accordion-header.open { border-bottom-color: #1f3d1f; }
-        .radar-accordion-title { font-weight: bold; font-size: 0.95rem; color: var(--brand-gold); line-height: 1.2; }
-        #radar-timer { font-size: 1.1rem; font-weight: bold; text-align: right; transition: color 0.3s; margin: 0; }
-        .timer-penalty { color: var(--brand-red) !important; text-shadow: 0 0 10px rgba(215, 25, 32, 0.8); }
-        .radar-accordion-body { display: none; padding: 10px 12px; flex-direction: column; z-index: 3; position: relative; gap: 10px; max-height: 30vh; overflow-y: auto; }
-        .radar-accordion-body.open { display: flex; }
-        .radar-content { font-size: 0.85rem; line-height: 1.4; text-transform: uppercase; word-wrap: break-word;}
-        .radar-highlight { color: #000; background: var(--radar-green); padding: 0 4px; font-weight: bold; display: inline-block;}
-        .radar-toggle-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; width: 100%; }
-        .radar-toggle { background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; padding: 6px 2px; cursor: pointer; border-radius: 4px; text-align: center; box-shadow: inset 0 0 5px rgba(51,255,51,0.1); white-space: nowrap; }
-        .radar-toggle:hover { background: rgba(51, 255, 51, 0.2); }
-        .blinking-cursor { animation: blink 1s step-end infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-        #radar-map-wrapper { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; border: none; background: #000; }
-        #radar-map-container { width: 100%; height: 100%; background: #000; z-index: 1; }
-        .compass-pt { position: absolute; color: var(--radar-green); font-family: 'Share Tech Mono', monospace; font-size: 1.4rem; font-weight: bold; z-index: 1000; pointer-events: none; text-shadow: 0 0 10px #000, 0 0 15px #000, 2px 2px 2px rgba(0,0,0,0.8); display: none; }
-        .compass-n { top: 90px; left: 50%; transform: translateX(-50%); }
-        .compass-s { bottom: 80px; left: 50%; transform: translateX(-50%); }
-        .compass-e { top: 50%; right: 15px; transform: translateY(-50%); }
-        .compass-w { top: 50%; left: 15px; transform: translateY(-50%); }
-        .radar-plane-icon { background: transparent; border: none; transition: transform 0.1s linear; }
-        .leaflet-popup-content-wrapper { background: rgba(5, 16, 5, 0.95); color: var(--radar-green); border: 1px solid var(--radar-green); border-radius: 4px; font-family: 'Share Tech Mono', monospace; text-align: center; }
-        .leaflet-popup-tip { background: var(--radar-green); }
-        .radar-target-ping { position: absolute; width: 40px; height: 40px; top: -8px; left: -8px; border-radius: 50%; border: 2px solid var(--brand-gold); animation: ping 1s infinite ease-out; pointer-events: none; }
-        @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-        #message { position: relative; z-index: 20; margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
-        .success { color: #27ae60; } .fail { color: var(--brand-red); }
-
-        /* SCROLLING NEWS TICKER */
-        #news-ticker-container {
-            position: fixed; bottom: 0; left: 0; width: 100%; background: #111; color: var(--brand-gold);
-            font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; padding: 6px 0;
-            overflow: hidden; white-space: nowrap; z-index: 1000; border-top: 1px solid #333;
-            padding-bottom: max(6px, env(safe-area-inset-bottom));
-        }
-        #news-ticker { display: inline-block; padding-left: 100%; animation: ticker linear infinite; }
-        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
-
-        @media (min-width: 768px) {
-            #radar-view { max-width: 100%; } .radar-panels-wrapper { position: absolute; top: 10px; left: 10px; width: 340px; margin: 0; }
-            #radar-view .footer-buttons { position: absolute !important; bottom: 35px !important; right: 20px !important; left: auto !important; transform: none !important; width: 200px !important; max-width: none !important; }
-        }
-        @media (max-height: 500px) { .game-header { display: none !important; } #game-wrapper { margin-bottom: 5px; } h1 { display: none; } .compass-n { top: 60px; } }
-        #leaderboard-list { width: 100%; flex-grow: 1; overflow-y: auto; text-align: left; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; min-height: 0; }
-        .lb-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; align-items: center; }
-        .lb-rank { font-weight: bold; width: 30px; color: var(--brand-red); }
-        .lb-name { flex-grow: 1; font-weight: 500;}
-        .lb-fuel { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--brand-dark); }
-        .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
-        .tutorial-text { color: #ccc; font-size: 1rem; margin-bottom: 20px; text-align: left; line-height: 1.5; }
-        .tutorial-text strong { color: #fff; }
-    </style>
-</head>
-<body>
-
-    <audio id="bg-music" loop preload="auto"><source src="ambient.mp3" type="audio/mpeg"></audio>
-
-    <div id="orientation-lock">
-        <svg viewBox="0 0 24 24" width="60" height="60" fill="currentColor" style="margin-bottom:20px;"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.25-.77c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.46L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zm-7.31.29C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg>
-        <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2><p>This mission requires Portrait Mode.</p>
-    </div>
-
-    <div id="takeoff-tutorial-overlay">
-        <div class="modal-box">
-            <h1 style="color: var(--brand-gold); margin-bottom: 15px;">FLIGHT MANUAL</h1>
-            <p class="tutorial-text">
-                1. Wait for your speed to reach <strong style="color:var(--gauge-green)">140 KTS</strong>. <br>
-                2. Tap and <strong>HOLD ANYWHERE</strong> on the view screen to pull the nose up.<br><br>
-                3. Keep the needle in the <strong style="color:var(--gauge-green)">GREEN ZONE</strong> to gain lift before the runway ends!<br><br>
-                <span style="color:#aaa; font-size:0.9rem;">⚠️ You have 3 attempts to earn a fuel bonus. If you fail, the mission is aborted.</span>
-            </p>
-            <button class="gold-btn" onclick="startTakeoffFromTutorial()">START ENGINES</button>
-        </div>
-    </div>
-
-    <div id="intercept-overlay">
-        <div class="modal-box danger" id="intercept-box">
-            <h1 id="intercept-title" style="color: var(--brand-red); margin-bottom: 10px;">CONFIRM INTERCEPT</h1>
-            <p id="intercept-desc" style="color: #ccc; font-size: 0.9rem;">Target signature encrypted:</p>
-            <div id="encrypted-callsign" style="font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: #fff; margin: 15px 0; letter-spacing: 5px;">***</div>
-            <div class="modal-buttons" id="intercept-buttons">
-                <button class="cancel-btn" onclick="cancelIntercept()">CANCEL</button>
-                <button class="danger-btn" onclick="confirmIntercept()">AUTHORIZE</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="game-over-overlay">
-        <div class="modal-box danger" id="stats-box">
-            <h1 id="stats-title" style="color: var(--brand-red); margin-bottom: 10px; font-size: 1.8rem;">MISSION FAILED</h1>
-            <p id="stats-reason" style="margin-bottom: 5px; color: #fff; font-size: 1rem; font-weight: bold;">FUEL DEPLETED</p>
-            
-            <div style="margin: 15px 0; text-align: left; background: #111; padding: 15px; border-radius: 8px; font-family: 'Share Tech Mono', monospace; color: #ccc; border: 1px solid #333;">
-                <p style="margin: 5px 0; font-size: 1.1rem;">TIME ALIVE: <span id="stat-time" style="color: var(--brand-gold); float: right;">00:00</span></p>
-                <p style="margin: 10px 0 5px 0; font-size: 1.1rem;">HANGARS: <span id="stat-hangars" style="color: var(--gauge-green); float: right;">0 / 5</span></p>
-            </div>
-
-            <button class="gold-btn" onclick="closeStatsAndRetire()">RETURN TO COMMAND</button>
-        </div>
-    </div>
-
-    <div id="restart-overlay">
-        <div class="modal-box danger">
-            <h1 style="color: var(--brand-red); margin-bottom: 10px;">SYSTEM PURGE</h1>
-            <p style="margin-bottom: 10px; color: #ccc; font-size: 0.9rem;">Delete all data?</p>
-            <div class="modal-buttons">
-                <button class="cancel-btn" onclick="cancelReset()">CANCEL</button>
-                <button class="danger-btn" onclick="confirmReset()">CONFIRM</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="refuel-overlay">
-        <div class="modal-box success">
-            <div style="display:flex; justify-content:center; align-items:center; gap:15px; margin-bottom: 10px;">
-                <svg viewBox="0 0 24 24" width="50" height="50" fill="var(--gauge-green)"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg>
-                <span style="font-size: 40px;">🏆</span>
-            </div>
-            <h1 style="color: var(--gauge-green); margin-bottom: 10px;">SUPPLY DROP</h1>
-            <p style="margin-bottom: 15px; color: #fff; font-size: 1.1rem; line-height:1.5;">
-                Hangar Completed.<br>
-                <strong style="color: var(--gauge-green);">+2000L Fuel Reserves</strong><br>
-                <span style="color: var(--brand-gold); display:block; margin-top:5px; font-weight:bold;">+1 Feline Trophy</span>
-                <span style="color: var(--aux-blue); display:block; margin-top:5px; font-weight:bold;">+1 Intel Scan</span>
-                <span style="color: var(--brand-red); display:block; font-weight:bold;">+1 Precision Drone</span>
-                <span style="color: var(--gauge-green); display:block; font-weight:bold;">+1 Reserve Fuel Pod</span>
-            </p>
-            <button class="gold-btn" onclick="closeRefuel()">CONTINUE</button>
-        </div>
-    </div>
-
-    <div id="login-overlay">
-        <div class="modal-box">
-            <h1 style="color: var(--brand-gold); margin-bottom: 10px;">IDENTIFY PILOT</h1>
-            <input type="text" id="callsign-input" placeholder="Callsign" maxlength="12" style="margin-bottom: 15px;" autocomplete="off">
-            <button class="gold-btn" onclick="registerPilot()">CONFIRM IDENTITY</button>
-        </div>
-    </div>
-
-    <div id="multiplayer-overlay">
-        <div class="modal-box">
-            <h1 style="color: var(--aux-blue); margin-bottom: 10px;">VERSUS MODE</h1>
-            <p style="color:#ccc; font-size:0.85rem; margin-bottom:15px;">Connect to another pilot's feed.</p>
-            
-            <button class="primary-btn" style="background:var(--aux-blue); margin-bottom: 15px;" onclick="hostNewGame()">HOST MATCH</button>
-            
-            <div style="display:flex; gap:10px; align-items: center; justify-content: center; margin-bottom:15px;">
-                <span style="color:#777; font-weight: bold;">OR JOIN:</span>
-                <input type="number" id="join-code-input" placeholder="4-DIGIT CODE" style="width:120px; padding: 8px; text-align:center; font-family:'Share Tech Mono'; font-size: 1rem; border-radius: 4px; border: none;">
-                <button class="gold-btn" style="width: auto; padding: 8px 15px;" onclick="joinExistingGame()">JOIN</button>
-            </div>
-            
-            <div id="mp-status" style="color:var(--gauge-green); font-family:'Share Tech Mono'; font-size:1rem; margin-bottom:15px; text-align: center;"></div>
-            
-            <button class="cancel-btn" onclick="closeMultiplayer()">CLOSE</button>
-        </div>
-    </div>
-
-    <div id="cat-modal">
-        <h1 style="color:var(--brand-gold); margin-bottom:10px;">TOP SECRET: AVIATION FELINES</h1>
-        <p style="color:#ccc; margin-bottom:20px;">Operation "Queen of the Skies" Successful.</p>
-        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; max-width:500px; margin-bottom:20px;">
-            <img src="trophy1.gif" onerror="this.src='https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="trophy2.gif" onerror="this.src='https://media.giphy.com/media/BzyTuYCmvSORqs1Qks/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="trophy3.gif" onerror="this.src='https://media.giphy.com/media/l4KibWpBGWchSqCRy/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="trophy4.gif" onerror="this.src='https://media.giphy.com/media/3oEduV4SOS9mmmIOkw/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="trophy5.gif" onerror="this.src='https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-        </div>
-        <button class="primary-btn" onclick="document.getElementById('cat-modal').style.display='none'">CLOSE DOSSIER</button>
-    </div>
-
-    <div id="selector-view" class="view-section">
-        <div class="dashboard-header">
-            <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div class="icon-btn logout" onclick="triggerResetUI()" title="Sign Out / Restart"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></div>
-                <div style="flex-grow: 1; text-align: center;"><h1 style="margin:0;">Fuel Command</h1><h2 id="pilot-greeting" style="margin: 2px 0 0 0;">Welcome Pilot</h2></div>
-                <div style="width: 36px; height: 36px;"></div>
-            </div>
-
-            <div class="fuel-tank-container">
-                <div class="fuel-label">Global Fuel Reserves</div>
-                <div class="fuel-value"><span id="total-fuel-display">0</span><span style="font-size:1.2rem; color:#aaa;">L</span></div>
-                <div class="fuel-bar-bg"><div class="fuel-bar-fill" id="fuel-bar" style="width:0%;"></div></div>
-                <div id="aux-fuel-container" style="display:none; margin-top:10px; border-top: 1px dashed #444; padding-top:8px;">
-                    <div class="fuel-label" style="color:var(--aux-blue);">AUXILIARY TANK</div>
-                    <div class="fuel-value" style="font-size: 1.8rem; color:var(--aux-blue);"><span id="aux-fuel-value">0</span><span style="font-size:0.9rem; color:#888;">L</span></div>
-                    <div class="fuel-bar-bg" style="height:6px;"><div class="fuel-bar-fill" id="aux-fuel-bar" style="background:var(--aux-blue); width:0%;"></div></div>
-                </div>
-                <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;"></div>
-            </div>
-        </div>
-        <div id="level-list-container"></div>
-        <div class="footer-buttons">
-            <button class="radar-btn" onclick="openRadar()"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4-8c0 2.21-1.79 4-4 4s-4-1.79-4-4 1.79-4 4-4 4 1.79 4 4z"/></svg> LIVE RADAR OPS</button>
-            <div style="display: flex; gap: 6px; width: 100%;">
-                <button class="gold-btn" style="flex: 1; padding: 12px 2px; font-size: 0.75rem;" onclick="openTrophyRoom()">🏆 TROPHIES</button>
-                <button class="primary-btn" style="flex: 1; padding: 12px 2px; font-size: 0.75rem; background: var(--aux-blue);" onclick="openNewsRoom()">📰 INTEL</button>
-                <button class="primary-btn" style="flex: 1; padding: 12px 2px; font-size: 0.75rem; background: #27ae60;" onclick="openLeaderboard()">🏅 RANKS</button>
-                <button class="primary-btn" style="flex: 1; padding: 12px 2px; font-size: 0.75rem; background: #8e44ad;" onclick="openMultiplayer()">⚔️ VS MODE</button>
-            </div>
-            <button id="install-btn" class="dark-btn">📲 Install App</button>
-        </div>
-    </div>
-
-    <div id="trophy-view" class="view-section">
-        <div class="dashboard-header">
-            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div class="icon-btn" onclick="closeTrophyRoom()"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></div>
-                <h1 style="margin:0; color:var(--brand-dark);">Trophy Room</h1>
-                <div style="width: 36px;"></div>
-            </div>
-        </div>
-        <div id="trophy-list"></div>
-        <div style="width: 100%; flex-shrink: 0; margin-top: 10px;">
-            <div id="password-container"></div>
-        </div>
-    </div>
-
-    <div id="news-view" class="view-section">
-        <div class="dashboard-header">
-            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div class="icon-btn" onclick="closeNewsRoom()"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></div>
-                <h1 style="margin:0; color:var(--brand-dark);">News Room</h1>
-                <div style="width: 36px;"></div>
-            </div>
-        </div>
-        <div id="news-list"></div>
-    </div>
-
-    <div id="hangar-view" class="view-section">
-        <div class="dashboard-header">
-            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div class="icon-btn" onclick="closeHangar()"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></div>
-                <h1 id="hangar-title" style="margin:0;">Hangar X</h1>
-                <div style="width: 36px;"></div>
-            </div>
-        </div>
-        <div id="hangar-level-list"></div>
-    </div>
-
-    <div id="game-view" class="view-section">
-        <div class="game-header">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="icon-btn" onclick="saveAndExit()" style="width: 32px; height: 32px; flex-shrink: 0;"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></div>
-                <div id="level-title" style="font-weight:bold; font-size:1.1rem;">Flight 1</div>
-            </div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                <div class="mini-fuel" id="current-fuel-display"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg><span>4000</span><span id="aux-fuel-display" style="color:var(--aux-blue); font-size:1rem; margin-left:5px; display:none;">+1500</span></div>
-                <div id="enemy-fuel-display" style="display:none; font-family:'Share Tech Mono', monospace; font-size:0.8rem; color:#888;">VS: <span id="enemy-fuel-val" style="color:var(--aux-blue); font-weight:bold;">0</span></div>
-            </div>
-        </div>
-        
-        <div id="powerups-bar">
-            <div class="pu-btn pu-scan" id="btn-pu-scan" onclick="useIntelScan()" title="Intel Scan"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><div class="pu-badge" id="badge-pu-scan">1</div></div>
-            <div class="pu-btn pu-drone" id="btn-pu-drone" onclick="usePrecisionDrone()" title="Precision Drone"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg><div class="pu-badge" id="badge-pu-drone">1</div></div>
-            <div class="pu-btn pu-fuel" id="btn-pu-fuel" onclick="useFuelPod()" title="Reserve Fuel Pod"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11C16.17 7 15.5 7.93 15.5 9v11c0 .55-.45 1-1 1s-1-.45-1-1V9c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-3h2v3c0 1.65 1.35 3 3 3s3-1.35 3-3V9c0-.69-.28-1.32-.73-1.77zM10 10.5H5v-3h5v3zm9 6.5h-1v-4h1v4z"/></svg><div class="pu-badge" id="badge-pu-fuel">1</div></div>
-        </div>
-
-        <div id="image-game-area">
-            <div id="game-wrapper"><div id="game-container"><img id="mystery-image" src="" alt="Mystery Airplane"><div id="cover-grid"></div></div></div>
-            <div class="options-container" id="image-options-container">
-                <button class="trivia-option" id="img-opt-0" onclick="submitImageGuess(0)"></button><button class="trivia-option" id="img-opt-1" onclick="submitImageGuess(1)"></button><button class="trivia-option" id="img-opt-2" onclick="submitImageGuess(2)"></button>
-            </div>
-        </div>
-
-        <div id="trivia-game-area">
-            <div class="trivia-dossier">
-                <div class="trivia-title">Incident Analysis Report</div><div id="trivia-question">Question text goes here?</div>
-                <div id="trivia-options-container">
-                    <button class="trivia-option" id="btn-opt-0" onclick="submitTrivia(0)">A</button><button class="trivia-option" id="btn-opt-1" onclick="submitTrivia(1)">B</button><button class="trivia-option" id="btn-opt-2" onclick="submitTrivia(2)">C</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="takeoff-game-area">
-            <div class="takeoff-hud">
-                <div style="min-width: 85px;">SPD: <span id="tk-speed-val" style="color:var(--brand-red); font-weight:bold;">0</span></div>
-                <div>DIST: <div class="tk-bar-bg" style="width: 50px;"><div class="tk-bar-fill" id="tk-runway-fill" style="background:#f39c12"></div></div></div>
-                <div>LIFT: <div class="tk-bar-bg" style="width: 50px;"><div class="tk-bar-fill" id="tk-lift-fill"></div></div></div>
-            </div>
-            <div id="takeoff-viewport">
-                <div id="tk-touch-prompt">TAP & HOLD TO PULL UP</div><div id="tk-bg-sky" class="parallax-layer"></div><div id="tk-bg-city" class="parallax-layer"></div><div id="tk-bg-ground" class="parallax-layer"></div>
-                <div id="tk-weather-overlay"></div><div id="tk-gauge-container"><div id="tk-target-zone"></div><div id="tk-needle"></div></div>
-                <div id="tk-mountain"><svg viewBox="0 0 100 100" shape-rendering="crispEdges" width="100%" height="100%"><rect x="50" y="40" width="10" height="60" fill="#3b3b3b"/><rect x="40" y="50" width="30" height="50" fill="#4a4a4a"/><rect x="20" y="60" width="70" height="40" fill="#2d2d2d"/><rect x="0" y="70" width="100" height="30" fill="#1f1f1f"/><rect x="50" y="40" width="10" height="10" fill="#fff"/><rect x="40" y="50" width="10" height="10" fill="#eee"/><rect x="60" y="50" width="10" height="10" fill="#eee"/></svg></div>
-                <div id="tk-plane"><svg viewBox="0 0 80 30" width="100%" height="100%" shape-rendering="crispEdges"><rect x="4" y="2" width="8" height="12" fill="var(--brand-red)"/><rect x="2" y="8" width="2" height="6" fill="var(--brand-red)"/><rect x="6" y="14" width="68" height="8" fill="#fff"/><rect x="8" y="22" width="60" height="2" fill="#e0e0e0"/><rect x="74" y="16" width="4" height="6" fill="#fff"/><rect x="78" y="18" width="2" height="4" fill="#fff"/><rect x="72" y="16" width="4" height="2" fill="#1a1a1a"/><rect x="20" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="24" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="28" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="32" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="44" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="48" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="52" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="56" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="60" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="64" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="14" y="16" width="4" height="6" fill="var(--brand-red)"/><rect x="38" y="17" width="4" height="5" fill="var(--brand-red)"/><rect x="68" y="16" width="2" height="6" fill="var(--brand-red)"/><rect x="34" y="20" width="16" height="2" fill="#d0d0d0"/><rect x="30" y="22" width="24" height="2" fill="#a0a0a0"/><rect x="26" y="24" width="24" height="2" fill="#808080"/><rect x="38" y="22" width="10" height="6" fill="#333"/><rect x="36" y="24" width="2" height="4" fill="#111"/><rect x="48" y="24" width="2" height="2" fill="#555"/><rect x="68" y="24" width="2" height="4" fill="#555"/><rect x="66" y="28" width="4" height="2" fill="#111"/><rect x="24" y="24" width="4" height="4" fill="#555"/><rect x="22" y="28" width="8" height="2" fill="#111"/></svg></div>
-                <div id="tk-runway"><div id="tk-runway-surface"></div></div>
-            </div>
-        </div>
-        <div id="message"></div>
-    </div>
-
-    <div id="leaderboard-view" class="view-section">
-        <div style="flex-shrink: 0; width:100%; text-align:center;"><h1>Global Standings</h1><h2 style="margin-bottom: 10px;">Top Fuel Reserves</h2></div>
-        <div id="leaderboard-list">Connecting to HQ...</div>
-        <div class="footer-buttons"><button class="primary-btn" onclick="closeLeaderboard()">Back to Command</button></div>
-    </div>
-
-    <div id="radar-view" class="view-section">
-        <div class="radar-panels-wrapper">
-            <div class="radar-panel">
-                <div class="radar-accordion-header open" id="radar-intel-header" onclick="toggleRadarIntel()">
-                    <div class="radar-accordion-title"><span class="acc-icon-intel">[-]</span> TARGET INTEL<div style="font-size:0.7rem; color:#aaa; margin-top:2px;" class="lvl-text">LEVEL 1 OF 10</div></div>
-                    <div id="radar-timer">30:00:00</div>
-                </div>
-                <div class="radar-accordion-body open" id="radar-intel-body"><div class="radar-content" id="radar-screen-text">ESTABLISHING UPLINK...<br>SCANNING SECTOR...<span class="blinking-cursor">_</span></div></div>
-            </div>
-            <div class="radar-panel">
-                <div class="radar-accordion-header" id="radar-filters-header" onclick="toggleRadarFilters()"><div class="radar-accordion-title"><span class="acc-icon-filters">[+]</span> SENSOR FILTERS</div></div>
-                <div class="radar-accordion-body" id="radar-filters-body">
-                    <div class="radar-toggle-group">
-                        <button id="toggle-paths-btn" class="radar-toggle" onclick="toggleFlightPaths()">PATHS: OFF</button><button id="toggle-map-btn" class="radar-toggle" onclick="toggleMapStyle()">CITIES: OFF</button>
-                        <button id="toggle-origin-btn" class="radar-toggle" onclick="toggleOrigin()">REG: OFF</button><button id="toggle-compass-btn" class="radar-toggle" onclick="toggleCompass()">COMP: OFF</button>
-                        <button id="toggle-origcity-btn" class="radar-toggle" onclick="toggleOrigCity()">ORIG: OFF</button><button id="toggle-destcity-btn" class="radar-toggle" onclick="toggleDestCity()">DEST: OFF</button>
-                        <button id="toggle-alt-btn" class="radar-toggle" onclick="toggleAlt()">ALT: OFF</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="radar-map-wrapper"><div id="radar-map-container"></div><div class="compass-pt compass-n">N</div><div class="compass-pt compass-e">E</div><div class="compass-pt compass-s">S</div><div class="compass-pt compass-w">W</div></div>
-        <div class="footer-buttons radar-footer" style="border: none; position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000;"><button class="outline-btn radar-abort-btn" onclick="closeRadar()">Abort Operation</button></div>
-    </div>
-    
-    <div id="news-ticker-container">
-        <div id="news-ticker">ESTABLISHING SECURE COMMS... STANDBY FOR AVIATION INTEL...</div>
-    </div>
-    <script>
+<script>
         var ICONS = {
             plane: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>`,
             jet: `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12,2 L14,10 L22,14 L22,16 L14,15 L14,19 L16,21 L16,22 L12,21 L8,22 L8,21 L10,19 L10,15 L2,16 L2,14 L10,10 Z"/></svg>`,
@@ -636,12 +77,6 @@
             totalPlayTime: 0,
             gameWonShown: false
         };
-
-        let globalTimerInterval = setInterval(() => {
-            if (globalState && globalState.username && document.getElementById('game-over-overlay').style.display !== 'flex') {
-                globalState.totalPlayTime = (globalState.totalPlayTime || 0) + 1;
-            }
-        }, 1000);
 
         let tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0 };
 
@@ -907,7 +342,6 @@
             const name = document.getElementById('callsign-input').value.trim();
             if (name.length < 2) { alert("Callsign too short."); return; }
             
-            // CHEAT CODE: Wipe Leaderboard
             if (name.toLowerCase() === 'clearleaderboard') {
                 if (!db) { alert("Database not connected!"); return; }
                 if (confirm("WARNING: Are you sure you want to wipe the entire global leaderboard?")) {
@@ -927,7 +361,6 @@
             globalState.username = name; 
             localStorage.setItem('last_pilot_name', name); 
 
-            // CHEAT CODE: Admin Boost
             if (name.toLowerCase() === 'admin') {
                 globalState.currentFuel = 99999;
                 globalState.extraFuel = 50000;
@@ -1739,6 +1172,9 @@
         let currentRoomCode = null;
         let isHost = false;
         let matchListener = null;
+        let mpStartTime = null;
+        let mpTimeLimit = null;
+        let mpGameEnded = false;
 
         function openMultiplayer() {
             document.getElementById('multiplayer-overlay').style.display = 'flex';
@@ -1751,6 +1187,7 @@
 
         function hostNewGame() {
             if (!db) { alert("HQ Database Offline!"); return; }
+            let isTimed = document.getElementById("mp-timer-checkbox").checked;
             
             currentRoomCode = Math.floor(1000 + Math.random() * 9000).toString();
             isHost = true;
@@ -1760,7 +1197,9 @@
                 hostScore: globalState.currentFuel,
                 guestName: "Waiting...",
                 guestScore: 0,
-                status: "waiting"
+                status: "waiting",
+                timeLimit: isTimed ? 120 : null,
+                startTime: null
             });
 
             document.getElementById("mp-status").innerHTML = `ROOM CREATED.<br>TELL OPPONENT TO JOIN CODE:<br><span style="color:var(--brand-gold); font-size: 2rem; display:block; margin-top:10px;">${currentRoomCode}</span>`;
@@ -1791,9 +1230,10 @@
         }
 
         function listenToMatch(roomCode) {
-            if (matchListener) matchListener(); // Unsubscribe from old matches if switching
+            if (matchListener) matchListener();
             
             document.getElementById('enemy-fuel-display').style.display = 'block';
+            document.getElementById('enemy-dashboard-tank').style.display = 'block';
             
             matchListener = db.collection("multiplayer_matches").doc(roomCode).onSnapshot((doc) => {
                 if (doc.exists) {
@@ -1803,7 +1243,21 @@
                     let oppScore = isHost ? data.guestScore : data.hostScore;
                     
                     document.getElementById('enemy-fuel-val').innerText = `${oppName} [${oppScore}]`;
+                    document.getElementById('enemy-dashboard-name').innerText = oppName.toUpperCase();
+                    document.getElementById('enemy-dashboard-score').innerText = oppScore;
                     
+                    if (data.status === "playing") {
+                        if (data.timeLimit && data.startTime) {
+                            mpStartTime = data.startTime;
+                            mpTimeLimit = data.timeLimit;
+                            mpGameEnded = false;
+                        } else if (isHost && data.timeLimit && !data.startTime) {
+                            db.collection("multiplayer_matches").doc(roomCode).update({
+                                startTime: Date.now()
+                            });
+                        }
+                    }
+
                     if (isHost && data.status === "playing" && document.getElementById('multiplayer-overlay').style.display === 'flex') {
                          document.getElementById("mp-status").innerHTML = "OPPONENT JOINED! COMMENCE OPERATION.";
                          setTimeout(closeMultiplayer, 1500);
@@ -1817,6 +1271,78 @@
                 let updateData = isHost ? { hostScore: globalState.currentFuel } : { guestScore: globalState.currentFuel };
                 db.collection("multiplayer_matches").doc(currentRoomCode).update(updateData).catch(e => console.log("Sync error", e));
             }
+        }
+
+        // Multiplayer Timer Loop
+        setInterval(() => {
+            if (currentRoomCode && mpStartTime && mpTimeLimit && !mpGameEnded) {
+                let elapsed = Math.floor((Date.now() - mpStartTime) / 1000);
+                let left = mpTimeLimit - elapsed;
+                
+                let dTimer = document.getElementById('mp-dashboard-timer');
+                let hTimer = document.getElementById('mp-header-timer');
+                
+                if (left <= 0) {
+                    left = 0;
+                    if(dTimer) dTimer.innerText = "TIME UP!";
+                    if(hTimer) hTimer.innerText = "";
+                    if (!mpGameEnded) {
+                        endMultiplayerMatch();
+                    }
+                } else {
+                    let m = Math.floor(left / 60);
+                    let s = left % 60;
+                    let timeStr = `${m}:${s < 10 ? '0'+s : s}`;
+                    if(dTimer) dTimer.innerText = "TIME LEFT: " + timeStr;
+                    if(hTimer) hTimer.innerText = " | ⏱ " + timeStr;
+                }
+            }
+        }, 1000);
+
+        function endMultiplayerMatch() {
+            mpGameEnded = true;
+            
+            let oppScore = parseInt(document.getElementById('enemy-dashboard-score').innerText) || 0;
+            let myScore = globalState.currentFuel;
+            
+            document.getElementById('game-view').classList.add('gray-out'); 
+            document.getElementById('selector-view').classList.add('gray-out'); 
+            document.getElementById('hangar-view').classList.add('gray-out'); 
+            document.getElementById('radar-view').classList.add('gray-out'); 
+            
+            const box = document.getElementById('stats-box');
+            const title = document.getElementById('stats-title');
+            const reason = document.getElementById('stats-reason');
+
+            if (myScore > oppScore) {
+                title.textContent = "VICTORY!";
+                title.style.color = "var(--gauge-green)";
+                reason.textContent = "YOU OUTPERFORMED THE ENEMY";
+                box.className = "modal-box success";
+            } else if (myScore < oppScore) {
+                title.textContent = "DEFEAT!";
+                title.style.color = "var(--brand-red)";
+                reason.textContent = "ENEMY SECURED MORE FUEL";
+                box.className = "modal-box danger";
+            } else {
+                title.textContent = "DRAW!";
+                title.style.color = "var(--brand-gold)";
+                reason.textContent = "TIE GAME";
+                box.className = "modal-box"; 
+                box.style.borderColor = "var(--brand-gold)";
+            }
+
+            document.getElementById('stat-time').textContent = "2:00";
+            document.getElementById('stat-hangars').textContent = "VS MODE";
+
+            setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500); 
+
+            if(matchListener) matchListener();
+            currentRoomCode = null;
+            mpStartTime = null;
+            mpTimeLimit = null;
+            document.getElementById('enemy-dashboard-tank').style.display = 'none';
+            document.getElementById('enemy-fuel-display').style.display = 'none';
         }
         // --- END MULTIPLAYER SYSTEM ---
 

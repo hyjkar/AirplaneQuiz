@@ -814,7 +814,7 @@
             renderDashboard(); 
         }
 
-        function fetchAviationNews() {
+function fetchAviationNews() {
             const tickerEl = document.getElementById('news-ticker');
             if(!tickerEl) return;
 
@@ -830,15 +830,17 @@
                 tickerEl.style.animation = `ticker ${scrollDuration}s linear infinite`;
             };
 
+            // Adjusted fallbacks to sound strictly civilian/commercial
             const fallbackItems = [
                 { title: "GLOBAL FUEL RESERVES STABLE ACROSS ALL SECTORS", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
-                { title: "NEW CLASSIFIED HANGARS UNDER CONSTRUCTION", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
-                { title: "RADAR OPS MONITORING UNIDENTIFIED BOGEYS", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
-                { title: "ALL FLIGHT CREWS CLEARED FOR DEPARTURE", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" }
+                { title: "NEW COMMERCIAL TERMINALS UNDER CONSTRUCTION", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
+                { title: "RADAR OPS MONITORING HEAVY CIVILIAN TRAFFIC", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
+                { title: "ALL COMMERCIAL FLIGHT CREWS CLEARED FOR DEPARTURE", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" }
             ];
 
-            const cacheKey = 'fuel_news_cache_v2';
-            const timeKey = 'fuel_news_time_v2';
+            // Bumped cache keys to v3 so the browser forces a fresh download
+            const cacheKey = 'fuel_news_cache_v3';
+            const timeKey = 'fuel_news_time_v3';
             const now = Date.now();
             const cachedTime = localStorage.getItem(timeKey);
             const cachedData = localStorage.getItem(cacheKey);
@@ -851,9 +853,24 @@
             .then(res => res.json())
             .then(data => {
                 if (data && data.items && data.items.length > 0) {
-                    localStorage.setItem(cacheKey, JSON.stringify(data.items));
+                    
+                    // --- STRICT FILTERING LOGIC ---
+                    // Word boundaries (\b) ensure "war" doesn't accidentally block words like "software" or "award"
+                    const militaryRegex = /\b(military|war|fighter|bomber|air force|defense|combat|stealth|tactical|usaf|navy|army|marines)\b/i;
+                    
+                    let filteredItems = data.items.filter(item => {
+                        let textToSearch = (item.title + " " + (item.description || "")).toLowerCase();
+                        // Only keep the article if it DOES NOT match the blacklist
+                        return !militaryRegex.test(textToSearch);
+                    });
+                    
+                    // Fallback to our dummy news if the filter accidentally wipes out everything
+                    if (filteredItems.length === 0) filteredItems = fallbackItems;
+                    // ------------------------------
+
+                    localStorage.setItem(cacheKey, JSON.stringify(filteredItems));
                     localStorage.setItem(timeKey, now.toString());
-                    applyNews(data.items);
+                    applyNews(filteredItems);
                 } else { throw new Error("No items"); }
             })
             .catch(err => {

@@ -1785,19 +1785,38 @@ function fetchAviationNews() {
         function showFloat(x, y, text) { const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text; el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800); }
         function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
         
-        // --- MULTIPLAYER SYSTEM ---
+       // --- MULTIPLAYER SYSTEM ---
         let currentRoomCode = null;
         let isHost = false;
         let matchListener = null;
         let mpStartTime = null;
         let mpTimeLimit = null;
         let mpGameEnded = false;
+        let mpHasResetForMatch = false; // Tracks if we've wiped the board for the new game
 
         window.addEventListener('beforeunload', () => {
             if (currentRoomCode && db && !mpGameEnded) {
                 db.collection("multiplayer_matches").doc(currentRoomCode).update({status: "abandoned"});
             }
         });
+
+        // Wipes the local board clean so it's a fair race from Hangar 1
+        function resetGameStateForMultiplayer() {
+            globalState.currentFuel = STARTING_GLOBAL_FUEL;
+            globalState.extraFuel = 0;
+            globalState.powerups = { scans: 1, drones: 1, fuelPods: 1 };
+            globalState.levels = generateGameLevels(); // Generates fresh new levels
+            globalState.world1Complete = false;
+            globalState.world2Complete = false;
+            globalState.world3Complete = false;
+            globalState.world4Complete = false;
+            globalState.world5Complete = false;
+            globalState.passwordRevealed = [];
+            globalState.totalPlayTime = 0;
+            globalState.gameWonShown = false;
+            saveState();
+            renderDashboard();
+        }
 
         function openMultiplayer() {
             document.getElementById('multiplayer-overlay').style.display = 'flex';
@@ -1832,6 +1851,7 @@ function fetchAviationNews() {
             currentRoomCode = null;
             mpStartTime = null;
             mpTimeLimit = null;
+            mpHasResetForMatch = false;
             
             document.getElementById('enemy-dashboard-tank').style.display = 'none';
             document.getElementById('enemy-fuel-display').style.display = 'none';
@@ -1862,6 +1882,7 @@ function fetchAviationNews() {
             
             currentRoomCode = Math.floor(1000 + Math.random() * 9000).toString();
             isHost = true;
+            mpHasResetForMatch = false;
             
             db.collection("multiplayer_matches").doc(currentRoomCode).set({
                 hostName: globalState.username,
@@ -1889,11 +1910,12 @@ function fetchAviationNews() {
             
             currentRoomCode = code;
             isHost = false;
+            mpHasResetForMatch = false;
             document.getElementById("mp-status").innerHTML = "CONNECTING...";
             
             db.collection("multiplayer_matches").doc(currentRoomCode).update({
                 guestName: globalState.username,
-                guestScore: globalState.currentFuel,
+                guestScore: STARTING_GLOBAL_FUEL,
                 status: "playing"
             }).then(() => {
                 document.getElementById("mp-status").innerHTML = "LINK ESTABLISHED!";
@@ -1919,6 +1941,13 @@ function fetchAviationNews() {
                     if (data.status === "abandoned" && !mpGameEnded) {
                         showOpponentLeftPopup();
                         return;
+                    }
+
+                    // TRIGGER FRESH START WHEN GAME BEGINS
+                    if (data.status === "playing" && !mpHasResetForMatch) {
+                        mpHasResetForMatch = true;
+                        resetGameStateForMultiplayer();
+                        syncMultiplayerScore(); // Instantly tell the database our score is reset
                     }
                     
                     let oppName = isHost ? data.guestName : data.hostName;
@@ -2042,11 +2071,12 @@ function fetchAviationNews() {
             currentRoomCode = null;
             mpStartTime = null;
             mpTimeLimit = null;
+            mpHasResetForMatch = false;
             document.getElementById('enemy-dashboard-tank').style.display = 'none';
             document.getElementById('enemy-fuel-display').style.display = 'none';
         }
         // --- END MULTIPLAYER SYSTEM ---
-
+        
         let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block'; btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; }); });
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
     </script>

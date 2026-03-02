@@ -48,12 +48,9 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             transition: opacity 0.5s ease;
         }
-        .loading-bar-container {
-            width: 250px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; margin-top: 15px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
-        }
+        .loading-bar-container { width: 250px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; margin-top: 15px; }
         #loading-progress { width: 0%; height: 100%; background: var(--brand-red); transition: width 0.1s linear; }
-        #loading-text { margin-top: 12px; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #777; letter-spacing: 1px; font-weight: bold; }
+        #loading-text { margin-top: 12px; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #777; font-weight: bold; }
 
         #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay, #golden-plane-modal, #multiplayer-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -61,63 +58,54 @@
             flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
         }
         #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
-        #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
+        #game-over-overlay { background: rgba(0,0,0,0.85); }
         #takeoff-tutorial-overlay { background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); }
         #golden-plane-modal { background: rgba(0,0,0,0.95); z-index: 20000; overflow-y: auto; }
-        
-        #intercept-overlay { background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%); justify-content: flex-end; padding-bottom: 40px; pointer-events: auto; }
-        #intercept-box { min-height: 220px; display: flex; flex-direction: column; justify-content: center; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(8px); }
-        
-        @media screen and (orientation: landscape) and (max-height: 600px) { #orientation-lock { display: flex; } }
+        #intercept-overlay { background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%); justify-content: flex-end; padding-bottom: 40px; }
 
         h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--brand-dark); margin: 0; text-align: center; text-transform: uppercase; }
         h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
 
         .view-section { width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; min-height: 0; position: relative; z-index: 1; }
-        .view-section.active { display: flex; animation: swipeIn 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        .view-section.active { display: flex; animation: swipeIn 0.35s forwards; }
         @keyframes swipeIn { 0% { transform: translateX(30px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
 
-        .gray-out { filter: grayscale(100%) contrast(1.2); }
-
-        .modal-box { background: #222; border: 2px solid var(--brand-gold); padding: 25px; border-radius: 12px; width: 100%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-
-        .dashboard-header { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
-        .icon-btn { background: #fff; border: 1px solid #ddd; border-radius: 8px; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; color: var(--brand-dark); cursor: pointer; }
-        .icon-btn.logout { background-color: var(--brand-red); color: white; border-color: #b01015; }
-
         .fuel-tank-container { background: #222; border-radius: 12px; width: 100%; text-align: center; border: 2px solid #444; position: relative; flex-shrink: 0; overflow: hidden;}
-        .fuel-value { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
+        .fuel-value { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--gauge-green); line-height: 1; }
+        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s ease; }
 
-        .level-strip { background: white; border: 1px solid #eee; border-radius: 6px; padding: 12px; width: 100%; min-height: 60px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin-bottom: 8px; }
+        .level-strip { background: white; border: 1px solid #eee; border-radius: 6px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
 
         /* Mobile Spacing Fixes */
-        .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; padding: 0 5px; flex-shrink: 0; z-index: 10; position: relative; }
-        #powerups-bar { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; margin-top: 10px; margin-bottom: 15px; z-index: 10; }
+        .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; padding: 0 5px; flex-shrink: 0; }
+        #powerups-bar { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; margin-top: 10px; margin-bottom: 15px; }
         .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; margin-bottom: 25px; }
-        #trivia-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; justify-content: center; gap: 15px; z-index: 10; position: relative; margin-bottom: 25px; }
+        #trivia-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; justify-content: center; gap: 15px; margin-bottom: 25px; }
 
         /* Option Styling & Fade Effect */
-        .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: all 0.4s ease; cursor: pointer; display: block; width: 100%; line-height: 1.4; text-transform: none; font-weight: normal;}
+        .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: opacity 0.5s ease, transform 0.5s ease, background-color 0.2s; cursor: pointer; display: block; width: 100%; font-weight: normal; text-align: left;}
         .trivia-option:active { transform: scale(0.98); background: #eee; }
-        .fade-out { opacity: 0; pointer-events: none; transform: scale(0.9); }
-        .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
+        .fade-out { opacity: 0 !important; pointer-events: none !important; transform: translateY(10px); }
+        
+        .float-text { position: fixed; color: var(--brand-red); font-family: 'Share Tech Mono', monospace; font-size: 1.8rem; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 99999; transform: translate(-50%, -50%); animation: floatUp 0.8s ease-out forwards; }
+        @keyframes floatUp { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -100px) scale(1.5); opacity: 0; } }
 
-        /* Takeoff UI - Vertical Gauges */
-        .takeoff-dashboard { display: flex; justify-content: space-around; align-items: flex-end; width: 100%; padding: 15px 10px; background: #1a1a1a; border-radius: 8px; border: 2px solid #333; margin-top: 15px; flex-shrink: 0; pointer-events: none; }
-        .v-gauge-container { display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: 'Share Tech Mono', monospace; font-weight: bold; width: 30%; }
-        .v-gauge-label { color: #888; font-size: 0.8rem; letter-spacing: 1px; }
+        /* Vertical Gauge Styles */
+        .takeoff-dashboard { display: flex; justify-content: space-around; align-items: flex-end; width: 100%; padding: 15px 10px; background: #1a1a1a; border-radius: 8px; border: 2px solid #333; margin-top: 15px; }
+        .v-gauge-container { display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: 'Share Tech Mono', monospace; width: 30%; }
+        .v-gauge-label { color: #888; font-size: 0.75rem; letter-spacing: 1px; }
         .v-gauge-bg { width: 35px; height: 100px; background: #000; border-radius: 4px; border: 1px solid #444; position: relative; overflow: hidden; }
-        .v-gauge-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; transition: height 0.1s linear, background-color 0.2s ease; }
-        .v-gauge-val { font-size: 1rem; min-height: 1.2rem; color: #fff; }
+        .v-gauge-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; transition: height 0.1s linear; }
+        .v-gauge-val { color: #fff; font-size: 1rem; margin-top: 5px; }
 
-        #takeoff-viewport { position: relative; width: 100%; flex-grow: 1; min-height: 250px; max-height: 400px; border: 4px solid #222; border-radius: 8px; overflow: hidden; background-color: #87CEEB; z-index: 5; touch-action: none; cursor: pointer; }
+        #takeoff-viewport { position: relative; width: 100%; flex-grow: 1; min-height: 250px; border: 4px solid #222; border-radius: 8px; overflow: hidden; background-color: #87CEEB; }
         .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; background-repeat: repeat-x; pointer-events: none; }
         #tk-plane { position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px; z-index: 4; pointer-events: none;}
-        #tk-gauge-container { position: absolute; right: 15px; top: 15px; bottom: 60px; width: 20px; background: rgba(0,0,0,0.5); border: 2px solid #fff; z-index: 6; pointer-events: none;}
+        #tk-gauge-container { position: absolute; right: 15px; top: 15px; bottom: 60px; width: 20px; background: rgba(0,0,0,0.5); border: 2px solid #fff; pointer-events: none; }
         #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); }
-        #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; }
+        #tk-needle { position: absolute; left: -5px; right: -5px; bottom: 0%; height: 4px; background: var(--brand-red); }
         
-        #news-ticker-container { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; color: var(--brand-gold); font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; padding: 6px 0; overflow: hidden; white-space: nowrap; z-index: 1000; border-top: 1px solid #333; }
+        #news-ticker-container { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; color: var(--brand-gold); font-family: 'Share Tech Mono', monospace; overflow: hidden; white-space: nowrap; padding: 6px 0; border-top: 1px solid #333;}
         #news-ticker { display: inline-block; padding-left: 100%; animation: ticker linear infinite; }
         @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
     </style>
@@ -132,47 +120,45 @@
     </div>
 
     <div id="golden-plane-modal">
-        <h1 style="color:var(--brand-gold); margin-bottom:10px;">TOP SECRET ASSET UNLOCKED</h1>
-        <p style="color:#ccc; margin-bottom:20px;">Operation "SULLY" Successful. VIP Jet now available for Takeoff.</p>
-        <div style="display:flex; justify-content:center; margin-bottom:30px;">
-            <img src="my-plane-golden.png" alt="Golden Plane" style="width: 100%; max-width: 350px; height: auto; object-fit: contain; border: 2px solid var(--brand-gold); border-radius: 8px; padding: 15px; background: rgba(0,0,0,0.5);">
-        </div>
-        <button class="primary-btn" onclick="document.getElementById('golden-plane-modal').style.display='none'">CLOSE DOSSIER</button>
+        <h1 style="color:var(--brand-gold);">ASSET UNLOCKED</h1>
+        <p style="color:#ccc;">Operation "SULLY" Successful.</p>
+        <img src="my-plane-golden.png" style="width: 80%; margin: 20px 0; border: 2px solid var(--brand-gold); border-radius: 8px;">
+        <button class="primary-btn" onclick="document.getElementById('golden-plane-modal').style.display='none'">CLOSE</button>
     </div>
 
     <div id="selector-view" class="view-section">
         <div class="dashboard-header">
-            <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div class="icon-btn logout" onclick="triggerResetUI()">LOGOUT</div>
-                <div style="flex-grow: 1; text-align: center;"><h1>Fuel Command</h1><h2 id="pilot-greeting">Welcome Pilot</h2></div>
+            <div style="width: 100%; display: flex; justify-content: space-between; margin-bottom: 12px;">
+                <div class="icon-btn logout" onclick="triggerResetUI()">RESET</div>
+                <h1>Fuel Command</h1>
                 <div style="width: 36px;"></div>
             </div>
-            <div class="fuel-tank-container" style="flex: 1; padding: 12px 8px;">
+            <div class="fuel-tank-container" style="padding: 12px;">
                 <div class="fuel-value" style="font-size: 1.6rem;"><span id="total-fuel-display">0</span>L</div>
-                <div style="width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px;"><div class="fuel-bar-fill" id="fuel-bar" style="width:0%;"></div></div>
-                <div id="password-container" style="margin-top: 15px;"></div>
+                <div style="width:100%; height:8px; background:#444; margin-top:8px; border-radius: 4px;"><div class="fuel-bar-fill" id="fuel-bar" style="width:0%;"></div></div>
+                <div id="password-container" style="margin-top: 10px;"></div>
             </div>
         </div>
         <div id="level-list-container" style="width:100%; flex-grow:1; overflow-y:auto; margin-top:15px;"></div>
-        <div class="footer-buttons" style="width:100%"><button class="radar-btn" onclick="openRadar()">LIVE RADAR OPS</button></div>
+        <button class="radar-btn" onclick="openRadar()">LIVE RADAR OPS</button>
     </div>
 
     <div id="game-view" class="view-section">
         <div class="game-header">
-            <div class="icon-btn" onclick="saveAndExit()"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></div>
+            <div class="icon-btn" onclick="saveAndExit()">BACK</div>
             <div id="level-title" style="font-weight:bold;">Flight</div>
-            <div class="mini-fuel" id="current-fuel-display"><span id="fuel-val">0</span>L <span id="aux-fuel-display" style="color:var(--aux-blue);"></span></div>
+            <div class="mini-fuel" id="current-fuel-display"><span id="fuel-val">0</span>L</div>
         </div>
         
         <div id="powerups-bar">
-            <div class="pu-btn" onclick="useIntelScan()">SCAN <div class="pu-badge" id="badge-pu-scan">0</div></div>
-            <div class="pu-btn" onclick="usePrecisionDrone()">DRONE <div class="pu-badge" id="badge-pu-drone">0</div></div>
-            <div class="pu-btn" onclick="useFuelPod()">FUEL <div class="pu-badge" id="badge-pu-fuel">0</div></div>
+            <div class="pu-btn" onclick="useIntelScan()">SCAN <span id="badge-pu-scan">0</span></div>
+            <div class="pu-btn" onclick="usePrecisionDrone()">DRONE <span id="badge-pu-drone">0</span></div>
+            <div class="pu-btn" onclick="useFuelPod()">FUEL <span id="badge-pu-fuel">0</span></div>
         </div>
 
         <div id="image-game-area">
             <div id="game-wrapper"><div id="game-container"><img id="mystery-image" src=""><div id="cover-grid"></div></div></div>
-            <div class="options-container" id="image-options-container">
+            <div class="options-container">
                 <button class="trivia-option" id="img-opt-0" onclick="submitImageGuess(event, 0)"></button>
                 <button class="trivia-option" id="img-opt-1" onclick="submitImageGuess(event, 1)"></button>
                 <button class="trivia-option" id="img-opt-2" onclick="submitImageGuess(event, 2)"></button>
@@ -181,7 +167,6 @@
 
         <div id="trivia-game-area">
             <div class="trivia-dossier">
-                <div class="trivia-title">Flight Assessment</div>
                 <div id="trivia-question">?</div>
                 <div id="trivia-options-container">
                     <button class="trivia-option" id="btn-opt-0" onclick="submitTrivia(event, 0)"></button>
@@ -193,9 +178,11 @@
 
         <div id="takeoff-game-area">
             <div id="takeoff-viewport">
-                <div id="tk-touch-prompt">TAP TO PULL UP</div><div id="tk-bg-sky" class="parallax-layer"></div><div id="tk-bg-city" class="parallax-layer"></div><div id="tk-bg-ground" class="parallax-layer"></div>
-                <div id="tk-weather-overlay"></div><div id="tk-gauge-container"><div id="tk-target-zone"></div><div id="tk-needle"></div></div>
-                <div id="tk-mountain"><svg viewBox="0 0 100 100" shape-rendering="crispEdges" width="100%" height="100%"><rect x="50" y="40" width="10" height="60" fill="#3b3b3b"/><rect x="40" y="50" width="30" height="50" fill="#4a4a4a"/><rect x="20" y="60" width="70" height="40" fill="#2d2d2d"/><rect x="0" y="70" width="100" height="30" fill="#1f1f1f"/><rect x="50" y="40" width="10" height="10" fill="#fff"/><rect x="40" y="50" width="10" height="10" fill="#eee"/><rect x="60" y="50" width="10" height="10" fill="#eee"/></svg></div>
+                <div id="tk-touch-prompt">TAP TO PULL UP</div>
+                <div id="tk-bg-sky" class="parallax-layer"></div>
+                <div id="tk-bg-city" class="parallax-layer"></div>
+                <div id="tk-bg-ground" class="parallax-layer"></div>
+                <div id="tk-gauge-container"><div id="tk-target-zone"></div><div id="tk-needle"></div></div>
                 <div id="tk-plane"></div>
                 <div id="tk-runway"><div id="tk-runway-surface"></div></div>
             </div>
@@ -204,35 +191,34 @@
                 <div class="v-gauge-container">
                     <div class="v-gauge-label">SPEED</div>
                     <div class="v-gauge-bg"><div class="v-gauge-fill" id="tk-speed-bar" style="background:var(--brand-red);"></div></div>
-                    <div class="v-gauge-val" id="tk-speed-val" style="color:var(--brand-red);">0</div>
+                    <div class="v-gauge-val" id="tk-speed-val">0</div>
                 </div>
                 <div class="v-gauge-container">
                     <div class="v-gauge-label">RUNWAY</div>
                     <div class="v-gauge-bg"><div class="v-gauge-fill" id="tk-runway-fill" style="background:var(--gauge-orange);"></div></div>
-                    <div class="v-gauge-val" style="color:var(--gauge-orange);">DIST</div>
+                    <div class="v-gauge-val">DIST</div>
                 </div>
                 <div class="v-gauge-container">
                     <div class="v-gauge-label">LIFT</div>
                     <div class="v-gauge-bg"><div class="v-gauge-fill" id="tk-lift-fill" style="background:var(--gauge-green);"></div></div>
-                    <div class="v-gauge-val" style="color:var(--gauge-green);">TARGET</div>
+                    <div class="v-gauge-val">TARGET</div>
                 </div>
             </div>
         </div>
         <div id="message"></div>
     </div>
-
-    <div id="news-ticker-container"><div id="news-ticker">INITIALIZING SECURE COMMS...</div></div>
     <script>
-        // ... (Include your ICONS, AIRCRAFT_DATA, and TRIVIA_DATA constants here) ...
+        // ... (Keep your existing ICONS, AIRCRAFT_DATA, and TRIVIA_DATA arrays here) ...
 
         var TARGET_PASSWORD = "SULLY";
         var tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, lastFrameTime: 0, initialDistance: 100 };
 
-        // --- TAKEOFF LOGIC WITH GLOBAL TAP ANYWHERE ---
+        // --- TAKEOFF CONTROL ---
         function handleTkPress(e) { 
             if (!tkState.active) return;
-            // Prevent interaction if tapping UI elements
             if (e.target.closest('button') || e.target.closest('.pu-btn') || e.target.closest('.icon-btn')) return;
+            
+            // Standard clientX/Y works for both mouse and mobile 'click/pointer' events
             if (e.cancelable) e.preventDefault();
             
             if (tkState.speed < 140) {
@@ -250,6 +236,7 @@
         function handleTkRelease() { tkState.pressing = false; }
 
         window.onload = function() {
+            // Global Listeners for Takeoff
             window.addEventListener('pointerdown', handleTkPress);
             window.addEventListener('touchstart', (e) => { if (tkState.active) handleTkPress(e); }, {passive: false});
             window.addEventListener('pointerup', handleTkRelease);
@@ -257,118 +244,60 @@
 
             preloadGameAssets(() => {
                 loadState();
-                fetchAviationNews();
                 if (!globalState.username) { document.getElementById('login-overlay').style.display = 'flex'; } 
                 else { document.getElementById('selector-view').classList.add('active'); renderDashboard(); }
             });
         };
 
-        // --- OPTION SELECTION LOGIC WITH FADE AND FLOATING PENALTY ---
+        // --- WRONG ANSWER FADE & FLOAT ---
         function submitImageGuess(e, selectedIndex) {
             const lState = globalState.levels[activeLevelIdx];
             if(lState.completed || globalState.currentFuel <= 0) return;
-
-            if(selectedIndex === lState.correctIdx) {
-                e.target.style.backgroundColor = "var(--gauge-green)";
-                e.target.style.color = "white";
-                endGame(true);
-            } else {
-                handleWrongAnswer(e);
-            }
+            if(selectedIndex === lState.correctIdx) endGame(true); 
+            else handleWrongAnswer(e);
         }
 
         function submitTrivia(e, selectedIndex) {
             const lState = globalState.levels[activeLevelIdx];
             if(lState.completed || globalState.currentFuel <= 0) return;
-
-            if(selectedIndex === lState.correctIdx) {
-                e.target.style.backgroundColor = "var(--gauge-green)";
-                e.target.style.color = "white";
-                endGame(true);
-            } else {
-                handleWrongAnswer(e);
-            }
+            if(selectedIndex === lState.correctIdx) endGame(true); 
+            else handleWrongAnswer(e);
         }
 
         function handleWrongAnswer(e) {
             const btn = e.currentTarget;
-            let cx = e.clientX || (e.touches && e.touches[0].clientX);
-            let cy = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            // Safely get coordinates for floating text
+            let cx = e.clientX;
+            let cy = e.clientY;
+            
+            // Handle case where click is triggered by enter key or detail is missing
+            if (!cx || !cy) {
+                const rect = btn.getBoundingClientRect();
+                cx = rect.left + rect.width / 2;
+                cy = rect.top + rect.height / 2;
+            }
 
-            // Trigger floating text and fuel drain
-            if (cx && cy) showFloat(cx, cy, `-${WRONG_GUESS_PENALTY}`);
+            showFloat(cx, cy, `-${WRONG_GUESS_PENALTY}L`);
             drainFuel(WRONG_GUESS_PENALTY);
 
-            // Add fade-out effect to the specific button
+            // Trigger the CSS Fade-Out
             btn.classList.add('fade-out');
 
             if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false);
         }
 
-        function launchLevel(idx) {
-            activeLevelIdx = idx; const lState = globalState.levels[idx];
-            document.getElementById('selector-view').classList.remove('active'); document.getElementById('hangar-view').classList.remove('active');
-            const gameView = document.getElementById('game-view'); gameView.classList.add('active');
-
-            // Reset visibility of all options
-            document.querySelectorAll('.trivia-option').forEach(btn => {
-                btn.classList.remove('fade-out');
-                btn.style.backgroundColor = "";
-                btn.style.color = "";
-            });
-
-            let title = lState.completed ? lState.name : (lState.type === 'trivia' ? "Flight Assessment" : lState.type === 'takeoff' ? "Takeoff Calibration" : "Classified");
-            document.getElementById('level-title').textContent = title;
-            updateMiniFuelUI();
-
-            const imgArea = document.getElementById('image-game-area'); const triviaArea = document.getElementById('trivia-game-area'); const takeoffArea = document.getElementById('takeoff-game-area');
-            imgArea.style.display = 'none'; triviaArea.style.display = 'none'; takeoffArea.style.display = 'none';
-
-            if (lState.type === 'image') {
-                imgArea.style.display = 'flex';
-                document.getElementById('mystery-image').src = lState.image;
-                lState.options.forEach((optText, i) => { 
-                    const btn = document.getElementById('img-opt-' + i); 
-                    if(btn) { btn.textContent = optText; btn.disabled = lState.completed; }
-                });
-                const grid = document.getElementById('cover-grid'); grid.innerHTML = "";
-                for (let i = 0; i < 100; i++) {
-                    const tile = document.createElement('div'); tile.className = 'grid-piece';
-                    if (lState.revealedTiles && lState.revealedTiles.includes(i)) tile.classList.add('revealed');
-                    grid.appendChild(tile);
-                }
-                if (!lState.completed) grid.onpointerdown = handleInteraction;
-            } else if (lState.type === 'trivia') {
-                triviaArea.style.display = 'flex';
-                document.getElementById('trivia-question').textContent = lState.question;
-                lState.options.forEach((optText, i) => {
-                    const btn = document.getElementById('btn-opt-' + i);
-                    if(btn) { btn.textContent = optText; btn.disabled = lState.completed; }
-                });
-            } else if (lState.type === 'takeoff') {
-                takeoffArea.style.display = 'flex';
-                let targetNoSpace = TARGET_PASSWORD.replace(/ /g, '');
-                let isGoldenPlaneUnlocked = (globalState.passwordRevealed && globalState.passwordRevealed.length >= targetNoSpace.length);
-                const planeEl = document.getElementById('tk-plane');
-                planeEl.innerHTML = `<img src="${isGoldenPlaneUnlocked ? 'my-plane-golden.png' : 'my-plane.png'}" style="width: 125%; height: 125%; object-fit: contain;">`;
-                
-                const th = THEMES[lState.hangar] || THEMES[1]; 
-                document.getElementById('tk-bg-sky').style.backgroundImage = th.sky;
-                document.getElementById('tk-bg-city').style.backgroundImage = th.city;
-                document.getElementById('tk-bg-ground').style.backgroundImage = th.ground;
-
-                if (!lState.completed) {
-                    if (!globalState.hasSeenTakeoffTutorial) document.getElementById('takeoff-tutorial-overlay').style.display = 'flex';
-                    else startTakeoff();
-                } else {
-                    document.getElementById('tk-speed-bar').style.height = '70%';
-                    document.getElementById('tk-lift-fill').style.height = '100%';
-                    document.getElementById('tk-runway-fill').style.height = '0%';
-                }
-            }
+        function showFloat(x, y, text) { 
+            const el = document.createElement('div'); 
+            el.className = 'float-text'; 
+            el.textContent = text; 
+            el.style.left = x + 'px'; 
+            el.style.top = y + 'px'; 
+            document.body.appendChild(el); 
+            setTimeout(() => el.remove(), 800); 
         }
 
-        // --- ANIMATING THE VERTICAL GAUGES ---
+        // --- TAKEOFF LOGIC ---
         function startTakeoff() {
             tkState.active = true; tkState.speed = 0; tkState.lift = 0; tkState.pitch = 0;
             tkState.lastFrameTime = performance.now();
@@ -394,20 +323,18 @@
             if (tkState.speed >= 140 && tkState.pitch >= tkState.minAngle && tkState.pitch <= tkState.maxAngle) tkState.lift += 0.5;
             else tkState.lift = Math.max(0, tkState.lift - 0.2);
 
-            // Update Heights
+            // Update Vertical Bars
             document.getElementById('tk-speed-bar').style.height = (tkState.speed / 220 * 100) + '%';
             document.getElementById('tk-speed-val').textContent = Math.floor(tkState.speed);
             document.getElementById('tk-runway-fill').style.height = (tkState.distance / tkState.initialDistance * 100) + '%';
             document.getElementById('tk-lift-fill').style.height = tkState.lift + '%';
 
-            // Sync visual plane and gauge
             const liftY = (tkState.lift / 100) * 100;
             document.getElementById('tk-plane').style.transform = `translateY(-${liftY}px) rotate(-${tkState.pitch}deg)`;
             document.getElementById('tk-needle').style.bottom = `${(tkState.pitch / 30) * 100}%`;
 
             if (tkState.lift >= 100) return winTakeoff();
             if (tkState.distance <= 0) return explodePlane();
-            
             tkState.frameId = requestAnimationFrame(takeoffLoop);
         }
 
@@ -417,5 +344,7 @@
             startTakeoff();
         }
 
-        // ... (Keep your existing Firebase, load/save, and radar mission functions) ...
+        // ... (Include your helper functions: loadState, saveState, renderDashboard, updateMiniFuelUI, drainFuel, openRadar, etc.) ...
     </script>
+</body>
+</html>

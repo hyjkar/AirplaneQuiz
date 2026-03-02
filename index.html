@@ -281,6 +281,72 @@
         .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
         .tutorial-text { color: #ccc; font-size: 1rem; margin-bottom: 20px; text-align: left; line-height: 1.5; }
         .tutorial-text strong { color: #fff; }
+
+        /* =========================================
+           UNIVERSAL TACTILE BUTTON FEEDBACK
+           ========================================= */
+        
+        /* Standard text buttons (Start, Host, Join, Cancel, etc.) */
+        button {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), filter 0.1s ease, background-color 0.2s !important;
+        }
+        button:active:not(:disabled) {
+            transform: scale(0.94) !important;
+            filter: brightness(0.85);
+        }
+
+        /* Square dashboard icons & close buttons */
+        .icon-btn {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.1s !important;
+        }
+        .icon-btn:active {
+            transform: scale(0.88) !important;
+            filter: brightness(0.9);
+        }
+
+        /* Power-up buttons */
+        .pu-btn {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), box-shadow 0.1s ease !important;
+        }
+        .pu-btn:active:not(.empty) {
+            transform: scale(0.88) !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+        }
+
+        /* Trivia and Image Guess Answer Options */
+        .trivia-option {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.2s, filter 0.1s ease !important;
+        }
+        .trivia-option:active:not(:disabled) {
+            transform: scale(0.96) !important;
+            filter: brightness(0.95);
+        }
+
+        /* Level Selector Strips */
+        .level-strip {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.1s, filter 0.1s ease !important;
+        }
+        .level-strip:active:not(.locked) {
+            transform: scale(0.96) !important;
+            filter: brightness(0.95);
+        }
+
+        /* Hangar Folders */
+        .world-folder {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.1s, filter 0.1s ease !important;
+        }
+        .world-folder:active:not(.locked-world) {
+            transform: scale(0.96) !important;
+            filter: brightness(0.95);
+        }
+
+        /* Live Radar Toggle Filters */
+        .radar-toggle {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.2s !important;
+        }
+        .radar-toggle:active {
+            transform: scale(0.90) !important;
+        }
     </style>
 </head>
 <body>
@@ -300,14 +366,14 @@
         </div>
     </div>
 
-    <div id="takeoff-tutorial-overlay">
+<div id="takeoff-tutorial-overlay">
         <div class="modal-box">
             <h1 style="color: var(--brand-gold); margin-bottom: 15px;">FLIGHT MANUAL</h1>
-            <p class="tutorial-text">
-                1. Wait for your speed to reach <strong style="color:var(--gauge-green)">140 KTS</strong>. <br>
-                2. Tap and <strong>HOLD ANYWHERE</strong> on the view screen to pull the nose up.<br><br>
-                3. Keep the needle in the <strong style="color:var(--gauge-green)">GREEN ZONE</strong> to gain lift before the runway ends!<br><br>
-                <span style="color:#aaa; font-size:0.9rem;">⚠️ You have 3 attempts to earn a fuel bonus. If you fail, the mission is aborted.</span>
+            <p class="tutorial-text" style="line-height: 1.8;">
+                <strong>1. WAIT</strong> for speed to hit <strong style="color:var(--gauge-green)">140</strong>.<br>
+                <strong>2. PRESS & HOLD</strong> to pull the nose up.<br>
+                <strong>3. KEEP</strong> the needle in the <strong style="color:var(--gauge-green)">GREEN</strong> to fly!<br><br>
+                <span style="color:#aaa; font-size:0.85rem;">⚠️ 3 attempts maximum. Don't run out of runway!</span>
             </p>
             <button class="gold-btn" onclick="startTakeoffFromTutorial()">START ENGINES</button>
         </div>
@@ -1308,18 +1374,21 @@ ground.style.backgroundImage = th.ground;
 
         function startTakeoffFromTutorial() { globalState.hasSeenTakeoffTutorial = true; saveState(); document.getElementById('takeoff-tutorial-overlay').style.display = 'none'; setTimeout(() => { startTakeoff(); }, 100); }
 
-function startTakeoff() {
+        function startTakeoff() {
             document.querySelectorAll('.pixel-particle').forEach(el => el.remove()); 
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
             
-            // --- FIX: 50% longer runway for Hangars 3, 4, and 5 ---
             let hNum = globalState.levels[activeLevelIdx].hangar;
             tkState.initialDistance = (hNum >= 3) ? 150 : 100; 
-            // ------------------------------------------------------
             
             tkState.active = true; tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0; 
-            tkState.distance = tkState.initialDistance; // Starts at the new distance
+            tkState.distance = tkState.initialDistance; 
             tkState.speed = 0; tkState.pressing = false; 
+            
+            // --- NEW: Track if the plane has achieved lift yet ---
+            tkState.hasLiftedOff = false; 
+            // -----------------------------------------------------
+
             tkState.bgPosSky = 0; tkState.bgPosCity = 0; tkState.bgPosGround = 0; tkState.bgPosRunway = 0;
             
             document.getElementById('tk-touch-prompt').style.display = 'block'; 
@@ -1369,6 +1438,15 @@ function startTakeoff() {
             } else { 
                 tkState.lift = Math.max(0, tkState.lift - 0.2); 
             }
+
+            // --- NEW: Check for bounces and trigger sparks ---
+            if (tkState.lift > 0) {
+                tkState.hasLiftedOff = true; // The plane successfully caught air!
+            } else if (tkState.hasLiftedOff && tkState.lift === 0 && tkState.speed > 50) {
+                // It had air, but dropped back to 0 while moving fast!
+                createSparks();
+            }
+            // -------------------------------------------------
             
             const maxLiftY = 100; 
             const liftY = (tkState.lift / 100) * maxLiftY; 
@@ -1393,10 +1471,7 @@ function startTakeoff() {
             document.getElementById('tk-bg-ground').style.backgroundPosition = tkState.bgPosGround + 'px 100%'; 
             document.getElementById('tk-runway-surface').style.backgroundPosition = tkState.bgPosRunway + 'px 0px';
             
-            // --- FIX: UI progress bar scales perfectly to the newly assigned runway length ---
             document.getElementById('tk-runway-fill').style.width = Math.max(0, (tkState.distance / tkState.initialDistance) * 100) + '%'; 
-            // --------------------------------------------------------------------------------
-            
             document.getElementById('tk-lift-fill').style.width = Math.min(100, tkState.lift) + '%';
             
             if (tkState.distance < 15) { 
@@ -1428,7 +1503,58 @@ function startTakeoff() {
                 x += vx; y += vy; vy += 0.1; vx *= 0.99; p.style.left = x + 'px'; p.style.top = y + 'px'; requestAnimationFrame(step);
             } requestAnimationFrame(step);
         }
+function createSparks() {
+            const vp = document.getElementById('takeoff-viewport');
+            if (!vp) return;
+            const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#ffffff']; // Yellow, orange, red, white
+            
+            // Create 2-3 sparks per frame
+            for(let i = 0; i < 2; i++) {
+                let p = document.createElement('div');
+                p.className = 'pixel-particle';
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                p.style.width = '3px';
+                p.style.height = '3px';
+                
+                // Position sparks near the back wheels of the plane (x: ~30px, y: runway level)
+                let startX = 30 + Math.random() * 20; 
+                let startY = vp.offsetHeight - 32; 
+                
+                p.style.left = startX + 'px';
+                p.style.top = startY + 'px';
+                vp.appendChild(p);
 
+                // Shoot sparks backwards and slightly upwards
+                let vx = -(Math.random() * 5 + 3); 
+                let vy = -(Math.random() * 3 + 1); 
+
+                animateSpark(p, vx, vy);
+            }
+        }
+
+        function animateSpark(p, vx, vy) {
+            let x = parseFloat(p.style.left);
+            let y = parseFloat(p.style.top);
+            let age = 0;
+            let maxAge = 15 + Math.random() * 15; // Sparks burn out quickly
+            
+            function step() {
+                age++;
+                if (age > maxAge) { p.remove(); return; }
+                
+                x += vx;
+                y += vy;
+                vy += 0.3; // Gravity pulls the spark back down to the runway
+                
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                p.style.opacity = 1 - (age / maxAge); // Fade out as it ages
+                
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+        
         function failTakeoff(reason) {
             const lState = globalState.levels[activeLevelIdx]; lState.attempts = (lState.attempts || 0) + 1; drainFuel(WRONG_GUESS_PENALTY);
             if (lState.attempts >= 3) {

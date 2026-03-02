@@ -54,8 +54,14 @@
         #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
         #takeoff-tutorial-overlay { background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); }
         #golden-plane-modal { background: rgba(0,0,0,0.95); z-index: 20000; overflow-y: auto; }
+        
+        /* FIXED SIZING FOR RADAR POPUP SO IT DOES NOT JUMP */
         #intercept-overlay { background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%); backdrop-filter: none; justify-content: flex-end; padding-bottom: 40px; pointer-events: auto; }
-        #intercept-box { min-height: 220px; display: flex; flex-direction: column; justify-content: center; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(8px); }
+        #intercept-box { width: 90%; max-width: 290px; height: 230px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(8px); padding: 20px 15px; box-sizing: border-box; }
+        #intercept-title { font-size: 1.3rem; margin: 0; height: 25px; display: flex; align-items: center; text-align: center; }
+        #intercept-desc { margin: 0; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; text-align: center; line-height: 1.3; }
+        #encrypted-callsign { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: #fff; letter-spacing: 5px; font-size: 1.8rem; height: 40px; display: flex; align-items: center; justify-content: center; margin: 0; }
+        #intercept-buttons { margin: 0; width: 100%; height: 45px; }
         
         @media screen and (orientation: landscape) and (max-height: 600px) { #orientation-lock { display: flex; } }
 
@@ -157,7 +163,7 @@
         .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; display: flex; align-items: center; gap: 6px; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
 
-        /* GRID TILES & BOUNCE ANIMATION */
+        /* GRID TILES & THE NEW DYNAMIC JUMP AWAY SCATTER ANIMATION */
         #image-game-area { width: 100%; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; z-index: 10; position: relative; }
         #game-wrapper { background: transparent; box-shadow: none; border-radius: 0; padding: 0; width: 100%; margin-bottom: 10px; position: relative; flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center; }
         #game-container { position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; background-color: #000; border: 2px solid #ccc; cursor: pointer; overflow: hidden; border-radius: 4px;}
@@ -171,12 +177,12 @@
         .grid-piece.scanned { z-index: 9999 !important; border: 2px solid var(--aux-blue) !important; box-shadow: 0 0 20px var(--aux-blue) !important; background: var(--aux-blue) !important; }
         .grid-piece.scanned::after { color: #fff; }
         
-        /* The magical Pop-Off jump effect */
-        .grid-piece.pop-off { animation: tilePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important; z-index: 20; }
-        @keyframes tilePop {
-            0% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
-            40% { transform: scale(1.15) translateY(-10px) rotate(6deg); opacity: 1; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-            100% { transform: scale(0.3) translateY(30px) rotate(-15deg); opacity: 0; }
+        /* The dynamic Scatter/Jump Away effect controlled by JS CSS vars */
+        .grid-piece.pop-off { animation: scatterAway 0.5s ease-out forwards !important; z-index: 20; pointer-events: none; }
+        @keyframes scatterAway {
+            0% { transform: scale(1) translate(0, 0) rotate(0deg); opacity: 1; }
+            30% { transform: scale(1.2) translate(calc(var(--tx, 0px) * 0.2), calc(var(--ty, 0px) * 0.2)) rotate(calc(var(--rot, 0deg) * 0.2)); opacity: 1; box-shadow: 0 15px 25px rgba(0,0,0,0.5); }
+            100% { transform: scale(1.5) translate(var(--tx, 0px), var(--ty, 0px)) rotate(var(--rot, 0deg)); opacity: 0; }
         }
         
         .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; margin-bottom: 22px; }
@@ -192,7 +198,7 @@
         @keyframes scanPop { 0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 20% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -70%) scale(1.1); } }
         @keyframes scanPulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
 
-        /* TRIVIA MODE & FADE OUT */
+        /* TRIVIA MODE - Original colors restored, CSS Fade added */
         #trivia-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; justify-content: center; gap: 15px; z-index: 10; position: relative; margin-bottom: 20px; }
         .trivia-dossier { background: #fff; border: 2px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .trivia-title { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: #888; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
@@ -200,11 +206,12 @@
         #trivia-options-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         #trivia-options-container .trivia-option { text-align: left; } 
         
-        .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: opacity 0.5s ease, transform 0.5s ease, background-color 0.2s; cursor: pointer; display: block; width: 100%; line-height: 1.4; white-space: normal; word-wrap: break-word; text-transform: none; font-weight: normal;}
+        .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: opacity 0.5s ease 0.2s, transform 0.5s ease 0.2s, background-color 0.2s; cursor: pointer; display: block; width: 100%; line-height: 1.4; white-space: normal; word-wrap: break-word; text-transform: none; font-weight: normal;}
         .trivia-option:active { transform: scale(0.98); background: #eee; }
-        .fade-out { opacity: 0 !important; pointer-events: none !important; transform: translateY(10px); }
+        .fade-out { opacity: 0 !important; pointer-events: none !important; transform: scale(0.95); }
+        .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
 
-        /* TAKEOFF MINI GAME - Vertical Gauges */
+        /* TAKEOFF MINI GAME - Vertical Dashboard */
         #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; position: relative;}
         .takeoff-dashboard { display: flex; justify-content: space-around; align-items: flex-end; width: 100%; padding: 15px 10px; background: #1a1a1a; border-radius: 8px; border: 2px solid #333; margin-top: 15px; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); z-index: 20; position: relative; flex-shrink: 0; pointer-events: none;}
         .v-gauge-container { display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: 'Share Tech Mono', monospace; font-weight: bold; width: 30%; }
@@ -232,7 +239,7 @@
         .pixel-particle { position: absolute; width: 6px; height: 6px; z-index: 10; pointer-events: none; background: #fff;}
         .flash-screen { animation: whiteFlash 0.6s ease-out; }
         @keyframes whiteFlash { 0% { filter: brightness(1); } 10% { filter: brightness(4) contrast(1.5); } 100% { filter: brightness(1); } }
-        #tk-touch-prompt { position: absolute; top: 45%; left: 0; width: 100%; text-align: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 1.3rem; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; pointer-events: none; animation: pulseText 1.5s infinite; z-index: 8; }
+        #tk-touch-prompt { position: absolute; top: 20px; left: 0; width: 100%; text-align: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 1.3rem; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; pointer-events: none; animation: pulseText 1.5s infinite; z-index: 8; }
         @keyframes pulseText { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
         /* RADAR MODE */
@@ -334,9 +341,9 @@
 
     <div id="intercept-overlay">
         <div class="modal-box danger" id="intercept-box">
-            <h1 id="intercept-title" style="color: var(--brand-red); margin-bottom: 10px;">CONFIRM INTERCEPT</h1>
-            <p id="intercept-desc" style="color: #ccc; font-size: 0.9rem;">Target signature encrypted:</p>
-            <div id="encrypted-callsign" style="font-family: 'Share Tech Mono', monospace; font-size: 2.2rem; font-weight: bold; color: #fff; margin: 15px 0; letter-spacing: 5px;">***</div>
+            <h1 id="intercept-title" style="color: var(--brand-red);">CONFIRM INTERCEPT</h1>
+            <p id="intercept-desc" style="color: #ccc;">Target signature encrypted:</p>
+            <div id="encrypted-callsign">***</div>
             <div class="modal-buttons" id="intercept-buttons">
                 <button class="cancel-btn" onclick="cancelIntercept()">CANCEL</button>
                 <button class="danger-btn" onclick="confirmIntercept()">AUTHORIZE</button>
@@ -378,7 +385,7 @@
             <h1 style="color: var(--gauge-green); margin-bottom: 10px;">SUPPLY DROP</h1>
             <p style="margin-bottom: 15px; color: #fff; font-size: 1.1rem; line-height:1.5;">
                 Hangar Completed.<br>
-                <strong style="color: var(--gauge-green);">+2000L Fuel Reserves</strong><br>
+                <strong style="color: var(--gauge-green);">+500L Fuel Reserves</strong><br>
                 <span style="color: var(--brand-gold); display:block; margin-top:5px; font-weight:bold;">+1 Feline Trophy</span>
                 <span style="color: var(--aux-blue); display:block; margin-top:5px; font-weight:bold;">+1 Intel Scan</span>
                 <span style="color: var(--brand-red); display:block; font-weight:bold;">+1 Precision Drone</span>
@@ -588,10 +595,18 @@
         <div id="message"></div>
     </div>
 
-    <div id="leaderboard-view" class="view-section">
-        <div style="flex-shrink: 0; width:100%; text-align:center;"><h1>Global Standings</h1><h2 style="margin-bottom: 10px;">Top Fuel Reserves</h2></div>
+<div id="leaderboard-view" class="view-section">
+        <div class="dashboard-header">
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div class="icon-btn" onclick="closeLeaderboard()"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></div>
+                <div style="flex-grow: 1; text-align: center;">
+                    <h1 style="margin:0;">Global Standings</h1>
+                    <h2 style="margin: 2px 0 0 0; color:#777;">Top Fuel Reserves</h2>
+                </div>
+                <div style="width: 36px; height: 36px;"></div>
+            </div>
+        </div>
         <div id="leaderboard-list">Connecting to HQ...</div>
-        <div class="footer-buttons"><button class="primary-btn" onclick="closeLeaderboard()">Back to Command</button></div>
     </div>
 
     <div id="radar-view" class="view-section">
@@ -692,7 +707,7 @@
             9: { latOffset: 26, lngOffset: 42, planes: 56, hints: 6 }, 10: { latOffset: 30, lngOffset: 50, planes: 64, hints: 7 } 
         };
 
-        var STARTING_GLOBAL_FUEL = 4000; var REFUEL_AMOUNT = 2000; var TILE_COST = 15; var WRONG_GUESS_PENALTY = 200;
+        var STARTING_GLOBAL_FUEL = 4000; var REFUEL_AMOUNT = 500; var TILE_COST = 15; var WRONG_GUESS_PENALTY = 200;
 
         let db = null; let radarMap = null; let radarLayerGroup = null; let radarPathGroup = null; let radarCountdown = null;
         let radarTimeMs = 1800000; let lastTimerTick = 0; let encryptionInterval = null; let menuPasswordInterval = null;
@@ -1161,6 +1176,13 @@
             if(p.fuelPods > 0) btnFuel.classList.remove('empty'); else btnFuel.classList.add('empty');
         }
 
+        function popTile(tile, intensity = 1) {
+            tile.style.setProperty('--tx', (Math.random() * 300 * intensity - 150 * intensity) + 'px');
+            tile.style.setProperty('--ty', (Math.random() * 300 * intensity - 150 * intensity) + 'px');
+            tile.style.setProperty('--rot', (Math.random() * 90 - 45) + 'deg');
+            tile.classList.add('revealed', 'pop-off');
+        }
+
         function useIntelScan() {
             const lState = globalState.levels[activeLevelIdx]; if (lState.completed || globalState.powerups.scans <= 0) return;
             globalState.powerups.scans -= 1; saveState(); updatePowerupsUI();
@@ -1179,7 +1201,15 @@
                 if(!lState.revealedTiles) lState.revealedTiles = [];
                 let unrevealed = []; for(let i=0; i<100; i++) { if(!lState.revealedTiles.includes(i)) unrevealed.push(i); }
                 unrevealed.sort(() => Math.random() - 0.5); let toReveal = unrevealed.slice(0, 15); lState.revealedTiles.push(...toReveal); saveState();
-                const grid = document.getElementById('cover-grid'); toReveal.forEach(idx => { let tile = grid.children[idx]; if(tile) { tile.style.transition = 'opacity 0.5s ease, background 0.2s'; tile.style.background = 'var(--brand-red)'; setTimeout(() => tile.classList.add('revealed', 'pop-off'), 200); } });
+                const grid = document.getElementById('cover-grid'); 
+                toReveal.forEach(idx => { 
+                    let tile = grid.children[idx]; 
+                    if(tile) { 
+                        tile.style.transition = 'background 0.2s'; 
+                        tile.style.background = 'var(--brand-red)'; 
+                        setTimeout(() => popTile(tile), 200); 
+                    } 
+                });
             } else if (lState.type === 'trivia') {
                 let wrongIndices = []; lState.options.forEach((opt, i) => { if(i !== lState.correctIdx) { const btn = document.getElementById('btn-opt-' + i); if(btn && !btn.disabled && !btn.classList.contains('fade-out')) wrongIndices.push(i); } });
                 if(wrongIndices.length > 0) { let target = wrongIndices[Math.floor(Math.random() * wrongIndices.length)]; const btn = document.getElementById('btn-opt-' + target); btn.disabled = true; btn.style.opacity = '0.3'; btn.style.textDecoration = 'line-through'; }
@@ -1199,7 +1229,7 @@
             // Reset options
             document.querySelectorAll('.trivia-option').forEach(btn => {
                 btn.classList.remove('fade-out', 'wrong-flash');
-                btn.style.backgroundColor = ""; btn.style.color = ""; btn.style.opacity = ""; btn.style.textDecoration = ""; btn.disabled = lState.completed;
+                btn.style.backgroundColor = ""; btn.style.color = ""; btn.style.opacity = ""; btn.style.textDecoration = ""; btn.style.transform = ""; btn.disabled = lState.completed;
             });
 
             let title = lState.completed ? lState.name : (lState.type === 'trivia' ? "Flight Assessment" : lState.type === 'takeoff' ? "Takeoff Calibration" : "Classified");
@@ -1247,7 +1277,6 @@
             }
         }
 
-        // --- WRONG ANSWER LOGIC (COLOR, FADE, FLOAT) ---
         function submitImageGuess(e, selectedIndex) {
             const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
             const btn = e.currentTarget || e.target;
@@ -1278,7 +1307,9 @@
         function handleInteraction(e) {
             const lState = globalState.levels[activeLevelIdx]; if (lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
             const hidden = Array.from(document.querySelectorAll('.grid-piece:not(.revealed)')); if (hidden.length === 0) return;
-            const tile = hidden[Math.floor(Math.random() * hidden.length)]; const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile); tile.classList.add('revealed', 'pop-off'); 
+            const tile = hidden[Math.floor(Math.random() * hidden.length)]; const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile); 
+            
+            popTile(tile, 1);
             if(!lState.revealedTiles) lState.revealedTiles = []; lState.revealedTiles.push(idx); drainFuel(TILE_COST);
             
             let cx = e.clientX; let cy = e.clientY;
@@ -1298,7 +1329,7 @@
                 const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
                 if (lState.type === 'image') {
                     document.querySelectorAll('.grid-piece:not(.scanned):not(.revealed)').forEach(p => {
-                        setTimeout(() => p.classList.add('revealed', 'pop-off'), Math.random() * 400);
+                        setTimeout(() => popTile(p, 1.5), Math.random() * 400);
                     });
                 }
                 triggerConfetti(); saveState(); if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);

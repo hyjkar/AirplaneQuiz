@@ -281,6 +281,72 @@
         .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
         .tutorial-text { color: #ccc; font-size: 1rem; margin-bottom: 20px; text-align: left; line-height: 1.5; }
         .tutorial-text strong { color: #fff; }
+
+        /* =========================================
+           UNIVERSAL TACTILE BUTTON FEEDBACK
+           ========================================= */
+        
+        /* Standard text buttons (Start, Host, Join, Cancel, etc.) */
+        button {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), filter 0.1s ease, background-color 0.2s !important;
+        }
+        button:active:not(:disabled) {
+            transform: scale(0.94) !important;
+            filter: brightness(0.85);
+        }
+
+        /* Square dashboard icons & close buttons */
+        .icon-btn {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.1s !important;
+        }
+        .icon-btn:active {
+            transform: scale(0.88) !important;
+            filter: brightness(0.9);
+        }
+
+        /* Power-up buttons */
+        .pu-btn {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), box-shadow 0.1s ease !important;
+        }
+        .pu-btn:active:not(.empty) {
+            transform: scale(0.88) !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+        }
+
+        /* Trivia and Image Guess Answer Options */
+        .trivia-option {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.2s, filter 0.1s ease !important;
+        }
+        .trivia-option:active:not(:disabled) {
+            transform: scale(0.96) !important;
+            filter: brightness(0.95);
+        }
+
+        /* Level Selector Strips */
+        .level-strip {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.1s, filter 0.1s ease !important;
+        }
+        .level-strip:active:not(.locked) {
+            transform: scale(0.96) !important;
+            filter: brightness(0.95);
+        }
+
+        /* Hangar Folders */
+        .world-folder {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.1s, filter 0.1s ease !important;
+        }
+        .world-folder:active:not(.locked-world) {
+            transform: scale(0.96) !important;
+            filter: brightness(0.95);
+        }
+
+        /* Live Radar Toggle Filters */
+        .radar-toggle {
+            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.2s !important;
+        }
+        .radar-toggle:active {
+            transform: scale(0.90) !important;
+        }
     </style>
 </head>
 <body>

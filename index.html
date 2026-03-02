@@ -281,72 +281,6 @@
         .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
         .tutorial-text { color: #ccc; font-size: 1rem; margin-bottom: 20px; text-align: left; line-height: 1.5; }
         .tutorial-text strong { color: #fff; }
-
-        /* =========================================
-           UNIVERSAL TACTILE BUTTON FEEDBACK
-           ========================================= */
-        
-        /* Standard text buttons (Start, Host, Join, Cancel, etc.) */
-        button {
-            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), filter 0.1s ease, background-color 0.2s !important;
-        }
-        button:active:not(:disabled) {
-            transform: scale(0.94) !important;
-            filter: brightness(0.85);
-        }
-
-        /* Square dashboard icons & close buttons */
-        .icon-btn {
-            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.1s !important;
-        }
-        .icon-btn:active {
-            transform: scale(0.88) !important;
-            filter: brightness(0.9);
-        }
-
-        /* Power-up buttons */
-        .pu-btn {
-            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), box-shadow 0.1s ease !important;
-        }
-        .pu-btn:active:not(.empty) {
-            transform: scale(0.88) !important;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
-        }
-
-        /* Trivia and Image Guess Answer Options */
-        .trivia-option {
-            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.2s, filter 0.1s ease !important;
-        }
-        .trivia-option:active:not(:disabled) {
-            transform: scale(0.96) !important;
-            filter: brightness(0.95);
-        }
-
-        /* Level Selector Strips */
-        .level-strip {
-            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.1s, filter 0.1s ease !important;
-        }
-        .level-strip:active:not(.locked) {
-            transform: scale(0.96) !important;
-            filter: brightness(0.95);
-        }
-
-        /* Hangar Folders */
-        .world-folder {
-            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.1s, filter 0.1s ease !important;
-        }
-        .world-folder:active:not(.locked-world) {
-            transform: scale(0.96) !important;
-            filter: brightness(0.95);
-        }
-
-        /* Live Radar Toggle Filters */
-        .radar-toggle {
-            transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.2s !important;
-        }
-        .radar-toggle:active {
-            transform: scale(0.90) !important;
-        }
     </style>
 </head>
 <body>
@@ -366,14 +300,14 @@
         </div>
     </div>
 
-<div id="takeoff-tutorial-overlay">
+    <div id="takeoff-tutorial-overlay">
         <div class="modal-box">
             <h1 style="color: var(--brand-gold); margin-bottom: 15px;">FLIGHT MANUAL</h1>
-            <p class="tutorial-text" style="line-height: 1.8;">
-                <strong>1. WAIT</strong> for speed to hit <strong style="color:var(--gauge-green)">140</strong>.<br>
-                <strong>2. PRESS & HOLD</strong> to pull the nose up.<br>
-                <strong>3. KEEP</strong> the needle in the <strong style="color:var(--gauge-green)">GREEN</strong> to fly!<br><br>
-                <span style="color:#aaa; font-size:0.85rem;">⚠️ 3 attempts maximum. Don't run out of runway!</span>
+            <p class="tutorial-text">
+                1. Wait for your speed to reach <strong style="color:var(--gauge-green)">140 KTS</strong>. <br>
+                2. Tap and <strong>HOLD ANYWHERE</strong> on the view screen to pull the nose up.<br><br>
+                3. Keep the needle in the <strong style="color:var(--gauge-green)">GREEN ZONE</strong> to gain lift before the runway ends!<br><br>
+                <span style="color:#aaa; font-size:0.9rem;">⚠️ You have 3 attempts to earn a fuel bonus. If you fail, the mission is aborted.</span>
             </p>
             <button class="gold-btn" onclick="startTakeoffFromTutorial()">START ENGINES</button>
         </div>
@@ -598,7 +532,7 @@
 
         <div id="trivia-game-area">
             <div class="trivia-dossier">
-                <div class="trivia-title">Incident Analysis Report</div><div id="trivia-question">Question text goes here?</div>
+                <div class="trivia-title">Flight Assessment</div><div id="trivia-question">Question text goes here?</div>
                 <div id="trivia-options-container">
                     <button class="trivia-option" id="btn-opt-0" onclick="submitTrivia(0)">A</button><button class="trivia-option" id="btn-opt-1" onclick="submitTrivia(1)">B</button><button class="trivia-option" id="btn-opt-2" onclick="submitTrivia(2)">C</button>
                 </div>
@@ -615,8 +549,7 @@
                 <div id="tk-touch-prompt">TAP & HOLD TO PULL UP</div><div id="tk-bg-sky" class="parallax-layer"></div><div id="tk-bg-city" class="parallax-layer"></div><div id="tk-bg-ground" class="parallax-layer"></div>
                 <div id="tk-weather-overlay"></div><div id="tk-gauge-container"><div id="tk-target-zone"></div><div id="tk-needle"></div></div>
                 <div id="tk-mountain"><svg viewBox="0 0 100 100" shape-rendering="crispEdges" width="100%" height="100%"><rect x="50" y="40" width="10" height="60" fill="#3b3b3b"/><rect x="40" y="50" width="30" height="50" fill="#4a4a4a"/><rect x="20" y="60" width="70" height="40" fill="#2d2d2d"/><rect x="0" y="70" width="100" height="30" fill="#1f1f1f"/><rect x="50" y="40" width="10" height="10" fill="#fff"/><rect x="40" y="50" width="10" height="10" fill="#eee"/><rect x="60" y="50" width="10" height="10" fill="#eee"/></svg></div>
-                <div id="tk-plane"><img src="my-plane.png" alt="Player Plane" style="width: 125%; height: 125%; object-fit: contain; pointer-events: none;">
-</div>
+                <div id="tk-plane"><svg viewBox="0 0 80 30" width="100%" height="100%" shape-rendering="crispEdges"><rect x="4" y="2" width="8" height="12" fill="var(--brand-red)"/><rect x="2" y="8" width="2" height="6" fill="var(--brand-red)"/><rect x="6" y="14" width="68" height="8" fill="#fff"/><rect x="8" y="22" width="60" height="2" fill="#e0e0e0"/><rect x="74" y="16" width="4" height="6" fill="#fff"/><rect x="78" y="18" width="2" height="4" fill="#fff"/><rect x="72" y="16" width="4" height="2" fill="#1a1a1a"/><rect x="20" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="24" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="28" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="32" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="44" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="48" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="52" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="56" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="60" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="64" y="17" width="2" height="2" fill="#1a1a1a"/><rect x="14" y="16" width="4" height="6" fill="var(--brand-red)"/><rect x="38" y="17" width="4" height="5" fill="var(--brand-red)"/><rect x="68" y="16" width="2" height="6" fill="var(--brand-red)"/><rect x="34" y="20" width="16" height="2" fill="#d0d0d0"/><rect x="30" y="22" width="24" height="2" fill="#a0a0a0"/><rect x="26" y="24" width="24" height="2" fill="#808080"/><rect x="38" y="22" width="10" height="6" fill="#333"/><rect x="36" y="24" width="2" height="4" fill="#111"/><rect x="48" y="24" width="2" height="2" fill="#555"/><rect x="68" y="24" width="2" height="4" fill="#555"/><rect x="66" y="28" width="4" height="2" fill="#111"/><rect x="24" y="24" width="4" height="4" fill="#555"/><rect x="22" y="28" width="8" height="2" fill="#111"/></svg></div>
                 <div id="tk-runway"><div id="tk-runway-surface"></div></div>
             </div>
         </div>
@@ -690,17 +623,28 @@
             { type: 'trivia', question: "The tragic 1985 crash of JAL Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" },
             { type: 'trivia', question: "What is the best-selling commercial jet airliner of all time?", options: ["Airbus A320", "Boeing 737", "Boeing 747"], correctIdx: 1, name: "Best-Selling Jet" },
             { type: 'trivia', question: "Which aircraft is famous for its massive wooden structure and is called the 'Spruce Goose'?", options: ["Antonov An-225", "Hughes H-4 Hercules", "Boeing B-29"], correctIdx: 1, name: "Spruce Goose" },
-            { type: 'trivia', question: "What is the primary function of the A-10 Warthog?", options: ["High-altitude interception", "Close air support", "Strategic bombing"], correctIdx: 1, name: "A-10 Warthog Role" }
+            { type: 'trivia', question: "What is the primary function of the A-10 Warthog?", options: ["High-altitude interception", "Close air support", "Strategic bombing"], correctIdx: 1, name: "A-10 Warthog Role" },
+            { type: 'trivia', question: "What triggered the catastrophic crash of Air France Flight 4590 (Concorde) in 2000?", options: ["A bird strike shattered the windshield", "A piece of metal debris ruptured a tire", "Both engines ingested volcanic ash"], correctIdx: 1, name: "Concorde Crash" },
+            { type: 'trivia', question: "The grounding of the Boeing 737 MAX fleet was primarily linked to flaws in which automated system?", options: ["MCAS (Maneuvering Characteristics Augmentation System)", "TCAS (Traffic Collision Avoidance System)", "FMS (Flight Management System)"], correctIdx: 0, name: "737 MAX Grounding" },
+            { type: 'trivia', question: "What color are aviation 'black boxes' (Flight Data Recorders)?", options: ["Matte Black", "Bright Orange", "Reflective Silver"], correctIdx: 1, name: "Black Box Color" },
+            { type: 'trivia', question: "What is the internationally recognized VHF emergency frequency for aviation?", options: ["121.5 MHz", "135.5 MHz", "100.0 MHz"], correctIdx: 0, name: "Emergency Frequency" },
+            { type: 'trivia', question: "What does reaching 'V1' speed during takeoff signify to the pilots?", options: ["The plane has lifted off the ground", "The speed where takeoff can no longer be safely aborted", "The optimal speed to retract landing gear"], correctIdx: 1, name: "V1 Speed" },
+            { type: 'trivia', question: "What is the purpose of an aircraft's APU (Auxiliary Power Unit)?", options: ["To provide an emergency speed boost", "To generate electrical power and air while main engines are off", "To steer the aircraft while taxiing"], correctIdx: 1, name: "APU Function" },
+            { type: 'trivia', question: "What happens during an aviation 'tail strike'?", options: ["Lightning strikes the tail section", "The rear fuselage scrapes the runway during takeoff or landing", "The horizontal stabilizer detaches in mid-air"], correctIdx: 1, name: "Tail Strike" },
+            { type: 'trivia', question: "Which scientific principle is most commonly used to explain how aircraft wings generate lift?", options: ["Bernoulli's Principle", "Archimedes' Principle", "Newton's Third Law"], correctIdx: 0, name: "Lift Principle" },
+            { type: 'trivia', question: "The mysterious disappearance of Malaysia Airlines Flight 370 involved which model of aircraft?", options: ["Airbus A330", "Boeing 787", "Boeing 777"], correctIdx: 2, name: "MH370 Aircraft" },
+            { type: 'trivia', question: "Which airport has historically held the title of 'Busiest Passenger Airport in the World'?", options: ["Dubai International Airport", "Hartsfield-Jackson Atlanta", "London Heathrow"], correctIdx: 1, name: "Busiest Airport" }
         ];
 
         var RUNWAY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="32" viewBox="0 0 128 32"><rect width="128" height="32" fill="#333"/><rect x="10" y="14" width="40" height="4" fill="#fff"/></svg>`;
         var THEMES = {
-            1: { sky: `url('sky1.png')`, city: `url('city1.png')`, ground: `url('ground1.png')` },
-            2: { sky: `url('sky1.png')`, city: `url('city1.png')`, ground: `url('ground1.png')` },
-            3: { sky: `url('sky1.png')`, city: `url('city1.png')`, ground: `url('ground1.png')` },
-            4: { sky: `url('sky1.png')`, city: `url('city1.png')`, ground: `url('ground1.png')` },
-            5: { sky: `url('sky1.png')`, city: `url('city1.png')`, ground: `url('ground1.png')` }
+            1: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#87CEEB"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2E8B57"/></svg>` },
+            2: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#5F9EA0"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#556B2F"/></svg>` },
+            3: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2F4F4F"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#A9A9A9"/></svg>` },
+            4: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#FF7F50"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#8B4513"/></svg>` },
+            5: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#191970"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2F4F4F"/></svg>` }
         };
+
         var RADAR_COLORS = ['#33FF33', '#00FFFF', '#FFCC00', '#FF3366', '#CC99FF', '#00FFCC', '#FF9933', '#99FF33', '#33CCFF', '#FF6699', '#FFFF66', '#FF5555'];
         var RADAR_CENTERS = [{ name: "EU-CENTRAL", lat: 50, lng: 10 }, { name: "US-EAST", lat: 38, lng: -78 }, { name: "US-WEST", lat: 38, lng: -118 }, { name: "ASIA-EAST", lat: 35, lng: 135 }];
         var CITIES = ["LONDON", "NEW YORK", "TOKYO", "PARIS", "DUBAI", "SYDNEY", "LOS ANGELES", "CHICAGO", "HONG KONG", "SINGAPORE", "BERLIN", "ROME", "MADRID", "TORONTO", "MUMBAI", "SAO PAULO", "MEXICO CITY", "CAIRO", "MOSCOW", "BEIJING", "SEOUL", "AMSTERDAM", "ISTANBUL", "BANGKOK", "KUALA LUMPUR", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON", "MONTREAL", "VANCOUVER", "BUENOS AIRES", "BOGOTA", "SANTIAGO", "LIMA", "CAPE TOWN", "JOHANNESBURG", "NAIROBI", "DELHI", "JAKARTA", "MANILA", "SHANGHAI", "TAIPEI", "OSAKA"];
@@ -742,7 +686,7 @@
             }
         }, 1000);
 
-        let tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0 };
+        let tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0, hasLiftedOff: false, lastFrameTime: 0, initialDistance: 100 };
 
         try { 
             if (typeof firebase !== 'undefined') { 
@@ -880,7 +824,7 @@
             renderDashboard(); 
         }
 
-function fetchAviationNews() {
+        function fetchAviationNews() {
             const tickerEl = document.getElementById('news-ticker');
             if(!tickerEl) return;
 
@@ -896,7 +840,6 @@ function fetchAviationNews() {
                 tickerEl.style.animation = `ticker ${scrollDuration}s linear infinite`;
             };
 
-            // Adjusted fallbacks to sound strictly civilian/commercial
             const fallbackItems = [
                 { title: "GLOBAL FUEL RESERVES STABLE ACROSS ALL SECTORS", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
                 { title: "NEW COMMERCIAL TERMINALS UNDER CONSTRUCTION", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
@@ -904,7 +847,6 @@ function fetchAviationNews() {
                 { title: "ALL COMMERCIAL FLIGHT CREWS CLEARED FOR DEPARTURE", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" }
             ];
 
-            // Bumped cache keys to v3 so the browser forces a fresh download
             const cacheKey = 'fuel_news_cache_v3';
             const timeKey = 'fuel_news_time_v3';
             const now = Date.now();
@@ -919,21 +861,12 @@ function fetchAviationNews() {
             .then(res => res.json())
             .then(data => {
                 if (data && data.items && data.items.length > 0) {
-                    
-                    // --- STRICT FILTERING LOGIC ---
-                    // Word boundaries (\b) ensure "war" doesn't accidentally block words like "software" or "award"
                     const militaryRegex = /\b(military|war|fighter|bomber|air force|defense|combat|stealth|tactical|usaf|navy|army|marines)\b/i;
-                    
                     let filteredItems = data.items.filter(item => {
                         let textToSearch = (item.title + " " + (item.description || "")).toLowerCase();
-                        // Only keep the article if it DOES NOT match the blacklist
                         return !militaryRegex.test(textToSearch);
                     });
-                    
-                    // Fallback to our dummy news if the filter accidentally wipes out everything
                     if (filteredItems.length === 0) filteredItems = fallbackItems;
-                    // ------------------------------
-
                     localStorage.setItem(cacheKey, JSON.stringify(filteredItems));
                     localStorage.setItem(timeKey, now.toString());
                     applyNews(filteredItems);
@@ -1023,18 +956,13 @@ function fetchAviationNews() {
             const name = document.getElementById('callsign-input').value.trim();
             if (name.length < 2) { alert("Callsign too short."); return; }
             
-            // CHEAT CODE: Wipe Leaderboard
             if (name.toLowerCase() === 'clearleaderboard') {
                 if (!db) { alert("Database not connected!"); return; }
                 if (confirm("WARNING: Are you sure you want to wipe the entire global leaderboard?")) {
                     db.collection("fuel_command_v78").get().then((querySnapshot) => {
-                        querySnapshot.forEach((doc) => {
-                            db.collection("fuel_command_v78").doc(doc.id).delete();
-                        });
+                        querySnapshot.forEach((doc) => { db.collection("fuel_command_v78").doc(doc.id).delete(); });
                         alert("Leaderboard successfully wiped!");
-                    }).catch((error) => {
-                        console.error("Error wiping leaderboard: ", error);
-                    });
+                    }).catch((error) => { console.error("Error wiping leaderboard: ", error); });
                 }
                 document.getElementById('callsign-input').value = ""; 
                 return;
@@ -1043,21 +971,13 @@ function fetchAviationNews() {
             globalState.username = name; 
             localStorage.setItem('last_pilot_name', name); 
 
-            // CHEAT CODE: Admin Boost
             if (name.toLowerCase() === 'admin') {
                 globalState.currentFuel = 99999;
                 globalState.extraFuel = 50000;
                 globalState.powerups = { scans: 99, drones: 99, fuelPods: 99 };
-                globalState.world1Complete = true;
-                globalState.world2Complete = true;
-                globalState.world3Complete = true;
-                globalState.world4Complete = true;
-                globalState.world5Complete = true;
+                globalState.world1Complete = true; globalState.world2Complete = true; globalState.world3Complete = true; globalState.world4Complete = true; globalState.world5Complete = true;
                 globalState.passwordRevealed = [...Array(TARGET_PASSWORD.length).keys()];
-                globalState.levels.forEach(l => {
-                    l.completed = true;
-                    if(l.type === 'image') l.revealedTiles = [...Array(100).keys()];
-                });
+                globalState.levels.forEach(l => { l.completed = true; if(l.type === 'image') l.revealedTiles = [...Array(100).keys()]; });
             }
 
             saveState();
@@ -1208,7 +1128,7 @@ function fetchAviationNews() {
                 else if (levelData.isClassified) card.className = "level-strip classified"; else card.className = "level-strip";
 
                 let iconSvg = ICONS.plane; let iconColor = "var(--brand-dark)"; let title = `Flight ${idx + 1}`;
-                if (levelData.type === 'trivia') { iconSvg = ICONS.folder; iconColor = "#3498db"; title = "Incident Report"; } 
+                if (levelData.type === 'trivia') { iconSvg = ICONS.folder; iconColor = "#3498db"; title = "Flight Assessment"; } 
                 else if (levelData.type === 'takeoff') { iconSvg = ICONS.takeoff; iconColor = "#3498db"; title = "Takeoff Calibration"; }
                 else if (levelData.isClassified) { iconSvg = ICONS.jet; iconColor = "var(--brand-red)"; title = "Classified"; }
 
@@ -1300,7 +1220,7 @@ function fetchAviationNews() {
             const gameView = document.getElementById('game-view'); gameView.classList.remove('active'); void gameView.offsetWidth; gameView.classList.add('active');
 
             let title = `Flight ${idx+1}`;
-            if (lState.type === 'trivia') title = "Incident Report"; else if (lState.type === 'takeoff') title = "Takeoff Calibration"; else if (lState.isClassified) title = "Classified";
+            if (lState.type === 'trivia') title = "Flight Assessment"; else if (lState.type === 'takeoff') title = "Takeoff Calibration"; else if (lState.isClassified) title = "Classified";
             if (lState.completed) title = lState.name;
             document.getElementById('level-title').textContent = title; document.getElementById('message').textContent = "";
             updateMiniFuelUI();
@@ -1356,10 +1276,7 @@ function fetchAviationNews() {
                 const weather = document.getElementById('tk-weather-overlay'); const zone = document.getElementById('tk-target-zone');
                 
                 weather.className = ''; runwaySurf.style.backgroundImage = getSvgUri(RUNWAY_SVG);
-                const th = THEMES[lState.hangar] || THEMES[1]; 
-sky.style.backgroundImage = th.sky; 
-city.style.backgroundImage = th.city; 
-ground.style.backgroundImage = th.ground;
+                const th = THEMES[lState.hangar] || THEMES[1]; sky.style.backgroundImage = getSvgUri(th.sky); city.style.backgroundImage = getSvgUri(th.city); ground.style.backgroundImage = getSvgUri(th.ground);
 
                 if (lState.hangar === 1) { tkState.minAngle = 9; tkState.maxAngle = 16; zone.style.bottom = '30%'; zone.style.height = '23.3%'; } 
                 else if (lState.hangar === 2) { weather.classList.add('weather-rain'); tkState.minAngle = 10; tkState.maxAngle = 15; zone.style.bottom = '33.3%'; zone.style.height = '16.6%'; } 
@@ -1374,7 +1291,7 @@ ground.style.backgroundImage = th.ground;
 
         function startTakeoffFromTutorial() { globalState.hasSeenTakeoffTutorial = true; saveState(); document.getElementById('takeoff-tutorial-overlay').style.display = 'none'; setTimeout(() => { startTakeoff(); }, 100); }
 
-function startTakeoff() {
+        function startTakeoff() {
             document.querySelectorAll('.pixel-particle').forEach(el => el.remove()); 
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
             
@@ -1387,9 +1304,7 @@ function startTakeoff() {
             tkState.hasLiftedOff = false; 
             tkState.bgPosSky = 0; tkState.bgPosCity = 0; tkState.bgPosGround = 0; tkState.bgPosRunway = 0;
             
-            // --- NEW: Start the clock to regulate the framerate ---
             tkState.lastFrameTime = performance.now();
-            // ------------------------------------------------------
             
             document.getElementById('tk-touch-prompt').style.display = 'block'; 
             document.getElementById('tk-touch-prompt').style.opacity = '0.8'; 
@@ -1410,24 +1325,19 @@ function startTakeoff() {
             tkState.frameId = requestAnimationFrame(takeoffLoop);
         }
 
-        // The browser automatically passes the current 'timestamp' into this loop
         function takeoffLoop(timestamp) {
             if (!tkState.active) return;
             
-            // --- FIX: Prevent 120Hz "Turbo Mode" on modern touch screens ---
             if (!timestamp) timestamp = performance.now();
             let delta = timestamp - tkState.lastFrameTime;
 
-            // If the screen refreshes faster than 60FPS (less than 15ms between frames), skip this extra frame!
             if (delta < 15) {
                 tkState.frameId = requestAnimationFrame(takeoffLoop);
                 return;
             }
             tkState.lastFrameTime = timestamp;
-            // ---------------------------------------------------------------
 
             let acceleration = 1.0; 
-            // Acceleration naturally drops slightly as the plane points upwards
             if (tkState.pitch > 0) acceleration -= (tkState.pitch * 0.05); 
             
             tkState.speed += acceleration; 
@@ -1495,7 +1405,36 @@ function startTakeoff() {
             if (tkState.distance <= 0) return explodePlane("CRASHED INTO MOUNTAIN");
             
             tkState.frameId = requestAnimationFrame(takeoffLoop);
-        }        
+        }
+
+        function createSparks() {
+            const vp = document.getElementById('takeoff-viewport');
+            if (!vp) return;
+            const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#ffffff']; 
+            for(let i = 0; i < 2; i++) {
+                let p = document.createElement('div');
+                p.className = 'pixel-particle';
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                p.style.width = '3px'; p.style.height = '3px';
+                let startX = 30 + Math.random() * 20; 
+                let startY = vp.offsetHeight - 32; 
+                p.style.left = startX + 'px'; p.style.top = startY + 'px';
+                vp.appendChild(p);
+                let vx = -(Math.random() * 5 + 3); let vy = -(Math.random() * 3 + 1); 
+                animateSpark(p, vx, vy);
+            }
+        }
+
+        function animateSpark(p, vx, vy) {
+            let x = parseFloat(p.style.left); let y = parseFloat(p.style.top); let age = 0; let maxAge = 15 + Math.random() * 15; 
+            function step() {
+                age++; if (age > maxAge) { p.remove(); return; }
+                x += vx; y += vy; vy += 0.3; 
+                p.style.left = x + 'px'; p.style.top = y + 'px'; p.style.opacity = 1 - (age / maxAge); 
+                requestAnimationFrame(step);
+            } requestAnimationFrame(step);
+        }
+
         function explodePlane(reason) {
             tkState.active = false; document.getElementById('tk-plane').style.display = 'none'; const vp = document.getElementById('takeoff-viewport'); const colors = ['#fff', 'var(--brand-red)', '#a0a0a0', '#1a1a1a', '#555'];
             const liftY = (tkState.lift / 100) * 100; const baseY = vp.offsetHeight - 60 - liftY; 
@@ -1513,58 +1452,7 @@ function startTakeoff() {
                 x += vx; y += vy; vy += 0.1; vx *= 0.99; p.style.left = x + 'px'; p.style.top = y + 'px'; requestAnimationFrame(step);
             } requestAnimationFrame(step);
         }
-function createSparks() {
-            const vp = document.getElementById('takeoff-viewport');
-            if (!vp) return;
-            const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#ffffff']; // Yellow, orange, red, white
-            
-            // Create 2-3 sparks per frame
-            for(let i = 0; i < 2; i++) {
-                let p = document.createElement('div');
-                p.className = 'pixel-particle';
-                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                p.style.width = '3px';
-                p.style.height = '3px';
-                
-                // Position sparks near the back wheels of the plane (x: ~30px, y: runway level)
-                let startX = 30 + Math.random() * 20; 
-                let startY = vp.offsetHeight - 32; 
-                
-                p.style.left = startX + 'px';
-                p.style.top = startY + 'px';
-                vp.appendChild(p);
 
-                // Shoot sparks backwards and slightly upwards
-                let vx = -(Math.random() * 5 + 3); 
-                let vy = -(Math.random() * 3 + 1); 
-
-                animateSpark(p, vx, vy);
-            }
-        }
-
-        function animateSpark(p, vx, vy) {
-            let x = parseFloat(p.style.left);
-            let y = parseFloat(p.style.top);
-            let age = 0;
-            let maxAge = 15 + Math.random() * 15; // Sparks burn out quickly
-            
-            function step() {
-                age++;
-                if (age > maxAge) { p.remove(); return; }
-                
-                x += vx;
-                y += vy;
-                vy += 0.3; // Gravity pulls the spark back down to the runway
-                
-                p.style.left = x + 'px';
-                p.style.top = y + 'px';
-                p.style.opacity = 1 - (age / maxAge); // Fade out as it ages
-                
-                requestAnimationFrame(step);
-            }
-            requestAnimationFrame(step);
-        }
-        
         function failTakeoff(reason) {
             const lState = globalState.levels[activeLevelIdx]; lState.attempts = (lState.attempts || 0) + 1; drainFuel(WRONG_GUESS_PENALTY);
             if (lState.attempts >= 3) {
@@ -1933,14 +1821,14 @@ function createSparks() {
         function showFloat(x, y, text) { const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text; el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800); }
         function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
         
-       // --- MULTIPLAYER SYSTEM ---
+        // --- MULTIPLAYER SYSTEM ---
         let currentRoomCode = null;
         let isHost = false;
         let matchListener = null;
         let mpStartTime = null;
         let mpTimeLimit = null;
         let mpGameEnded = false;
-        let mpHasResetForMatch = false; // Tracks if we've wiped the board for the new game
+        let mpHasResetForMatch = false; 
 
         window.addEventListener('beforeunload', () => {
             if (currentRoomCode && db && !mpGameEnded) {
@@ -1948,12 +1836,11 @@ function createSparks() {
             }
         });
 
-        // Wipes the local board clean so it's a fair race from Hangar 1
         function resetGameStateForMultiplayer() {
             globalState.currentFuel = STARTING_GLOBAL_FUEL;
             globalState.extraFuel = 0;
             globalState.powerups = { scans: 1, drones: 1, fuelPods: 1 };
-            globalState.levels = generateGameLevels(); // Generates fresh new levels
+            globalState.levels = generateGameLevels(); 
             globalState.world1Complete = false;
             globalState.world2Complete = false;
             globalState.world3Complete = false;
@@ -2091,11 +1978,10 @@ function createSparks() {
                         return;
                     }
 
-                    // TRIGGER FRESH START WHEN GAME BEGINS
                     if (data.status === "playing" && !mpHasResetForMatch) {
                         mpHasResetForMatch = true;
                         resetGameStateForMultiplayer();
-                        syncMultiplayerScore(); // Instantly tell the database our score is reset
+                        syncMultiplayerScore(); 
                     }
                     
                     let oppName = isHost ? data.guestName : data.hostName;
@@ -2224,7 +2110,7 @@ function createSparks() {
             document.getElementById('enemy-fuel-display').style.display = 'none';
         }
         // --- END MULTIPLAYER SYSTEM ---
-        
+
         let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block'; btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; }); });
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
     </script>

@@ -1413,6 +1413,13 @@ function launchLevel(idx) {
             }
         }
 
+        function startTakeoffFromTutorial() { 
+            globalState.hasSeenTakeoffTutorial = true; 
+            saveState(); 
+            document.getElementById('takeoff-tutorial-overlay').style.display = 'none'; 
+            setTimeout(() => { startTakeoff(); }, 100); 
+        }
+        
         function startTakeoff() {
             document.querySelectorAll('.pixel-particle').forEach(el => el.remove()); 
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);

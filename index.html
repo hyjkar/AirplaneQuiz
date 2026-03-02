@@ -692,8 +692,8 @@
         var CITIES = ["LONDON", "NEW YORK", "TOKYO", "PARIS", "DUBAI", "SYDNEY", "LOS ANGELES", "CHICAGO", "HONG KONG", "SINGAPORE", "BERLIN", "ROME", "MADRID", "TORONTO", "MUMBAI", "SAO PAULO", "MEXICO CITY", "CAIRO", "MOSCOW", "BEIJING", "SEOUL", "AMSTERDAM", "ISTANBUL", "BANGKOK", "KUALA LUMPUR", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON", "MONTREAL", "VANCOUVER", "BUENOS AIRES", "BOGOTA", "SANTIAGO", "LIMA", "CAPE TOWN", "JOHANNESBURG", "NAIROBI", "DELHI", "JAKARTA", "MANILA", "SHANGHAI", "TAIPEI", "OSAKA"];
         var US_CITIES = ["NEW YORK", "LOS ANGELES", "CHICAGO", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON"];
         var INTL_CITIES = CITIES.filter(c => !US_CITIES.includes(c));
+        
         var TARGET_PASSWORD = "SULLY";
-
         var RADAR_LEVEL_CONFIG = {
             1: { latOffset: 5, lngOffset: 8, planes: 8, hints: 2 }, 2: { latOffset: 6, lngOffset: 10, planes: 12, hints: 2 },
             3: { latOffset: 8, lngOffset: 12, planes: 16, hints: 3 }, 4: { latOffset: 10, lngOffset: 15, planes: 22, hints: 3 },
@@ -717,9 +717,7 @@
             powerups: { scans: 1, drones: 1, fuelPods: 1 },
             levels: [], hasSeenTakeoffTutorial: false,
             world1Complete: false, world2Complete: false, world3Complete: false, world4Complete: false, world5Complete: false,
-            passwordRevealed: [],
-            totalPlayTime: 0,
-            gameWonShown: false
+            passwordRevealed: [], totalPlayTime: 0, gameWonShown: false
         };
 
         let globalTimerInterval = setInterval(() => {
@@ -728,7 +726,7 @@
             }
         }, 1000);
 
-        let tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0, hasLiftedOff: false, lastFrameTime: 0, initialDistance: 100 };
+        var tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, lastFrameTime: 0, initialDistance: 100 };
 
         try { 
             if (typeof firebase !== 'undefined') { 
@@ -764,8 +762,10 @@
         }
 
         function drainFuel(amount) {
-            if (globalState.extraFuel > 0) { if (globalState.extraFuel >= amount) { globalState.extraFuel -= amount; } else { let remainder = amount - globalState.extraFuel; globalState.extraFuel = 0; globalState.currentFuel = Math.max(0, globalState.currentFuel - remainder); } } 
-            else { globalState.currentFuel = Math.max(0, globalState.currentFuel - amount); }
+            if (globalState.extraFuel > 0) { 
+                if (globalState.extraFuel >= amount) { globalState.extraFuel -= amount; } 
+                else { let remainder = amount - globalState.extraFuel; globalState.extraFuel = 0; globalState.currentFuel = Math.max(0, globalState.currentFuel - remainder); } 
+            } else { globalState.currentFuel = Math.max(0, globalState.currentFuel - amount); }
             saveState(); updateMiniFuelUI();
         }
 
@@ -820,11 +820,8 @@
                 let dateStr = "UNKNOWN DATE";
                 if (item.pubDate) {
                     const pubDate = new Date(item.pubDate.replace(/-/g, '/'));
-                    if (!isNaN(pubDate)) {
-                        dateStr = pubDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-                    } else {
-                        dateStr = item.pubDate.split(' ')[0];
-                    }
+                    if (!isNaN(pubDate)) { dateStr = pubDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); } 
+                    else { dateStr = item.pubDate.split(' ')[0]; }
                 }
 
                 let imgSrc = item.thumbnail || (item.enclosure && item.enclosure.link);
@@ -834,14 +831,13 @@
                 }
                 
                 let imgHtml = imgSrc 
-                    ? `<img src="${imgSrc}" alt="News Image" style="width: 100%; height: 140px; object-fit: cover; display: block; border-bottom: 1px solid #eee;" onerror="this.style.display='none'">` 
+                    ? `<img src="${imgSrc}" style="width: 100%; height: 140px; object-fit: cover; display: block; border-bottom: 1px solid #eee;" onerror="this.style.display='none'">` 
                     : `<div style="width: 100%; height: 140px; display: flex; justify-content: center; align-items: center; background: #111; color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>`;
                 
                 let title = item.title || "ENCRYPTED TRANSMISSION";
 
                 const el = document.createElement('a');
-                el.href = item.link || "#";
-                el.target = "_blank"; 
+                el.href = item.link || "#"; el.target = "_blank"; 
                 el.style.cssText = "display: block; width: 100%; background: #ffffff; border: 2px solid var(--aux-blue); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-decoration: none; margin-bottom: 15px; flex-shrink: 0; cursor: pointer;";
                 
                 el.innerHTML = `
@@ -852,154 +848,101 @@
                     </div>
                 `;
                 
-                el.onmousedown = () => el.style.transform = "scale(0.98)";
-                el.onmouseup = () => el.style.transform = "scale(1)";
-                el.onmouseleave = () => el.style.transform = "scale(1)";
-
+                el.onmousedown = () => el.style.transform = "scale(0.98)"; el.onmouseup = () => el.style.transform = "scale(1)"; el.onmouseleave = () => el.style.transform = "scale(1)";
                 listContainer.appendChild(el);
             });
         }
 
-        function closeNewsRoom() { 
-            document.getElementById('news-view').classList.remove('active'); 
-            document.getElementById('selector-view').classList.add('active'); 
-            renderDashboard(); 
-        }
+        function closeNewsRoom() { document.getElementById('news-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); renderDashboard(); }
 
         function fetchAviationNews() {
-            const tickerEl = document.getElementById('news-ticker');
-            if(!tickerEl) return;
-
+            const tickerEl = document.getElementById('news-ticker'); if(!tickerEl) return;
             const applyNews = (items) => {
                 cachedNewsArticles = items;
                 const headlines = items.slice(0, 10).map(item => "/// " + item.title.toUpperCase() + " ");
                 const fullText = headlines.join(" ") + "///";
                 tickerEl.textContent = fullText;
-                
                 let scrollDuration = fullText.length * 0.15; 
-                tickerEl.style.animation = 'none';
-                void tickerEl.offsetWidth;
-                tickerEl.style.animation = `ticker ${scrollDuration}s linear infinite`;
+                tickerEl.style.animation = 'none'; void tickerEl.offsetWidth; tickerEl.style.animation = `ticker ${scrollDuration}s linear infinite`;
             };
 
             const fallbackItems = [
                 { title: "GLOBAL FUEL RESERVES STABLE ACROSS ALL SECTORS", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
                 { title: "NEW COMMERCIAL TERMINALS UNDER CONSTRUCTION", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
-                { title: "RADAR OPS MONITORING HEAVY CIVILIAN TRAFFIC", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
-                { title: "ALL COMMERCIAL FLIGHT CREWS CLEARED FOR DEPARTURE", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "" , description: "" }
+                { title: "RADAR OPS MONITORING HEAVY CIVILIAN TRAFFIC", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" }
             ];
 
-            const cacheKey = 'fuel_news_cache_v3';
-            const timeKey = 'fuel_news_time_v3';
-            const now = Date.now();
-            const cachedTime = localStorage.getItem(timeKey);
-            const cachedData = localStorage.getItem(cacheKey);
+            const cacheKey = 'fuel_news_cache_v3'; const timeKey = 'fuel_news_time_v3'; const now = Date.now();
+            const cachedTime = localStorage.getItem(timeKey); const cachedData = localStorage.getItem(cacheKey);
 
-            if (cachedData && cachedTime && (now - parseInt(cachedTime)) < 6 * 60 * 60 * 1000) {
-                try { applyNews(JSON.parse(cachedData)); return; } catch(e) {}
-            }
+            if (cachedData && cachedTime && (now - parseInt(cachedTime)) < 6 * 60 * 60 * 1000) { try { applyNews(JSON.parse(cachedData)); return; } catch(e) {} }
 
             fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fsimpleflying.com%2Ffeed%2F')
             .then(res => res.json())
             .then(data => {
                 if (data && data.items && data.items.length > 0) {
                     const militaryRegex = /\b(military|war|fighter|bomber|air force|defense|combat|stealth|tactical|usaf|navy|army|marines)\b/i;
-                    let filteredItems = data.items.filter(item => {
-                        let textToSearch = (item.title + " " + (item.description || "")).toLowerCase();
-                        return !militaryRegex.test(textToSearch);
-                    });
+                    let filteredItems = data.items.filter(item => { return !militaryRegex.test((item.title + " " + (item.description || "")).toLowerCase()); });
                     if (filteredItems.length === 0) filteredItems = fallbackItems;
-                    localStorage.setItem(cacheKey, JSON.stringify(filteredItems));
-                    localStorage.setItem(timeKey, now.toString());
+                    localStorage.setItem(cacheKey, JSON.stringify(filteredItems)); localStorage.setItem(timeKey, now.toString());
                     applyNews(filteredItems);
                 } else { throw new Error("No items"); }
-            })
-            .catch(err => {
-                if (cachedData) {
-                    try { applyNews(JSON.parse(cachedData)); } catch(e) { applyNews(fallbackItems); }
-                } else {
-                    applyNews(fallbackItems);
-                }
-            });
+            }).catch(err => { if (cachedData) { try { applyNews(JSON.parse(cachedData)); } catch(e) { applyNews(fallbackItems); } } else { applyNews(fallbackItems); } });
         }
 
-        function toggleRadarIntel() {
-            const body = document.getElementById('radar-intel-body'); const header = document.getElementById('radar-intel-header'); const icon = header.querySelector('.acc-icon-intel');
-            body.classList.toggle('open'); header.classList.toggle('open'); icon.textContent = body.classList.contains('open') ? "[-]" : "[+]";
-            if(radarMap) { setTimeout(() => { radarMap.invalidateSize(); }, 300); }
-        }
-        
-        function toggleRadarFilters() {
-            const body = document.getElementById('radar-filters-body'); const header = document.getElementById('radar-filters-header'); const icon = header.querySelector('.acc-icon-filters');
-            body.classList.toggle('open'); header.classList.toggle('open'); icon.textContent = body.classList.contains('open') ? "[-]" : "[+]";
-            if(radarMap) { setTimeout(() => { radarMap.invalidateSize(); }, 300); }
-        }
-
+        // --- TAKEOFF CONTROL WITH GLOBAL TAP ANYWHERE ---
         function handleTkPress(e) { 
             if (!tkState.active) return;
             if (e.target.closest('button') || e.target.closest('.pu-btn') || e.target.closest('.icon-btn')) return;
-
             if (e.cancelable) e.preventDefault();
+            
             if (tkState.speed < 140) {
                 const speedVal = document.getElementById('tk-speed-val');
-                if(speedVal) { 
-                    speedVal.style.transform = "scale(1.5)"; 
-                    setTimeout(() => { speedVal.style.transform = "scale(1)"; }, 150); 
-                } 
+                if(speedVal) { speedVal.style.transform = "scale(1.5)"; setTimeout(() => { speedVal.style.transform = "scale(1)"; }, 150); } 
                 return;
             }
             document.getElementById('tk-touch-prompt').style.opacity = '0'; tkState.pressing = true; 
         }
 
-        function handleTkRelease() { if(tkState.active) tkState.pressing = false; }
+        function handleTkRelease() { tkState.pressing = false; }
 
         function preloadGameAssets(onComplete) {
             const assetsToLoad = [];
-            [...AIRCRAFT_DATA.standard, ...AIRCRAFT_DATA.classified].forEach(plane => {
-                if (plane.images) assetsToLoad.push(...plane.images);
-            });
+            [...AIRCRAFT_DATA.standard, ...AIRCRAFT_DATA.classified].forEach(plane => { if (plane.images) assetsToLoad.push(...plane.images); });
             assetsToLoad.push('my-plane.png', 'my-plane-golden.png');
 
-            let loadedCount = 0;
-            const totalAssets = assetsToLoad.length;
-            const progressBar = document.getElementById('loading-progress');
-            const progressText = document.getElementById('loading-text');
-
+            let loadedCount = 0; const totalAssets = assetsToLoad.length;
+            const progressBar = document.getElementById('loading-progress'); const progressText = document.getElementById('loading-text');
             let preloaderFinished = false;
+
             const finishLoading = () => {
-                if(preloaderFinished) return;
-                preloaderFinished = true;
+                if(preloaderFinished) return; preloaderFinished = true;
                 const ls = document.getElementById('loading-screen');
-                if (ls) {
-                    ls.style.opacity = '0';
-                    setTimeout(() => { ls.style.display = 'none'; onComplete(); }, 500);
-                } else { onComplete(); }
+                if (ls) { ls.style.opacity = '0'; setTimeout(() => { ls.style.display = 'none'; onComplete(); }, 500); } else { onComplete(); }
             };
 
             if (totalAssets === 0) return finishLoading();
             setTimeout(finishLoading, 8000); 
 
             const updateProgress = () => {
-                loadedCount++;
-                const pct = Math.floor((loadedCount / totalAssets) * 100);
+                loadedCount++; const pct = Math.floor((loadedCount / totalAssets) * 100);
                 if (progressBar) progressBar.style.width = pct + '%';
                 if (progressText) progressText.innerText = `PREPARING ASSETS... ${pct}%`;
                 if (loadedCount >= totalAssets) setTimeout(finishLoading, 200); 
             };
 
-            assetsToLoad.forEach(src => {
-                const img = new Image();
-                img.onload = updateProgress;
-                img.onerror = updateProgress; 
-                img.src = src;
-            });
+            assetsToLoad.forEach(src => { const img = new Image(); img.onload = updateProgress; img.onerror = updateProgress; img.src = src; });
         }
 
         window.onload = function() {
+            window.addEventListener('pointerdown', handleTkPress);
+            window.addEventListener('touchstart', (e) => { if (tkState.active) handleTkPress(e); }, {passive: false});
+            window.addEventListener('pointerup', handleTkRelease);
+            window.addEventListener('touchend', handleTkRelease);
+
             preloadGameAssets(function() {
                 try { 
-                    loadState(); 
-                    fetchAviationNews();
+                    loadState(); fetchAviationNews();
                     const lastUser = localStorage.getItem('last_pilot_name');
                     if (lastUser) { const ci = document.getElementById('callsign-input'); if (ci) ci.value = lastUser; }
 
@@ -1009,31 +952,26 @@
                     let ci = document.getElementById('callsign-input');
                     if(ci) ci.addEventListener('keypress', function (e) { if (e.key === 'Enter') { this.blur(); registerPilot(); } });
 
-                    window.addEventListener('pointerdown', handleTkPress);
-                    window.addEventListener('touchstart', (e) => { if (tkState.active) handleTkPress(e); }, {passive: false});
-                    window.addEventListener('pointerup', handleTkRelease); window.addEventListener('touchend', handleTkRelease); window.addEventListener('pointercancel', handleTkRelease);
-                    
+                    window.addEventListener('pointerdown', function initAudio() {
+                        if (!bgMusicStarted) { const bgm = document.getElementById('bg-music'); if (bgm) { bgm.volume = 0.3; bgm.play().catch(e => e); bgMusicStarted = true; } window.removeEventListener('pointerdown', initAudio); }
+                    });
+                    document.addEventListener("visibilitychange", () => { const bgm = document.getElementById('bg-music'); if (bgm && bgMusicStarted) { if (document.hidden) bgm.pause(); else bgm.play().catch(e=>e); } });
                 } catch(e) { document.body.innerHTML = `<div style='color:red; background:white; padding:20px;'><h3>Game Crash</h3><p>${e.message}</p></div>`; }
             });
         };
 
         function generateGameLevels() {
-            let pool = [...AIRCRAFT_DATA.standard].sort(() => Math.random() - 0.5);
-            let classPool = [...AIRCRAFT_DATA.classified].sort(() => Math.random() - 0.5);
-            let tPool = [...TRIVIA_DATA].sort(() => Math.random() - 0.5);
-
+            let pool = [...AIRCRAFT_DATA.standard].sort(() => Math.random() - 0.5); let classPool = [...AIRCRAFT_DATA.classified].sort(() => Math.random() - 0.5); let tPool = [...TRIVIA_DATA].sort(() => Math.random() - 0.5);
             let h1 = pool.slice(0, 4).map(p => { let opts = getOptionsForImage(p.name, false); let img = p.images[Math.floor(Math.random() * p.images.length)]; return { ...p, image: img, hangar: 1, isClassified: false, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) }; });
             let h2 = pool.slice(4, 7).map(p => { let opts = getOptionsForImage(p.name, false); let img = p.images[Math.floor(Math.random() * p.images.length)]; return { ...p, image: img, hangar: 2, isClassified: false, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) }; });
             let h3 = pool.slice(7, 10).map(p => { let opts = getOptionsForImage(p.name, false); let img = p.images[Math.floor(Math.random() * p.images.length)]; return { ...p, image: img, hangar: 3, isClassified: false, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) }; });
             let h4 = classPool.slice(0, 3).map(p => { let opts = getOptionsForImage(p.name, true); let img = p.images[Math.floor(Math.random() * p.images.length)]; return { ...p, image: img, hangar: 4, isClassified: true, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) }; });
             let h5 = classPool.slice(3, 7).map(p => { let opts = getOptionsForImage(p.name, true); let img = p.images[Math.floor(Math.random() * p.images.length)]; return { ...p, image: img, hangar: 5, isClassified: true, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) }; });
-
             h1.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 1, isClassified: false, completed: false, failed: false, attempts: 0 }); h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
             h2.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 2, isClassified: false, completed: false, failed: false, attempts: 0 }); h2.push({ ...tPool[1], hangar: 2, isClassified: false, completed: false });
             h3.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 3, isClassified: false, completed: false, failed: false, attempts: 0 }); h3.push({ ...tPool[2], hangar: 3, isClassified: false, completed: false }); 
             h4.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 4, isClassified: true, completed: false, failed: false, attempts: 0 }); h4.push({ ...tPool[3], hangar: 4, isClassified: true, completed: false }); 
             h5.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 5, isClassified: true, completed: false, failed: false, attempts: 0 }); h5.push({ ...tPool[4], hangar: 5, isClassified: true, completed: false }); 
-
             return [...h1.sort(()=>Math.random()-0.5), ...h2.sort(()=>Math.random()-0.5), ...h3.sort(()=>Math.random()-0.5), ...h4.sort(()=>Math.random()-0.5), ...h5.sort(()=>Math.random()-0.5)];
         }
 
@@ -1044,23 +982,19 @@
                 if (!db) { alert("Database not connected!"); return; }
                 if (confirm("WARNING: Are you sure you want to wipe the entire global leaderboard?")) {
                     db.collection("fuel_command_v78").get().then((querySnapshot) => {
-                        querySnapshot.forEach((doc) => { db.collection("fuel_command_v78").doc(doc.id).delete(); });
-                        alert("Leaderboard successfully wiped!");
+                        querySnapshot.forEach((doc) => { db.collection("fuel_command_v78").doc(doc.id).delete(); }); alert("Leaderboard successfully wiped!");
                     }).catch((error) => { console.error("Error wiping leaderboard: ", error); });
                 }
-                document.getElementById('callsign-input').value = ""; 
-                return;
+                document.getElementById('callsign-input').value = ""; return;
             }
-            globalState.username = name; 
-            localStorage.setItem('last_pilot_name', name); 
+            globalState.username = name; localStorage.setItem('last_pilot_name', name); 
             if (name.toLowerCase() === 'admin') {
                 globalState.currentFuel = 99999; globalState.extraFuel = 50000; globalState.powerups = { scans: 99, drones: 99, fuelPods: 99 };
                 globalState.world1Complete = true; globalState.world2Complete = true; globalState.world3Complete = true; globalState.world4Complete = true; globalState.world5Complete = true;
                 globalState.passwordRevealed = [...Array(TARGET_PASSWORD.length).keys()];
                 globalState.levels.forEach(l => { l.completed = true; if(l.type === 'image') l.revealedTiles = [...Array(100).keys()]; });
             }
-            saveState();
-            document.getElementById('login-overlay').style.display = 'none'; document.getElementById('selector-view').classList.add('active');
+            saveState(); document.getElementById('login-overlay').style.display = 'none'; document.getElementById('selector-view').classList.add('active');
             document.getElementById('pilot-greeting').textContent = `Pilot: ${globalState.username}`; renderDashboard();
         }
 
@@ -1105,10 +1039,7 @@
         }
 
         function saveState() { try { localStorage.setItem('fuelQuizState_v79', JSON.stringify(globalState)); } catch(e){} }
-        function isHangarComplete(hNum) { 
-            const hLevels = globalState.levels.filter(l => l.hangar === hNum);
-            return hLevels.length > 0 && hLevels.every(l => l.completed); 
-        }
+        function isHangarComplete(hNum) { const hLevels = globalState.levels.filter(l => l.hangar === hNum); return hLevels.length > 0 && hLevels.every(l => l.completed); }
         function isAllWorldsComplete() { return globalState.levels.every(l => l.completed); }
 
         function renderDashboard() {
@@ -1231,7 +1162,7 @@
                 const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
                 hiddenTiles.forEach(p => { p.style.transition = 'background 0.3s ease, opacity 1s ease 0.3s, transform 1s ease 0.3s'; p.style.background = 'rgba(52, 152, 219, 0.4)'; p.style.borderColor = 'var(--aux-blue)'; p.style.boxShadow = '0 0 10px var(--aux-blue)'; p.style.pointerEvents = 'none'; setTimeout(() => { p.style.opacity = '0'; p.style.transform = 'scale(0.8)'; }, 50); });
                 lState.revealedTiles = [...Array(100).keys()]; saveState();
-            } else if (lState.type === 'trivia') { setTimeout(() => submitTrivia(lState.correctIdx), 500); }
+            } else if (lState.type === 'trivia') { setTimeout(() => submitTrivia({currentTarget: document.getElementById('btn-opt-'+lState.correctIdx)}, lState.correctIdx), 500); }
         }
 
         function usePrecisionDrone() {
@@ -1243,7 +1174,7 @@
                 unrevealed.sort(() => Math.random() - 0.5); let toReveal = unrevealed.slice(0, 15); lState.revealedTiles.push(...toReveal); saveState();
                 const grid = document.getElementById('cover-grid'); toReveal.forEach(idx => { let tile = grid.children[idx]; if(tile) { tile.style.transition = 'opacity 0.5s ease, background 0.2s'; tile.style.background = 'var(--brand-red)'; setTimeout(() => tile.classList.add('revealed'), 200); } });
             } else if (lState.type === 'trivia') {
-                let wrongIndices = []; lState.options.forEach((opt, i) => { if(i !== lState.correctIdx) { const btn = document.getElementById('btn-opt-' + i); if(btn && !btn.disabled) wrongIndices.push(i); } });
+                let wrongIndices = []; lState.options.forEach((opt, i) => { if(i !== lState.correctIdx) { const btn = document.getElementById('btn-opt-' + i); if(btn && !btn.disabled && !btn.classList.contains('fade-out')) wrongIndices.push(i); } });
                 if(wrongIndices.length > 0) { let target = wrongIndices[Math.floor(Math.random() * wrongIndices.length)]; const btn = document.getElementById('btn-opt-' + target); btn.disabled = true; btn.style.opacity = '0.3'; btn.style.textDecoration = 'line-through'; }
             }
         }
@@ -1262,22 +1193,35 @@
             updateMiniFuelUI();
             const imgArea = document.getElementById('image-game-area'); const triviaArea = document.getElementById('trivia-game-area'); const takeoffArea = document.getElementById('takeoff-game-area');
             const container = document.getElementById('game-container'); const puBar = document.getElementById('powerups-bar');
+            
+            // Reset option visibility and styles
+            document.querySelectorAll('.trivia-option').forEach(btn => {
+                btn.classList.remove('fade-out', 'wrong-flash');
+                btn.style.backgroundColor = ""; btn.style.color = ""; btn.disabled = lState.completed;
+            });
+
             imgArea.style.display = 'none'; triviaArea.style.display = 'none'; takeoffArea.style.display = 'none';
             if(tkState.frameId) { cancelAnimationFrame(tkState.frameId); tkState.active = false; }
             if (lState.type === 'takeoff') { puBar.style.display = 'none'; } else { puBar.style.display = 'flex'; puBar.style.visibility = 'visible'; updatePowerupsUI(); if (lState.completed) { document.getElementById('btn-pu-scan').classList.add('empty'); document.getElementById('btn-pu-drone').classList.add('empty'); document.getElementById('btn-pu-fuel').classList.add('empty'); } } 
+            
             if (lState.type === 'image') {
                 imgArea.style.display = 'flex'; container.style.overflow = 'hidden'; document.getElementById('mystery-image').src = lState.image;
-                lState.options.forEach((optText, i) => { const btn = document.getElementById('img-opt-' + i); if(btn) { btn.textContent = optText; btn.disabled = lState.completed; btn.style.backgroundColor = ""; btn.style.color = ""; if(lState.completed && i === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; } } });
+                lState.options.forEach((optText, i) => { 
+                    const btn = document.getElementById('img-opt-' + i); 
+                    if(btn) { btn.textContent = optText; if(lState.completed && i === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; } } 
+                });
                 const grid = document.getElementById('cover-grid'); grid.innerHTML = "";
                 for (let i = 0; i < 100; i++) { const tile = document.createElement('div'); tile.className = 'grid-piece'; if (lState.revealedTiles && lState.revealedTiles.includes(i)) tile.classList.add('revealed'); if (lState.completed) tile.classList.add('revealed'); grid.appendChild(tile); }
                 if (!lState.completed && (globalState.currentFuel > 0 || globalState.extraFuel > 0)) { grid.onpointerdown = handleInteraction; } else { grid.onpointerdown = null; }
             } else if (lState.type === 'trivia') {
                 triviaArea.style.display = 'flex'; document.getElementById('trivia-question').textContent = lState.question;
-                lState.options.forEach((optText, i) => { const btn = document.getElementById('btn-opt-' + i); if(btn) { btn.textContent = String.fromCharCode(65 + i) + ". " + optText; btn.disabled = lState.completed; btn.style.backgroundColor = ""; btn.style.color = ""; btn.style.opacity = '1'; btn.style.textDecoration = 'none'; if(lState.completed && i === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; } } });
+                lState.options.forEach((optText, i) => { 
+                    const btn = document.getElementById('btn-opt-' + i); 
+                    if(btn) { btn.textContent = String.fromCharCode(65 + i) + ". " + optText; if(lState.completed && i === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; } } 
+                });
             } else if (lState.type === 'takeoff') {
                 takeoffArea.style.display = 'flex';
-                let targetNoSpace = TARGET_PASSWORD.replace(/ /g, '');
-                let isGoldenPlaneUnlocked = (globalState.passwordRevealed && globalState.passwordRevealed.length >= targetNoSpace.length);
+                let targetNoSpace = TARGET_PASSWORD.replace(/ /g, ''); let isGoldenPlaneUnlocked = (globalState.passwordRevealed && globalState.passwordRevealed.length >= targetNoSpace.length);
                 const planeEl = document.getElementById('tk-plane');
                 planeEl.innerHTML = `<img src="${isGoldenPlaneUnlocked ? 'my-plane-golden.png' : 'my-plane.png'}" alt="Player Plane" style="width: 125%; height: 125%; object-fit: contain; pointer-events: none;">`;
                 const sky = document.getElementById('tk-bg-sky'); const city = document.getElementById('tk-bg-city'); const ground = document.getElementById('tk-bg-ground'); const runwaySurf = document.getElementById('tk-runway-surface');
@@ -1290,14 +1234,70 @@
                 else if (lState.hangar === 4) { tkState.minAngle = 12; tkState.maxAngle = 14; zone.style.bottom = '40%'; zone.style.height = '6.6%'; } 
                 else { weather.classList.add('weather-fog'); weather.classList.add('weather-rain'); tkState.minAngle = 13; tkState.maxAngle = 14; zone.style.bottom = '43.3%'; zone.style.height = '3.3%'; }
                 if (!lState.completed && !lState.failed) { if (!globalState.hasSeenTakeoffTutorial) { document.getElementById('takeoff-tutorial-overlay').style.display = 'flex'; } else { startTakeoff(); } } 
-                else { document.getElementById('tk-mountain').style.display = 'none'; document.getElementById('tk-plane').style.display = 'block'; document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-10deg)`; document.getElementById('tk-needle').style.bottom = `40%`; document.getElementById('tk-runway-fill').style.height = '0%'; document.getElementById('tk-lift-fill').style.height = '100%'; document.getElementById('tk-speed-bar').style.height = '68%'; document.getElementById('tk-speed-bar').style.backgroundColor = "var(--gauge-green)"; document.getElementById('tk-speed-val').textContent = "150"; document.getElementById('tk-speed-val').style.color = "var(--gauge-green)"; document.getElementById('tk-touch-prompt').style.display = "none"; }
+                else { 
+                    document.getElementById('tk-mountain').style.display = 'none'; document.getElementById('tk-plane').style.display = 'block'; document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-10deg)`; document.getElementById('tk-needle').style.bottom = `40%`; 
+                    document.getElementById('tk-runway-fill').style.height = '0%'; document.getElementById('tk-lift-fill').style.height = '100%'; document.getElementById('tk-speed-bar').style.height = '68%'; document.getElementById('tk-speed-bar').style.backgroundColor = "var(--gauge-green)"; 
+                    document.getElementById('tk-speed-val').textContent = "150"; document.getElementById('tk-speed-val').style.color = "var(--gauge-green)"; document.getElementById('tk-touch-prompt').style.display = "none"; 
+                }
             }
         }
 
-        function startTakeoffFromTutorial() { 
-            globalState.hasSeenTakeoffTutorial = true; saveState(); document.getElementById('takeoff-tutorial-overlay').style.display = 'none'; 
-            setTimeout(() => { startTakeoff(); }, 100); 
+        // --- WRONG ANSWER FADE & FLOAT ---
+        function submitImageGuess(e, selectedIndex) {
+            const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
+            if(selectedIndex === lState.correctIdx) {
+                e.currentTarget.style.backgroundColor = "var(--gauge-green)"; e.currentTarget.style.color = "white"; endGame(true);
+            } else { handleWrongAnswer(e); }
         }
+
+        function submitTrivia(e, selectedIndex) {
+            const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
+            if(selectedIndex === lState.correctIdx) {
+                e.currentTarget.style.backgroundColor = "var(--gauge-green)"; e.currentTarget.style.color = "white"; endGame(true);
+            } else { handleWrongAnswer(e); }
+        }
+
+        function handleWrongAnswer(e) {
+            const btn = e.currentTarget;
+            let cx = e.clientX; let cy = e.clientY;
+            
+            // Fallback for touch screens or missing coordinate events
+            if (!cx || !cy) {
+                if (e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; } 
+                else { const rect = btn.getBoundingClientRect(); cx = rect.left + rect.width / 2; cy = rect.top + rect.height / 2; }
+            }
+
+            showFloat(cx, cy, `-${WRONG_GUESS_PENALTY}L`);
+            drainFuel(WRONG_GUESS_PENALTY);
+            
+            btn.classList.add('fade-out');
+            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false);
+        }
+
+        function showFloat(x, y, text) { 
+            const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text; 
+            el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800); 
+        }
+
+        function handleInteraction(e) {
+            const lState = globalState.levels[activeLevelIdx]; if (lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
+            const hidden = Array.from(document.querySelectorAll('.grid-piece:not(.revealed)')); if (hidden.length === 0) return;
+            const tile = hidden[Math.floor(Math.random() * hidden.length)]; const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile); tile.classList.add('revealed'); 
+            if(!lState.revealedTiles) lState.revealedTiles = []; lState.revealedTiles.push(idx); drainFuel(TILE_COST);
+            let cx = e.clientX || (e.touches && e.touches[0].clientX); let cy = e.clientY || (e.touches && e.touches[0].clientY); if (cx && cy) showFloat(cx, cy, `-${TILE_COST}L`);
+            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false);
+        }
+
+        function endGame(win) {
+            if (win) {
+                const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
+                if (lState.type === 'image') document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+                triggerConfetti(); saveState(); if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);
+            }
+        }
+
+        // --- TAKEOFF ANIMATION LOOP ---
+        function startTakeoffFromTutorial() { globalState.hasSeenTakeoffTutorial = true; saveState(); document.getElementById('takeoff-tutorial-overlay').style.display = 'none'; setTimeout(() => { startTakeoff(); }, 100); }
 
         function startTakeoff() {
             document.querySelectorAll('.pixel-particle').forEach(el => el.remove()); if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
@@ -1394,167 +1394,6 @@
             saveState(); if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);
         }
 
-        function openRadar() {
-            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) { triggerGameOver(false); return; }
-            document.getElementById('selector-view').classList.remove('active'); const radarView = document.getElementById('radar-view'); radarView.classList.remove('active'); void radarView.offsetWidth; radarView.classList.add('active');
-            pathsVisible = false; originVisible = false; altVisible = false; origCityVisible = false; destCityVisible = false; compassVisible = false; currentMapStyle = 'CLEAN'; radarLevel = 1; radarTimeMs = 1800000; 
-            document.getElementById('radar-intel-body').classList.add('open'); document.getElementById('radar-intel-header').classList.add('open'); document.querySelector('.acc-icon-intel').textContent = "[-]";
-            document.getElementById('radar-filters-body').classList.remove('open'); document.getElementById('radar-filters-header').classList.remove('open'); document.querySelector('.acc-icon-filters').textContent = "[+]";
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    if (!radarMap) {
-                        if (typeof L !== 'undefined') {
-                            radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
-                            cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
-                            cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
-                            cleanMapBase.addTo(radarMap); radarLayerGroup = L.layerGroup().addTo(radarMap); radarPathGroup = L.layerGroup().addTo(radarMap);
-                        } else { return; }
-                    }
-                    radarMap.invalidateSize(); startRadarTimer(); startRadarMission();
-                });
-            });
-        }
-
-        function createPlaneIcon(p) {
-            let labels = []; if (originVisible && p.origin) labels.push(`REG: ${p.origin}`); if (altVisible && p.alt) labels.push(`${Math.round(p.alt)}M`);
-            if (origCityVisible && p.originCity) labels.push(`ORG: ${p.originCity}`); if (destCityVisible && p.destCity) labels.push(`DST: ${p.destCity}`);
-            let labelHtml = labels.length > 0 ? `<div style="position:absolute; color: ${p.color}; background: #000; padding: 2px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; left: 14px; top: 14px; line-height: 1.2; z-index: 1000; pointer-events: none;">${labels.join('<br>')}</div>` : '';
-            const planeSvg = `<div style="transform: rotate(${p.heading}deg); color: ${p.color}; width:24px; height:24px; position:absolute; top:0; left:0;"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
-            return L.divIcon({ html: `<div style="position:relative; width:24px; height:24px;">${planeSvg}${p.showPing ? '<div class="radar-target-ping" style="border-color:'+p.color+';"></div>' : ''}${labelHtml}</div>`, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });
-        }
-
-        function animateRadarPlanes() {
-            if (!radarMap || currentRadarPlanes.length === 0) return;
-            let now = Date.now(); let dt = (now - radarAnimTime) / 1000; radarAnimTime = now;
-            currentRadarPlanes.forEach(p => {
-                let rad = (90 - p.heading) * (Math.PI / 180); p.lat += Math.sin(rad) * 0.0008 * dt; p.lng += Math.cos(rad) * (0.0008 / (Math.cos(p.lat * Math.PI / 180) || 1)) * dt;
-                if (p.marker) p.marker.setLatLng([p.lat, p.lng]);
-            });
-            radarAnimFrame = requestAnimationFrame(animateRadarPlanes);
-        }
-
-        function startRadarMission() {
-            const textEl = document.getElementById('radar-screen-text'); const config = RADAR_LEVEL_CONFIG[radarLevel];
-            document.querySelector('.lvl-text').textContent = `LEVEL ${radarLevel} OF 10`;
-            pathsVisible = false; originVisible = false; altVisible = false; origCityVisible = false; destCityVisible = false; compassVisible = false; currentMapStyle = 'CLEAN'; 
-            ['paths', 'origin', 'alt', 'origcity', 'destcity', 'compass', 'map'].forEach(id => { let b = document.getElementById('toggle-'+id+'-btn'); if(b){ b.style.background = "transparent"; b.style.color = "var(--radar-green)"; b.textContent = b.textContent.replace("ON", "OFF"); } });
-            document.querySelectorAll('.compass-pt').forEach(el => el.style.display = 'none');
-            if (radarMap && cleanMapLabels && radarMap.hasLayer(cleanMapLabels)) { radarMap.removeLayer(cleanMapLabels); }
-            const center = RADAR_CENTERS[Math.floor(Math.random() * RADAR_CENTERS.length)];
-            textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${center.name}...<span class='blinking-cursor'>_</span>`;
-            if (radarAnimFrame) cancelAnimationFrame(radarAnimFrame); radarLayerGroup.clearLayers(); radarPathGroup.clearLayers(); currentRadarPlanes = [];
-            const lamin = center.lat - config.latOffset; const lamax = center.lat + config.latOffset; const lomin = center.lng - config.lngOffset; const lomax = center.lng + config.lngOffset;
-            fetch(`https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`)
-            .then(res => res.json()).then(data => {
-                if(!data.states || data.states.length === 0) throw new Error();
-                let valid = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "").sort(() => Math.random() - 0.5);
-                for (let p of valid) {
-                    if (currentRadarPlanes.length >= config.planes) break; 
-                    const lat = p[6]; const lng = p[5]; const heading = p[10] || 0;
-                    if (currentRadarPlanes.some(cp => Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5)) continue;
-                    const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length];
-                    currentRadarPlanes.push({ callsign: p[1].trim(), lat, lng, heading, alt: p[7] || 5000, origin: p[2].toUpperCase(), originCity: CITIES[Math.floor(Math.random()*CITIES.length)], destCity: CITIES[Math.floor(Math.random()*CITIES.length)], route: [[lat, lng]], color: pColor, showPing: false });
-                }
-                initTargetAndPlot();
-            }).catch(() => {
-                for(let i=0; i<config.planes; i++){
-                    const lat = lamin + Math.random()*(lamax-lamin); const lng = lomin + Math.random()*(lomax-lomin);
-                    currentRadarPlanes.push({ callsign: "FLT"+Math.floor(100+Math.random()*900), lat, lng, heading: Math.random()*360, alt: 3000+Math.random()*7000, origin: "USA", originCity: US_CITIES[Math.floor(Math.random()*US_CITIES.length)], destCity: US_CITIES[Math.floor(Math.random()*US_CITIES.length)], route: [[lat,lng]], color: RADAR_COLORS[i%RADAR_COLORS.length], showPing: false });
-                }
-                initTargetAndPlot();
-            });
-        }
-
-        function initTargetAndPlot() {
-            const target = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)]; currentRadarCallsign = target.callsign;
-            document.getElementById('radar-screen-text').innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br><div style="margin-top:8px; color:#aaa;">DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span></div>`;
-            currentRadarPlanes.forEach(p => { let marker = L.marker([p.lat, p.lng], {icon: createPlaneIcon(p)}).addTo(radarLayerGroup); p.marker = marker; marker.on('click', () => openInterceptModal(p, marker)); });
-            if(currentRadarPlanes.length > 0) radarMap.fitBounds(L.featureGroup(currentRadarPlanes.map(p => p.marker)).getBounds().pad(0.1));
-            radarAnimTime = Date.now(); animateRadarPlanes();
-        }
-
-        function openInterceptModal(plane, marker) {
-            if (radarTimeMs <= 0) return; pendingInterceptPlane = { data: plane, marker }; radarMap.flyTo([plane.lat, plane.lng], 12);
-            const el = document.getElementById('encrypted-callsign'); document.getElementById('intercept-buttons').style.visibility = "visible";
-            if (encryptionInterval) clearInterval(encryptionInterval);
-            encryptionInterval = setInterval(() => { let enc = ''; for(let i=0; i<plane.callsign.length; i++) enc += "!@#$%^&*"[Math.floor(Math.random()*8)]; el.textContent = enc; }, 60); 
-            document.getElementById('intercept-overlay').style.display = 'flex';
-        }
-
-        function cancelIntercept() { if (encryptionInterval) clearInterval(encryptionInterval); document.getElementById('intercept-overlay').style.display = 'none'; }
-
-        function confirmIntercept() {
-            if (!pendingInterceptPlane) return; let p = pendingInterceptPlane.data;
-            clearInterval(encryptionInterval); document.getElementById('intercept-buttons').style.visibility = 'hidden';
-            let actual = p.callsign; let iter = 0;
-            encryptionInterval = setInterval(() => {
-                let disp = actual.substring(0, Math.floor(iter/4)); for(let i=disp.length; i<actual.length; i++) disp += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random()*26)];
-                document.getElementById('encrypted-callsign').textContent = disp;
-                if(Math.floor(iter/4) >= actual.length){
-                    clearInterval(encryptionInterval);
-                    if(p.callsign === currentRadarCallsign){
-                        p.showPing = true; p.marker.setIcon(createPlaneIcon(p)); awardPasswordLetters(1);
-                        if(radarLevel < 10) { radarLevel++; setTimeout(() => { document.getElementById('intercept-overlay').style.display = 'none'; startRadarMission(); }, 1500); }
-                        else { globalState.extraFuel += 5000; saveState(); setTimeout(() => { document.getElementById('intercept-overlay').style.display = 'none'; closeRadar(); }, 1500); }
-                    } else {
-                        radarTimeMs = Math.max(0, radarTimeMs - 15000); setTimeout(() => { document.getElementById('intercept-overlay').style.display = 'none'; }, 1500);
-                    }
-                }
-                iter++;
-            }, 40);
-        }
-
-        function renderRadarOverlays() { currentRadarPlanes.forEach(p => { if (p.marker) p.marker.setIcon(createPlaneIcon(p)); }); }
-        function toggleFlightPaths() { pathsVisible = !pathsVisible; renderRadarOverlays(); }
-        function toggleOrigin() { originVisible = !originVisible; renderRadarOverlays(); }
-        function toggleAlt() { altVisible = !altVisible; renderRadarOverlays(); }
-        function toggleOrigCity() { origCityVisible = !origCityVisible; renderRadarOverlays(); }
-        function toggleDestCity() { destCityVisible = !destCityVisible; renderRadarOverlays(); }
-        function toggleCompass() { compassVisible = !compassVisible; document.querySelectorAll('.compass-pt').forEach(el => el.style.display = compassVisible ? 'block' : 'none'); }
-        function toggleMapStyle() { if(currentMapStyle === 'CLEAN'){ cleanMapLabels.addTo(radarMap); currentMapStyle = 'LABELS'; } else { radarMap.removeLayer(cleanMapLabels); currentMapStyle = 'CLEAN'; } }
-        function getAssistPenalty() { let p = 1; if (pathsVisible) p++; if (originVisible) p++; if (altVisible) p++; if (origCityVisible) p++; if (destCityVisible) p++; if (compassVisible) p++; return p; }
-        
-        function updateTimerDisplay(penalty) {
-            let total = Math.floor(radarTimeMs / 1000); let m = Math.floor(total / 60); let s = total % 60;
-            document.getElementById('radar-timer').textContent = `${m < 10 ? "0"+m : m}:${s < 10 ? "0"+s : s}`;
-        }
-
-        function startRadarTimer() {
-            lastTimerTick = Date.now();
-            if(radarCountdown) clearInterval(radarCountdown);
-            radarCountdown = setInterval(() => {
-                let now = Date.now(); radarTimeMs -= (now - lastTimerTick) * getAssistPenalty(); lastTimerTick = now;
-                if(radarTimeMs <= 0){ clearInterval(radarCountdown); closeRadar(); } else { updateTimerDisplay(); }
-            }, 100); 
-        }
-
-        function closeRadar() { clearInterval(radarCountdown); document.getElementById('radar-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); renderDashboard(); }
-
-        function handleInteraction(e) {
-            const lState = globalState.levels[activeLevelIdx]; if (lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            const hidden = Array.from(document.querySelectorAll('.grid-piece:not(.revealed)')); if (hidden.length === 0) return;
-            const tile = hidden[Math.floor(Math.random() * hidden.length)]; const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile); tile.classList.add('revealed'); 
-            if(!lState.revealedTiles) lState.revealedTiles = []; lState.revealedTiles.push(idx); drainFuel(TILE_COST);
-            let cx = e.clientX || (e.touches && e.touches[0].clientX); let cy = e.clientY || (e.touches && e.touches[0].clientY); if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
-            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false);
-        }
-
-        function submitImageGuess(selectedIndex) {
-            const lState = globalState.levels[activeLevelIdx]; if(selectedIndex === lState.correctIdx) endGame(true); else { drainFuel(WRONG_GUESS_PENALTY); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false); }
-        }
-
-        function submitTrivia(selectedIndex) {
-            const lState = globalState.levels[activeLevelIdx]; if(selectedIndex === lState.correctIdx) endGame(true); else { drainFuel(WRONG_GUESS_PENALTY); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false); }
-        }
-
-        function endGame(win) {
-            if (win) {
-                const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
-                if (lState.type === 'image') document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
-                triggerConfetti(); saveState(); if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);
-            }
-        }
-
         function closeStatsAndRetire() { document.getElementById('game-over-overlay').style.display = 'none'; document.querySelectorAll('.view-section').forEach(el => el.classList.remove('gray-out', 'active')); document.getElementById('selector-view').classList.add('active'); renderDashboard(); }
 
         function triggerGameOver(isWin = false) { 
@@ -1583,9 +1422,314 @@
         function triggerResetUI() { document.getElementById('restart-overlay').style.display = 'flex'; }
         function cancelReset() { document.getElementById('restart-overlay').style.display = 'none'; }
         function confirmReset() { const user = globalState.username; localStorage.clear(); if (user) localStorage.setItem('last_pilot_name', user); location.reload(); }
-        function showFloat(x, y, text) { const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text; el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800); }
         function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
+
+        // --- RADAR LOGIC (RESTORED VISUAL ALERTS) ---
+        function openRadar() {
+            if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) { triggerGameOver(false); return; }
+            document.getElementById('selector-view').classList.remove('active'); const radarView = document.getElementById('radar-view'); radarView.classList.remove('active'); void radarView.offsetWidth; radarView.classList.add('active');
+            pathsVisible = false; originVisible = false; altVisible = false; origCityVisible = false; destCityVisible = false; compassVisible = false; currentMapStyle = 'CLEAN'; radarLevel = 1; radarTimeMs = 1800000; 
+            document.getElementById('radar-intel-body').classList.add('open'); document.getElementById('radar-intel-header').classList.add('open'); document.querySelector('.acc-icon-intel').textContent = "[-]";
+            document.getElementById('radar-filters-body').classList.remove('open'); document.getElementById('radar-filters-header').classList.remove('open'); document.querySelector('.acc-icon-filters').textContent = "[+]";
+            document.querySelector('.lvl-text').textContent = "LEVEL 1 OF 10";
+            
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (!radarMap) {
+                        if (typeof L !== 'undefined') {
+                            radarMap = L.map('radar-map-container', { zoomControl: false, attributionControl: false }).setView([48.0, 10.0], 5);
+                            cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
+                            cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
+                            cleanMapBase.addTo(radarMap); radarLayerGroup = L.layerGroup().addTo(radarMap); radarPathGroup = L.layerGroup().addTo(radarMap);
+                        } else { return; }
+                    }
+                    radarMap.invalidateSize(); startRadarTimer(); startRadarMission();
+                });
+            });
+        }
+
+        function createPlaneIcon(p) {
+            let labels = []; 
+            if (originVisible && p.origin) labels.push(`REG: ${p.origin}`); 
+            if (altVisible && p.alt) labels.push(`${Math.round(p.alt)}M`);
+            if (origCityVisible && p.originCity) labels.push(`ORG: ${p.originCity}`); 
+            if (destCityVisible && p.destCity) labels.push(`DST: ${p.destCity}`);
+            
+            let labelHtml = labels.length > 0 ? `<div style="position:absolute; color: ${p.color}; background: #000; padding: 2px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; left: 14px; top: 14px; line-height: 1.2; z-index: 1000; pointer-events: none;">${labels.join('<br>')}</div>` : '';
+            const planeSvg = `<div style="transform: rotate(${p.heading}deg); color: ${p.color}; width:24px; height:24px; position:absolute; top:0; left:0;"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
+            
+            return L.divIcon({ html: `<div style="position:relative; width:24px; height:24px;">${planeSvg}${p.showPing ? '<div class="radar-target-ping" style="border-color:'+p.color+';"></div>' : ''}${labelHtml}</div>`, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });
+        }
+
+        function animateRadarPlanes() {
+            if (!radarMap || currentRadarPlanes.length === 0) return;
+            let now = Date.now(); let dt = (now - radarAnimTime) / 1000; radarAnimTime = now;
+            currentRadarPlanes.forEach(p => {
+                let rad = (90 - p.heading) * (Math.PI / 180); 
+                p.lat += Math.sin(rad) * 0.0008 * dt; 
+                p.lng += Math.cos(rad) * (0.0008 / (Math.cos(p.lat * Math.PI / 180) || 1)) * dt;
+                if (p.marker) p.marker.setLatLng([p.lat, p.lng]);
+            });
+            radarAnimFrame = requestAnimationFrame(animateRadarPlanes);
+        }
+
+        function getCompassDirection(heading) { 
+            const dirs = ["NORTH", "NORTH-EAST", "EAST", "SOUTH-EAST", "SOUTH", "SOUTH-WEST", "WEST", "NORTH-WEST"]; 
+            return dirs[Math.round(((heading %= 360) < 0 ? heading + 360 : heading) / 45) % 8]; 
+        }
+
+        function evaluateAndSelectHints(targetPlane, geoData, config) {
+            let potentialHints = []; const totalP = currentRadarPlanes.length;
+            let targetDir = getCompassDirection(targetPlane.heading); 
+            potentialHints.push({ text: `HEADING ${targetDir}`, test: p => getCompassDirection(p.heading) === targetDir });
+            if (targetPlane.origin) potentialHints.push({ text: `REGISTRY ${targetPlane.origin}`, test: p => p.origin === targetPlane.origin });
+            if (targetPlane.originCity) potentialHints.push({ text: `ORIGIN ${targetPlane.originCity}`, test: p => p.originCity === targetPlane.originCity });
+            if (targetPlane.destCity) potentialHints.push({ text: `DESTINATION ${targetPlane.destCity}`, test: p => p.destCity === targetPlane.destCity });
+            if (targetPlane.alt) { 
+                const isAbove = Math.random() > 0.5; 
+                let bound = isAbove ? Math.floor((targetPlane.alt - 1) / 500) * 500 : Math.ceil((targetPlane.alt + 1) / 500) * 500; 
+                potentialHints.push({ text: `ALT ${isAbove ? 'ABOVE' : 'BELOW'} ${bound}M`, test: p => isAbove ? p.alt > bound : p.alt < bound }); 
+            }
+            potentialHints.forEach(h => { h.ratio = currentRadarPlanes.filter(h.test).length / totalP; });
+            let goodHints = potentialHints.filter(h => h.ratio <= 0.55);
+            if (geoData && geoData.address) { let city = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.municipality || geoData.address.suburb; if (city) goodHints.push({ text: `PROXIMITY NEAR ${city.toUpperCase()}`, ratio: 0.1 }); } else if (geoData === null) { goodHints.push({ text: `AIRSPACE INT'L WATERS`, ratio: 0.1 }); }
+            goodHints.sort((a, b) => a.ratio - b.ratio);
+            if (goodHints.length < config.hints) { 
+                goodHints = potentialHints.sort((a, b) => a.ratio - b.ratio); 
+                if (geoData && geoData.address) { let city = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.municipality || geoData.address.suburb; if (city) goodHints.unshift({ text: `PROXIMITY NEAR ${city.toUpperCase()}` }); } else if (geoData === null) { goodHints.unshift({ text: `AIRSPACE INT'L WATERS` }); } 
+            }
+            return goodHints.slice(0, config.hints).map(h => h.text).sort(() => 0.5 - Math.random());
+        }
+
+        function plotPlanesOnRadar() {
+            currentRadarPlanes.forEach(p => { 
+                let marker = L.marker([p.lat, p.lng], {icon: createPlaneIcon(p)}).addTo(radarLayerGroup); 
+                p.marker = marker; 
+                marker.on('click', () => { openInterceptModal(p, marker); }); 
+            });
+            if(currentRadarPlanes.length > 0) { 
+                let lats = currentRadarPlanes.map(p => p.lat).filter(l => l != null && !isNaN(l)); 
+                let lngs = currentRadarPlanes.map(p => p.lng).filter(l => l != null && !isNaN(l)); 
+                if (lats.length > 0 && lngs.length > 0) { 
+                    let safeBounds = [[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]]; 
+                    radarMap.fitBounds(safeBounds, { padding: [40, 40] }); 
+                } 
+            }
+            radarAnimTime = Date.now(); 
+            animateRadarPlanes();
+        }
+
+        function startRadarMission() {
+            const textEl = document.getElementById('radar-screen-text'); const config = RADAR_LEVEL_CONFIG[radarLevel];
+            document.querySelector('.lvl-text').textContent = `LEVEL ${radarLevel} OF 10`;
+            pathsVisible = false; originVisible = false; altVisible = false; origCityVisible = false; destCityVisible = false; compassVisible = false; currentMapStyle = 'CLEAN'; 
+            
+            ['paths', 'origin', 'alt', 'origcity', 'destcity', 'compass', 'map'].forEach(id => { 
+                let b = document.getElementById('toggle-'+id+'-btn'); 
+                if(b){ b.style.background = "transparent"; b.style.color = "var(--radar-green)"; b.textContent = b.textContent.replace("ON", "OFF"); } 
+            });
+            document.querySelectorAll('.compass-pt').forEach(el => el.style.display = 'none');
+            if (radarMap && cleanMapLabels && radarMap.hasLayer(cleanMapLabels)) { radarMap.removeLayer(cleanMapLabels); }
+            
+            const center = RADAR_CENTERS[Math.floor(Math.random() * RADAR_CENTERS.length)];
+            textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${center.name}...<span class='blinking-cursor'>_</span>`;
+            if (radarAnimFrame) cancelAnimationFrame(radarAnimFrame); radarLayerGroup.clearLayers(); radarPathGroup.clearLayers(); currentRadarPlanes = [];
+            
+            const lamin = center.lat - config.latOffset; const lamax = center.lat + config.latOffset; const lomin = center.lng - config.lngOffset; const lomax = center.lng + config.lngOffset;
+            
+            fetch(`https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`)
+            .then(res => res.json())
+            .then(data => {
+                if(!data.states || data.states.length === 0) throw new Error();
+                let valid = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "").sort(() => Math.random() - 0.5);
+                for (let p of valid) {
+                    if (currentRadarPlanes.length >= config.planes) break; 
+                    const lat = p[6]; const lng = p[5]; const heading = p[10] || 0;
+                    if (currentRadarPlanes.some(cp => Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5)) continue;
+                    
+                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
+                    const radBack = (heading + 180) * (Math.PI / 180); const startLat = lat + Math.cos(radBack) * trailLen; const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
+                    const radFwd = heading * (Math.PI / 180); const endLat = lat + Math.cos(radFwd) * fwdLen; const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+                    
+                    const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length];
+                    currentRadarPlanes.push({ callsign: p[1].trim(), lat, lng, heading, alt: p[7] || 5000, origin: p[2].toUpperCase(), originCity: CITIES[Math.floor(Math.random()*CITIES.length)], destCity: CITIES[Math.floor(Math.random()*CITIES.length)], route: [[startLat, startLng], [lat, lng], [endLat, endLng]], color: pColor, showPing: false });
+                }
+                initTargetAndPlot();
+            }).catch(() => {
+                for(let i=0; i<config.planes; i++){
+                    const lat = lamin + Math.random()*(lamax-lamin); const lng = lomin + Math.random()*(lomax-lomin);
+                    const heading = Math.random()*360;
+                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
+                    const radBack = (heading + 180) * (Math.PI / 180); const startLat = lat + Math.cos(radBack) * trailLen; const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
+                    const radFwd = heading * (Math.PI / 180); const endLat = lat + Math.cos(radFwd) * fwdLen; const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+                    
+                    currentRadarPlanes.push({ callsign: "FLT"+Math.floor(100+Math.random()*900), lat, lng, heading: heading, alt: 3000+Math.random()*7000, origin: "USA", originCity: US_CITIES[Math.floor(Math.random()*US_CITIES.length)], destCity: US_CITIES[Math.floor(Math.random()*US_CITIES.length)], route: [[startLat, startLng], [lat, lng], [endLat, endLng]], color: RADAR_COLORS[i%RADAR_COLORS.length], showPing: false });
+                }
+                initTargetAndPlot();
+            });
+        }
+
+        function initTargetAndPlot() {
+            const textEl = document.getElementById('radar-screen-text'); 
+            const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)]; 
+            currentRadarCallsign = targetPlane.callsign; 
+            const config = RADAR_LEVEL_CONFIG[radarLevel];
+            
+            textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br><div style="margin-top:8px; color:#aaa;">DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span></div>`;
+            plotPlanesOnRadar();
+            
+            const nomController = new AbortController(); const nomTimeout = setTimeout(() => nomController.abort(), 2500);
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${targetPlane.lat}&lon=${targetPlane.lng}&zoom=10`, { signal: nomController.signal })
+            .then(res => { clearTimeout(nomTimeout); return res.json(); })
+            .then(geoData => { 
+                let selectedHints = evaluateAndSelectHints(targetPlane, geoData, config); 
+                let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join(''); 
+                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`; 
+            })
+            .catch(() => { 
+                let selectedHints = evaluateAndSelectHints(targetPlane, null, config); 
+                let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join(''); 
+                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`; 
+            });
+        }
+
+        function openInterceptModal(plane, marker) {
+            if (radarTimeMs <= 0) return; pendingInterceptPlane = { data: plane, marker }; radarMap.flyTo([plane.lat, plane.lng], 12);
+            
+            const titleEl = document.querySelector('#intercept-overlay h1');
+            const descEl = document.querySelector('#intercept-overlay p');
+            const boxEl = document.querySelector('#intercept-overlay .modal-box');
+            const el = document.getElementById('encrypted-callsign'); 
+            
+            // Reset the modal visuals
+            titleEl.textContent = "CONFIRM INTERCEPT"; 
+            titleEl.style.color = "var(--brand-red)"; 
+            descEl.innerHTML = "Target signature encrypted:"; 
+            descEl.style.color = "#ccc"; 
+            boxEl.style.borderColor = "var(--brand-red)"; 
+            boxEl.style.boxShadow = "0 0 20px rgba(215, 25, 32, 0.2)"; 
+            el.style.color = "#fff";
+            document.getElementById('intercept-buttons').style.visibility = "visible";
+
+            if (encryptionInterval) clearInterval(encryptionInterval);
+            encryptionInterval = setInterval(() => { let enc = ''; for(let i=0; i<plane.callsign.length; i++) enc += "!@#$%^&*"[Math.floor(Math.random()*8)]; el.textContent = enc; }, 60); 
+            document.getElementById('intercept-overlay').style.display = 'flex';
+        }
+
+        function cancelIntercept() { if (encryptionInterval) clearInterval(encryptionInterval); document.getElementById('intercept-overlay').style.display = 'none'; }
+
+        function confirmIntercept() {
+            if (!pendingInterceptPlane) return; 
+            let p = pendingInterceptPlane.data; 
+            let marker = pendingInterceptPlane.marker;
+            
+            clearInterval(encryptionInterval); 
+            document.getElementById('intercept-buttons').style.visibility = 'hidden';
+            
+            const titleEl = document.querySelector('#intercept-overlay h1'); 
+            const descEl = document.querySelector('#intercept-overlay p'); 
+            const boxEl = document.querySelector('#intercept-overlay .modal-box'); 
+            const el = document.getElementById('encrypted-callsign');
+            
+            titleEl.textContent = "DECRYPTING..."; 
+            titleEl.style.color = "var(--gauge-orange)"; 
+            boxEl.style.borderColor = "var(--gauge-orange)"; 
+            boxEl.style.boxShadow = "0 0 20px rgba(243, 156, 18, 0.4)"; 
+            descEl.textContent = "Matching signatures...";
+
+            let actual = p.callsign; let iter = 0;
+            encryptionInterval = setInterval(() => {
+                let disp = actual.substring(0, Math.floor(iter/4)); 
+                for(let i=disp.length; i<actual.length; i++) disp += "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$"[Math.floor(Math.random()*40)];
+                el.textContent = disp;
+                
+                if(Math.floor(iter/4) >= actual.length) {
+                    clearInterval(encryptionInterval);
+                    if(p.callsign === currentRadarCallsign) {
+                        titleEl.textContent = "TARGET LOCKED"; 
+                        titleEl.style.color = "var(--gauge-green)"; 
+                        boxEl.style.borderColor = "var(--gauge-green)"; 
+                        boxEl.style.boxShadow = "0 0 20px rgba(46, 204, 113, 0.4)"; 
+                        el.style.color = p.color;
+                        
+                        p.showPing = true; 
+                        if(p.marker) p.marker.setIcon(createPlaneIcon(p)); 
+                        
+                        let unrevealedCount = 0; 
+                        for(let i=0; i<TARGET_PASSWORD.length; i++){ if(TARGET_PASSWORD[i] !== ' ' && !globalState.passwordRevealed.includes(i)) unrevealedCount++; } 
+                        let lettersToAward = Math.min(unrevealedCount, Math.floor(Math.random() * 2) + 1); 
+                        if (lettersToAward > 0) awardPasswordLetters(lettersToAward);
+
+                        if(radarLevel < 10) { 
+                            descEl.innerHTML = `<span style='color:var(--brand-gold)'>PROCEED TO NEXT SECTOR...</span><br><span style="font-size:0.75rem; color:#aaa;">(+${lettersToAward} Password Datablocks)</span>`;
+                            radarLevel++; 
+                            setTimeout(() => { document.getElementById('intercept-overlay').style.display = 'none'; startRadarMission(); pendingInterceptPlane = null; }, 2500); 
+                        } else { 
+                            radarTimeMs = 0; clearInterval(radarCountdown); 
+                            globalState.extraFuel += 5000; saveState(); updateMiniFuelUI();
+                            descEl.innerHTML = `MISSION COMPLETE<br><strong style='color:var(--brand-gold)'>+5000L AUX TANK SECURED</strong><br><span style="font-size:0.75rem; color:#aaa;">(+${lettersToAward} Password Datablocks)</span>`;
+                            setTimeout(() => { document.getElementById('intercept-overlay').style.display = 'none'; closeRadar(); pendingInterceptPlane = null; }, 3500); 
+                        }
+                    } else {
+                        titleEl.textContent = "WRONG TARGET"; 
+                        titleEl.style.color = "var(--brand-red)"; 
+                        descEl.innerHTML = "Signature mismatch.<br>Penalty: -15s"; 
+                        el.style.color = "var(--brand-red)"; 
+                        boxEl.style.borderColor = "var(--brand-red)"; 
+                        boxEl.style.boxShadow = "0 0 20px rgba(215, 25, 32, 0.4)";
+
+                        radarTimeMs = Math.max(0, radarTimeMs - 15000); 
+                        updateTimerDisplay(getAssistPenalty()); 
+                        document.getElementById('radar-timer').classList.add('timer-penalty'); 
+                        setTimeout(() => document.getElementById('radar-timer').classList.remove('timer-penalty'), 500); 
+                        setTimeout(() => { document.getElementById('intercept-overlay').style.display = 'none'; cancelIntercept(); }, 2000);
+                    }
+                }
+                iter++;
+            }, 40);
+        }
+
+        function renderRadarOverlays() { 
+            radarPathGroup.clearLayers(); 
+            currentRadarPlanes.forEach(p => { 
+                if (pathsVisible && p.route) { L.polyline(p.route, { color: p.color, weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup); }
+                if (p.marker) p.marker.setIcon(createPlaneIcon(p)); 
+            }); 
+            updateTimerDisplay(getAssistPenalty());
+        }
+
+        function toggleFlightPaths() { pathsVisible = !pathsVisible; const btn = document.getElementById('toggle-paths-btn'); btn.textContent = "PATHS: " + (pathsVisible ? "ON" : "OFF"); btn.style.background = pathsVisible ? "var(--radar-green)" : "transparent"; btn.style.color = pathsVisible ? "#000" : "var(--radar-green)"; renderRadarOverlays(); }
+        function toggleOrigin() { originVisible = !originVisible; const btn = document.getElementById('toggle-origin-btn'); btn.textContent = "REG: " + (originVisible ? "ON" : "OFF"); btn.style.background = originVisible ? "var(--radar-green)" : "transparent"; btn.style.color = originVisible ? "#000" : "var(--radar-green)"; renderRadarOverlays(); }
+        function toggleAlt() { altVisible = !altVisible; const btn = document.getElementById('toggle-alt-btn'); btn.textContent = "ALT: " + (altVisible ? "ON" : "OFF"); btn.style.background = altVisible ? "var(--radar-green)" : "transparent"; btn.style.color = altVisible ? "#000" : "var(--radar-green)"; renderRadarOverlays(); }
+        function toggleOrigCity() { origCityVisible = !origCityVisible; const btn = document.getElementById('toggle-origcity-btn'); btn.textContent = "ORIG: " + (origCityVisible ? "ON" : "OFF"); btn.style.background = origCityVisible ? "var(--radar-green)" : "transparent"; btn.style.color = origCityVisible ? "#000" : "var(--radar-green)"; renderRadarOverlays(); }
+        function toggleDestCity() { destCityVisible = !destCityVisible; const btn = document.getElementById('toggle-destcity-btn'); btn.textContent = "DEST: " + (destCityVisible ? "ON" : "OFF"); btn.style.background = destCityVisible ? "var(--radar-green)" : "transparent"; btn.style.color = destCityVisible ? "#000" : "var(--radar-green)"; renderRadarOverlays(); }
+        function toggleCompass() { compassVisible = !compassVisible; const btn = document.getElementById('toggle-compass-btn'); btn.textContent = "COMP: " + (compassVisible ? "ON" : "OFF"); btn.style.background = compassVisible ? "var(--radar-green)" : "transparent"; btn.style.color = compassVisible ? "#000" : "var(--radar-green)"; document.querySelectorAll('.compass-pt').forEach(el => { el.style.display = compassVisible ? 'block' : 'none'; }); updateTimerDisplay(getAssistPenalty()); }
+        function toggleMapStyle() { const btn = document.getElementById('toggle-map-btn'); if (currentMapStyle === 'CLEAN') { if(cleanMapLabels) cleanMapLabels.addTo(radarMap); currentMapStyle = 'LABELS'; btn.textContent = "CITIES: ON"; btn.style.background = "var(--radar-green)"; btn.style.color = "#000"; } else { if(cleanMapLabels && radarMap.hasLayer(cleanMapLabels)) radarMap.removeLayer(cleanMapLabels); currentMapStyle = 'CLEAN'; btn.textContent = "CITIES: OFF"; btn.style.background = "transparent"; btn.style.color = "var(--radar-green)"; } updateTimerDisplay(getAssistPenalty()); }
+        function getAssistPenalty() { let p = 1; if (pathsVisible) p++; if (originVisible) p++; if (altVisible) p++; if (origCityVisible) p++; if (destCityVisible) p++; if (compassVisible) p++; if (currentMapStyle === 'LABELS') p++; return p; }
         
+        function updateTimerDisplay(penalty = getAssistPenalty()) {
+            let tDiv = document.getElementById('radar-timer'); 
+            if (penalty > 1) tDiv.classList.add('timer-penalty'); else tDiv.classList.remove('timer-penalty');
+            let totalSeconds = Math.floor(radarTimeMs / 1000); let m = Math.floor(totalSeconds / 60); let s = totalSeconds % 60; let ms = Math.floor((radarTimeMs % 1000) / 10); 
+            tDiv.textContent = `${m < 10 ? "0"+m : m}:${s < 10 ? "0"+s : s}:${ms < 10 ? "0"+ms : ms}`;
+        }
+
+        function startRadarTimer() {
+            lastTimerTick = Date.now(); updateTimerDisplay();
+            if(radarCountdown) clearInterval(radarCountdown);
+            radarCountdown = setInterval(() => {
+                let now = Date.now(); radarTimeMs -= (now - lastTimerTick) * getAssistPenalty(); lastTimerTick = now;
+                if(radarTimeMs <= 0){ 
+                    radarTimeMs = 0; clearInterval(radarCountdown); 
+                    const msgEl = document.createElement('div'); msgEl.className = 'float-text'; msgEl.style.fontSize = '1.2rem'; msgEl.style.color = 'var(--brand-red)'; msgEl.textContent = "TIME OUT! MISSION ABORTED"; msgEl.style.left = '50%'; msgEl.style.top = '50%'; document.body.appendChild(msgEl); setTimeout(() => msgEl.remove(), 2000);
+                    setTimeout(closeRadar, 2000); 
+                } else { updateTimerDisplay(); }
+            }, 30); 
+        }
+
+        function closeRadar() { clearInterval(radarCountdown); if(radarAnimFrame) cancelAnimationFrame(radarAnimFrame); document.getElementById('radar-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); renderDashboard(); }
+
+        // --- MULTIPLAYER SYSTEM ---
         let currentRoomCode = null, isHost = false, matchListener = null, mpStartTime = null, mpTimeLimit = null, mpGameEnded = false, mpHasResetForMatch = false; 
 
         function resetGameStateForMultiplayer() {
@@ -1609,23 +1753,27 @@
         function closeOpponentLeft() { document.getElementById('opponent-left-overlay').style.display = 'none'; closeStatsAndRetire(); }
 
         function hostNewGame() {
-            if (!db) return; let isTimed = document.getElementById("mp-timer-checkbox").checked;
+            if (!db) { alert("HQ Database Offline!"); return; } 
+            let isTimed = document.getElementById("mp-timer-checkbox").checked;
             currentRoomCode = Math.floor(1000 + Math.random() * 9000).toString(); isHost = true; mpHasResetForMatch = false;
             db.collection("multiplayer_matches").doc(currentRoomCode).set({ hostName: globalState.username, hostScore: globalState.currentFuel, guestName: "Waiting...", guestScore: 0, status: "waiting", timeLimit: isTimed ? 120 : null, startTime: null });
             document.getElementById("mp-status").innerHTML = `ROOM CODE: <span style="color:var(--brand-gold); font-size: 2rem;">${currentRoomCode}</span>`;
             listenToMatch(currentRoomCode);
+            document.getElementById('btn-abort-match').style.display = 'block'; document.getElementById('btn-host-match').style.display = 'none'; document.getElementById('join-section').style.display = 'none';
         }
 
         function joinExistingGame() {
-            if (!db) return; let code = document.getElementById("join-code-input").value.trim(); if (code.length !== 4) return;
+            if (!db) { alert("HQ Database Offline!"); return; } 
+            let code = document.getElementById("join-code-input").value.trim(); if (code.length !== 4) { alert("Enter a valid 4-digit code."); return; }
             currentRoomCode = code; isHost = false; mpHasResetForMatch = false;
+            document.getElementById("mp-status").innerHTML = "CONNECTING...";
             db.collection("multiplayer_matches").doc(currentRoomCode).update({ guestName: globalState.username, guestScore: STARTING_GLOBAL_FUEL, status: "playing" })
-            .then(() => { listenToMatch(currentRoomCode); setTimeout(closeMultiplayer, 1500); }).catch(() => { currentRoomCode = null; });
+            .then(() => { listenToMatch(currentRoomCode); setTimeout(closeMultiplayer, 1500); }).catch(() => { document.getElementById("mp-status").innerHTML = "<span style='color:red;'>ROOM NOT FOUND.</span>"; currentRoomCode = null; });
         }
 
         function listenToMatch(roomCode) {
             if (matchListener) matchListener();
-            document.getElementById('enemy-fuel-display').style.display = 'block'; document.getElementById('enemy-dashboard-tank').style.display = 'flex';
+            document.getElementById('enemy-fuel-display').style.display = 'block'; document.getElementById('enemy-dashboard-tank').style.display = 'flex'; document.getElementById('enemy-dashboard-tank').style.flexDirection = 'column';
             matchListener = db.collection("multiplayer_matches").doc(roomCode).onSnapshot((doc) => {
                 if (doc.exists) {
                     let data = doc.data(); if (data.status === "abandoned" && !mpGameEnded) { showOpponentLeftPopup(); return; }
@@ -1635,8 +1783,17 @@
                     document.getElementById('enemy-dashboard-name').innerText = oppName.toUpperCase();
                     document.getElementById('enemy-dashboard-score').innerText = oppScore;
                     document.getElementById('enemy-fuel-bar').style.width = Math.min(100, (oppScore/4000)*100) + "%";
-                    if (data.status === "playing") { if (data.timeLimit) { if (data.startTime) { mpStartTime = data.startTime; mpTimeLimit = data.timeLimit; mpGameEnded = false; } else if (isHost) db.collection("multiplayer_matches").doc(roomCode).update({startTime: Date.now()}); } }
-                    if (isHost && data.status === "playing" && document.getElementById('multiplayer-overlay').style.display === 'flex') setTimeout(closeMultiplayer, 1500);
+                    if (data.status === "playing") { 
+                        if (data.timeLimit) { 
+                            if (data.startTime) { mpStartTime = data.startTime; mpTimeLimit = data.timeLimit; mpGameEnded = false; } 
+                            else if (isHost) db.collection("multiplayer_matches").doc(roomCode).update({startTime: Date.now()}); 
+                        } else { document.getElementById('mp-dashboard-timer').innerText = "MATCH ACTIVE"; document.getElementById('mp-dashboard-timer').style.color = "var(--gauge-green)"; }
+                    } else if (data.status === "waiting") {
+                        document.getElementById('mp-dashboard-timer').innerText = "WAITING FOR OPPONENT..."; document.getElementById('mp-dashboard-timer').style.color = "var(--brand-red)";
+                    }
+                    if (isHost && data.status === "playing" && document.getElementById('multiplayer-overlay').style.display === 'flex') {
+                        document.getElementById("mp-status").innerHTML = "OPPONENT JOINED! COMMENCE OPERATION."; setTimeout(closeMultiplayer, 1500);
+                    }
                 }
             });
         }
@@ -1647,19 +1804,24 @@
             if (currentRoomCode && mpStartTime && mpTimeLimit && !mpGameEnded) {
                 let left = mpTimeLimit - Math.floor((Date.now() - mpStartTime)/1000);
                 if (left <= 0) { if (!mpGameEnded) endMultiplayerMatch(); } 
-                else { let str = `${Math.floor(left/60)}:${(left%60).toString().padStart(2,'0')}`; document.getElementById('mp-dashboard-timer').innerText = "TIME: " + str; document.getElementById('mp-header-timer').innerText = " | ⏱ " + str; }
+                else { let str = `${Math.floor(left/60)}:${(left%60).toString().padStart(2,'0')}`; document.getElementById('mp-dashboard-timer').innerText = "TIME LEFT: " + str; document.getElementById('mp-header-timer').innerText = " | ⏱ " + str; }
             }
         }, 1000);
 
         function endMultiplayerMatch() {
             mpGameEnded = true; let opp = parseInt(document.getElementById('enemy-dashboard-score').innerText) || 0, mine = globalState.currentFuel;
             ['game-view', 'selector-view', 'hangar-view', 'radar-view'].forEach(id => document.getElementById(id).classList.add('gray-out'));
-            const box = document.getElementById('stats-box'); box.className = mine > opp ? "modal-box success" : "modal-box danger";
+            const box = document.getElementById('stats-box'); box.className = mine > opp ? "modal-box success" : mine < opp ? "modal-box danger" : "modal-box"; if (mine===opp) box.style.borderColor = "var(--brand-gold)";
             document.getElementById('stats-title').textContent = mine > opp ? "VICTORY!" : mine < opp ? "DEFEAT!" : "DRAW!";
-            document.getElementById('stats-reason').textContent = mine > opp ? "OPERATIONAL SUPERIORITY" : mine < opp ? "FUEL RESERVES DEPLETED" : "MATCH PARITY";
+            document.getElementById('stats-reason').textContent = mine > opp ? "YOU OUTPERFORMED THE ENEMY" : mine < opp ? "ENEMY SECURED MORE FUEL" : "TIE GAME";
+            document.getElementById('stat-time').textContent = "2:00"; document.getElementById('stat-hangars').textContent = "VS MODE";
             setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500); 
-            if(matchListener) matchListener(); currentRoomCode = null; document.getElementById('enemy-dashboard-tank').style.display = 'none';
+            if(matchListener) matchListener(); currentRoomCode = null; document.getElementById('enemy-dashboard-tank').style.display = 'none'; document.getElementById('enemy-fuel-display').style.display = 'none';
         }
-    </script>
-</body>
+
+        window.addEventListener('beforeunload', () => { if (currentRoomCode && db && !mpGameEnded) db.collection("multiplayer_matches").doc(currentRoomCode).update({status: "abandoned"}); });
+
+        let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block'; btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; }); });
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+    </script></body>
 </html>

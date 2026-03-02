@@ -1309,7 +1309,7 @@
             updatePowerupsUI(); updateMiniFuelUI();
         }
 
-        function launchLevel(idx) {
+function launchLevel(idx) {
             activeLevelIdx = idx; const lState = globalState.levels[idx];
             document.getElementById('selector-view').classList.remove('active'); document.getElementById('hangar-view').classList.remove('active');
             const gameView = document.getElementById('game-view'); gameView.classList.remove('active'); void gameView.offsetWidth; gameView.classList.add('active');
@@ -1368,7 +1368,6 @@
             } else if (lState.type === 'takeoff') {
                 takeoffArea.style.display = 'flex';
                 
-                // --- NEW: Check if password is cracked to use the Golden Plane ---
                 let targetNoSpace = TARGET_PASSWORD.replace(/ /g, '');
                 let isGoldenPlaneUnlocked = (globalState.passwordRevealed && globalState.passwordRevealed.length >= targetNoSpace.length);
                 const planeEl = document.getElementById('tk-plane');
@@ -1378,7 +1377,6 @@
                 } else {
                     planeEl.innerHTML = `<img src="my-plane.png" alt="Player Plane" style="width: 125%; height: 125%; object-fit: contain; pointer-events: none;">`;
                 }
-                // -----------------------------------------------------------------
 
                 const sky = document.getElementById('tk-bg-sky'); const city = document.getElementById('tk-bg-city'); const ground = document.getElementById('tk-bg-ground'); const runwaySurf = document.getElementById('tk-runway-surface');
                 const weather = document.getElementById('tk-weather-overlay'); const zone = document.getElementById('tk-target-zone');
@@ -1395,12 +1393,25 @@
                 else if (lState.hangar === 4) { tkState.minAngle = 12; tkState.maxAngle = 14; zone.style.bottom = '40%'; zone.style.height = '6.6%'; } 
                 else { weather.classList.add('weather-fog'); weather.classList.add('weather-rain'); tkState.minAngle = 13; tkState.maxAngle = 14; zone.style.bottom = '43.3%'; zone.style.height = '3.3%'; }
                 
-                if (!lState.completed && !lState.failed) { if (!globalState.hasSeenTakeoffTutorial) { document.getElementById('takeoff-tutorial-overlay').style.display = 'flex'; } else { startTakeoff(); } } 
-                else { document.getElementById('tk-mountain').style.display = 'none'; document.getElementById('tk-plane').style.display = 'block'; document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-10deg)`; document.getElementById('tk-needle').style.bottom = `40%`; document.getElementById('tk-runway-fill').style.height = '0%'; document.getElementById('tk-lift-fill').style.height = '100%'; document.getElementById('tk-speed-bar').style.height = '68%'; document.getElementById('tk-speed-bar').style.backgroundColor = "var(--gauge-green)"; document.getElementById('tk-speed-val').textContent = "150"; document.getElementById('tk-speed-val').style.color = "var(--gauge-green)"; document.getElementById('tk-touch-prompt').style.display = "none"; }
+                if (!lState.completed && !lState.failed) { 
+                    if (!globalState.hasSeenTakeoffTutorial) { document.getElementById('takeoff-tutorial-overlay').style.display = 'flex'; } else { startTakeoff(); } 
+                } 
+                else { 
+                    // --- HEIGHT FIX: Applied to winning state elements ---
+                    document.getElementById('tk-mountain').style.display = 'none'; 
+                    document.getElementById('tk-plane').style.display = 'block'; 
+                    document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-10deg)`; 
+                    document.getElementById('tk-needle').style.bottom = `40%`; 
+                    document.getElementById('tk-runway-fill').style.height = '0%'; 
+                    document.getElementById('tk-lift-fill').style.height = '100%'; 
+                    document.getElementById('tk-speed-bar').style.height = '68%'; 
+                    document.getElementById('tk-speed-bar').style.backgroundColor = "var(--gauge-green)"; 
+                    document.getElementById('tk-speed-val').textContent = "150"; 
+                    document.getElementById('tk-speed-val').style.color = "var(--gauge-green)"; 
+                    document.getElementById('tk-touch-prompt').style.display = "none"; 
+                }
             }
         }
-
-        function startTakeoffFromTutorial() { globalState.hasSeenTakeoffTutorial = true; saveState(); document.getElementById('takeoff-tutorial-overlay').style.display = 'none'; setTimeout(() => { startTakeoff(); }, 100); }
 
         function startTakeoff() {
             document.querySelectorAll('.pixel-particle').forEach(el => el.remove()); 
@@ -1417,7 +1428,14 @@
             
             tkState.lastFrameTime = performance.now();
             
-// Replace the old width resets with these height resets:
+            document.getElementById('tk-touch-prompt').style.display = 'block'; 
+            document.getElementById('tk-touch-prompt').style.opacity = '0.8'; 
+            document.getElementById('tk-plane').style.display = 'block'; 
+            document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`; 
+            document.getElementById('tk-mountain').style.display = 'none'; 
+            document.getElementById('tk-needle').style.bottom = `0%`; 
+
+            // --- HEIGHT FIX: Applying initial heights instead of widths ---
             document.getElementById('tk-runway-fill').style.height = '100%'; 
             document.getElementById('tk-lift-fill').style.height = '0%'; 
             document.getElementById('tk-speed-bar').style.height = '0%'; 
@@ -1482,7 +1500,7 @@
             document.getElementById('tk-plane').style.transform = `translateY(-${liftY}px) rotate(-${tkState.pitch}deg)`;
             document.getElementById('tk-needle').style.bottom = `${Math.max(0, Math.min(100, (tkState.pitch / 30) * 100))}%`;
             
-            // Replace the old speed and width logic block with this:
+            // --- HEIGHT FIX: Animating the new vertical Speed Bar ---
             const speedEl = document.getElementById('tk-speed-val'); 
             const speedBar = document.getElementById('tk-speed-bar');
             speedEl.textContent = Math.floor(tkState.speed);
@@ -1510,8 +1528,11 @@
             document.getElementById('tk-bg-ground').style.backgroundPosition = tkState.bgPosGround + 'px 100%'; 
             document.getElementById('tk-runway-surface').style.backgroundPosition = tkState.bgPosRunway + 'px 0px';
             
+            // --- HEIGHT FIX: Animating the Runway and Lift bars ---
             document.getElementById('tk-runway-fill').style.height = Math.max(0, (tkState.distance / tkState.initialDistance) * 100) + '%'; 
-            document.getElementById('tk-lift-fill').style.height = Math.min(100, tkState.lift) + '%';            
+            document.getElementById('tk-lift-fill').style.height = Math.min(100, tkState.lift) + '%';
+            // ------------------------------------------------------
+            
             if (tkState.distance < 15) { 
                 const mtn = document.getElementById('tk-mountain'); 
                 mtn.style.display = 'block'; 
@@ -1523,7 +1544,6 @@
             
             tkState.frameId = requestAnimationFrame(takeoffLoop);
         }
-
         function createSparks() {
             const vp = document.getElementById('takeoff-viewport');
             if (!vp) return;

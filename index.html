@@ -42,7 +42,25 @@
             overflow: hidden; user-select: none; -webkit-user-select: none;
         }
 
-        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay, #cat-modal, #multiplayer-overlay {
+        /* --- PRELOADER STYLES --- */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-sand); z-index: 999999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        .loading-bar-container {
+            width: 250px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; margin-top: 15px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
+        #loading-progress {
+            width: 0%; height: 100%; background: var(--brand-red); transition: width 0.1s linear;
+        }
+        #loading-text {
+            margin-top: 12px; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #777; letter-spacing: 1px; font-weight: bold;
+        }
+
+        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay, #golden-plane-modal, #multiplayer-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #111; color: var(--brand-gold); z-index: 10000;
             flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
@@ -50,7 +68,7 @@
         #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
         #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
         #takeoff-tutorial-overlay { background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); }
-        #cat-modal { background: rgba(0,0,0,0.95); z-index: 20000; overflow-y: auto; }
+        #golden-plane-modal { background: rgba(0,0,0,0.95); z-index: 20000; overflow-y: auto; }
         
         #intercept-overlay { 
             background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%); 
@@ -285,6 +303,15 @@
 </head>
 <body>
 
+    <div id="loading-screen">
+        <h1 style="margin: 0; color: var(--brand-dark);">FUEL COMMAND</h1>
+        <h2 style="margin: 5px 0 20px 0; color: #777;">SYSTEM STARTUP</h2>
+        <div class="loading-bar-container">
+            <div id="loading-progress"></div>
+        </div>
+        <div id="loading-text">PREPARING ASSETS... 0%</div>
+    </div>
+
     <audio id="bg-music" loop preload="auto"><source src="ambient.mp3" type="audio/mpeg"></audio>
 
     <div id="orientation-lock">
@@ -404,17 +431,13 @@
         </div>
     </div>
 
-    <div id="cat-modal">
-        <h1 style="color:var(--brand-gold); margin-bottom:10px;">TOP SECRET: AVIATION FELINES</h1>
-        <p style="color:#ccc; margin-bottom:20px;">Operation "Sully" Successful.</p>
-        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; max-width:500px; margin-bottom:20px;">
-            <img src="trophy1.gif" onerror="this.src='https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="trophy2.gif" onerror="this.src='https://media.giphy.com/media/BzyTuYCmvSORqs1Qks/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="trophy3.gif" onerror="this.src='https://media.giphy.com/media/l4KibWpBGWchSqCRy/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="trophy4.gif" onerror="this.src='https://media.giphy.com/media/3oEduV4SOS9mmmIOkw/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
-            <img src="trophy5.gif" onerror="this.src='https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif'" style="width:140px; height:140px; object-fit:cover; border:2px solid var(--brand-gold); border-radius:8px;">
+    <div id="golden-plane-modal">
+        <h1 style="color:var(--brand-gold); margin-bottom:10px;">TOP SECRET ASSET UNLOCKED</h1>
+        <p style="color:#ccc; margin-bottom:20px;">Operation "SULLY" Successful. VIP Jet now available for Takeoff.</p>
+        <div style="display:flex; justify-content:center; margin-bottom:30px;">
+            <img src="my-plane-golden.png" alt="Golden Plane" style="width: 100%; max-width: 350px; height: auto; object-fit: contain; border: 2px solid var(--brand-gold); border-radius: 8px; padding: 15px; background: rgba(0,0,0,0.5); box-shadow: 0 0 20px rgba(207, 168, 110, 0.3);">
         </div>
-        <button class="primary-btn" onclick="document.getElementById('cat-modal').style.display='none'">CLOSE DOSSIER</button>
+        <button class="primary-btn" onclick="document.getElementById('golden-plane-modal').style.display='none'">CLOSE DOSSIER</button>
     </div>
 
     <div id="selector-view" class="view-section">
@@ -617,13 +640,13 @@
         };
 
         var TRIVIA_DATA = [
-            { type: 'trivia', question: "What caused the 1977 Tenerife airport disaster?", options: ["A runway collision in thick fog", "A mid-air collision over the Atlantic", "Dual engine failure due to volcanic ash"], correctIdx: 0, name: "Tenerife Disaster" },
-            { type: 'trivia', question: "What forced US Airways Flight 1549 to ditch into the river?", options: ["Complete loss of hydraulic fluid", "A flock of geese struck both engines", "Fuel starvation due to a leak"], correctIdx: 1, name: "Hudson River Ditching" },
-            { type: 'trivia', question: "Why did Air Canada Flight 143 (the 'Gimli Glider') run out of fuel mid-flight?", options: ["The fuel tanks were punctured", "A mix-up between pounds and kilograms", "The pilots forgot to switch fuel tanks"], correctIdx: 1, name: "Gimli Glider Incident" },
-            { type: 'trivia', question: "The tragic 1985 crash of JAL Flight 123 was caused by structural failure originating from:", options: ["A faulty repair to the rear pressure bulkhead", "Severe clear-air turbulence", "A lightning strike on the vertical stabilizer"], correctIdx: 0, name: "JAL 123 Structural Failure" },
-            { type: 'trivia', question: "What is the best-selling commercial jet airliner of all time?", options: ["Airbus A320", "Boeing 737", "Boeing 747"], correctIdx: 1, name: "Best-Selling Jet" },
-            { type: 'trivia', question: "Which aircraft is famous for its massive wooden structure and is called the 'Spruce Goose'?", options: ["Antonov An-225", "Hughes H-4 Hercules", "Boeing B-29"], correctIdx: 1, name: "Spruce Goose" },
-            { type: 'trivia', question: "What is the primary function of the A-10 Warthog?", options: ["High-altitude interception", "Close air support", "Strategic bombing"], correctIdx: 1, name: "A-10 Warthog Role" },
+            { type: 'trivia', question: "Which commercial airliner is officially the largest passenger jet in the world?", options: ["Boeing 747-8", "Airbus A380", "Antonov An-225"], correctIdx: 1, name: "Largest Passenger Jet" },
+            { type: 'trivia', question: "Which airline holds the record as the oldest continuously operating airline in the world?", options: ["Qantas Airways", "Delta Air Lines", "KLM Royal Dutch Airlines"], correctIdx: 2, name: "Oldest Airline" },
+            { type: 'trivia', question: "What is the primary purpose of the 'winglets' at the tips of modern commercial aircraft wings?", options: ["To reduce aerodynamic drag and save fuel", "To store emergency fuel reserves", "To house the anti-collision lights"], correctIdx: 0, name: "Winglets Purpose" },
+            { type: 'trivia', question: "What does the aviation acronym 'ATC' stand for?", options: ["Aviation Technical Command", "Air Traffic Control", "Automated Transit Coordinator"], correctIdx: 1, name: "ATC Acronym" },
+            { type: 'trivia', question: "Which aircraft is universally recognized by the nickname 'Jumbo Jet'?", options: ["Airbus A380", "Concorde", "Boeing 747"], correctIdx: 2, name: "Jumbo Jet" },
+            { type: 'trivia', question: "What is the typical cruising altitude for most commercial passenger jets?", options: ["15,000 to 25,000 feet", "30,000 to 40,000 feet", "45,000 to 55,000 feet"], correctIdx: 1, name: "Cruising Altitude" },
+            { type: 'trivia', question: "Which commercial aircraft was capable of supersonic flight, cruising at over twice the speed of sound?", options: ["Concorde", "Boeing 787 Dreamliner", "Airbus A350"], correctIdx: 0, name: "Supersonic Airliner" },
             { type: 'trivia', question: "What triggered the catastrophic crash of Air France Flight 4590 (Concorde) in 2000?", options: ["A bird strike shattered the windshield", "A piece of metal debris ruptured a tire", "Both engines ingested volcanic ash"], correctIdx: 1, name: "Concorde Crash" },
             { type: 'trivia', question: "The grounding of the Boeing 737 MAX fleet was primarily linked to flaws in which automated system?", options: ["MCAS (Maneuvering Characteristics Augmentation System)", "TCAS (Traffic Collision Avoidance System)", "FMS (Flight Management System)"], correctIdx: 0, name: "737 MAX Grounding" },
             { type: 'trivia', question: "What color are aviation 'black boxes' (Flight Data Recorders)?", options: ["Matte Black", "Bright Orange", "Reflective Silver"], correctIdx: 1, name: "Black Box Color" },
@@ -906,30 +929,79 @@
 
         function handleTkRelease() { if(tkState.active) tkState.pressing = false; }
 
+        // --- ASSET PRELOADER ---
+        function preloadGameAssets(onComplete) {
+            const assetsToLoad = [];
+            [...AIRCRAFT_DATA.standard, ...AIRCRAFT_DATA.classified].forEach(plane => {
+                if (plane.images) assetsToLoad.push(...plane.images);
+            });
+            
+            // Replaced the cat meme trophies with your plane graphic
+            assetsToLoad.push('my-plane.png', 'my-plane-golden.png');
+
+            let loadedCount = 0;
+            const totalAssets = assetsToLoad.length;
+            const progressBar = document.getElementById('loading-progress');
+            const progressText = document.getElementById('loading-text');
+
+            let preloaderFinished = false;
+            const finishLoading = () => {
+                if(preloaderFinished) return;
+                preloaderFinished = true;
+                const ls = document.getElementById('loading-screen');
+                if (ls) {
+                    ls.style.opacity = '0';
+                    setTimeout(() => { ls.style.display = 'none'; onComplete(); }, 500);
+                } else {
+                    onComplete();
+                }
+            };
+
+            if (totalAssets === 0) return finishLoading();
+            setTimeout(finishLoading, 8000); 
+
+            const updateProgress = () => {
+                loadedCount++;
+                const pct = Math.floor((loadedCount / totalAssets) * 100);
+                if (progressBar) progressBar.style.width = pct + '%';
+                if (progressText) progressText.innerText = `PREPARING ASSETS... ${pct}%`;
+                if (loadedCount >= totalAssets) setTimeout(finishLoading, 200); 
+            };
+
+            assetsToLoad.forEach(src => {
+                const img = new Image();
+                img.onload = updateProgress;
+                img.onerror = updateProgress; 
+                img.src = src;
+            });
+        }
+
         window.onload = function() {
-            try { 
-                loadState(); 
-                fetchAviationNews();
-                const lastUser = localStorage.getItem('last_pilot_name');
-                if (lastUser) { const ci = document.getElementById('callsign-input'); if (ci) ci.value = lastUser; }
+            preloadGameAssets(function() {
+                try { 
+                    loadState(); 
+                    fetchAviationNews();
+                    const lastUser = localStorage.getItem('last_pilot_name');
+                    if (lastUser) { const ci = document.getElementById('callsign-input'); if (ci) ci.value = lastUser; }
 
-                if (!globalState.username) { document.getElementById('login-overlay').style.display = 'flex'; } 
-                else { document.getElementById('selector-view').classList.add('active'); document.getElementById('pilot-greeting').textContent = `Pilot: ${globalState.username}`; renderDashboard(); if (isAllWorldsComplete()) syncScoreToCloud(); }
-                
-                let ci = document.getElementById('callsign-input');
-                if(ci) ci.addEventListener('keypress', function (e) { if (e.key === 'Enter') { this.blur(); registerPilot(); } });
+                    if (!globalState.username) { document.getElementById('login-overlay').style.display = 'flex'; } 
+                    else { document.getElementById('selector-view').classList.add('active'); document.getElementById('pilot-greeting').textContent = `Pilot: ${globalState.username}`; renderDashboard(); if (isAllWorldsComplete()) syncScoreToCloud(); }
+                    
+                    let ci = document.getElementById('callsign-input');
+                    if(ci) ci.addEventListener('keypress', function (e) { if (e.key === 'Enter') { this.blur(); registerPilot(); } });
 
-                window.addEventListener('pointerdown', function initAudio() {
-                    if (!bgMusicStarted) { const bgm = document.getElementById('bg-music'); if (bgm) { bgm.volume = 0.3; bgm.play().catch(e => e); bgMusicStarted = true; } window.removeEventListener('pointerdown', initAudio); }
-                });
-                
-                document.addEventListener("visibilitychange", () => { const bgm = document.getElementById('bg-music'); if (bgm && bgMusicStarted) { if (document.hidden) bgm.pause(); else bgm.play().catch(e=>e); } });
+                    window.addEventListener('pointerdown', function initAudio() {
+                        if (!bgMusicStarted) { const bgm = document.getElementById('bg-music'); if (bgm) { bgm.volume = 0.3; bgm.play().catch(e => e); bgMusicStarted = true; } window.removeEventListener('pointerdown', initAudio); }
+                    });
+                    
+                    document.addEventListener("visibilitychange", () => { const bgm = document.getElementById('bg-music'); if (bgm && bgMusicStarted) { if (document.hidden) bgm.pause(); else bgm.play().catch(e=>e); } });
 
-                const tkViewport = document.getElementById('takeoff-viewport');
-                if(tkViewport) { tkViewport.addEventListener('pointerdown', handleTkPress); tkViewport.addEventListener('touchstart', handleTkPress, {passive: false}); }
-                window.addEventListener('pointerup', handleTkRelease); window.addEventListener('touchend', handleTkRelease); window.addEventListener('pointercancel', handleTkRelease);
-                
-            } catch(e) { document.body.innerHTML = `<div style='color:red; background:white; padding:20px;'><h3>Game Crash</h3><p>${e.message}</p></div>`; }
+                    const tkViewport = document.getElementById('takeoff-viewport');
+                    if(tkViewport) { tkViewport.addEventListener('pointerdown', handleTkPress); tkViewport.addEventListener('touchstart', handleTkPress, {passive: false}); }
+                    window.addEventListener('pointerup', handleTkRelease); window.addEventListener('touchend', handleTkRelease); window.addEventListener('pointercancel', handleTkRelease);
+                    
+                } catch(e) { document.body.innerHTML = `<div style='color:red; background:white; padding:20px;'><h3>Game Crash</h3><p>${e.message}</p></div>`; }
+            });
         };
 
         function generateGameLevels() {
@@ -1075,7 +1147,7 @@
             let targetNoSpace = TARGET_PASSWORD.replace(/ /g, '');
             if (globalState.passwordRevealed && globalState.passwordRevealed.length >= targetNoSpace.length) {
                 if(menuPasswordInterval) clearInterval(menuPasswordInterval);
-                pwContainer.innerHTML = `<div style="color:#aaa; font-size:0.65rem; margin-bottom:4px;">TRANSMISSION DECRYPTED</div><div style="font-family:'Share Tech Mono', monospace; color:var(--gauge-green); font-size:1.1rem; letter-spacing:3px; margin-bottom:6px;">${TARGET_PASSWORD}</div><button class="gold-btn" onclick="document.getElementById('cat-modal').style.display='flex'" style="font-size:0.8rem; padding:8px; width:auto; margin:0 auto;">ACCESS CLASSIFIED DATA</button>`;
+                pwContainer.innerHTML = `<div style="color:#aaa; font-size:0.65rem; margin-bottom:4px;">TRANSMISSION DECRYPTED</div><div style="font-family:'Share Tech Mono', monospace; color:var(--gauge-green); font-size:1.1rem; letter-spacing:3px; margin-bottom:6px;">${TARGET_PASSWORD}</div><button class="gold-btn" onclick="document.getElementById('golden-plane-modal').style.display='flex'" style="font-size:0.8rem; padding:8px; width:auto; margin:0 auto;">ACCESS VIP ASSET</button>`;
             } else {
                 pwContainer.innerHTML = `<div style="color:#aaa; font-size:0.65rem; margin-bottom:4px;">DECRYPTING TRANSMISSION...</div><div id="anim-pw-text" style="font-family:'Share Tech Mono', monospace; color:var(--brand-gold); font-size:1.1rem; letter-spacing:2px;"></div>`;
                 if(menuPasswordInterval) clearInterval(menuPasswordInterval);
@@ -1272,14 +1344,28 @@
                 });
             } else if (lState.type === 'takeoff') {
                 takeoffArea.style.display = 'flex';
+                
+                // --- NEW: Check if password is cracked to use the Golden Plane ---
+                let targetNoSpace = TARGET_PASSWORD.replace(/ /g, '');
+                let isGoldenPlaneUnlocked = (globalState.passwordRevealed && globalState.passwordRevealed.length >= targetNoSpace.length);
+                const planeEl = document.getElementById('tk-plane');
+                
+                if (isGoldenPlaneUnlocked) {
+                    planeEl.innerHTML = `<img src="my-plane-golden.png" alt="Player Plane" style="width: 125%; height: 125%; object-fit: contain; pointer-events: none;">`;
+                } else {
+                    planeEl.innerHTML = `<img src="my-plane.png" alt="Player Plane" style="width: 125%; height: 125%; object-fit: contain; pointer-events: none;">`;
+                }
+                // -----------------------------------------------------------------
+
                 const sky = document.getElementById('tk-bg-sky'); const city = document.getElementById('tk-bg-city'); const ground = document.getElementById('tk-bg-ground'); const runwaySurf = document.getElementById('tk-runway-surface');
                 const weather = document.getElementById('tk-weather-overlay'); const zone = document.getElementById('tk-target-zone');
                 
                 weather.className = ''; runwaySurf.style.backgroundImage = getSvgUri(RUNWAY_SVG);
                 const th = THEMES[lState.hangar] || THEMES[1]; 
-sky.style.backgroundImage = th.sky; 
-city.style.backgroundImage = th.city; 
-ground.style.backgroundImage = th.ground;
+                sky.style.backgroundImage = th.sky; 
+                city.style.backgroundImage = th.city; 
+                ground.style.backgroundImage = th.ground;
+
                 if (lState.hangar === 1) { tkState.minAngle = 9; tkState.maxAngle = 16; zone.style.bottom = '30%'; zone.style.height = '23.3%'; } 
                 else if (lState.hangar === 2) { weather.classList.add('weather-rain'); tkState.minAngle = 10; tkState.maxAngle = 15; zone.style.bottom = '33.3%'; zone.style.height = '16.6%'; } 
                 else if (lState.hangar === 3) { weather.classList.add('weather-fog'); tkState.minAngle = 11; tkState.maxAngle = 14; zone.style.bottom = '36.6%'; zone.style.height = '10%'; } 

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,23 +42,15 @@
             overflow: hidden; user-select: none; -webkit-user-select: none;
         }
 
-        /* --- PRELOADER STYLES --- */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-sand); z-index: 999999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             transition: opacity 0.5s ease;
         }
-        .loading-bar-container {
-            width: 250px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; margin-top: 15px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
-        }
-        #loading-progress {
-            width: 0%; height: 100%; background: var(--brand-red); transition: width 0.1s linear;
-        }
-        #loading-text {
-            margin-top: 12px; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #777; letter-spacing: 1px; font-weight: bold;
-        }
+        .loading-bar-container { width: 250px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; margin-top: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); }
+        #loading-progress { width: 0%; height: 100%; background: var(--brand-red); transition: width 0.1s linear; }
+        #loading-text { margin-top: 12px; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #777; letter-spacing: 1px; font-weight: bold; }
 
         #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay, #takeoff-tutorial-overlay, #intercept-overlay, #golden-plane-modal, #multiplayer-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -70,16 +61,10 @@
         #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
         #takeoff-tutorial-overlay { background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); }
         #golden-plane-modal { background: rgba(0,0,0,0.95); z-index: 20000; overflow-y: auto; }
-        
-        #intercept-overlay { 
-            background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%); 
-            backdrop-filter: none; justify-content: flex-end; padding-bottom: 40px; pointer-events: auto;
-        }
+        #intercept-overlay { background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%); backdrop-filter: none; justify-content: flex-end; padding-bottom: 40px; pointer-events: auto; }
         #intercept-box { min-height: 220px; display: flex; flex-direction: column; justify-content: center; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(8px); }
         
-        @media screen and (orientation: landscape) and (max-height: 600px) {
-            #orientation-lock { display: flex; }
-        }
+        @media screen and (orientation: landscape) and (max-height: 600px) { #orientation-lock { display: flex; } }
 
         h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--brand-dark); margin: 0; text-align: center; text-transform: uppercase; }
         h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
@@ -99,8 +84,6 @@
         .icon-btn:active { transform: scale(0.92); background-color: #f0f0f0; }
         .icon-btn.logout { background-color: var(--brand-red); color: white; border-color: #b01015; }
         .icon-btn.logout:active { background-color: #b01015; }
-        .icon-btn.leaderboard { background-color: var(--aux-blue); color: white; border-color: #2980b9; }
-        .icon-btn.leaderboard:active { background-color: #2980b9; }
 
         .fuel-tank-container { background: #222; border-radius: 12px; width: 100%; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #444; position: relative; flex-shrink: 0; overflow: hidden;}
         .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
@@ -134,8 +117,6 @@
         .status-done { color: #27ae60; }
         .status-locked { color: #bbb; }
         .level-strip.locked { background: #f9f9f9; border-color: #eee; cursor: not-allowed; opacity: 0.7; }
-        .level-strip.locked .strip-title { color: #aaa; }
-        .level-strip.locked .strip-icon { color: #ccc !important; }
 
         #trophy-list, #news-list { display: flex; flex-direction: column; gap: 12px; width: 100%; overflow-y: auto; padding-right: 5px; margin-top: 10px; flex-grow: 1; min-height: 0;}
         #trophy-list::-webkit-scrollbar, #news-list::-webkit-scrollbar { width: 4px; }
@@ -145,9 +126,7 @@
         .trophy-card { background: white; border: 2px solid var(--brand-gold); border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s;}
         .trophy-card.locked { border-color: #ddd; background: #f8f8f8; box-shadow: none; filter: grayscale(100%); opacity: 0.6;}
         .trophy-img-box { width: 70px; height: 70px; background: #222; border: 2px solid var(--brand-gold); border-radius: 6px; display: flex; justify-content: center; align-items: center; overflow: hidden; flex-shrink: 0; color: var(--brand-gold);}
-        .trophy-card.locked .trophy-img-box { border-color: #aaa; color: #aaa; background: #eee;}
         .trophy-img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .trophy-desc { display: flex; flex-direction: column; justify-content: center; }
         .trophy-desc h3 { margin: 0 0 5px 0; color: var(--brand-dark); font-size: 1.1rem; text-transform: uppercase; }
         .trophy-desc p { margin: 0; color: #666; font-size: 0.85rem; line-height: 1.3; }
 
@@ -165,7 +144,7 @@
         .radar-btn:active { background: var(--radar-green); color: #000; }
         .radar-abort-btn { background: rgba(10, 10, 10, 0.85) !important; border: 1px solid var(--brand-red) !important; color: var(--brand-red) !important; backdrop-filter: blur(4px); font-weight: bold;}
 
-        /* spacing fixed here */
+        /* Mobile Spacing Fixes */
         #powerups-bar { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; margin-top: 15px; margin-bottom: 20px; z-index: 10; }
         .pu-btn { background: #fff; border: 2px solid #ccc; border-radius: 8px; width: 48px; height: 48px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; box-shadow: 0 3px 6px rgba(0,0,0,0.1); transition: transform 0.1s ease; }
         .pu-btn:active { transform: scale(0.92); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
@@ -175,7 +154,6 @@
         .pu-drone { color: var(--brand-red); border-color: rgba(215,25,32,0.3); }
         .pu-fuel { color: var(--gauge-green); border-color: rgba(46,204,113,0.3); }
 
-        /* spacing fixed here */
         .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; padding: 0 5px; flex-shrink: 0; z-index: 10; position: relative; }
         .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; display: flex; align-items: center; gap: 6px; }
         .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
@@ -192,7 +170,6 @@
         .grid-piece.scanned { z-index: 9999 !important; border: 2px solid var(--aux-blue) !important; box-shadow: 0 0 20px var(--aux-blue) !important; background: var(--aux-blue) !important; }
         .grid-piece.scanned::after { color: #fff; }
         
-        /* spacing fixed here */
         .options-container { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; margin-bottom: 22px; }
         #image-options-container .trivia-option { text-align: center; }
 
@@ -201,31 +178,26 @@
         .pop-reveal { animation: quickPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes quickPop { 0% { opacity: 0; transform: scale(0.5); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
 
-        /* SCAN REWARD ANIMATION */
-        .scan-reward-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: #fff; font-weight: bold; text-align: center; text-shadow: 0 0 20px var(--aux-blue), 2px 2px 0 #000; z-index: 100000; pointer-events: none; opacity: 0; animation: scanPop 2.5s ease-out forwards; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.85); padding: 25px; border-radius: 15px; border: 2px solid var(--aux-blue); box-shadow: 0 0 30px rgba(52, 152, 219, 0.5); }
-        .scan-icon-anim { width: 60px; height: 60px; color: var(--aux-blue); margin-bottom: 10px; animation: scanPulse 0.5s infinite alternate; }
-        @keyframes scanPop { 0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 20% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -70%) scale(1.1); } }
-        @keyframes scanPulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
-
-        /* TRIVIA MODE - spacing and buttons fixed here */
+        /* TRIVIA MODE - Original Styling & Fade Animation */
         #trivia-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; justify-content: center; gap: 15px; z-index: 10; position: relative; margin-bottom: 20px; }
         .trivia-dossier { background: #fff; border: 2px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .trivia-title { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: #888; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
         #trivia-question { font-size: 1.2rem; font-weight: 500; color: var(--brand-dark); margin-bottom: 20px; line-height: 1.4; }
         #trivia-options-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         #trivia-options-container .trivia-option { text-align: left; } 
-        .trivia-option { background: var(--brand-gold); border: 2px solid #b58d51; color: var(--brand-dark); padding: 15px; font-size: 1rem; border-radius: 8px; transition: all 0.2s; cursor: pointer; display: block; width: 100%; line-height: 1.4; white-space: normal; word-wrap: break-word; text-transform: none; font-weight: bold;}
-        .trivia-option:active { transform: scale(0.98); background: #b58d51; }
-        .wrong-flash { background-color: var(--brand-red) !important; border-color: var(--brand-red) !important; color: white !important; }
+        
+        .trivia-option { background: #f8f8f8; border: 2px solid #eee; color: #333; padding: 15px; font-size: 1rem; border-radius: 8px; transition: opacity 0.5s ease, transform 0.5s ease, background-color 0.2s; cursor: pointer; display: block; width: 100%; line-height: 1.4; white-space: normal; word-wrap: break-word; text-transform: none; font-weight: normal;}
+        .trivia-option:active { transform: scale(0.98); background: #eee; }
+        .fade-out { opacity: 0 !important; pointer-events: none !important; transform: scale(0.95); }
 
-        /* TAKEOFF MINI GAME */
+        /* TAKEOFF MINI GAME - Vertical Dashboard */
         #takeoff-game-area { width: 100%; display: none; flex-direction: column; flex-grow: 1; align-items: center; justify-content: space-between; position: relative;}
         .takeoff-dashboard { display: flex; justify-content: space-around; align-items: flex-end; width: 100%; padding: 15px 10px; background: #1a1a1a; border-radius: 8px; border: 2px solid #333; margin-top: 15px; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); z-index: 20; position: relative; flex-shrink: 0; pointer-events: none;}
         .v-gauge-container { display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: 'Share Tech Mono', monospace; font-weight: bold; width: 30%; }
         .v-gauge-label { color: #888; font-size: 0.9rem; letter-spacing: 1px; }
         .v-gauge-bg { width: 40px; height: 110px; background: #000; border-radius: 4px; border: 1px solid #444; position: relative; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); }
         .v-gauge-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; transition: height 0.1s linear, background-color 0.2s ease; }
-        .v-gauge-val { font-size: 1.1rem; min-height: 1.2rem; display: flex; justify-content: center; align-items: center; }
+        .v-gauge-val { font-size: 1.1rem; min-height: 1.2rem; display: flex; justify-content: center; align-items: center; color: #fff;}
         #takeoff-viewport { position: relative; width: 100%; flex-grow: 1; min-height: 250px; max-height: 400px; border: 4px solid #222; border-radius: 8px; overflow: hidden; margin: 0; image-rendering: pixelated; background-color: #87CEEB; z-index: 5; touch-action: none; cursor: pointer; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); }
         .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; background-repeat: repeat-x; pointer-events: none; }
         #tk-bg-sky { background-size: 1024px 100%; z-index: 0; }
@@ -338,7 +310,7 @@
             <h1 style="color: var(--brand-gold); margin-bottom: 15px;">FLIGHT MANUAL</h1>
             <p class="tutorial-text">
                 1. Wait for your speed to reach <strong style="color:var(--gauge-green)">140 KTS</strong>. <br>
-                2. Tap and <strong>HOLD ANYWHERE</strong> on the view screen to pull the nose up.<br><br>
+                2. Tap and <strong>HOLD ANYWHERE</strong> on the screen to pull the nose up.<br><br>
                 3. Keep the needle in the <strong style="color:var(--gauge-green)">GREEN ZONE</strong> to gain lift before the runway ends!<br><br>
                 <span style="color:#aaa; font-size:0.9rem;">⚠️ You have 3 attempts to earn a fuel bonus. If you fail, the mission is aborted.</span>
             </p>
@@ -555,7 +527,9 @@
         <div id="image-game-area">
             <div id="game-wrapper"><div id="game-container"><img id="mystery-image" src="" alt="Mystery Airplane"><div id="cover-grid"></div></div></div>
             <div class="options-container" id="image-options-container">
-                <button class="trivia-option" id="img-opt-0" onclick="submitImageGuess(0)"></button><button class="trivia-option" id="img-opt-1" onclick="submitImageGuess(1)"></button><button class="trivia-option" id="img-opt-2" onclick="submitImageGuess(2)"></button>
+                <button class="trivia-option" id="img-opt-0" onclick="submitImageGuess(event, 0)"></button>
+                <button class="trivia-option" id="img-opt-1" onclick="submitImageGuess(event, 1)"></button>
+                <button class="trivia-option" id="img-opt-2" onclick="submitImageGuess(event, 2)"></button>
             </div>
         </div>
 
@@ -563,17 +537,19 @@
             <div class="trivia-dossier">
                 <div class="trivia-title">Flight Assessment</div><div id="trivia-question">Question text goes here?</div>
                 <div id="trivia-options-container">
-                    <button class="trivia-option" id="btn-opt-0" onclick="submitTrivia(0)">A</button><button class="trivia-option" id="btn-opt-1" onclick="submitTrivia(1)">B</button><button class="trivia-option" id="btn-opt-2" onclick="submitTrivia(2)">C</button>
+                    <button class="trivia-option" id="btn-opt-0" onclick="submitTrivia(event, 0)">A</button>
+                    <button class="trivia-option" id="btn-opt-1" onclick="submitTrivia(event, 1)">B</button>
+                    <button class="trivia-option" id="btn-opt-2" onclick="submitTrivia(event, 2)">C</button>
                 </div>
             </div>
         </div>
 
         <div id="takeoff-game-area">
             <div id="takeoff-viewport">
-                <div id="tk-touch-prompt">TAP TO PULL UP</div><div id="tk-bg-sky" class="parallax-layer"></div><div id="tk-bg-city" class="parallax-layer"></div><div id="tk-bg-ground" class="parallax-layer"></div>
+                <div id="tk-touch-prompt">TAP ANYWHERE TO PULL UP</div><div id="tk-bg-sky" class="parallax-layer"></div><div id="tk-bg-city" class="parallax-layer"></div><div id="tk-bg-ground" class="parallax-layer"></div>
                 <div id="tk-weather-overlay"></div><div id="tk-gauge-container"><div id="tk-target-zone"></div><div id="tk-needle"></div></div>
                 <div id="tk-mountain"><svg viewBox="0 0 100 100" shape-rendering="crispEdges" width="100%" height="100%"><rect x="50" y="40" width="10" height="60" fill="#3b3b3b"/><rect x="40" y="50" width="30" height="50" fill="#4a4a4a"/><rect x="20" y="60" width="70" height="40" fill="#2d2d2d"/><rect x="0" y="70" width="100" height="30" fill="#1f1f1f"/><rect x="50" y="40" width="10" height="10" fill="#fff"/><rect x="40" y="50" width="10" height="10" fill="#eee"/><rect x="60" y="50" width="10" height="10" fill="#eee"/></svg></div>
-                <div id="tk-plane"><img src="my-plane.png" alt="Player Plane" style="width: 125%; height: 125%; object-fit: contain; pointer-events: none;"></div>
+                <div id="tk-plane"></div>
                 <div id="tk-runway"><div id="tk-runway-surface"></div></div>
             </div>
             
@@ -692,8 +668,8 @@
         var CITIES = ["LONDON", "NEW YORK", "TOKYO", "PARIS", "DUBAI", "SYDNEY", "LOS ANGELES", "CHICAGO", "HONG KONG", "SINGAPORE", "BERLIN", "ROME", "MADRID", "TORONTO", "MUMBAI", "SAO PAULO", "MEXICO CITY", "CAIRO", "MOSCOW", "BEIJING", "SEOUL", "AMSTERDAM", "ISTANBUL", "BANGKOK", "KUALA LUMPUR", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON", "MONTREAL", "VANCOUVER", "BUENOS AIRES", "BOGOTA", "SANTIAGO", "LIMA", "CAPE TOWN", "JOHANNESBURG", "NAIROBI", "DELHI", "JAKARTA", "MANILA", "SHANGHAI", "TAIPEI", "OSAKA"];
         var US_CITIES = ["NEW YORK", "LOS ANGELES", "CHICAGO", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON"];
         var INTL_CITIES = CITIES.filter(c => !US_CITIES.includes(c));
+        
         var TARGET_PASSWORD = "SULLY";
-
         var RADAR_LEVEL_CONFIG = {
             1: { latOffset: 5, lngOffset: 8, planes: 8, hints: 2 }, 2: { latOffset: 6, lngOffset: 10, planes: 12, hints: 2 },
             3: { latOffset: 8, lngOffset: 12, planes: 16, hints: 3 }, 4: { latOffset: 10, lngOffset: 15, planes: 22, hints: 3 },
@@ -717,9 +693,7 @@
             powerups: { scans: 1, drones: 1, fuelPods: 1 },
             levels: [], hasSeenTakeoffTutorial: false,
             world1Complete: false, world2Complete: false, world3Complete: false, world4Complete: false, world5Complete: false,
-            passwordRevealed: [],
-            totalPlayTime: 0,
-            gameWonShown: false
+            passwordRevealed: [], totalPlayTime: 0, gameWonShown: false
         };
 
         let globalTimerInterval = setInterval(() => {
@@ -728,7 +702,7 @@
             }
         }, 1000);
 
-        let tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0, hasLiftedOff: false, lastFrameTime: 0, initialDistance: 100 };
+        var tkState = { active: false, pitch: 0, pitchVelocity: 0, lift: 0, distance: 100, speed: 0, pressing: false, frameId: null, lastFrameTime: 0, initialDistance: 100 };
 
         try { 
             if (typeof firebase !== 'undefined') { 
@@ -764,8 +738,10 @@
         }
 
         function drainFuel(amount) {
-            if (globalState.extraFuel > 0) { if (globalState.extraFuel >= amount) { globalState.extraFuel -= amount; } else { let remainder = amount - globalState.extraFuel; globalState.extraFuel = 0; globalState.currentFuel = Math.max(0, globalState.currentFuel - remainder); } } 
-            else { globalState.currentFuel = Math.max(0, globalState.currentFuel - amount); }
+            if (globalState.extraFuel > 0) { 
+                if (globalState.extraFuel >= amount) { globalState.extraFuel -= amount; } 
+                else { let remainder = amount - globalState.extraFuel; globalState.extraFuel = 0; globalState.currentFuel = Math.max(0, globalState.currentFuel - remainder); } 
+            } else { globalState.currentFuel = Math.max(0, globalState.currentFuel - amount); }
             saveState(); updateMiniFuelUI();
         }
 
@@ -834,14 +810,13 @@
                 }
                 
                 let imgHtml = imgSrc 
-                    ? `<img src="${imgSrc}" alt="News Image" style="width: 100%; height: 140px; object-fit: cover; display: block; border-bottom: 1px solid #eee;" onerror="this.style.display='none'">` 
+                    ? `<img src="${imgSrc}" style="width: 100%; height: 140px; object-fit: cover; display: block; border-bottom: 1px solid #eee;" onerror="this.style.display='none'">` 
                     : `<div style="width: 100%; height: 140px; display: flex; justify-content: center; align-items: center; background: #111; color: var(--brand-gold);"><svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>`;
                 
                 let title = item.title || "ENCRYPTED TRANSMISSION";
 
                 const el = document.createElement('a');
-                el.href = item.link || "#";
-                el.target = "_blank"; 
+                el.href = item.link || "#"; el.target = "_blank"; 
                 el.style.cssText = "display: block; width: 100%; background: #ffffff; border: 2px solid var(--aux-blue); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-decoration: none; margin-bottom: 15px; flex-shrink: 0; cursor: pointer;";
                 
                 el.innerHTML = `
@@ -852,75 +827,46 @@
                     </div>
                 `;
                 
-                el.onmousedown = () => el.style.transform = "scale(0.98)";
-                el.onmouseup = () => el.style.transform = "scale(1)";
-                el.onmouseleave = () => el.style.transform = "scale(1)";
-
+                el.onmousedown = () => el.style.transform = "scale(0.98)"; el.onmouseup = () => el.style.transform = "scale(1)"; el.onmouseleave = () => el.style.transform = "scale(1)";
                 listContainer.appendChild(el);
             });
         }
 
-        function closeNewsRoom() { 
-            document.getElementById('news-view').classList.remove('active'); 
-            document.getElementById('selector-view').classList.add('active'); 
-            renderDashboard(); 
-        }
+        function closeNewsRoom() { document.getElementById('news-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); renderDashboard(); }
 
         function fetchAviationNews() {
-            const tickerEl = document.getElementById('news-ticker');
-            if(!tickerEl) return;
-
+            const tickerEl = document.getElementById('news-ticker'); if(!tickerEl) return;
             const applyNews = (items) => {
                 cachedNewsArticles = items;
                 const headlines = items.slice(0, 10).map(item => "/// " + item.title.toUpperCase() + " ");
                 const fullText = headlines.join(" ") + "///";
                 tickerEl.textContent = fullText;
-                
                 let scrollDuration = fullText.length * 0.15; 
-                tickerEl.style.animation = 'none';
-                void tickerEl.offsetWidth;
-                tickerEl.style.animation = `ticker ${scrollDuration}s linear infinite`;
+                tickerEl.style.animation = 'none'; void tickerEl.offsetWidth; tickerEl.style.animation = `ticker ${scrollDuration}s linear infinite`;
             };
 
             const fallbackItems = [
                 { title: "GLOBAL FUEL RESERVES STABLE ACROSS ALL SECTORS", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
                 { title: "NEW COMMERCIAL TERMINALS UNDER CONSTRUCTION", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
-                { title: "RADAR OPS MONITORING HEAVY CIVILIAN TRAFFIC", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" },
-                { title: "ALL COMMERCIAL FLIGHT CREWS CLEARED FOR DEPARTURE", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" }
+                { title: "RADAR OPS MONITORING HEAVY CIVILIAN TRAFFIC", pubDate: new Date().toISOString(), link: "https://simpleflying.com", thumbnail: "", description: "" }
             ];
 
-            const cacheKey = 'fuel_news_cache_v3';
-            const timeKey = 'fuel_news_time_v3';
-            const now = Date.now();
-            const cachedTime = localStorage.getItem(timeKey);
-            const cachedData = localStorage.getItem(cacheKey);
+            const cacheKey = 'fuel_news_cache_v3'; const timeKey = 'fuel_news_time_v3'; const now = Date.now();
+            const cachedTime = localStorage.getItem(timeKey); const cachedData = localStorage.getItem(cacheKey);
 
-            if (cachedData && cachedTime && (now - parseInt(cachedTime)) < 6 * 60 * 60 * 1000) {
-                try { applyNews(JSON.parse(cachedData)); return; } catch(e) {}
-            }
+            if (cachedData && cachedTime && (now - parseInt(cachedTime)) < 6 * 60 * 60 * 1000) { try { applyNews(JSON.parse(cachedData)); return; } catch(e) {} }
 
             fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fsimpleflying.com%2Ffeed%2F')
             .then(res => res.json())
             .then(data => {
                 if (data && data.items && data.items.length > 0) {
                     const militaryRegex = /\b(military|war|fighter|bomber|air force|defense|combat|stealth|tactical|usaf|navy|army|marines)\b/i;
-                    let filteredItems = data.items.filter(item => {
-                        let textToSearch = (item.title + " " + (item.description || "")).toLowerCase();
-                        return !militaryRegex.test(textToSearch);
-                    });
+                    let filteredItems = data.items.filter(item => { return !militaryRegex.test((item.title + " " + (item.description || "")).toLowerCase()); });
                     if (filteredItems.length === 0) filteredItems = fallbackItems;
-                    localStorage.setItem(cacheKey, JSON.stringify(filteredItems));
-                    localStorage.setItem(timeKey, now.toString());
+                    localStorage.setItem(cacheKey, JSON.stringify(filteredItems)); localStorage.setItem(timeKey, now.toString());
                     applyNews(filteredItems);
                 } else { throw new Error("No items"); }
-            })
-            .catch(err => {
-                if (cachedData) {
-                    try { applyNews(JSON.parse(cachedData)); } catch(e) { applyNews(fallbackItems); }
-                } else {
-                    applyNews(fallbackItems);
-                }
-            });
+            }).catch(err => { if (cachedData) { try { applyNews(JSON.parse(cachedData)); } catch(e) { applyNews(fallbackItems); } } else { applyNews(fallbackItems); } });
         }
 
         function toggleRadarIntel() {
@@ -935,70 +881,61 @@
             if(radarMap) { setTimeout(() => { radarMap.invalidateSize(); }, 300); }
         }
 
+        // --- TAKEOFF CONTROL WITH GLOBAL TAP ANYWHERE ---
         function handleTkPress(e) { 
             if (!tkState.active) return;
-            if (e.target && typeof e.target.closest === 'function') { if (e.target.closest('button') || e.target.closest('.takeoff-hud') || e.target.closest('.game-header') || e.target.closest('.footer-buttons') || e.target.closest('.pu-btn')) return; }
+            if (e.target.closest('button') || e.target.closest('.pu-btn') || e.target.closest('.icon-btn')) return;
             if (e.cancelable) e.preventDefault();
+            
             if (tkState.speed < 140) {
                 const speedVal = document.getElementById('tk-speed-val');
-                if(speedVal) { speedVal.style.transform = "scale(1.5)"; speedVal.style.color = "var(--gauge-orange)"; setTimeout(() => { speedVal.style.transform = "scale(1)"; speedVal.style.color = "var(--brand-red)"; }, 150); } return;
+                if(speedVal) { speedVal.style.transform = "scale(1.5)"; setTimeout(() => { speedVal.style.transform = "scale(1)"; }, 150); } 
+                return;
             }
-            document.getElementById('tk-touch-prompt').style.opacity = '0'; tkState.pressing = true; 
+            const prompt = document.getElementById('tk-touch-prompt');
+            if (prompt) prompt.style.opacity = '0'; 
+            tkState.pressing = true; 
         }
 
-        function handleTkRelease() { if(tkState.active) tkState.pressing = false; }
+        function handleTkRelease() { tkState.pressing = false; }
 
-        // --- ASSET PRELOADER ---
         function preloadGameAssets(onComplete) {
             const assetsToLoad = [];
-            [...AIRCRAFT_DATA.standard, ...AIRCRAFT_DATA.classified].forEach(plane => {
-                if (plane.images) assetsToLoad.push(...plane.images);
-            });
-            
+            [...AIRCRAFT_DATA.standard, ...AIRCRAFT_DATA.classified].forEach(plane => { if (plane.images) assetsToLoad.push(...plane.images); });
             assetsToLoad.push('my-plane.png', 'my-plane-golden.png');
 
-            let loadedCount = 0;
-            const totalAssets = assetsToLoad.length;
-            const progressBar = document.getElementById('loading-progress');
-            const progressText = document.getElementById('loading-text');
-
+            let loadedCount = 0; const totalAssets = assetsToLoad.length;
+            const progressBar = document.getElementById('loading-progress'); const progressText = document.getElementById('loading-text');
             let preloaderFinished = false;
+
             const finishLoading = () => {
-                if(preloaderFinished) return;
-                preloaderFinished = true;
+                if(preloaderFinished) return; preloaderFinished = true;
                 const ls = document.getElementById('loading-screen');
-                if (ls) {
-                    ls.style.opacity = '0';
-                    setTimeout(() => { ls.style.display = 'none'; onComplete(); }, 500);
-                } else {
-                    onComplete();
-                }
+                if (ls) { ls.style.opacity = '0'; setTimeout(() => { ls.style.display = 'none'; onComplete(); }, 500); } else { onComplete(); }
             };
 
             if (totalAssets === 0) return finishLoading();
             setTimeout(finishLoading, 8000); 
 
             const updateProgress = () => {
-                loadedCount++;
-                const pct = Math.floor((loadedCount / totalAssets) * 100);
+                loadedCount++; const pct = Math.floor((loadedCount / totalAssets) * 100);
                 if (progressBar) progressBar.style.width = pct + '%';
                 if (progressText) progressText.innerText = `PREPARING ASSETS... ${pct}%`;
                 if (loadedCount >= totalAssets) setTimeout(finishLoading, 200); 
             };
 
-            assetsToLoad.forEach(src => {
-                const img = new Image();
-                img.onload = updateProgress;
-                img.onerror = updateProgress; 
-                img.src = src;
-            });
+            assetsToLoad.forEach(src => { const img = new Image(); img.onload = updateProgress; img.onerror = updateProgress; img.src = src; });
         }
 
         window.onload = function() {
+            window.addEventListener('pointerdown', handleTkPress);
+            window.addEventListener('touchstart', (e) => { if (tkState.active) handleTkPress(e); }, {passive: false});
+            window.addEventListener('pointerup', handleTkRelease);
+            window.addEventListener('touchend', handleTkRelease);
+
             preloadGameAssets(function() {
                 try { 
-                    loadState(); 
-                    fetchAviationNews();
+                    loadState(); fetchAviationNews();
                     const lastUser = localStorage.getItem('last_pilot_name');
                     if (lastUser) { const ci = document.getElementById('callsign-input'); if (ci) ci.value = lastUser; }
 
@@ -1011,70 +948,47 @@
                     window.addEventListener('pointerdown', function initAudio() {
                         if (!bgMusicStarted) { const bgm = document.getElementById('bg-music'); if (bgm) { bgm.volume = 0.3; bgm.play().catch(e => e); bgMusicStarted = true; } window.removeEventListener('pointerdown', initAudio); }
                     });
-                    
                     document.addEventListener("visibilitychange", () => { const bgm = document.getElementById('bg-music'); if (bgm && bgMusicStarted) { if (document.hidden) bgm.pause(); else bgm.play().catch(e=>e); } });
-
-                    const tkViewport = document.getElementById('takeoff-viewport');
-                    if(tkViewport) { tkViewport.addEventListener('pointerdown', handleTkPress); tkViewport.addEventListener('touchstart', handleTkPress, {passive: false}); }
-                    window.addEventListener('pointerup', handleTkRelease); window.addEventListener('touchend', handleTkRelease); window.addEventListener('pointercancel', handleTkRelease);
-                    
                 } catch(e) { document.body.innerHTML = `<div style='color:red; background:white; padding:20px;'><h3>Game Crash</h3><p>${e.message}</p></div>`; }
             });
         };
 
         function generateGameLevels() {
-            let pool = [...AIRCRAFT_DATA.standard].sort(() => Math.random() - 0.5);
-            let classPool = [...AIRCRAFT_DATA.classified].sort(() => Math.random() - 0.5);
-            let tPool = [...TRIVIA_DATA].sort(() => Math.random() - 0.5);
-
+            let pool = [...AIRCRAFT_DATA.standard].sort(() => Math.random() - 0.5); let classPool = [...AIRCRAFT_DATA.classified].sort(() => Math.random() - 0.5); let tPool = [...TRIVIA_DATA].sort(() => Math.random() - 0.5);
             let h1 = pool.slice(0, 4).map(p => { let opts = getOptionsForImage(p.name, false); let img = p.images[Math.floor(Math.random() * p.images.length)]; return { ...p, image: img, hangar: 1, isClassified: false, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) }; });
             let h2 = pool.slice(4, 7).map(p => { let opts = getOptionsForImage(p.name, false); let img = p.images[Math.floor(Math.random() * p.images.length)]; return { ...p, image: img, hangar: 2, isClassified: false, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) }; });
             let h3 = pool.slice(7, 10).map(p => { let opts = getOptionsForImage(p.name, false); let img = p.images[Math.floor(Math.random() * p.images.length)]; return { ...p, image: img, hangar: 3, isClassified: false, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) }; });
             let h4 = classPool.slice(0, 3).map(p => { let opts = getOptionsForImage(p.name, true); let img = p.images[Math.floor(Math.random() * p.images.length)]; return { ...p, image: img, hangar: 4, isClassified: true, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) }; });
             let h5 = classPool.slice(3, 7).map(p => { let opts = getOptionsForImage(p.name, true); let img = p.images[Math.floor(Math.random() * p.images.length)]; return { ...p, image: img, hangar: 5, isClassified: true, revealedTiles: [], completed: false, options: opts, correctIdx: opts.indexOf(p.name) }; });
-
             h1.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 1, isClassified: false, completed: false, failed: false, attempts: 0 }); h1.push({ ...tPool[0], hangar: 1, isClassified: false, completed: false });
             h2.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 2, isClassified: false, completed: false, failed: false, attempts: 0 }); h2.push({ ...tPool[1], hangar: 2, isClassified: false, completed: false });
             h3.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 3, isClassified: false, completed: false, failed: false, attempts: 0 }); h3.push({ ...tPool[2], hangar: 3, isClassified: false, completed: false }); 
             h4.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 4, isClassified: true, completed: false, failed: false, attempts: 0 }); h4.push({ ...tPool[3], hangar: 4, isClassified: true, completed: false }); 
             h5.push({ type: 'takeoff', name: "Takeoff Calibration", hangar: 5, isClassified: true, completed: false, failed: false, attempts: 0 }); h5.push({ ...tPool[4], hangar: 5, isClassified: true, completed: false }); 
-
             return [...h1.sort(()=>Math.random()-0.5), ...h2.sort(()=>Math.random()-0.5), ...h3.sort(()=>Math.random()-0.5), ...h4.sort(()=>Math.random()-0.5), ...h5.sort(()=>Math.random()-0.5)];
         }
 
         function registerPilot() {
             const name = document.getElementById('callsign-input').value.trim();
             if (name.length < 2) { alert("Callsign too short."); return; }
-            
             if (name.toLowerCase() === 'clearleaderboard') {
                 if (!db) { alert("Database not connected!"); return; }
                 if (confirm("WARNING: Are you sure you want to wipe the entire global leaderboard?")) {
                     db.collection("fuel_command_v78").get().then((querySnapshot) => {
-                        querySnapshot.forEach((doc) => { db.collection("fuel_command_v78").doc(doc.id).delete(); });
-                        alert("Leaderboard successfully wiped!");
+                        querySnapshot.forEach((doc) => { db.collection("fuel_command_v78").doc(doc.id).delete(); }); alert("Leaderboard successfully wiped!");
                     }).catch((error) => { console.error("Error wiping leaderboard: ", error); });
                 }
-                document.getElementById('callsign-input').value = ""; 
-                return;
+                document.getElementById('callsign-input').value = ""; return;
             }
-
-            globalState.username = name; 
-            localStorage.setItem('last_pilot_name', name); 
-
+            globalState.username = name; localStorage.setItem('last_pilot_name', name); 
             if (name.toLowerCase() === 'admin') {
-                globalState.currentFuel = 99999;
-                globalState.extraFuel = 50000;
-                globalState.powerups = { scans: 99, drones: 99, fuelPods: 99 };
+                globalState.currentFuel = 99999; globalState.extraFuel = 50000; globalState.powerups = { scans: 99, drones: 99, fuelPods: 99 };
                 globalState.world1Complete = true; globalState.world2Complete = true; globalState.world3Complete = true; globalState.world4Complete = true; globalState.world5Complete = true;
                 globalState.passwordRevealed = [...Array(TARGET_PASSWORD.length).keys()];
                 globalState.levels.forEach(l => { l.completed = true; if(l.type === 'image') l.revealedTiles = [...Array(100).keys()]; });
             }
-
-            saveState();
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('selector-view').classList.add('active');
-            document.getElementById('pilot-greeting').textContent = `Pilot: ${globalState.username}`;
-            renderDashboard();
+            saveState(); document.getElementById('login-overlay').style.display = 'none'; document.getElementById('selector-view').classList.add('active');
+            document.getElementById('pilot-greeting').textContent = `Pilot: ${globalState.username}`; renderDashboard();
         }
 
         function syncScoreToCloud() {
@@ -1108,9 +1022,6 @@
                     if(!globalState.powerups) { globalState.powerups = { scans: 1, drones: 1, fuelPods: 1 }; }
                     if(globalState.hasSeenTakeoffTutorial === undefined) globalState.hasSeenTakeoffTutorial = false;
                     if(globalState.extraFuel === undefined) globalState.extraFuel = 0;
-                    if(globalState.world3Complete === undefined) globalState.world3Complete = false;
-                    if(globalState.world4Complete === undefined) globalState.world4Complete = false;
-                    if(globalState.world5Complete === undefined) globalState.world5Complete = false;
                     if(!globalState.passwordRevealed) globalState.passwordRevealed = [];
                     if(globalState.totalPlayTime === undefined) globalState.totalPlayTime = 0;
                     if(globalState.gameWonShown === undefined) globalState.gameWonShown = false;
@@ -1121,11 +1032,7 @@
         }
 
         function saveState() { try { localStorage.setItem('fuelQuizState_v79', JSON.stringify(globalState)); } catch(e){} }
-        
-        function isHangarComplete(hNum) { 
-            const hLevels = globalState.levels.filter(l => l.hangar === hNum);
-            return hLevels.length > 0 && hLevels.every(l => l.completed); 
-        }
+        function isHangarComplete(hNum) { const hLevels = globalState.levels.filter(l => l.hangar === hNum); return hLevels.length > 0 && hLevels.every(l => l.completed); }
         function isAllWorldsComplete() { return globalState.levels.every(l => l.completed); }
 
         function renderDashboard() {
@@ -1141,18 +1048,13 @@
             } else { auxContainer.style.display = 'none'; }
             
             const h1Done = isHangarComplete(1); const h2Done = isHangarComplete(2); const h3Done = isHangarComplete(3); const h4Done = isHangarComplete(4); const h5Done = isHangarComplete(5);
-            
             if (h1Done && !globalState.world1Complete) { globalState.world1Complete = true; triggerHangarReward(); }
             if (h2Done && !globalState.world2Complete) { globalState.world2Complete = true; triggerHangarReward(); }
             if (h3Done && !globalState.world3Complete) { globalState.world3Complete = true; triggerHangarReward(); }
             if (h4Done && !globalState.world4Complete) { globalState.world4Complete = true; triggerHangarReward(); }
             if (h5Done && !globalState.world5Complete) { globalState.world5Complete = true; triggerHangarReward(); }
 
-            if (isAllWorldsComplete() && !globalState.gameWonShown) {
-                globalState.gameWonShown = true;
-                saveState();
-                setTimeout(() => { triggerGameOver(true); }, 1500);
-            }
+            if (isAllWorldsComplete() && !globalState.gameWonShown) { globalState.gameWonShown = true; saveState(); setTimeout(() => { triggerGameOver(true); }, 1500); }
 
             const unlockMsg = document.getElementById('unlock-message');
             if(h4Done) unlockMsg.innerHTML = "Classified Ops (Hangar 5): <span style='color:#2ecc71'>GRANTED</span>";
@@ -1184,7 +1086,6 @@
             const listContainer = document.getElementById('level-list-container'); listContainer.innerHTML = "";
             const hangars = { 1: [], 2: [], 3: [], 4: [], 5: [] };
             globalState.levels.forEach((level, index) => { if (hangars[level.hangar]) hangars[level.hangar].push({ ...level, originalIndex: index }); });
-
             [1, 2, 3, 4, 5].forEach(hNum => {
                 const levels = hangars[hNum]; if(levels.length === 0) return;
                 const folder = document.createElement('div');
@@ -1193,7 +1094,6 @@
                 if (hNum === 3 && !h2Done) isFolderLocked = true;
                 if (hNum === 4 && !h3Done) isFolderLocked = true;
                 if (hNum === 5 && !h4Done) isFolderLocked = true;
-
                 folder.className = `world-folder ${isFolderLocked ? 'locked-world' : ''}`;
                 const header = document.createElement('div'); header.className = 'world-header';
                 let lockSVG = isFolderLocked ? ICONS.lock : '';
@@ -1208,42 +1108,30 @@
             const hangarView = document.getElementById('hangar-view');
             hangarView.classList.remove('active'); void hangarView.offsetWidth; hangarView.classList.add('active');
             document.getElementById('hangar-title').textContent = `Hangar ${hNum}`;
-
             const listContainer = document.getElementById('hangar-level-list'); listContainer.innerHTML = "";
             const levels = globalState.levels.map((l, i) => ({...l, originalIndex: i})).filter(l => l.hangar === hNum);
-
             levels.forEach(levelData => {
                 const idx = levelData.originalIndex; const card = document.createElement('div');
                 if (levelData.type === 'trivia' || levelData.type === 'takeoff') card.className = "level-strip special";
                 else if (levelData.isClassified) card.className = "level-strip classified"; else card.className = "level-strip";
-
                 let iconSvg = ICONS.plane; let iconColor = "var(--brand-dark)"; let title = `Flight ${idx + 1}`;
                 if (levelData.type === 'trivia') { iconSvg = ICONS.folder; iconColor = "#3498db"; title = "Flight Assessment"; } 
                 else if (levelData.type === 'takeoff') { iconSvg = ICONS.takeoff; iconColor = "#3498db"; title = "Takeoff Calibration"; }
                 else if (levelData.isClassified) { iconSvg = ICONS.jet; iconColor = "var(--brand-red)"; title = "Classified"; }
-
                 let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
                 if (levelData.failed) { iconSvg = ICONS.cross; iconColor = "var(--brand-red)"; statusHtml = `<div class="strip-status" style="color:var(--brand-red)">FAILED</div>`; } 
                 else if (levelData.completed) { title = levelData.name; iconSvg = ICONS.star; iconColor = "var(--brand-gold)"; statusHtml = `<div class="strip-status status-done">Cleared</div>`; } 
                 else if (levelData.type === 'takeoff') { let triesLeft = 3 - (levelData.attempts || 0); statusHtml = `<div class="strip-status status-ready">Tries: ${triesLeft}</div>`; } 
                 else if (levelData.type === 'image' && levelData.revealedTiles && levelData.revealedTiles.length > 0) { statusHtml = `<div class="strip-status status-ready">In Progress</div>`; }
-
-                let isFuelLocked = false;
-                if ((hNum >= 3) && globalState.currentFuel < 1000 && !levelData.completed && !levelData.failed) isFuelLocked = true;
-
+                let isFuelLocked = (hNum >= 3) && globalState.currentFuel < 1000 && !levelData.completed && !levelData.failed;
                 if (isFuelLocked) {
-                    card.className = "level-strip locked";
-                    card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${ICONS.fuel}</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
+                    card.className = "level-strip locked"; card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${ICONS.fuel}</div><div class="strip-info"><div class="strip-title">${title}</div></div><div class="strip-status status-locked">NEED 1000L</div>`;
                 } else if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0 && !levelData.completed && !levelData.failed) {
-                     card.className += " locked"; statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
-                     card.onclick = () => triggerGameOver(false);
-                     card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
+                     card.className += " locked"; statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`; card.onclick = () => triggerGameOver(false); card.innerHTML = `<div class="strip-icon" style="color:var(--brand-red)">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                 } else if (levelData.failed) {
-                    card.className = "level-strip locked"; 
-                    card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
+                    card.className = "level-strip locked"; card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                 } else {
-                    card.onclick = () => launchLevel(idx);
-                    card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
+                    card.onclick = () => launchLevel(idx); card.innerHTML = `<div class="strip-icon" style="color:${iconColor}">${iconSvg}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
                 }
                 listContainer.appendChild(card);
             });
@@ -1252,8 +1140,7 @@
         function closeHangar() { document.getElementById('hangar-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); renderDashboard(); }
 
         function updatePowerupsUI() {
-            const p = globalState.powerups;
-            const btnScan = document.getElementById('btn-pu-scan'); const btnDrone = document.getElementById('btn-pu-drone'); const btnFuel = document.getElementById('btn-pu-fuel');
+            const p = globalState.powerups; const btnScan = document.getElementById('btn-pu-scan'); const btnDrone = document.getElementById('btn-pu-drone'); const btnFuel = document.getElementById('btn-pu-fuel');
             document.getElementById('badge-pu-scan').textContent = p.scans; document.getElementById('badge-pu-drone').textContent = p.drones; document.getElementById('badge-pu-fuel').textContent = p.fuelPods;
             if(p.scans > 0) btnScan.classList.remove('empty'); else btnScan.classList.add('empty');
             if(p.drones > 0) btnDrone.classList.remove('empty'); else btnDrone.classList.add('empty');
@@ -1261,303 +1148,194 @@
         }
 
         function useIntelScan() {
-            const lState = globalState.levels[activeLevelIdx];
-            if (lState.completed || globalState.powerups.scans <= 0) return;
+            const lState = globalState.levels[activeLevelIdx]; if (lState.completed || globalState.powerups.scans <= 0) return;
             globalState.powerups.scans -= 1; saveState(); updatePowerupsUI();
-
             if (lState.type === 'image') {
                 const wrapper = document.getElementById('game-wrapper'); wrapper.classList.add('flash-screen'); setTimeout(() => wrapper.classList.remove('flash-screen'), 1000); 
                 const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
                 hiddenTiles.forEach(p => { p.style.transition = 'background 0.3s ease, opacity 1s ease 0.3s, transform 1s ease 0.3s'; p.style.background = 'rgba(52, 152, 219, 0.4)'; p.style.borderColor = 'var(--aux-blue)'; p.style.boxShadow = '0 0 10px var(--aux-blue)'; p.style.pointerEvents = 'none'; setTimeout(() => { p.style.opacity = '0'; p.style.transform = 'scale(0.8)'; }, 50); });
                 lState.revealedTiles = [...Array(100).keys()]; saveState();
-            } else if (lState.type === 'trivia') {
-                setTimeout(() => submitTrivia(lState.correctIdx), 500);
-            }
+            } else if (lState.type === 'trivia') { setTimeout(() => submitTrivia({currentTarget: document.getElementById('btn-opt-'+lState.correctIdx)}, lState.correctIdx), 500); }
         }
 
         function usePrecisionDrone() {
-            const lState = globalState.levels[activeLevelIdx];
-            if (lState.completed || globalState.powerups.drones <= 0) return;
+            const lState = globalState.levels[activeLevelIdx]; if (lState.completed || globalState.powerups.drones <= 0) return;
             globalState.powerups.drones -= 1; saveState(); updatePowerupsUI();
-
             if (lState.type === 'image') {
                 if(!lState.revealedTiles) lState.revealedTiles = [];
                 let unrevealed = []; for(let i=0; i<100; i++) { if(!lState.revealedTiles.includes(i)) unrevealed.push(i); }
-                unrevealed.sort(() => Math.random() - 0.5); let toReveal = unrevealed.slice(0, 15);
-                lState.revealedTiles.push(...toReveal); saveState();
-                const grid = document.getElementById('cover-grid');
-                toReveal.forEach(idx => { let tile = grid.children[idx]; if(tile) { tile.style.transition = 'opacity 0.5s ease, background 0.2s'; tile.style.background = 'var(--brand-red)'; setTimeout(() => tile.classList.add('revealed'), 200); } });
+                unrevealed.sort(() => Math.random() - 0.5); let toReveal = unrevealed.slice(0, 15); lState.revealedTiles.push(...toReveal); saveState();
+                const grid = document.getElementById('cover-grid'); toReveal.forEach(idx => { let tile = grid.children[idx]; if(tile) { tile.style.transition = 'opacity 0.5s ease, background 0.2s'; tile.style.background = 'var(--brand-red)'; setTimeout(() => tile.classList.add('revealed'), 200); } });
             } else if (lState.type === 'trivia') {
-                let wrongIndices = [];
-                lState.options.forEach((opt, i) => { if(i !== lState.correctIdx) { const btn = document.getElementById('btn-opt-' + i); if(btn && !btn.disabled) wrongIndices.push(i); } });
-                if(wrongIndices.length > 0) {
-                    let target = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
-                    const btn = document.getElementById('btn-opt-' + target); btn.disabled = true; btn.style.opacity = '0.3'; btn.style.textDecoration = 'line-through';
-                }
+                let wrongIndices = []; lState.options.forEach((opt, i) => { if(i !== lState.correctIdx) { const btn = document.getElementById('btn-opt-' + i); if(btn && !btn.disabled && !btn.classList.contains('fade-out')) wrongIndices.push(i); } });
+                if(wrongIndices.length > 0) { let target = wrongIndices[Math.floor(Math.random() * wrongIndices.length)]; const btn = document.getElementById('btn-opt-' + target); btn.disabled = true; btn.style.opacity = '0.3'; btn.style.textDecoration = 'line-through'; }
             }
         }
 
         function useFuelPod() {
-            const lState = globalState.levels[activeLevelIdx];
-            if (lState.completed || globalState.powerups.fuelPods <= 0) return;
-            globalState.powerups.fuelPods -= 1; globalState.currentFuel += 300; saveState();
-            updatePowerupsUI(); updateMiniFuelUI();
+            const lState = globalState.levels[activeLevelIdx]; if (lState.completed || globalState.powerups.fuelPods <= 0) return;
+            globalState.powerups.fuelPods -= 1; globalState.currentFuel += 300; saveState(); updatePowerupsUI(); updateMiniFuelUI();
         }
 
         function launchLevel(idx) {
             activeLevelIdx = idx; const lState = globalState.levels[idx];
             document.getElementById('selector-view').classList.remove('active'); document.getElementById('hangar-view').classList.remove('active');
             const gameView = document.getElementById('game-view'); gameView.classList.remove('active'); void gameView.offsetWidth; gameView.classList.add('active');
+            
+            // Reset options
+            document.querySelectorAll('.trivia-option').forEach(btn => {
+                btn.classList.remove('fade-out', 'wrong-flash');
+                btn.style.backgroundColor = ""; btn.style.color = ""; btn.style.opacity = ""; btn.style.textDecoration = ""; btn.disabled = lState.completed;
+            });
 
-            let title = `Flight ${idx+1}`;
-            if (lState.type === 'trivia') title = "Flight Assessment"; else if (lState.type === 'takeoff') title = "Takeoff Calibration"; else if (lState.isClassified) title = "Classified";
-            if (lState.completed) title = lState.name;
+            let title = lState.completed ? lState.name : (lState.type === 'trivia' ? "Flight Assessment" : lState.type === 'takeoff' ? "Takeoff Calibration" : "Classified");
             document.getElementById('level-title').textContent = title; document.getElementById('message').textContent = "";
             updateMiniFuelUI();
-
+            
             const imgArea = document.getElementById('image-game-area'); const triviaArea = document.getElementById('trivia-game-area'); const takeoffArea = document.getElementById('takeoff-game-area');
             const container = document.getElementById('game-container'); const puBar = document.getElementById('powerups-bar');
             
             imgArea.style.display = 'none'; triviaArea.style.display = 'none'; takeoffArea.style.display = 'none';
             if(tkState.frameId) { cancelAnimationFrame(tkState.frameId); tkState.active = false; }
-
-            if (lState.type === 'takeoff') { 
-                puBar.style.display = 'none'; 
-            } else { 
-                puBar.style.display = 'flex'; 
-                puBar.style.visibility = 'visible'; 
-                updatePowerupsUI();
-                
-                if (lState.completed) {
-                    document.getElementById('btn-pu-scan').classList.add('empty');
-                    document.getElementById('btn-pu-drone').classList.add('empty');
-                    document.getElementById('btn-pu-fuel').classList.add('empty');
-                }
-            } 
-
+            if (lState.type === 'takeoff') { puBar.style.display = 'none'; } else { puBar.style.display = 'flex'; puBar.style.visibility = 'visible'; updatePowerupsUI(); if (lState.completed) { document.getElementById('btn-pu-scan').classList.add('empty'); document.getElementById('btn-pu-drone').classList.add('empty'); document.getElementById('btn-pu-fuel').classList.add('empty'); } } 
+            
             if (lState.type === 'image') {
                 imgArea.style.display = 'flex'; container.style.overflow = 'hidden'; document.getElementById('mystery-image').src = lState.image;
-                lState.options.forEach((optText, i) => {
-                    const btn = document.getElementById('img-opt-' + i);
-                    if(btn) { btn.textContent = optText; btn.disabled = lState.completed; btn.style.backgroundColor = ""; btn.style.color = ""; if(lState.completed && i === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; } }
-                });
-
+                lState.options.forEach((optText, i) => { const btn = document.getElementById('img-opt-' + i); if(btn) { btn.textContent = optText; if(lState.completed && i === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; } } });
                 const grid = document.getElementById('cover-grid'); grid.innerHTML = "";
-                for (let i = 0; i < 100; i++) {
-                    const tile = document.createElement('div'); tile.className = 'grid-piece';
-                    if (lState.revealedTiles && lState.revealedTiles.includes(i)) tile.classList.add('revealed');
-                    if (lState.completed) tile.classList.add('revealed');
-                    grid.appendChild(tile);
-                }
-
+                for (let i = 0; i < 100; i++) { const tile = document.createElement('div'); tile.className = 'grid-piece'; if (lState.revealedTiles && lState.revealedTiles.includes(i)) tile.classList.add('revealed'); if (lState.completed) tile.classList.add('revealed'); grid.appendChild(tile); }
                 if (!lState.completed && (globalState.currentFuel > 0 || globalState.extraFuel > 0)) { grid.onpointerdown = handleInteraction; } else { grid.onpointerdown = null; }
             } else if (lState.type === 'trivia') {
                 triviaArea.style.display = 'flex'; document.getElementById('trivia-question').textContent = lState.question;
-                lState.options.forEach((optText, i) => {
-                    const btn = document.getElementById('btn-opt-' + i);
-                    if(btn) {
-                        btn.textContent = String.fromCharCode(65 + i) + ". " + optText; btn.disabled = lState.completed; btn.style.backgroundColor = ""; btn.style.color = ""; btn.style.opacity = '1'; btn.style.textDecoration = 'none';
-                        if(lState.completed && i === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; }
-                    }
-                });
+                lState.options.forEach((optText, i) => { const btn = document.getElementById('btn-opt-' + i); if(btn) { btn.textContent = String.fromCharCode(65 + i) + ". " + optText; if(lState.completed && i === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; } } });
             } else if (lState.type === 'takeoff') {
                 takeoffArea.style.display = 'flex';
-                
-                let targetNoSpace = TARGET_PASSWORD.replace(/ /g, '');
-                let isGoldenPlaneUnlocked = (globalState.passwordRevealed && globalState.passwordRevealed.length >= targetNoSpace.length);
+                let targetNoSpace = TARGET_PASSWORD.replace(/ /g, ''); let isGoldenPlaneUnlocked = (globalState.passwordRevealed && globalState.passwordRevealed.length >= targetNoSpace.length);
                 const planeEl = document.getElementById('tk-plane');
+                planeEl.innerHTML = `<img src="${isGoldenPlaneUnlocked ? 'my-plane-golden.png' : 'my-plane.png'}" style="width: 125%; height: 125%; object-fit: contain;">`;
                 
-                if (isGoldenPlaneUnlocked) {
-                    planeEl.innerHTML = `<img src="my-plane-golden.png" alt="Player Plane" style="width: 125%; height: 125%; object-fit: contain; pointer-events: none;">`;
-                } else {
-                    planeEl.innerHTML = `<img src="my-plane.png" alt="Player Plane" style="width: 125%; height: 125%; object-fit: contain; pointer-events: none;">`;
-                }
-
                 const sky = document.getElementById('tk-bg-sky'); const city = document.getElementById('tk-bg-city'); const ground = document.getElementById('tk-bg-ground'); const runwaySurf = document.getElementById('tk-runway-surface');
                 const weather = document.getElementById('tk-weather-overlay'); const zone = document.getElementById('tk-target-zone');
-                
                 weather.className = ''; runwaySurf.style.backgroundImage = getSvgUri(RUNWAY_SVG);
-                const th = THEMES[lState.hangar] || THEMES[1]; 
-                sky.style.backgroundImage = th.sky; 
-                city.style.backgroundImage = th.city; 
-                ground.style.backgroundImage = th.ground;
-
+                const th = THEMES[lState.hangar] || THEMES[1]; sky.style.backgroundImage = th.sky; city.style.backgroundImage = th.city; ground.style.backgroundImage = th.ground;
                 if (lState.hangar === 1) { tkState.minAngle = 9; tkState.maxAngle = 16; zone.style.bottom = '30%'; zone.style.height = '23.3%'; } 
                 else if (lState.hangar === 2) { weather.classList.add('weather-rain'); tkState.minAngle = 10; tkState.maxAngle = 15; zone.style.bottom = '33.3%'; zone.style.height = '16.6%'; } 
                 else if (lState.hangar === 3) { weather.classList.add('weather-fog'); tkState.minAngle = 11; tkState.maxAngle = 14; zone.style.bottom = '36.6%'; zone.style.height = '10%'; } 
                 else if (lState.hangar === 4) { tkState.minAngle = 12; tkState.maxAngle = 14; zone.style.bottom = '40%'; zone.style.height = '6.6%'; } 
                 else { weather.classList.add('weather-fog'); weather.classList.add('weather-rain'); tkState.minAngle = 13; tkState.maxAngle = 14; zone.style.bottom = '43.3%'; zone.style.height = '3.3%'; }
                 
-                if (!lState.completed && !lState.failed) { 
-                    if (!globalState.hasSeenTakeoffTutorial) { document.getElementById('takeoff-tutorial-overlay').style.display = 'flex'; } else { startTakeoff(); } 
-                } 
+                if (!lState.completed && !lState.failed) { if (!globalState.hasSeenTakeoffTutorial) { document.getElementById('takeoff-tutorial-overlay').style.display = 'flex'; } else { startTakeoff(); } } 
                 else { 
-                    document.getElementById('tk-mountain').style.display = 'none'; 
-                    document.getElementById('tk-plane').style.display = 'block'; 
-                    document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-10deg)`; 
-                    document.getElementById('tk-needle').style.bottom = `40%`; 
-                    document.getElementById('tk-runway-fill').style.height = '0%'; 
-                    document.getElementById('tk-lift-fill').style.height = '100%'; 
-                    document.getElementById('tk-speed-bar').style.height = '68%'; 
-                    document.getElementById('tk-speed-bar').style.backgroundColor = "var(--gauge-green)"; 
-                    document.getElementById('tk-speed-val').textContent = "150"; 
-                    document.getElementById('tk-speed-val').style.color = "var(--gauge-green)"; 
-                    document.getElementById('tk-touch-prompt').style.display = "none"; 
+                    document.getElementById('tk-mountain').style.display = 'none'; document.getElementById('tk-plane').style.display = 'block'; document.getElementById('tk-plane').style.transform = `translateY(-60px) rotate(-10deg)`; document.getElementById('tk-needle').style.bottom = `40%`; 
+                    document.getElementById('tk-runway-fill').style.height = '0%'; document.getElementById('tk-lift-fill').style.height = '100%'; document.getElementById('tk-speed-bar').style.height = '68%'; document.getElementById('tk-speed-bar').style.backgroundColor = "var(--gauge-green)"; 
+                    document.getElementById('tk-speed-val').textContent = "150"; document.getElementById('tk-speed-val').style.color = "var(--gauge-green)"; document.getElementById('tk-touch-prompt').style.display = "none"; 
                 }
             }
         }
 
-        // --- NEW: Added back the globally accessible tutorial connection function ---
-        function startTakeoffFromTutorial() { 
-            globalState.hasSeenTakeoffTutorial = true; 
-            saveState(); 
-            document.getElementById('takeoff-tutorial-overlay').style.display = 'none'; 
-            setTimeout(() => { startTakeoff(); }, 100); 
+        // --- WRONG ANSWER LOGIC (COLOR, FADE, FLOAT) ---
+        function submitImageGuess(e, selectedIndex) {
+            const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
+            const btn = e.currentTarget || e.target;
+            if(selectedIndex === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true); } 
+            else { handleWrongAnswer(e, btn); }
         }
 
-        function startTakeoff() {
-            document.querySelectorAll('.pixel-particle').forEach(el => el.remove()); 
-            if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
-            
-            let hNum = globalState.levels[activeLevelIdx].hangar;
-            tkState.initialDistance = (hNum >= 3) ? 150 : 100; 
-            
-            tkState.active = true; tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0; 
-            tkState.distance = tkState.initialDistance; 
-            tkState.speed = 0; tkState.pressing = false; 
-            tkState.hasLiftedOff = false; 
-            tkState.bgPosSky = 0; tkState.bgPosCity = 0; tkState.bgPosGround = 0; tkState.bgPosRunway = 0;
-            
-            tkState.lastFrameTime = performance.now();
-            
-            document.getElementById('tk-touch-prompt').style.display = 'block'; 
-            document.getElementById('tk-touch-prompt').style.opacity = '0.8'; 
-            document.getElementById('tk-plane').style.display = 'block'; 
-            document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`; 
-            document.getElementById('tk-mountain').style.display = 'none'; 
-            document.getElementById('tk-needle').style.bottom = `0%`; 
+        function submitTrivia(e, selectedIndex) {
+            const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
+            const btn = e.currentTarget || e.target;
+            if(selectedIndex === lState.correctIdx) { btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true); } 
+            else { handleWrongAnswer(e, btn); }
+        }
 
-            document.getElementById('tk-runway-fill').style.height = '100%'; 
-            document.getElementById('tk-lift-fill').style.height = '0%'; 
-            document.getElementById('tk-speed-bar').style.height = '0%'; 
-            document.getElementById('tk-speed-bar').style.backgroundColor = "var(--brand-red)";
-            document.getElementById('tk-speed-val').textContent = "0"; 
-            document.getElementById('tk-speed-val').style.color = "var(--brand-red)";
+        function handleWrongAnswer(e, btn) {
+            let cx = e.clientX; let cy = e.clientY;
+            if (!cx || !cy) {
+                if (e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; } 
+                else { const rect = btn.getBoundingClientRect(); cx = rect.left + rect.width / 2; cy = rect.top + rect.height / 2; }
+            }
+            showFloat(cx, cy, `-${WRONG_GUESS_PENALTY}L`);
+            drainFuel(WRONG_GUESS_PENALTY);
             
-            document.getElementById('tk-bg-sky').style.backgroundPosition = '0px 0px'; 
-            document.getElementById('tk-bg-city').style.backgroundPosition = '0px 100%'; 
-            document.getElementById('tk-bg-ground').style.backgroundPosition = '0px 100%'; 
-            document.getElementById('tk-runway-surface').style.backgroundPosition = '0px 0px';
+            btn.style.backgroundColor = "var(--brand-red)"; btn.style.color = "white"; btn.classList.add('fade-out');
+            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false);
+        }
+
+        function handleInteraction(e) {
+            const lState = globalState.levels[activeLevelIdx]; if (lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
+            const hidden = Array.from(document.querySelectorAll('.grid-piece:not(.revealed)')); if (hidden.length === 0) return;
+            const tile = hidden[Math.floor(Math.random() * hidden.length)]; const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile); tile.classList.add('revealed'); 
+            if(!lState.revealedTiles) lState.revealedTiles = []; lState.revealedTiles.push(idx); drainFuel(TILE_COST);
             
+            let cx = e.clientX; let cy = e.clientY;
+            if (!cx && e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
+            if (cx && cy) showFloat(cx, cy, `-${TILE_COST}L`);
+            
+            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false);
+        }
+
+        function showFloat(x, y, text) { 
+            const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text; 
+            el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800); 
+        }
+
+        function endGame(win) {
+            if (win) {
+                const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
+                if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
+                triggerConfetti(); saveState(); if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);
+            }
+        }
+
+        function startTakeoffFromTutorial() { globalState.hasSeenTakeoffTutorial = true; saveState(); document.getElementById('takeoff-tutorial-overlay').style.display = 'none'; setTimeout(() => { startTakeoff(); }, 100); }
+
+        function startTakeoff() {
+            document.querySelectorAll('.pixel-particle').forEach(el => el.remove()); if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
+            let hNum = globalState.levels[activeLevelIdx].hangar; tkState.initialDistance = (hNum >= 3) ? 150 : 100; 
+            tkState.active = true; tkState.pitch = 0; tkState.pitchVelocity = 0; tkState.lift = 0; tkState.distance = tkState.initialDistance; tkState.speed = 0; tkState.pressing = false; tkState.hasLiftedOff = false; tkState.bgPosSky = 0; tkState.bgPosCity = 0; tkState.bgPosGround = 0; tkState.bgPosRunway = 0;
+            tkState.lastFrameTime = performance.now();
+            document.getElementById('tk-touch-prompt').style.display = 'block'; document.getElementById('tk-touch-prompt').style.opacity = '0.8'; document.getElementById('tk-plane').style.display = 'block'; document.getElementById('tk-plane').style.transform = `translateY(0px) rotate(0deg)`; document.getElementById('tk-mountain').style.display = 'none'; document.getElementById('tk-needle').style.bottom = `0%`; 
+            document.getElementById('tk-runway-fill').style.height = '100%'; document.getElementById('tk-lift-fill').style.height = '0%'; document.getElementById('tk-speed-bar').style.height = '0%'; document.getElementById('tk-speed-bar').style.backgroundColor = "var(--brand-red)"; document.getElementById('tk-speed-val').textContent = "0"; document.getElementById('tk-speed-val').style.color = "var(--brand-red)";
+            document.getElementById('tk-bg-sky').style.backgroundPosition = '0px 0px'; document.getElementById('tk-bg-city').style.backgroundPosition = '0px 100%'; document.getElementById('tk-bg-ground').style.backgroundPosition = '0px 100%'; document.getElementById('tk-runway-surface').style.backgroundPosition = '0px 0px';
             tkState.frameId = requestAnimationFrame(takeoffLoop);
         }
 
         function takeoffLoop(timestamp) {
             if (!tkState.active) return;
-            
             if (!timestamp) timestamp = performance.now();
             let delta = timestamp - tkState.lastFrameTime;
-
-            if (delta < 15) {
-                tkState.frameId = requestAnimationFrame(takeoffLoop);
-                return;
-            }
+            if (delta < 15) { tkState.frameId = requestAnimationFrame(takeoffLoop); return; }
             tkState.lastFrameTime = timestamp;
-
-            let acceleration = 1.0; 
-            if (tkState.pitch > 0) acceleration -= (tkState.pitch * 0.05); 
-            
-            tkState.speed += acceleration; 
-            tkState.speed = Math.max(0, Math.min(220, tkState.speed));
-            
-            if (tkState.pressing) {
-                tkState.pitchVelocity += 0.05; 
-            } else {
-                tkState.pitchVelocity -= 0.03; 
-            }
-            
-            tkState.pitchVelocity *= 0.90; 
-            tkState.pitchVelocity = Math.max(-0.8, Math.min(1.0, tkState.pitchVelocity)); 
-            
-            tkState.pitch += tkState.pitchVelocity; 
-            tkState.pitch = Math.max(0, Math.min(30, tkState.pitch)); 
-            
+            let acceleration = 1.0; if (tkState.pitch > 0) acceleration -= (tkState.pitch * 0.05); 
+            tkState.speed += acceleration; tkState.speed = Math.max(0, Math.min(220, tkState.speed));
+            if (tkState.pressing) { tkState.pitchVelocity += 0.05; } else { tkState.pitchVelocity -= 0.03; }
+            tkState.pitchVelocity *= 0.90; tkState.pitchVelocity = Math.max(-0.8, Math.min(1.0, tkState.pitchVelocity)); 
+            tkState.pitch += tkState.pitchVelocity; tkState.pitch = Math.max(0, Math.min(30, tkState.pitch)); 
             if(tkState.pitch === 30 || tkState.pitch === 0) tkState.pitchVelocity = 0;
-            
-            if (tkState.speed >= 140 && tkState.pitch >= tkState.minAngle && tkState.pitch <= tkState.maxAngle) { 
-                tkState.lift += 0.5; 
-            } else { 
-                tkState.lift = Math.max(0, tkState.lift - 0.2); 
-            }
-
-            if (tkState.lift > 0) {
-                tkState.hasLiftedOff = true; 
-            } else if (tkState.hasLiftedOff && tkState.lift === 0 && tkState.speed > 50) {
-                createSparks();
-            }
-            
-            const maxLiftY = 100; 
-            const liftY = (tkState.lift / 100) * maxLiftY; 
-            document.getElementById('tk-plane').style.transform = `translateY(-${liftY}px) rotate(-${tkState.pitch}deg)`;
+            if (tkState.speed >= 140 && tkState.pitch >= tkState.minAngle && tkState.pitch <= tkState.maxAngle) { tkState.lift += 0.5; } else { tkState.lift = Math.max(0, tkState.lift - 0.2); }
+            if (tkState.lift > 0) { tkState.hasLiftedOff = true; } else if (tkState.hasLiftedOff && tkState.lift === 0 && tkState.speed > 50) { createSparks(); }
+            const maxLiftY = 100; const liftY = (tkState.lift / 100) * maxLiftY; document.getElementById('tk-plane').style.transform = `translateY(-${liftY}px) rotate(-${tkState.pitch}deg)`;
             document.getElementById('tk-needle').style.bottom = `${Math.max(0, Math.min(100, (tkState.pitch / 30) * 100))}%`;
-            
-            const speedEl = document.getElementById('tk-speed-val'); 
-            const speedBar = document.getElementById('tk-speed-bar');
-            speedEl.textContent = Math.floor(tkState.speed);
-            
+            const speedEl = document.getElementById('tk-speed-val'); const speedBar = document.getElementById('tk-speed-bar'); speedEl.textContent = Math.floor(tkState.speed);
             speedBar.style.height = Math.min(100, (tkState.speed / 220) * 100) + '%';
-
-            if (speedEl.style.color !== "var(--gauge-orange)") { 
-                if (tkState.speed >= 140) {
-                    speedEl.style.color = "var(--gauge-green)"; 
-                    speedBar.style.backgroundColor = "var(--gauge-green)";
-                } else { 
-                    speedEl.style.color = "var(--brand-red)"; 
-                    speedBar.style.backgroundColor = "var(--brand-red)";
-                }
-            }
-            
-            tkState.distance -= (tkState.speed / 1450); 
-            tkState.bgPosSky -= tkState.speed * 0.002; 
-            tkState.bgPosCity -= tkState.speed * 0.008; 
-            tkState.bgPosGround -= tkState.speed * 0.025; 
-            tkState.bgPosRunway -= tkState.speed * 0.08;
-            
-            document.getElementById('tk-bg-sky').style.backgroundPosition = tkState.bgPosSky + 'px 0px'; 
-            document.getElementById('tk-bg-city').style.backgroundPosition = tkState.bgPosCity + 'px 100%'; 
-            document.getElementById('tk-bg-ground').style.backgroundPosition = tkState.bgPosGround + 'px 100%'; 
-            document.getElementById('tk-runway-surface').style.backgroundPosition = tkState.bgPosRunway + 'px 0px';
-            
+            if (speedEl.style.color !== "var(--gauge-orange)") { if (tkState.speed >= 140) { speedEl.style.color = "var(--gauge-green)"; speedBar.style.backgroundColor = "var(--gauge-green)"; } else { speedEl.style.color = "var(--brand-red)"; speedBar.style.backgroundColor = "var(--brand-red)"; } }
+            tkState.distance -= (tkState.speed / 1450); tkState.bgPosSky -= tkState.speed * 0.002; tkState.bgPosCity -= tkState.speed * 0.008; tkState.bgPosGround -= tkState.speed * 0.025; tkState.bgPosRunway -= tkState.speed * 0.08;
+            document.getElementById('tk-bg-sky').style.backgroundPosition = tkState.bgPosSky + 'px 0px'; document.getElementById('tk-bg-city').style.backgroundPosition = tkState.bgPosCity + 'px 100%'; document.getElementById('tk-bg-ground').style.backgroundPosition = tkState.bgPosGround + 'px 100%'; document.getElementById('tk-runway-surface').style.backgroundPosition = tkState.bgPosRunway + 'px 0px';
             document.getElementById('tk-runway-fill').style.height = Math.max(0, (tkState.distance / tkState.initialDistance) * 100) + '%'; 
             document.getElementById('tk-lift-fill').style.height = Math.min(100, tkState.lift) + '%';            
-            
-            if (tkState.distance < 15) { 
-                const mtn = document.getElementById('tk-mountain'); 
-                mtn.style.display = 'block'; 
-                mtn.style.left = `calc(${tkState.distance * 6}% + 40px)`; 
-            }
-            
+            if (tkState.distance < 15) { const mtn = document.getElementById('tk-mountain'); mtn.style.display = 'block'; mtn.style.left = `calc(${tkState.distance * 6}% + 40px)`; }
             if (tkState.lift >= 100) return winTakeoff();
             if (tkState.distance <= 0) return explodePlane("CRASHED INTO MOUNTAIN");
-            
             tkState.frameId = requestAnimationFrame(takeoffLoop);
         }
 
         function createSparks() {
-            const vp = document.getElementById('takeoff-viewport');
-            if (!vp) return;
+            const vp = document.getElementById('takeoff-viewport'); if (!vp) return;
             const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#ffffff']; 
             for(let i = 0; i < 2; i++) {
-                let p = document.createElement('div');
-                p.className = 'pixel-particle';
-                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                p.style.width = '3px'; p.style.height = '3px';
-                let startX = 30 + Math.random() * 20; 
-                let startY = vp.offsetHeight - 32; 
-                p.style.left = startX + 'px'; p.style.top = startY + 'px';
-                vp.appendChild(p);
-                let vx = -(Math.random() * 5 + 3); let vy = -(Math.random() * 3 + 1); 
-                animateSpark(p, vx, vy);
+                let p = document.createElement('div'); p.className = 'pixel-particle'; p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]; p.style.width = '3px'; p.style.height = '3px';
+                let startX = 30 + Math.random() * 20; let startY = vp.offsetHeight - 32; p.style.left = startX + 'px'; p.style.top = startY + 'px';
+                vp.appendChild(p); let vx = -(Math.random() * 5 + 3); let vy = -(Math.random() * 3 + 1); animateSpark(p, vx, vy);
             }
         }
 
@@ -1565,9 +1343,7 @@
             let x = parseFloat(p.style.left); let y = parseFloat(p.style.top); let age = 0; let maxAge = 15 + Math.random() * 15; 
             function step() {
                 age++; if (age > maxAge) { p.remove(); return; }
-                x += vx; y += vy; vy += 0.3; 
-                p.style.left = x + 'px'; p.style.top = y + 'px'; p.style.opacity = 1 - (age / maxAge); 
-                requestAnimationFrame(step);
+                x += vx; y += vy; vy += 0.3; p.style.left = x + 'px'; p.style.top = y + 'px'; p.style.opacity = 1 - (age / maxAge); requestAnimationFrame(step);
             } requestAnimationFrame(step);
         }
 
@@ -1592,11 +1368,10 @@
         function failTakeoff(reason) {
             const lState = globalState.levels[activeLevelIdx]; lState.attempts = (lState.attempts || 0) + 1; drainFuel(WRONG_GUESS_PENALTY);
             if (lState.attempts >= 3) {
-                lState.failed = true; lState.completed = true; saveState();
-                const msgEl = document.getElementById('message'); msgEl.textContent = "SYSTEM LOCKED - MAX ATTEMPTS FAILED (-200L)"; msgEl.className = "fail pop-reveal"; void msgEl.offsetWidth; 
+                lState.failed = true; lState.completed = true; saveState(); const msgEl = document.getElementById('message'); msgEl.textContent = "SYSTEM LOCKED - MAX ATTEMPTS FAILED (-200L)"; msgEl.className = "fail pop-reveal"; 
                 setTimeout(() => { if (isAllWorldsComplete()) syncScoreToCloud(); saveAndExit(); }, 2500);
             } else {
-                let triesLeft = 3 - lState.attempts; const msgEl = document.getElementById('message'); msgEl.textContent = `${reason} | TRIES LEFT: ${triesLeft} (-200L)`; msgEl.className = "fail pop-reveal"; void msgEl.offsetWidth;
+                let triesLeft = 3 - lState.attempts; const msgEl = document.getElementById('message'); msgEl.textContent = `${reason} | TRIES LEFT: ${triesLeft} (-200L)`; msgEl.className = "fail pop-reveal";
                 setTimeout(() => { if(!lState.completed && !lState.failed && (globalState.currentFuel > 0 || globalState.extraFuel > 0) && document.getElementById('takeoff-game-area').style.display !== 'none') { document.getElementById('message').textContent = ""; startTakeoff(); } }, 1500);
             }
             if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) setTimeout(() => triggerGameOver(false), 1500);
@@ -1605,10 +1380,41 @@
         function winTakeoff() {
             tkState.active = false; const bonus = 500; globalState.currentFuel += bonus; updateMiniFuelUI();
             const lState = globalState.levels[activeLevelIdx]; lState.completed = true; triggerConfetti();
-            document.getElementById('level-title').textContent = lState.name; const msgEl = document.getElementById('message'); msgEl.textContent = `PERFECT TAKEOFF! +${bonus}L BONUS`; msgEl.className = "success pop-reveal"; void msgEl.offsetWidth; 
+            document.getElementById('level-title').textContent = lState.name; const msgEl = document.getElementById('message'); msgEl.textContent = `PERFECT TAKEOFF! +${bonus}L BONUS`; msgEl.className = "success pop-reveal"; 
             saveState(); if (isAllWorldsComplete()) syncScoreToCloud(); setTimeout(saveAndExit, 2500);
         }
 
+        function closeStatsAndRetire() { document.getElementById('game-over-overlay').style.display = 'none'; document.querySelectorAll('.view-section').forEach(el => el.classList.remove('gray-out', 'active')); document.getElementById('selector-view').classList.add('active'); renderDashboard(); }
+
+        function triggerGameOver(isWin = false) { 
+            ['game-view', 'selector-view', 'hangar-view', 'radar-view'].forEach(id => document.getElementById(id).classList.add('gray-out'));
+            let totalSec = globalState.totalPlayTime || 0; document.getElementById('stat-time').textContent = `${Math.floor(totalSec/60)}:${(totalSec%60).toString().padStart(2,'0')}`;
+            let count = [1,2,3,4,5].filter(n => globalState[`world${n}Complete`]).length; document.getElementById('stat-hangars').textContent = `${count} / 5`;
+            const title = document.getElementById('stats-title'); title.textContent = isWin ? "CAMPAIGN COMPLETE" : "MISSION FAILED"; title.style.color = isWin ? "var(--gauge-green)" : "var(--brand-red)";
+            document.getElementById('stats-reason').textContent = isWin ? "ALL HANGARS CLEARED" : "FUEL DEPLETED";
+            setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500); 
+        }
+
+        function closeRefuel() { document.getElementById('refuel-overlay').style.display = 'none'; saveAndExit(); }
+        function updateMiniFuelUI() { 
+            const el = document.getElementById('current-fuel-display'); el.querySelector('span').textContent = globalState.currentFuel; 
+            const auxEl = document.getElementById('aux-fuel-display'); auxEl.style.display = globalState.extraFuel > 0 ? 'inline' : 'none'; auxEl.textContent = `+${globalState.extraFuel}`;
+            if (globalState.currentFuel <= 200 && globalState.extraFuel === 0) el.classList.add('danger'); else el.classList.remove('danger'); 
+            if (typeof syncMultiplayerScore === "function") syncMultiplayerScore();
+        }
+        
+        function saveAndExit() { 
+            tkState.active = false; cancelAnimationFrame(tkState.frameId);
+            document.getElementById('game-view').classList.remove('active'); renderDashboard(); 
+            if (activeLevelIdx !== null && globalState.levels[activeLevelIdx]) openHangar(globalState.levels[activeLevelIdx].hangar); else document.getElementById('selector-view').classList.add('active');
+        }
+        
+        function triggerResetUI() { document.getElementById('restart-overlay').style.display = 'flex'; }
+        function cancelReset() { document.getElementById('restart-overlay').style.display = 'none'; }
+        function confirmReset() { const user = globalState.username; localStorage.clear(); if (user) localStorage.setItem('last_pilot_name', user); location.reload(); }
+        function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
+
+        // --- RADAR LOGIC ---
         function openRadar() {
             if(globalState.currentFuel <= 0 && globalState.extraFuel <= 0) { triggerGameOver(false); return; }
             document.getElementById('selector-view').classList.remove('active'); const radarView = document.getElementById('radar-view'); radarView.classList.remove('active'); void radarView.offsetWidth; radarView.classList.add('active');
@@ -1625,7 +1431,7 @@
                             cleanMapBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}');
                             cleanMapLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}');
                             cleanMapBase.addTo(radarMap); radarLayerGroup = L.layerGroup().addTo(radarMap); radarPathGroup = L.layerGroup().addTo(radarMap);
-                        } else { console.error("Leaflet map library failed to load."); return; }
+                        } else { return; }
                     }
                     radarMap.invalidateSize(); startRadarTimer(); startRadarMission();
                 });
@@ -1633,100 +1439,33 @@
         }
 
         function createPlaneIcon(p) {
-            let labels = [];
-            if (originVisible && p.origin) labels.push(`REG: ${p.origin}`); if (altVisible && p.alt) labels.push(`${Math.round(p.alt)}M`);
-            if (origCityVisible && p.originCity) labels.push(`ORG: ${p.originCity}`); if (destCityVisible && p.destCity) labels.push(`DST: ${p.destCity}`);
-            let labelHtml = '';
-            if (labels.length > 0) { labelHtml = `<div style="position:absolute; color: ${p.color}; background: #000; padding: 2px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; left: 14px; top: 14px; line-height: 1.2; z-index: 1000; pointer-events: none;">${labels.join('<br>')}</div>`; }
+            let labels = []; 
+            if (originVisible && p.origin) labels.push(`REG: ${p.origin}`); 
+            if (altVisible && p.alt) labels.push(`${Math.round(p.alt)}M`);
+            if (origCityVisible && p.originCity) labels.push(`ORG: ${p.originCity}`); 
+            if (destCityVisible && p.destCity) labels.push(`DST: ${p.destCity}`);
+            
+            let labelHtml = labels.length > 0 ? `<div style="position:absolute; color: ${p.color}; background: #000; padding: 2px 4px; border-radius: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; white-space: nowrap; left: 14px; top: 14px; line-height: 1.2; z-index: 1000; pointer-events: none;">${labels.join('<br>')}</div>` : '';
             const planeSvg = `<div style="transform: rotate(${p.heading}deg); color: ${p.color}; width:24px; height:24px; position:absolute; top:0; left:0;"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21,16v-2l-8-5V3.5c0-0.83-0.67-1.5-1.5-1.5S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg></div>`;
-            let pingHtml = p.showPing ? `<div class="radar-target-ping" style="border-color:${p.color}; position:absolute;"></div>` : '';
-            return L.divIcon({ html: `<div style="position:relative; width:24px; height:24px;">${planeSvg}${pingHtml}${labelHtml}</div>`, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });
+            return L.divIcon({ html: `<div style="position:relative; width:24px; height:24px;">${planeSvg}${p.showPing ? '<div class="radar-target-ping" style="border-color:'+p.color+';"></div>' : ''}${labelHtml}</div>`, className: 'radar-plane-icon', iconSize: [24, 24], iconAnchor: [12, 12] });
         }
 
         function animateRadarPlanes() {
             if (!radarMap || currentRadarPlanes.length === 0) return;
-            let now = Date.now(); let dt = (now - radarAnimTime) / 1000; radarAnimTime = now; const speedDegPerSec = 0.0008; 
+            let now = Date.now(); let dt = (now - radarAnimTime) / 1000; radarAnimTime = now;
             currentRadarPlanes.forEach(p => {
-                let rad = (90 - p.heading) * (Math.PI / 180); p.lat += Math.sin(rad) * speedDegPerSec * dt; p.lng += Math.cos(rad) * (speedDegPerSec / (Math.cos(p.lat * Math.PI / 180) || 1)) * dt;
-                if (p.marker) { p.marker.setLatLng([p.lat, p.lng]); }
+                let rad = (90 - p.heading) * (Math.PI / 180); 
+                p.lat += Math.sin(rad) * 0.0008 * dt; 
+                p.lng += Math.cos(rad) * (0.0008 / (Math.cos(p.lat * Math.PI / 180) || 1)) * dt;
+                if (p.marker) p.marker.setLatLng([p.lat, p.lng]);
             });
             radarAnimFrame = requestAnimationFrame(animateRadarPlanes);
         }
 
-        function startRadarMission() {
-            const textEl = document.getElementById('radar-screen-text'); const config = RADAR_LEVEL_CONFIG[radarLevel];
-            document.querySelector('.lvl-text').textContent = `LEVEL ${radarLevel} OF 10`;
-            pathsVisible = false; originVisible = false; altVisible = false; origCityVisible = false; destCityVisible = false; compassVisible = false; currentMapStyle = 'CLEAN'; 
-            document.getElementById('toggle-paths-btn').textContent = "PATHS: OFF"; document.getElementById('toggle-paths-btn').style.background = "transparent"; document.getElementById('toggle-paths-btn').style.color = "var(--radar-green)";
-            document.getElementById('toggle-origin-btn').textContent = "REG: OFF"; document.getElementById('toggle-origin-btn').style.background = "transparent"; document.getElementById('toggle-origin-btn').style.color = "var(--radar-green)";
-            document.getElementById('toggle-alt-btn').textContent = "ALT: OFF"; document.getElementById('toggle-alt-btn').style.background = "transparent"; document.getElementById('toggle-alt-btn').style.color = "var(--radar-green)";
-            document.getElementById('toggle-origcity-btn').textContent = "ORIG: OFF"; document.getElementById('toggle-origcity-btn').style.background = "transparent"; document.getElementById('toggle-origcity-btn').style.color = "var(--radar-green)";
-            document.getElementById('toggle-destcity-btn').textContent = "DEST: OFF"; document.getElementById('toggle-destcity-btn').style.background = "transparent"; document.getElementById('toggle-destcity-btn').style.color = "var(--radar-green)";
-            document.getElementById('toggle-compass-btn').textContent = "COMP: OFF"; document.getElementById('toggle-compass-btn').style.background = "transparent"; document.getElementById('toggle-compass-btn').style.color = "var(--radar-green)";
-            document.querySelectorAll('.compass-pt').forEach(el => el.style.display = 'none');
-            document.getElementById('toggle-map-btn').textContent = "CITIES: OFF"; document.getElementById('toggle-map-btn').style.background = "transparent"; document.getElementById('toggle-map-btn').style.color = "var(--radar-green)";
-            if (radarMap && cleanMapLabels && radarMap.hasLayer(cleanMapLabels)) { radarMap.removeLayer(cleanMapLabels); }
-            
-            const center = RADAR_CENTERS[Math.floor(Math.random() * RADAR_CENTERS.length)]; const rLat = center.lat + (Math.random() * 10 - 5); const rLng = center.lng + (Math.random() * 10 - 5); const centerName = center.name; const isUS = centerName.includes("US-");
-            const lamin = rLat - config.latOffset; const lamax = rLat + config.latOffset; const lomin = rLng - config.lngOffset; const lomax = rLng + config.lngOffset;
-            
-            textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${centerName}...<span class='blinking-cursor'>_</span>`;
-            if (radarAnimFrame) cancelAnimationFrame(radarAnimFrame); radarLayerGroup.clearLayers(); radarPathGroup.clearLayers(); currentRadarPlanes = [];
-
-            const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), 2500);
-            const numCities = Math.min(15, Math.max(3, Math.floor(config.planes / 3)));
-            const roundCitiesUS = US_CITIES.sort(() => 0.5 - Math.random()).slice(0, numCities); const roundCitiesIntl = INTL_CITIES.sort(() => 0.5 - Math.random()).slice(0, numCities);
-
-            fetch(`https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`, { signal: controller.signal })
-            .then(res => { clearTimeout(timeoutId); if (!res.ok) throw new Error("API error"); return res.json(); })
-            .then(data => {
-                if(!data.states || data.states.length === 0) throw new Error("Empty airspace");
-                let validAPIPlanes = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "");
-                if(validAPIPlanes.length === 0) throw new Error("No valid planes");
-                validAPIPlanes = validAPIPlanes.sort(() => Math.random() - 0.5);
-
-                for (let p of validAPIPlanes) {
-                    if (currentRadarPlanes.length >= config.planes) break; 
-                    const lat = p[6]; const lng = p[5]; const heading = p[10] || 0; const alt = p[7] !== null ? p[7] : Math.floor(Math.random() * 10000 + 2000);
-                    let isOverlapping = false; for (let cp of currentRadarPlanes) { if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) { isOverlapping = true; break; } }
-                    if (isOverlapping) continue;
-                    let originCountry = p[2] && p[2].trim() !== "" ? p[2].trim().toUpperCase() : "CLASSIFIED";
-                    
-                    let isDomestic = isUS && (Math.random() < 0.9); let c1, c2;
-                    if (isDomestic) { c1 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)] || US_CITIES[0]; c2 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)] || US_CITIES[1]; while (c1 === c2 && roundCitiesUS.length > 1) c2 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)]; } else { c1 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)] || INTL_CITIES[0]; c2 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)] || INTL_CITIES[1]; while (c1 === c2 && roundCitiesIntl.length > 1) c2 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)]; }
-                    
-                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
-                    const radBack = (heading + 180) * (Math.PI / 180); const startLat = lat + Math.cos(radBack) * trailLen; const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
-                    const radFwd = heading * (Math.PI / 180); const endLat = lat + Math.cos(radFwd) * fwdLen; const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
-                    const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length];
-                    currentRadarPlanes.push({ callsign: p[1].trim(), lat: lat, lng: lng, heading: heading, alt: alt, origin: originCountry, originCity: c1, destCity: c2, route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng, isReal: true, color: pColor, showPing: false });
-                }
-                if (currentRadarPlanes.length === 0) throw new Error("No spaced planes found");
-                initTargetAndPlot();
-            })
-            .catch(err => {
-                console.warn("Radar API fallback.");
-                const prefixes = ["LHT", "AFR", "SWR", "BAW", "RYR", "FIN", "NOR", "KLM", "EZY", "WZZ", "DAL", "UAL", "AAL", "SWA", "JBU", "QFA", "UAE", "VIR", "CCA", "ACA", "ANA", "THY", "SIA", "JAL"];
-                const fakeOrigins = ["GERMANY", "FRANCE", "UK", "SPAIN", "ITALY", "SWEDEN", "FINLAND", "NORWAY", "JAPAN", "CHINA", "CANADA", "BRAZIL"];
-                let attempts = 0;
-                while(currentRadarPlanes.length < config.planes && attempts < 2000) {
-                    attempts++; const lat = lamin + Math.random() * (lamax - lamin); const lng = lomin + Math.random() * (lomax - lomin); const alt = Math.floor(Math.random() * 8000 + 2000);
-                    let isOverlapping = false; for (let cp of currentRadarPlanes) { if (Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5) { isOverlapping = true; break; } }
-                    if (isOverlapping) continue;
-                    let randCall; do { randCall = prefixes[Math.floor(Math.random()*prefixes.length)] + Math.floor(10 + Math.random()*90); } while (currentRadarPlanes.find(p => p.callsign === randCall));
-                    let isDomestic = isUS && (Math.random() < 0.9); let c1, c2;
-                    if (isDomestic) { c1 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)] || US_CITIES[0]; c2 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)] || US_CITIES[1]; while (c1 === c2 && roundCitiesUS.length > 1) c2 = roundCitiesUS[Math.floor(Math.random() * roundCitiesUS.length)]; } else { c1 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)] || INTL_CITIES[0]; c2 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)] || INTL_CITIES[1]; while (c1 === c2 && roundCitiesIntl.length > 1) c2 = roundCitiesIntl[Math.floor(Math.random() * roundCitiesIntl.length)]; }
-                    const heading = Math.random() * 360; const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
-                    const radBack = (heading + 180) * (Math.PI / 180); const startLat = lat + Math.cos(radBack) * trailLen; const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
-                    const radFwd = heading * (Math.PI / 180); const endLat = lat + Math.cos(radFwd) * fwdLen; const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
-                    const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length]; const randomOrigin = isDomestic ? "UNITED STATES" : fakeOrigins[Math.floor(Math.random() * fakeOrigins.length)];
-                    currentRadarPlanes.push({ callsign: randCall, origin: randomOrigin, lat: lat, lng: lng, heading: heading, alt: alt, originCity: c1, destCity: c2, route: [[startLat, startLng], [lat, lng], [endLat, endLng]], endLat: endLat, endLng: endLng, isReal: false, color: pColor, showPing: false });
-                }
-                initTargetAndPlot();
-            });
+        function getCompassDirection(heading) { 
+            const dirs = ["NORTH", "NORTH-EAST", "EAST", "SOUTH-EAST", "SOUTH", "SOUTH-WEST", "WEST", "NORTH-WEST"]; 
+            return dirs[Math.round(((heading %= 360) < 0 ? heading + 360 : heading) / 45) % 8]; 
         }
-
-        function getCompassDirection(heading) { const dirs = ["NORTH", "NORTH-EAST", "EAST", "SOUTH-EAST", "SOUTH", "SOUTH-WEST", "WEST", "NORTH-WEST"]; return dirs[Math.round(((heading %= 360) < 0 ? heading + 360 : heading) / 45) % 8]; }
 
         function evaluateAndSelectHints(targetPlane, geoData, config) {
             let potentialHints = []; const totalP = currentRadarPlanes.length;
@@ -1734,81 +1473,217 @@
             if (targetPlane.origin) potentialHints.push({ text: `REGISTRY ${targetPlane.origin}`, test: p => p.origin === targetPlane.origin });
             if (targetPlane.originCity) potentialHints.push({ text: `ORIGIN ${targetPlane.originCity}`, test: p => p.originCity === targetPlane.originCity });
             if (targetPlane.destCity) potentialHints.push({ text: `DESTINATION ${targetPlane.destCity}`, test: p => p.destCity === targetPlane.destCity });
-            if (targetPlane.alt) { const isAbove = Math.random() > 0.5; let bound = isAbove ? Math.floor((targetPlane.alt - 1) / 500) * 500 : Math.ceil((targetPlane.alt + 1) / 500) * 500; potentialHints.push({ text: `ALT ${isAbove ? 'ABOVE' : 'BELOW'} ${bound}M`, test: p => isAbove ? p.alt > bound : p.alt < bound }); }
+            if (targetPlane.alt) { 
+                const isAbove = Math.random() > 0.5; let bound = isAbove ? Math.floor((targetPlane.alt - 1) / 500) * 500 : Math.ceil((targetPlane.alt + 1) / 500) * 500; 
+                potentialHints.push({ text: `ALT ${isAbove ? 'ABOVE' : 'BELOW'} ${bound}M`, test: p => isAbove ? p.alt > bound : p.alt < bound }); 
+            }
             potentialHints.forEach(h => { h.ratio = currentRadarPlanes.filter(h.test).length / totalP; });
             let goodHints = potentialHints.filter(h => h.ratio <= 0.55);
             if (geoData && geoData.address) { let city = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.municipality || geoData.address.suburb; if (city) goodHints.push({ text: `PROXIMITY NEAR ${city.toUpperCase()}`, ratio: 0.1 }); } else if (geoData === null) { goodHints.push({ text: `AIRSPACE INT'L WATERS`, ratio: 0.1 }); }
             goodHints.sort((a, b) => a.ratio - b.ratio);
-            if (goodHints.length < config.hints) { goodHints = potentialHints.sort((a, b) => a.ratio - b.ratio); if (geoData && geoData.address) { let city = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.municipality || geoData.address.suburb; if (city) goodHints.unshift({ text: `PROXIMITY NEAR ${city.toUpperCase()}` }); } else if (geoData === null) { goodHints.unshift({ text: `AIRSPACE INT'L WATERS` }); } }
+            if (goodHints.length < config.hints) { 
+                goodHints = potentialHints.sort((a, b) => a.ratio - b.ratio); 
+                if (geoData && geoData.address) { let city = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.municipality || geoData.address.suburb; if (city) goodHints.unshift({ text: `PROXIMITY NEAR ${city.toUpperCase()}` }); } else if (geoData === null) { goodHints.unshift({ text: `AIRSPACE INT'L WATERS` }); } 
+            }
             return goodHints.slice(0, config.hints).map(h => h.text).sort(() => 0.5 - Math.random());
         }
 
+        function plotPlanesOnRadar() {
+            currentRadarPlanes.forEach(p => { 
+                let marker = L.marker([p.lat, p.lng], {icon: createPlaneIcon(p)}).addTo(radarLayerGroup); 
+                p.marker = marker; 
+                marker.on('click', () => { openInterceptModal(p, marker); }); 
+            });
+            if(currentRadarPlanes.length > 0) { 
+                let lats = currentRadarPlanes.map(p => p.lat).filter(l => l != null && !isNaN(l)); 
+                let lngs = currentRadarPlanes.map(p => p.lng).filter(l => l != null && !isNaN(l)); 
+                if (lats.length > 0 && lngs.length > 0) { 
+                    let safeBounds = [[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]]; 
+                    radarMap.fitBounds(safeBounds, { padding: [40, 40] }); 
+                } 
+            }
+            radarAnimTime = Date.now(); 
+            animateRadarPlanes();
+        }
+
+        function startRadarMission() {
+            const textEl = document.getElementById('radar-screen-text'); const config = RADAR_LEVEL_CONFIG[radarLevel];
+            document.querySelector('.lvl-text').textContent = `LEVEL ${radarLevel} OF 10`;
+            pathsVisible = false; originVisible = false; altVisible = false; origCityVisible = false; destCityVisible = false; compassVisible = false; currentMapStyle = 'CLEAN'; 
+            
+            ['paths', 'origin', 'alt', 'origcity', 'destcity', 'compass', 'map'].forEach(id => { 
+                let b = document.getElementById('toggle-'+id+'-btn'); 
+                if(b){ b.style.background = "transparent"; b.style.color = "var(--radar-green)"; b.textContent = b.textContent.replace("ON", "OFF"); } 
+            });
+            document.querySelectorAll('.compass-pt').forEach(el => el.style.display = 'none');
+            if (radarMap && cleanMapLabels && radarMap.hasLayer(cleanMapLabels)) { radarMap.removeLayer(cleanMapLabels); }
+            
+            const center = RADAR_CENTERS[Math.floor(Math.random() * RADAR_CENTERS.length)];
+            textEl.innerHTML = `ESTABLISHING UPLINK...<br>SCANNING SECTOR ${center.name}...<span class='blinking-cursor'>_</span>`;
+            if (radarAnimFrame) cancelAnimationFrame(radarAnimFrame); radarLayerGroup.clearLayers(); radarPathGroup.clearLayers(); currentRadarPlanes = [];
+            
+            const lamin = center.lat - config.latOffset; const lamax = center.lat + config.latOffset; const lomin = center.lng - config.lngOffset; const lomax = center.lng + config.lngOffset;
+            
+            fetch(`https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`)
+            .then(res => res.json())
+            .then(data => {
+                if(!data.states || data.states.length === 0) throw new Error();
+                let valid = data.states.filter(p => p[1] && p[5] && p[6] && p[1].trim() !== "").sort(() => Math.random() - 0.5);
+                for (let p of valid) {
+                    if (currentRadarPlanes.length >= config.planes) break; 
+                    const lat = p[6]; const lng = p[5]; const heading = p[10] || 0;
+                    if (currentRadarPlanes.some(cp => Math.sqrt(Math.pow(cp.lat - lat, 2) + Math.pow(cp.lng - lng, 2)) < 1.5)) continue;
+                    
+                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
+                    const radBack = (heading + 180) * (Math.PI / 180); const startLat = lat + Math.cos(radBack) * trailLen; const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
+                    const radFwd = heading * (Math.PI / 180); const endLat = lat + Math.cos(radFwd) * fwdLen; const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+                    
+                    const pColor = RADAR_COLORS[currentRadarPlanes.length % RADAR_COLORS.length];
+                    currentRadarPlanes.push({ callsign: p[1].trim(), lat, lng, heading, alt: p[7] || 5000, origin: p[2].toUpperCase(), originCity: CITIES[Math.floor(Math.random()*CITIES.length)], destCity: CITIES[Math.floor(Math.random()*CITIES.length)], route: [[startLat, startLng], [lat, lng], [endLat, endLng]], color: pColor, showPing: false });
+                }
+                initTargetAndPlot();
+            }).catch(() => {
+                for(let i=0; i<config.planes; i++){
+                    const lat = lamin + Math.random()*(lamax-lamin); const lng = lomin + Math.random()*(lomax-lomin);
+                    const heading = Math.random()*360;
+                    const trailLen = 2 + Math.random() * 2; const fwdLen = 3 + Math.random() * 3;
+                    const radBack = (heading + 180) * (Math.PI / 180); const startLat = lat + Math.cos(radBack) * trailLen; const startLng = lng + Math.sin(radBack) * trailLen * (1 / Math.cos(lat * Math.PI / 180));
+                    const radFwd = heading * (Math.PI / 180); const endLat = lat + Math.cos(radFwd) * fwdLen; const endLng = lng + Math.sin(radFwd) * fwdLen * (1 / Math.cos(lat * Math.PI / 180));
+                    
+                    currentRadarPlanes.push({ callsign: "FLT"+Math.floor(100+Math.random()*900), lat, lng, heading: heading, alt: 3000+Math.random()*7000, origin: "USA", originCity: US_CITIES[Math.floor(Math.random()*US_CITIES.length)], destCity: US_CITIES[Math.floor(Math.random()*US_CITIES.length)], route: [[startLat, startLng], [lat, lng], [endLat, endLng]], color: RADAR_COLORS[i%RADAR_COLORS.length], showPing: false });
+                }
+                initTargetAndPlot();
+            });
+        }
+
         function initTargetAndPlot() {
-            const textEl = document.getElementById('radar-screen-text'); const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)]; currentRadarCallsign = targetPlane.callsign; const config = RADAR_LEVEL_CONFIG[radarLevel];
+            const textEl = document.getElementById('radar-screen-text'); 
+            const targetPlane = currentRadarPlanes[Math.floor(Math.random() * currentRadarPlanes.length)]; 
+            currentRadarCallsign = targetPlane.callsign; 
+            const config = RADAR_LEVEL_CONFIG[radarLevel];
+            
             textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span><br><div style="margin-top:8px; color:#aaa;">DECRYPTING TELEMETRY...<span class="blinking-cursor">_</span></div>`;
             plotPlanesOnRadar();
+            
             const nomController = new AbortController(); const nomTimeout = setTimeout(() => nomController.abort(), 2500);
             fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${targetPlane.lat}&lon=${targetPlane.lng}&zoom=10`, { signal: nomController.signal })
-            .then(res => { clearTimeout(nomTimeout); return res.json(); }).then(geoData => { let selectedHints = evaluateAndSelectHints(targetPlane, geoData, config); let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join(''); textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`; })
-            .catch(() => { let selectedHints = evaluateAndSelectHints(targetPlane, null, config); let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join(''); textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`; });
-        }
-        
-        function plotPlanesOnRadar() {
-            currentRadarPlanes.forEach(p => { let marker = L.marker([p.lat, p.lng], {icon: createPlaneIcon(p)}).addTo(radarLayerGroup); p.marker = marker; marker.on('click', () => { openInterceptModal(p, marker); }); });
-            if(currentRadarPlanes.length > 0) { let lats = currentRadarPlanes.map(p => p.lat).filter(l => l != null && !isNaN(l)); let lngs = currentRadarPlanes.map(p => p.lng).filter(l => l != null && !isNaN(l)); if (lats.length > 0 && lngs.length > 0) { let safeBounds = [[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]]; radarMap.fitBounds(safeBounds, { padding: [40, 40] }); } }
-            radarAnimTime = Date.now(); animateRadarPlanes();
+            .then(res => { clearTimeout(nomTimeout); return res.json(); })
+            .then(geoData => { 
+                let selectedHints = evaluateAndSelectHints(targetPlane, geoData, config); 
+                let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join(''); 
+                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`; 
+            })
+            .catch(() => { 
+                let selectedHints = evaluateAndSelectHints(targetPlane, null, config); 
+                let hintHtml = selectedHints.map((h, i) => `<div style="margin-top:8px;"><span style="color:#888; font-size:0.7rem;">HINT ${i+1}</span><br><span style="color:#fff; font-size:0.95rem;">${h}</span></div>`).join(''); 
+                textEl.innerHTML = `CALLSIGN: <span class="radar-highlight">${currentRadarCallsign}</span>${hintHtml}`; 
+            });
         }
 
         function openInterceptModal(plane, marker) {
-            if (radarTimeMs <= 0) return; pendingInterceptPlane = { data: plane, marker: marker }; radarMap.flyTo([plane.lat, plane.lng], 12, { animate: true, duration: 1.5 });
-            const titleEl = document.querySelector('#intercept-overlay h1'); const descEl = document.querySelector('#intercept-overlay p'); const boxEl = document.querySelector('#intercept-overlay .modal-box'); const buttonsEl = document.getElementById('intercept-buttons'); const el = document.getElementById('encrypted-callsign');
-            titleEl.textContent = "CONFIRM INTERCEPT"; titleEl.style.color = "var(--brand-red)"; descEl.innerHTML = "Target signature encrypted:"; descEl.style.color = "#ccc"; boxEl.style.borderColor = "var(--brand-red)"; boxEl.style.boxShadow = "0 0 20px rgba(215, 25, 32, 0.2)"; buttonsEl.style.visibility = "visible"; el.style.color = "#fff";
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$'; const callsignLength = plane.callsign.length;
+            if (radarTimeMs <= 0) return; pendingInterceptPlane = { data: plane, marker }; radarMap.flyTo([plane.lat, plane.lng], 12);
+            
+            const titleEl = document.querySelector('#intercept-overlay h1');
+            const descEl = document.querySelector('#intercept-overlay p');
+            const boxEl = document.querySelector('#intercept-overlay .modal-box');
+            const el = document.getElementById('encrypted-callsign'); 
+            
+            titleEl.textContent = "CONFIRM INTERCEPT"; 
+            titleEl.style.color = "var(--brand-red)"; 
+            descEl.innerHTML = "Target signature encrypted:"; 
+            descEl.style.color = "#ccc"; 
+            boxEl.style.borderColor = "var(--brand-red)"; 
+            boxEl.style.boxShadow = "0 0 20px rgba(215, 25, 32, 0.2)"; 
+            el.style.color = "#fff";
+            document.getElementById('intercept-buttons').style.visibility = "visible";
+
             if (encryptionInterval) clearInterval(encryptionInterval);
-            encryptionInterval = setInterval(() => { let encrypted = ''; for(let i=0; i<callsignLength; i++) { encrypted += chars.charAt(Math.floor(Math.random() * chars.length)); } el.textContent = encrypted; }, 60); 
+            encryptionInterval = setInterval(() => { let enc = ''; for(let i=0; i<plane.callsign.length; i++) enc += "!@#$%^&*"[Math.floor(Math.random()*8)]; el.textContent = enc; }, 60); 
             document.getElementById('intercept-overlay').style.display = 'flex';
         }
 
-        function cancelIntercept() {
-            if (encryptionInterval) clearInterval(encryptionInterval); document.getElementById('intercept-overlay').style.display = 'none'; pendingInterceptPlane = null;
-            let lats = currentRadarPlanes.map(p => p.lat); let lngs = currentRadarPlanes.map(p => p.lng); if(lats.length) radarMap.flyToBounds([[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]], { padding: [40, 40], duration: 1.0 });
-        }
+        function cancelIntercept() { if (encryptionInterval) clearInterval(encryptionInterval); document.getElementById('intercept-overlay').style.display = 'none'; }
 
         function confirmIntercept() {
-            if (encryptionInterval) clearInterval(encryptionInterval); if (!pendingInterceptPlane) return;
-            let p = pendingInterceptPlane.data; let marker = pendingInterceptPlane.marker;
-            const titleEl = document.querySelector('#intercept-overlay h1'); const descEl = document.querySelector('#intercept-overlay p'); const boxEl = document.querySelector('#intercept-overlay .modal-box'); const el = document.getElementById('encrypted-callsign');
+            if (!pendingInterceptPlane) return; 
+            let p = pendingInterceptPlane.data; 
+            let marker = pendingInterceptPlane.marker;
+            
+            clearInterval(encryptionInterval); 
             document.getElementById('intercept-buttons').style.visibility = 'hidden';
-            titleEl.textContent = "DECRYPTING..."; titleEl.style.color = "var(--gauge-orange)"; boxEl.style.borderColor = "var(--gauge-orange)"; boxEl.style.boxShadow = "0 0 20px rgba(243, 156, 18, 0.4)"; descEl.textContent = "Matching signatures...";
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$'; let iterations = 0; let revealedIndex = 0; const actualCallsign = p.callsign;
+            
+            const titleEl = document.querySelector('#intercept-overlay h1'); 
+            const descEl = document.querySelector('#intercept-overlay p'); 
+            const boxEl = document.querySelector('#intercept-overlay .modal-box'); 
+            const el = document.getElementById('encrypted-callsign');
+            
+            titleEl.textContent = "DECRYPTING..."; 
+            titleEl.style.color = "var(--gauge-orange)"; 
+            boxEl.style.borderColor = "var(--gauge-orange)"; 
+            boxEl.style.boxShadow = "0 0 20px rgba(243, 156, 18, 0.4)"; 
+            descEl.textContent = "Matching signatures...";
+
+            let actual = p.callsign; let iter = 0;
             encryptionInterval = setInterval(() => {
-                let displayStr = "";
-                for (let i = 0; i < actualCallsign.length; i++) { if (i < revealedIndex) { displayStr += actualCallsign[i]; } else { displayStr += chars.charAt(Math.floor(Math.random() * chars.length)); } } el.textContent = displayStr;
-                iterations++; if (iterations % 4 === 0) { revealedIndex++; }
-                if (revealedIndex > actualCallsign.length) {
+                let disp = actual.substring(0, Math.floor(iter/4)); 
+                for(let i=disp.length; i<actual.length; i++) disp += "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$"[Math.floor(Math.random()*40)];
+                el.textContent = disp;
+                
+                if(Math.floor(iter/4) >= actual.length) {
                     clearInterval(encryptionInterval);
-                    if (p.callsign === currentRadarCallsign) {
-                        titleEl.textContent = "TARGET LOCKED"; titleEl.style.color = "var(--gauge-green)"; boxEl.style.borderColor = "var(--gauge-green)"; boxEl.style.boxShadow = "0 0 20px rgba(46, 204, 113, 0.4)"; el.style.color = p.color;
-                        p.showPing = true; if(p.marker) p.marker.setIcon(createPlaneIcon(p));
-                        let unrevealedCount = 0; for(let i=0; i<TARGET_PASSWORD.length; i++){ if(TARGET_PASSWORD[i] !== ' ' && !globalState.passwordRevealed.includes(i)) unrevealedCount++; } let lettersToAward = Math.min(unrevealedCount, Math.floor(Math.random() * 2) + 1); if (lettersToAward > 0) awardPasswordLetters(lettersToAward);
-                        if (radarLevel < 10) {
+                    if(p.callsign === currentRadarCallsign) {
+                        titleEl.textContent = "TARGET LOCKED"; 
+                        titleEl.style.color = "var(--gauge-green)"; 
+                        boxEl.style.borderColor = "var(--gauge-green)"; 
+                        boxEl.style.boxShadow = "0 0 20px rgba(46, 204, 113, 0.4)"; 
+                        el.style.color = p.color;
+                        
+                        p.showPing = true; 
+                        if(p.marker) p.marker.setIcon(createPlaneIcon(p)); 
+                        
+                        let unrevealedCount = 0; 
+                        for(let i=0; i<TARGET_PASSWORD.length; i++){ if(TARGET_PASSWORD[i] !== ' ' && !globalState.passwordRevealed.includes(i)) unrevealedCount++; } 
+                        let lettersToAward = Math.min(unrevealedCount, Math.floor(Math.random() * 2) + 1); 
+                        if (lettersToAward > 0) awardPasswordLetters(lettersToAward);
+
+                        if(radarLevel < 10) { 
                             descEl.innerHTML = `<span style='color:var(--brand-gold)'>PROCEED TO NEXT SECTOR...</span><br><span style="font-size:0.75rem; color:#aaa;">(+${lettersToAward} Password Datablocks)</span>`;
-                            setTimeout(() => { document.getElementById('intercept-overlay').style.display = 'none'; radarLevel++; startRadarMission(); pendingInterceptPlane = null; }, 3000);
-                        } else {
-                            radarTimeMs = 0; clearInterval(radarCountdown); globalState.extraFuel += 5000; saveState(); updateMiniFuelUI();
+                            radarLevel++; 
+                            setTimeout(() => { document.getElementById('intercept-overlay').style.display = 'none'; startRadarMission(); pendingInterceptPlane = null; }, 2500); 
+                        } else { 
+                            radarTimeMs = 0; clearInterval(radarCountdown); 
+                            globalState.extraFuel += 5000; saveState(); updateMiniFuelUI();
                             descEl.innerHTML = `MISSION COMPLETE<br><strong style='color:var(--brand-gold)'>+5000L AUX TANK SECURED</strong><br><span style="font-size:0.75rem; color:#aaa;">(+${lettersToAward} Password Datablocks)</span>`;
-                            setTimeout(() => { document.getElementById('intercept-overlay').style.display = 'none'; closeRadar(); pendingInterceptPlane = null; }, 4000);
+                            setTimeout(() => { document.getElementById('intercept-overlay').style.display = 'none'; closeRadar(); pendingInterceptPlane = null; }, 3500); 
                         }
                     } else {
-                        titleEl.textContent = "WRONG TARGET"; titleEl.style.color = "var(--brand-red)"; descEl.innerHTML = "Signature mismatch.<br>Penalty: -15s"; el.style.color = "var(--brand-red)"; boxEl.style.borderColor = "var(--brand-red)"; boxEl.style.boxShadow = "0 0 20px rgba(215, 25, 32, 0.4)";
-                        radarTimeMs = Math.max(0, radarTimeMs - 15000); updateTimerDisplay(getAssistPenalty()); const tDiv = document.getElementById('radar-timer'); tDiv.style.color = "red"; setTimeout(() => updateTimerDisplay(getAssistPenalty()), 500); 
-                        setTimeout(() => { document.getElementById('intercept-overlay').style.display = 'none'; cancelIntercept(); }, 2500);
+                        titleEl.textContent = "WRONG TARGET"; 
+                        titleEl.style.color = "var(--brand-red)"; 
+                        descEl.innerHTML = "Signature mismatch.<br>Penalty: -15s"; 
+                        el.style.color = "var(--brand-red)"; 
+                        boxEl.style.borderColor = "var(--brand-red)"; 
+                        boxEl.style.boxShadow = "0 0 20px rgba(215, 25, 32, 0.4)";
+
+                        radarTimeMs = Math.max(0, radarTimeMs - 15000); 
+                        updateTimerDisplay(getAssistPenalty()); 
+                        document.getElementById('radar-timer').classList.add('timer-penalty'); 
+                        setTimeout(() => document.getElementById('radar-timer').classList.remove('timer-penalty'), 500); 
+                        setTimeout(() => { document.getElementById('intercept-overlay').style.display = 'none'; cancelIntercept(); }, 2000);
                     }
                 }
+                iter++;
             }, 40);
         }
 
-        function renderRadarOverlays() { radarPathGroup.clearLayers(); currentRadarPlanes.forEach(p => { if (pathsVisible) { L.polyline(p.route, { color: p.color, weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup); } if (p.marker) { p.marker.setIcon(createPlaneIcon(p)); } }); updateTimerDisplay(getAssistPenalty()); }
+        function renderRadarOverlays() { 
+            radarPathGroup.clearLayers(); 
+            currentRadarPlanes.forEach(p => { 
+                if (pathsVisible && p.route) { L.polyline(p.route, { color: p.color, weight: 2, dashArray: '4, 6', opacity: 0.6 }).addTo(radarPathGroup); }
+                if (p.marker) p.marker.setIcon(createPlaneIcon(p)); 
+            }); 
+            updateTimerDisplay(getAssistPenalty());
+        }
+
         function toggleFlightPaths() { pathsVisible = !pathsVisible; const btn = document.getElementById('toggle-paths-btn'); btn.textContent = "PATHS: " + (pathsVisible ? "ON" : "OFF"); btn.style.background = pathsVisible ? "var(--radar-green)" : "transparent"; btn.style.color = pathsVisible ? "#000" : "var(--radar-green)"; renderRadarOverlays(); }
         function toggleOrigin() { originVisible = !originVisible; const btn = document.getElementById('toggle-origin-btn'); btn.textContent = "REG: " + (originVisible ? "ON" : "OFF"); btn.style.background = originVisible ? "var(--radar-green)" : "transparent"; btn.style.color = originVisible ? "#000" : "var(--radar-green)"; renderRadarOverlays(); }
         function toggleAlt() { altVisible = !altVisible; const btn = document.getElementById('toggle-alt-btn'); btn.textContent = "ALT: " + (altVisible ? "ON" : "OFF"); btn.style.background = altVisible ? "var(--radar-green)" : "transparent"; btn.style.color = altVisible ? "#000" : "var(--radar-green)"; renderRadarOverlays(); }
@@ -1816,436 +1691,121 @@
         function toggleDestCity() { destCityVisible = !destCityVisible; const btn = document.getElementById('toggle-destcity-btn'); btn.textContent = "DEST: " + (destCityVisible ? "ON" : "OFF"); btn.style.background = destCityVisible ? "var(--radar-green)" : "transparent"; btn.style.color = destCityVisible ? "#000" : "var(--radar-green)"; renderRadarOverlays(); }
         function toggleCompass() { compassVisible = !compassVisible; const btn = document.getElementById('toggle-compass-btn'); btn.textContent = "COMP: " + (compassVisible ? "ON" : "OFF"); btn.style.background = compassVisible ? "var(--radar-green)" : "transparent"; btn.style.color = compassVisible ? "#000" : "var(--radar-green)"; document.querySelectorAll('.compass-pt').forEach(el => { el.style.display = compassVisible ? 'block' : 'none'; }); updateTimerDisplay(getAssistPenalty()); }
         function toggleMapStyle() { const btn = document.getElementById('toggle-map-btn'); if (currentMapStyle === 'CLEAN') { if(cleanMapLabels) cleanMapLabels.addTo(radarMap); currentMapStyle = 'LABELS'; btn.textContent = "CITIES: ON"; btn.style.background = "var(--radar-green)"; btn.style.color = "#000"; } else { if(cleanMapLabels && radarMap.hasLayer(cleanMapLabels)) radarMap.removeLayer(cleanMapLabels); currentMapStyle = 'CLEAN'; btn.textContent = "CITIES: OFF"; btn.style.background = "transparent"; btn.style.color = "var(--radar-green)"; } updateTimerDisplay(getAssistPenalty()); }
-        function getAssistPenalty() { let p = 1; if (pathsVisible) p += 1; if (originVisible) p += 1; if (altVisible) p += 1; if (origCityVisible) p += 1; if (destCityVisible) p += 1; if (compassVisible) p += 1; if (currentMapStyle === 'LABELS') p += 1; return p; }
+        function getAssistPenalty() { let p = 1; if (pathsVisible) p++; if (originVisible) p++; if (altVisible) p++; if (origCityVisible) p++; if (destCityVisible) p++; if (compassVisible) p++; if (currentMapStyle === 'LABELS') p++; return p; }
         
-        function updateTimerDisplay(penalty) {
-            let tDiv = document.getElementById('radar-timer'); if (penalty > 1) tDiv.classList.add('timer-penalty'); else tDiv.classList.remove('timer-penalty');
+        function updateTimerDisplay(penalty = getAssistPenalty()) {
+            let tDiv = document.getElementById('radar-timer'); 
+            if (penalty > 1) tDiv.classList.add('timer-penalty'); else tDiv.classList.remove('timer-penalty');
             let totalSeconds = Math.floor(radarTimeMs / 1000); let m = Math.floor(totalSeconds / 60); let s = totalSeconds % 60; let ms = Math.floor((radarTimeMs % 1000) / 10); 
             tDiv.textContent = `${m < 10 ? "0"+m : m}:${s < 10 ? "0"+s : s}:${ms < 10 ? "0"+ms : ms}`;
         }
 
         function startRadarTimer() {
-            lastTimerTick = Date.now(); updateTimerDisplay(getAssistPenalty());
+            lastTimerTick = Date.now(); updateTimerDisplay();
             if(radarCountdown) clearInterval(radarCountdown);
             radarCountdown = setInterval(() => {
-                let now = Date.now(); let delta = now - lastTimerTick; lastTimerTick = now; let penalty = getAssistPenalty(); radarTimeMs -= (delta * penalty);
-                if(radarTimeMs <= 0) {
-                    radarTimeMs = 0; updateTimerDisplay(penalty); clearInterval(radarCountdown); document.getElementById('intercept-overlay').style.display = 'none'; 
+                let now = Date.now(); radarTimeMs -= (now - lastTimerTick) * getAssistPenalty(); lastTimerTick = now;
+                if(radarTimeMs <= 0){ 
+                    radarTimeMs = 0; clearInterval(radarCountdown); 
                     const msgEl = document.createElement('div'); msgEl.className = 'float-text'; msgEl.style.fontSize = '1.2rem'; msgEl.style.color = 'var(--brand-red)'; msgEl.textContent = "TIME OUT! MISSION ABORTED"; msgEl.style.left = '50%'; msgEl.style.top = '50%'; document.body.appendChild(msgEl); setTimeout(() => msgEl.remove(), 2000);
-                    setTimeout(closeRadar, 2000);
-                } else { updateTimerDisplay(penalty); }
+                    setTimeout(closeRadar, 2000); 
+                } else { updateTimerDisplay(); }
             }, 30); 
         }
 
-        function closeRadar() {
-            if(radarCountdown) clearInterval(radarCountdown); if(radarAnimFrame) cancelAnimationFrame(radarAnimFrame); document.getElementById('intercept-overlay').style.display = 'none';
-            const radarView = document.getElementById('radar-view'); const selectorView = document.getElementById('selector-view');
-            radarView.classList.remove('active'); selectorView.classList.remove('active'); void selectorView.offsetWidth; selectorView.classList.add('active'); renderDashboard();
-        }
+        function closeRadar() { clearInterval(radarCountdown); if(radarAnimFrame) cancelAnimationFrame(radarAnimFrame); document.getElementById('radar-view').classList.remove('active'); document.getElementById('selector-view').classList.add('active'); renderDashboard(); }
 
-        function handleInteraction(e) {
-            const lState = globalState.levels[activeLevelIdx]; if (lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            const hidden = Array.from(document.querySelectorAll('.grid-piece:not(.revealed)')); if (hidden.length === 0) return;
-            const tile = hidden[Math.floor(Math.random() * hidden.length)]; const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile); tile.classList.add('revealed'); 
-            if(!lState.revealedTiles) lState.revealedTiles = []; lState.revealedTiles.push(idx); drainFuel(TILE_COST);
-            let cx = e.clientX; let cy = e.clientY; if(e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; } if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
-            if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false);
-        }
-
-        function submitImageGuess(selectedIndex) {
-            const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('img-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('img-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false); }
-        }
-
-        function submitTrivia(selectedIndex) {
-            const lState = globalState.levels[activeLevelIdx]; if(lState.completed || (globalState.currentFuel <= 0 && globalState.extraFuel <= 0)) return;
-            if(selectedIndex === lState.correctIdx) { const btn = document.getElementById('btn-opt-' + selectedIndex); btn.style.backgroundColor = "var(--gauge-green)"; btn.style.color = "white"; endGame(true, ""); } else { drainFuel(WRONG_GUESS_PENALTY); const btn = document.getElementById('btn-opt-' + selectedIndex); btn.classList.add('wrong-flash'); setTimeout(() => btn.classList.remove('wrong-flash'), 500); if (globalState.currentFuel <= 0 && globalState.extraFuel <= 0) triggerGameOver(false); }
-        }
-
-        function endGame(win, msg) {
-            if (win) {
-                const lState = globalState.levels[activeLevelIdx]; lState.completed = true;
-                if (lState.type === 'image') document.querySelectorAll('.grid-piece:not(.scanned)').forEach(p => p.classList.add('revealed'));
-                triggerConfetti(); 
-                document.getElementById('level-title').textContent = lState.name; 
-                
-                document.getElementById('btn-pu-scan').classList.add('empty');
-                document.getElementById('btn-pu-drone').classList.add('empty');
-                document.getElementById('btn-pu-fuel').classList.add('empty');
-                
-                saveState(); 
-                if (isAllWorldsComplete()) syncScoreToCloud(); 
-                setTimeout(saveAndExit, 2500);
-            }
-        }
-
-        function closeStatsAndRetire() {
-            document.getElementById('game-over-overlay').style.display = 'none';
-            document.getElementById('game-view').classList.remove('gray-out'); 
-            document.getElementById('selector-view').classList.remove('gray-out'); 
-            document.getElementById('hangar-view').classList.remove('gray-out'); 
-            document.getElementById('radar-view').classList.remove('gray-out'); 
-
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById('selector-view').classList.add('active');
-            renderDashboard();
-        }
-
-        function triggerGameOver(isWin = false) { 
-            document.getElementById('game-view').classList.add('gray-out'); 
-            document.getElementById('selector-view').classList.add('gray-out'); 
-            document.getElementById('hangar-view').classList.add('gray-out'); 
-            document.getElementById('radar-view').classList.add('gray-out'); 
-            
-            let totalSec = globalState.totalPlayTime || 0;
-            let m = Math.floor(totalSec / 60);
-            let s = totalSec % 60;
-            document.getElementById('stat-time').textContent = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-
-            let hangarsCleared = 0;
-            if (globalState.world1Complete) hangarsCleared++;
-            if (globalState.world2Complete) hangarsCleared++;
-            if (globalState.world3Complete) hangarsCleared++;
-            if (globalState.world4Complete) hangarsCleared++;
-            if (globalState.world5Complete) hangarsCleared++;
-            document.getElementById('stat-hangars').textContent = `${hangarsCleared} / 5`;
-
-            const box = document.getElementById('stats-box');
-            const title = document.getElementById('stats-title');
-            const reason = document.getElementById('stats-reason');
-
-            if (isWin) {
-                title.textContent = "CAMPAIGN COMPLETE";
-                title.style.color = "var(--gauge-green)";
-                reason.textContent = "ALL HANGARS CLEARED";
-                box.classList.remove('danger');
-                box.classList.add('success');
-                box.style.borderColor = "var(--gauge-green)";
-            } else {
-                title.textContent = "MISSION FAILED";
-                title.style.color = "var(--brand-red)";
-                reason.textContent = "FUEL DEPLETED";
-                box.classList.remove('success');
-                box.classList.add('danger');
-                box.style.borderColor = "var(--brand-red)";
-            }
-
-            setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500); 
-        }
-
-        function closeRefuel() { document.getElementById('refuel-overlay').style.display = 'none'; saveAndExit(); }
-        
-        function updateMiniFuelUI() { 
-            const el = document.getElementById('current-fuel-display'); el.querySelector('span:nth-of-type(1)').textContent = globalState.currentFuel; 
-            const auxEl = document.getElementById('aux-fuel-display'); 
-            if (globalState.extraFuel > 0) { auxEl.style.display = 'inline'; auxEl.textContent = `+${globalState.extraFuel}`; } else { auxEl.style.display = 'none'; } 
-            if (globalState.currentFuel <= 200 && globalState.extraFuel === 0) el.classList.add('danger'); else el.classList.remove('danger'); 
-            
-            if (typeof syncMultiplayerScore === "function") syncMultiplayerScore();
-        }
-        
-        function saveAndExit() { 
-            tkState.active = false; if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
-            const gameView = document.getElementById('game-view'); const selectorView = document.getElementById('selector-view'); const hangarView = document.getElementById('hangar-view');
-            gameView.classList.remove('active'); renderDashboard(); 
-            if (activeLevelIdx !== null && activeLevelIdx !== undefined && globalState.levels[activeLevelIdx]) { let hNum = globalState.levels[activeLevelIdx].hangar; openHangar(hNum); } else { hangarView.classList.remove('active'); selectorView.classList.remove('active'); void selectorView.offsetWidth; selectorView.classList.add('active'); }
-        }
-        
-        function triggerResetUI() { document.getElementById('restart-overlay').style.display = 'flex'; }
-        function cancelReset() { document.getElementById('restart-overlay').style.display = 'none'; }
-        function confirmReset() { const lastUser = globalState.username || localStorage.getItem('last_pilot_name'); localStorage.clear(); if (lastUser) localStorage.setItem('last_pilot_name', lastUser); location.reload(); }
-        function showFloat(x, y, text) { const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text; el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800); }
-        function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
-        
         // --- MULTIPLAYER SYSTEM ---
-        let currentRoomCode = null;
-        let isHost = false;
-        let matchListener = null;
-        let mpStartTime = null;
-        let mpTimeLimit = null;
-        let mpGameEnded = false;
-        let mpHasResetForMatch = false; 
-
-        window.addEventListener('beforeunload', () => {
-            if (currentRoomCode && db && !mpGameEnded) {
-                db.collection("multiplayer_matches").doc(currentRoomCode).update({status: "abandoned"});
-            }
-        });
+        let currentRoomCode = null, isHost = false, matchListener = null, mpStartTime = null, mpTimeLimit = null, mpGameEnded = false, mpHasResetForMatch = false; 
 
         function resetGameStateForMultiplayer() {
-            globalState.currentFuel = STARTING_GLOBAL_FUEL;
-            globalState.extraFuel = 0;
-            globalState.powerups = { scans: 1, drones: 1, fuelPods: 1 };
-            globalState.levels = generateGameLevels(); 
-            globalState.world1Complete = false;
-            globalState.world2Complete = false;
-            globalState.world3Complete = false;
-            globalState.world4Complete = false;
-            globalState.world5Complete = false;
-            globalState.passwordRevealed = [];
-            globalState.totalPlayTime = 0;
-            globalState.gameWonShown = false;
-            saveState();
-            renderDashboard();
+            globalState.currentFuel = STARTING_GLOBAL_FUEL; globalState.extraFuel = 0; globalState.powerups = { scans: 1, drones: 1, fuelPods: 1 };
+            globalState.levels = generateGameLevels(); [1,2,3,4,5].forEach(n => globalState[`world${n}Complete`] = false);
+            globalState.passwordRevealed = []; globalState.totalPlayTime = 0; globalState.gameWonShown = false;
+            saveState(); renderDashboard();
         }
 
-        function openMultiplayer() {
-            document.getElementById('multiplayer-overlay').style.display = 'flex';
-            document.getElementById('mp-status').innerHTML = "";
-            
-            if (currentRoomCode) {
-                document.getElementById('btn-abort-match').style.display = 'block';
-                document.getElementById('btn-host-match').style.display = 'none';
-                document.getElementById('join-section').style.display = 'none';
-            } else {
-                document.getElementById('btn-abort-match').style.display = 'none';
-                document.getElementById('btn-host-match').style.display = 'block';
-                document.getElementById('join-section').style.display = 'flex';
-            }
-        }
-
-        function closeMultiplayer() {
-            document.getElementById('multiplayer-overlay').style.display = 'none';
-        }
-
-        function abortMatch() {
-            if (currentRoomCode && db) {
-                db.collection("multiplayer_matches").doc(currentRoomCode).update({status: "abandoned"});
-            }
-            showOpponentLeftPopup(); 
-            closeMultiplayer();
-        }
+        function openMultiplayer() { document.getElementById('multiplayer-overlay').style.display = 'flex'; document.getElementById('mp-status').innerHTML = ""; let exists = !!currentRoomCode; document.getElementById('btn-abort-match').style.display = exists ? 'block' : 'none'; document.getElementById('btn-host-match').style.display = exists ? 'none' : 'block'; document.getElementById('join-section').style.display = exists ? 'none' : 'flex'; }
+        function closeMultiplayer() { document.getElementById('multiplayer-overlay').style.display = 'none'; }
+        function abortMatch() { if (currentRoomCode && db) db.collection("multiplayer_matches").doc(currentRoomCode).update({status: "abandoned"}); showOpponentLeftPopup(); closeMultiplayer(); }
 
         function showOpponentLeftPopup() {
-            mpGameEnded = true;
-            if (matchListener) matchListener();
-            currentRoomCode = null;
-            mpStartTime = null;
-            mpTimeLimit = null;
-            mpHasResetForMatch = false;
-            
-            document.getElementById('enemy-dashboard-tank').style.display = 'none';
-            document.getElementById('enemy-fuel-display').style.display = 'none';
-            
-            document.getElementById('game-view').classList.add('gray-out'); 
-            document.getElementById('selector-view').classList.add('gray-out'); 
-            document.getElementById('hangar-view').classList.add('gray-out'); 
-            document.getElementById('radar-view').classList.add('gray-out'); 
-            
+            mpGameEnded = true; if (matchListener) matchListener(); currentRoomCode = null; mpStartTime = null; mpTimeLimit = null; mpHasResetForMatch = false;
+            document.getElementById('enemy-dashboard-tank').style.display = 'none'; document.getElementById('enemy-fuel-display').style.display = 'none';
+            ['game-view', 'selector-view', 'hangar-view', 'radar-view'].forEach(id => document.getElementById(id).classList.add('gray-out'));
             document.getElementById('opponent-left-overlay').style.display = 'flex';
         }
 
-        function closeOpponentLeft() {
-            document.getElementById('opponent-left-overlay').style.display = 'none';
-            document.getElementById('game-view').classList.remove('gray-out'); 
-            document.getElementById('selector-view').classList.remove('gray-out'); 
-            document.getElementById('hangar-view').classList.remove('gray-out'); 
-            document.getElementById('radar-view').classList.remove('gray-out'); 
-
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById('selector-view').classList.add('active');
-            renderDashboard();
-        }
+        function closeOpponentLeft() { document.getElementById('opponent-left-overlay').style.display = 'none'; closeStatsAndRetire(); }
 
         function hostNewGame() {
-            if (!db) { alert("HQ Database Offline!"); return; }
+            if (!db) { alert("HQ Database Offline!"); return; } 
             let isTimed = document.getElementById("mp-timer-checkbox").checked;
-            
-            currentRoomCode = Math.floor(1000 + Math.random() * 9000).toString();
-            isHost = true;
-            mpHasResetForMatch = false;
-            
-            db.collection("multiplayer_matches").doc(currentRoomCode).set({
-                hostName: globalState.username,
-                hostScore: globalState.currentFuel,
-                guestName: "Waiting...",
-                guestScore: 0,
-                status: "waiting",
-                timeLimit: isTimed ? 120 : null,
-                startTime: null
-            });
-
-            document.getElementById("mp-status").innerHTML = `ROOM CREATED.<br>TELL OPPONENT TO JOIN CODE:<br><span style="color:var(--brand-gold); font-size: 2rem; display:block; margin-top:10px;">${currentRoomCode}</span>`;
+            currentRoomCode = Math.floor(1000 + Math.random() * 9000).toString(); isHost = true; mpHasResetForMatch = false;
+            db.collection("multiplayer_matches").doc(currentRoomCode).set({ hostName: globalState.username, hostScore: globalState.currentFuel, guestName: "Waiting...", guestScore: 0, status: "waiting", timeLimit: isTimed ? 120 : null, startTime: null });
+            document.getElementById("mp-status").innerHTML = `ROOM CODE: <span style="color:var(--brand-gold); font-size: 2rem;">${currentRoomCode}</span>`;
             listenToMatch(currentRoomCode);
-            
-            document.getElementById('btn-abort-match').style.display = 'block';
-            document.getElementById('btn-host-match').style.display = 'none';
-            document.getElementById('join-section').style.display = 'none';
+            document.getElementById('btn-abort-match').style.display = 'block'; document.getElementById('btn-host-match').style.display = 'none'; document.getElementById('join-section').style.display = 'none';
         }
 
         function joinExistingGame() {
-            if (!db) { alert("HQ Database Offline!"); return; }
-            
-            let code = document.getElementById("join-code-input").value.trim();
-            if (code.length !== 4) { alert("Enter a valid 4-digit code."); return; }
-            
-            currentRoomCode = code;
-            isHost = false;
-            mpHasResetForMatch = false;
+            if (!db) { alert("HQ Database Offline!"); return; } 
+            let code = document.getElementById("join-code-input").value.trim(); if (code.length !== 4) { alert("Enter a valid 4-digit code."); return; }
+            currentRoomCode = code; isHost = false; mpHasResetForMatch = false;
             document.getElementById("mp-status").innerHTML = "CONNECTING...";
-            
-            db.collection("multiplayer_matches").doc(currentRoomCode).update({
-                guestName: globalState.username,
-                guestScore: STARTING_GLOBAL_FUEL,
-                status: "playing"
-            }).then(() => {
-                document.getElementById("mp-status").innerHTML = "LINK ESTABLISHED!";
-                listenToMatch(currentRoomCode);
-                setTimeout(closeMultiplayer, 1500);
-            }).catch((err) => {
-                document.getElementById("mp-status").innerHTML = "<span style='color:red;'>ROOM NOT FOUND.</span>";
-                currentRoomCode = null;
-            });
+            db.collection("multiplayer_matches").doc(currentRoomCode).update({ guestName: globalState.username, guestScore: STARTING_GLOBAL_FUEL, status: "playing" })
+            .then(() => { listenToMatch(currentRoomCode); setTimeout(closeMultiplayer, 1500); }).catch(() => { document.getElementById("mp-status").innerHTML = "<span style='color:red;'>ROOM NOT FOUND.</span>"; currentRoomCode = null; });
         }
 
         function listenToMatch(roomCode) {
             if (matchListener) matchListener();
-            
-            document.getElementById('enemy-fuel-display').style.display = 'block';
-            document.getElementById('enemy-dashboard-tank').style.display = 'flex';
-            document.getElementById('enemy-dashboard-tank').style.flexDirection = 'column';
-            
+            document.getElementById('enemy-fuel-display').style.display = 'block'; document.getElementById('enemy-dashboard-tank').style.display = 'flex'; document.getElementById('enemy-dashboard-tank').style.flexDirection = 'column';
             matchListener = db.collection("multiplayer_matches").doc(roomCode).onSnapshot((doc) => {
                 if (doc.exists) {
-                    let data = doc.data();
-                    
-                    if (data.status === "abandoned" && !mpGameEnded) {
-                        showOpponentLeftPopup();
-                        return;
-                    }
-
-                    if (data.status === "playing" && !mpHasResetForMatch) {
-                        mpHasResetForMatch = true;
-                        resetGameStateForMultiplayer();
-                        syncMultiplayerScore(); 
-                    }
-                    
-                    let oppName = isHost ? data.guestName : data.hostName;
-                    let oppScore = isHost ? data.guestScore : data.hostScore;
-                    
+                    let data = doc.data(); if (data.status === "abandoned" && !mpGameEnded) { showOpponentLeftPopup(); return; }
+                    if (data.status === "playing" && !mpHasResetForMatch) { mpHasResetForMatch = true; resetGameStateForMultiplayer(); syncMultiplayerScore(); }
+                    let oppName = isHost ? data.guestName : data.hostName, oppScore = isHost ? data.guestScore : data.hostScore;
                     document.getElementById('enemy-fuel-val').innerText = `${oppName} [${oppScore}]`;
                     document.getElementById('enemy-dashboard-name').innerText = oppName.toUpperCase();
                     document.getElementById('enemy-dashboard-score').innerText = oppScore;
-                    
-                    let enemyBar = document.getElementById('enemy-fuel-bar');
-                    if (enemyBar) {
-                        let oppPct = Math.min(100, Math.max(0, (oppScore / 4000) * 100));
-                        enemyBar.style.width = oppPct + "%";
-                    }
-
-                    let dTimer = document.getElementById('mp-dashboard-timer');
-
-                    if (data.status === "playing") {
-                        if (data.timeLimit) {
-                            if (data.startTime) {
-                                mpStartTime = data.startTime;
-                                mpTimeLimit = data.timeLimit;
-                                mpGameEnded = false;
-                            } else if (isHost && !data.startTime) {
-                                db.collection("multiplayer_matches").doc(roomCode).update({
-                                    startTime: Date.now()
-                                });
-                            }
-                        } else {
-                            if (dTimer) {
-                                dTimer.innerText = "MATCH ACTIVE";
-                                dTimer.style.color = "var(--gauge-green)";
-                            }
-                        }
+                    document.getElementById('enemy-fuel-bar').style.width = Math.min(100, (oppScore/4000)*100) + "%";
+                    if (data.status === "playing") { 
+                        if (data.timeLimit) { 
+                            if (data.startTime) { mpStartTime = data.startTime; mpTimeLimit = data.timeLimit; mpGameEnded = false; } 
+                            else if (isHost) db.collection("multiplayer_matches").doc(roomCode).update({startTime: Date.now()}); 
+                        } else { document.getElementById('mp-dashboard-timer').innerText = "MATCH ACTIVE"; document.getElementById('mp-dashboard-timer').style.color = "var(--gauge-green)"; }
                     } else if (data.status === "waiting") {
-                         if (dTimer) {
-                             dTimer.innerText = "WAITING FOR OPPONENT...";
-                             dTimer.style.color = "var(--brand-red)";
-                         }
+                        document.getElementById('mp-dashboard-timer').innerText = "WAITING FOR OPPONENT..."; document.getElementById('mp-dashboard-timer').style.color = "var(--brand-red)";
                     }
-
                     if (isHost && data.status === "playing" && document.getElementById('multiplayer-overlay').style.display === 'flex') {
-                         document.getElementById("mp-status").innerHTML = "OPPONENT JOINED! COMMENCE OPERATION.";
-                         setTimeout(closeMultiplayer, 1500);
+                        document.getElementById("mp-status").innerHTML = "OPPONENT JOINED! COMMENCE OPERATION."; setTimeout(closeMultiplayer, 1500);
                     }
                 }
             });
         }
 
-        function syncMultiplayerScore() {
-            if (currentRoomCode && db && !mpGameEnded) {
-                let updateData = isHost ? { hostScore: globalState.currentFuel } : { guestScore: globalState.currentFuel };
-                db.collection("multiplayer_matches").doc(currentRoomCode).update(updateData).catch(e => console.log("Sync error", e));
-            }
-        }
+        function syncMultiplayerScore() { if (currentRoomCode && db && !mpGameEnded) db.collection("multiplayer_matches").doc(currentRoomCode).update(isHost ? { hostScore: globalState.currentFuel } : { guestScore: globalState.currentFuel }); }
 
         setInterval(() => {
             if (currentRoomCode && mpStartTime && mpTimeLimit && !mpGameEnded) {
-                let elapsed = Math.floor((Date.now() - mpStartTime) / 1000);
-                let left = mpTimeLimit - elapsed;
-                
-                let dTimer = document.getElementById('mp-dashboard-timer');
-                let hTimer = document.getElementById('mp-header-timer');
-                
-                if (left <= 0) {
-                    left = 0;
-                    if(dTimer) dTimer.innerText = "TIME UP!";
-                    if(hTimer) hTimer.innerText = "";
-                    if (!mpGameEnded) {
-                        endMultiplayerMatch();
-                    }
-                } else {
-                    let m = Math.floor(left / 60);
-                    let s = left % 60;
-                    let timeStr = `${m}:${s < 10 ? '0'+s : s}`;
-                    if(dTimer) dTimer.innerText = "TIME LEFT: " + timeStr;
-                    if(hTimer) hTimer.innerText = " | ⏱ " + timeStr;
-                }
+                let left = mpTimeLimit - Math.floor((Date.now() - mpStartTime)/1000);
+                if (left <= 0) { if (!mpGameEnded) endMultiplayerMatch(); } 
+                else { let str = `${Math.floor(left/60)}:${(left%60).toString().padStart(2,'0')}`; document.getElementById('mp-dashboard-timer').innerText = "TIME LEFT: " + str; document.getElementById('mp-header-timer').innerText = " | ⏱ " + str; }
             }
         }, 1000);
 
         function endMultiplayerMatch() {
-            mpGameEnded = true;
-            
-            let oppScore = parseInt(document.getElementById('enemy-dashboard-score').innerText) || 0;
-            let myScore = globalState.currentFuel;
-            
-            document.getElementById('game-view').classList.add('gray-out'); 
-            document.getElementById('selector-view').classList.add('gray-out'); 
-            document.getElementById('hangar-view').classList.add('gray-out'); 
-            document.getElementById('radar-view').classList.add('gray-out'); 
-            
-            const box = document.getElementById('stats-box');
-            const title = document.getElementById('stats-title');
-            const reason = document.getElementById('stats-reason');
-
-            if (myScore > oppScore) {
-                title.textContent = "VICTORY!";
-                title.style.color = "var(--gauge-green)";
-                reason.textContent = "YOU OUTPERFORMED THE ENEMY";
-                box.className = "modal-box success";
-            } else if (myScore < oppScore) {
-                title.textContent = "DEFEAT!";
-                title.style.color = "var(--brand-red)";
-                reason.textContent = "ENEMY SECURED MORE FUEL";
-                box.className = "modal-box danger";
-            } else {
-                title.textContent = "DRAW!";
-                title.style.color = "var(--brand-gold)";
-                reason.textContent = "TIE GAME";
-                box.className = "modal-box"; 
-                box.style.borderColor = "var(--brand-gold)";
-            }
-
-            document.getElementById('stat-time').textContent = "2:00";
-            document.getElementById('stat-hangars').textContent = "VS MODE";
-
+            mpGameEnded = true; let opp = parseInt(document.getElementById('enemy-dashboard-score').innerText) || 0, mine = globalState.currentFuel;
+            ['game-view', 'selector-view', 'hangar-view', 'radar-view'].forEach(id => document.getElementById(id).classList.add('gray-out'));
+            const box = document.getElementById('stats-box'); box.className = mine > opp ? "modal-box success" : mine < opp ? "modal-box danger" : "modal-box"; if (mine===opp) box.style.borderColor = "var(--brand-gold)";
+            document.getElementById('stats-title').textContent = mine > opp ? "VICTORY!" : mine < opp ? "DEFEAT!" : "DRAW!";
+            document.getElementById('stats-reason').textContent = mine > opp ? "YOU OUTPERFORMED THE ENEMY" : mine < opp ? "ENEMY SECURED MORE FUEL" : "TIE GAME";
+            document.getElementById('stat-time').textContent = "2:00"; document.getElementById('stat-hangars').textContent = "VS MODE";
             setTimeout(() => { document.getElementById('game-over-overlay').style.display = 'flex'; }, 500); 
-
-            if(matchListener) matchListener();
-            currentRoomCode = null;
-            mpStartTime = null;
-            mpTimeLimit = null;
-            mpHasResetForMatch = false;
-            document.getElementById('enemy-dashboard-tank').style.display = 'none';
-            document.getElementById('enemy-fuel-display').style.display = 'none';
+            if(matchListener) matchListener(); currentRoomCode = null; document.getElementById('enemy-dashboard-tank').style.display = 'none'; document.getElementById('enemy-fuel-display').style.display = 'none';
         }
-        // --- END MULTIPLAYER SYSTEM ---
+
+        window.addEventListener('beforeunload', () => { if (currentRoomCode && db && !mpGameEnded) db.collection("multiplayer_matches").doc(currentRoomCode).update({status: "abandoned"}); });
 
         let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('install-btn'); btn.style.display = 'block'; btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; }); });
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }

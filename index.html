@@ -638,13 +638,13 @@
 
         var RUNWAY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="32" viewBox="0 0 128 32"><rect width="128" height="32" fill="#333"/><rect x="10" y="14" width="40" height="4" fill="#fff"/></svg>`;
         var THEMES = {
-            1: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#87CEEB"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2E8B57"/></svg>` },
-            2: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#5F9EA0"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#556B2F"/></svg>` },
-            3: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2F4F4F"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#A9A9A9"/></svg>` },
-            4: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#FF7F50"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#8B4513"/></svg>` },
-            5: { sky: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#191970"/></svg>`, city: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="transparent"/></svg>`, ground: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#2F4F4F"/></svg>` }
+            1: { sky: `url('sky1.png')`, city: `url('city1.png')`, ground: `url('ground1.png')` },
+            2: { sky: `url('sky2.png')`, city: `url('city2.png')`, ground: `url('ground2.png')` },
+            3: { sky: `url('sky3.png')`, city: `url('city3.png')`, ground: `url('ground3.png')` },
+            4: { sky: `url('sky4.png')`, city: `url('city4.png')`, ground: `url('ground4.png')` },
+            5: { sky: `url('sky5.png')`, city: `url('city5.png')`, ground: `url('ground5.png')` }
         };
-
+        
         var RADAR_COLORS = ['#33FF33', '#00FFFF', '#FFCC00', '#FF3366', '#CC99FF', '#00FFCC', '#FF9933', '#99FF33', '#33CCFF', '#FF6699', '#FFFF66', '#FF5555'];
         var RADAR_CENTERS = [{ name: "EU-CENTRAL", lat: 50, lng: 10 }, { name: "US-EAST", lat: 38, lng: -78 }, { name: "US-WEST", lat: 38, lng: -118 }, { name: "ASIA-EAST", lat: 35, lng: 135 }];
         var CITIES = ["LONDON", "NEW YORK", "TOKYO", "PARIS", "DUBAI", "SYDNEY", "LOS ANGELES", "CHICAGO", "HONG KONG", "SINGAPORE", "BERLIN", "ROME", "MADRID", "TORONTO", "MUMBAI", "SAO PAULO", "MEXICO CITY", "CAIRO", "MOSCOW", "BEIJING", "SEOUL", "AMSTERDAM", "ISTANBUL", "BANGKOK", "KUALA LUMPUR", "MIAMI", "SEATTLE", "BOSTON", "ATLANTA", "DALLAS", "HOUSTON", "LAS VEGAS", "DENVER", "SAN FRANCISCO", "WASHINGTON", "MONTREAL", "VANCOUVER", "BUENOS AIRES", "BOGOTA", "SANTIAGO", "LIMA", "CAPE TOWN", "JOHANNESBURG", "NAIROBI", "DELHI", "JAKARTA", "MANILA", "SHANGHAI", "TAIPEI", "OSAKA"];
@@ -1276,8 +1276,10 @@
                 const weather = document.getElementById('tk-weather-overlay'); const zone = document.getElementById('tk-target-zone');
                 
                 weather.className = ''; runwaySurf.style.backgroundImage = getSvgUri(RUNWAY_SVG);
-                const th = THEMES[lState.hangar] || THEMES[1]; sky.style.backgroundImage = getSvgUri(th.sky); city.style.backgroundImage = getSvgUri(th.city); ground.style.backgroundImage = getSvgUri(th.ground);
-
+                const th = THEMES[lState.hangar] || THEMES[1]; 
+sky.style.backgroundImage = th.sky; 
+city.style.backgroundImage = th.city; 
+ground.style.backgroundImage = th.ground;
                 if (lState.hangar === 1) { tkState.minAngle = 9; tkState.maxAngle = 16; zone.style.bottom = '30%'; zone.style.height = '23.3%'; } 
                 else if (lState.hangar === 2) { weather.classList.add('weather-rain'); tkState.minAngle = 10; tkState.maxAngle = 15; zone.style.bottom = '33.3%'; zone.style.height = '16.6%'; } 
                 else if (lState.hangar === 3) { weather.classList.add('weather-fog'); tkState.minAngle = 11; tkState.maxAngle = 14; zone.style.bottom = '36.6%'; zone.style.height = '10%'; } 

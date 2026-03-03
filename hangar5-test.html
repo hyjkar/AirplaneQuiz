@@ -46,7 +46,10 @@
             pointer-events: none; z-index: 7; transition: box-shadow 0.2s;
         }
         .flashing { animation: redAlert 0.4s infinite alternate; }
-        @keyframes redAlert { from { box-shadow: inset 0 0 10px rgba(215, 25, 32, 0.2); background: rgba(215, 25, 32, 0.1); } to { box-shadow: inset 0 0 80px rgba(215, 25, 32, 0.8); background: rgba(215, 25, 32, 0.3); } }
+        @keyframes redAlert { 
+            from { box-shadow: inset 0 0 10px rgba(215, 25, 32, 0.2); background: rgba(215, 25, 32, 0.1); } 
+            to { box-shadow: inset 0 0 80px rgba(215, 25, 32, 0.8); background: rgba(215, 25, 32, 0.3); } 
+        }
 
         /* Scenery */
         .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; pointer-events: none; }
@@ -239,7 +242,7 @@
             if (delta < 15) { tkState.frameId = requestAnimationFrame(gameLoop); return; }
             tkState.lastFrameTime = timestamp;
 
-            // --- 1. SPEED & PROGRESS (Slowed down for realism) ---
+            // --- 1. SPEED & PROGRESS ---
             let acceleration = 1.0; 
             if (tkState.pitch > 0) acceleration -= (tkState.pitch * 0.05); 
             if (tkState.pitch < 0) acceleration += (Math.abs(tkState.pitch) * 0.03); 
@@ -264,9 +267,9 @@
 
             // --- 2. PITCH & TRUE ALTITUDE PHYSICS ---
             if (tkState.pressing && tkState.speed >= 150) {
-                tkState.pitchVelocity += 0.06; // Smoother pull up
+                tkState.pitchVelocity += 0.06; // Pull up
             } else if (tkState.speed >= 150) {
-                tkState.pitchVelocity -= 0.04; // Smoother drop
+                tkState.pitchVelocity -= 0.04; // Drop
             }
             tkState.pitchVelocity *= 0.88; 
             tkState.pitchVelocity = Math.max(-1.5, Math.min(1.5, tkState.pitchVelocity));
@@ -331,8 +334,6 @@
                 tkState.enemyX -= 1.0; 
                 
                 // True Physical Collision Detection
-                // Player plane X range is roughly 5% to 35% of the screen.
-                // Golden plane flies specifically at Altitude 1200.
                 if (tkState.enemyX < 35 && tkState.enemyX > -10) {
                     // If the player's altitude is within 80 meters of 1200, they hit the plane!
                     if (Math.abs(tkState.altitude - CRUISE_ALT) < 80) {
@@ -397,14 +398,12 @@
                 prompt.style.opacity = '1';
             }
 
-            // --- RENDER PLANES ON SCREEN (Fixed CSS Variables) ---
-            // Visual Y is the difference between actual altitude and the camera tracking it
+            // --- RENDER PLANES ON SCREEN ---
             let planeVisualY = -(tkState.altitude - tkState.cameraY);
             let visualPitch = -tkState.pitch;
             document.getElementById('tk-plane').style.transform = `translateY(${planeVisualY}px) rotate(${visualPitch}deg)`;
             
             if (tkState.phase === 3) {
-                // Enemy flies perfectly level at CRUISE_ALT
                 let enemyVisualY = -(CRUISE_ALT - tkState.cameraY);
                 document.getElementById('tk-enemy-plane').style.left = `${tkState.enemyX}%`;
                 document.getElementById('tk-enemy-plane').style.transform = `translateY(${enemyVisualY}px) scaleX(-1)`;
@@ -427,8 +426,6 @@
             const colors = ['#fff', 'var(--brand-red)', '#f39c12', '#1a1a1a', '#555'];
             
             const spawnX = (tkState.phase === 3 && reason === "MID-AIR COLLISION!") ? 100 : 50; 
-            
-            // Explosion happens at the plane's exact visual height when it died
             let planeVisualY = tkState.altitude - tkState.cameraY;
             const spawnY = vp.offsetHeight - 32 - planeVisualY - 20; 
             
@@ -474,7 +471,6 @@
             document.getElementById('tk-touch-prompt').style.opacity = '1';
             document.getElementById('tk-touch-prompt').style.color = "var(--gauge-green)";
             
-            // Level out beautifully at the end
             let planeVisualY = -(tkState.altitude - tkState.cameraY);
             document.getElementById('tk-plane').style.transform = `translateY(${planeVisualY}px) rotate(0deg)`;
             confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });

@@ -32,7 +32,7 @@
         /* Fullscreen Viewport */
         #takeoff-viewport {
             flex-grow: 1; width: 100%; position: relative; overflow: hidden; 
-            background-color: #4a9ae9; 
+            background-color: #4a9ae9; /* Matches sky1.png top gradient */
             cursor: pointer;
         }
         
@@ -58,63 +58,66 @@
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3;}
         #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x;}
 
-        /* Entities */
-        #tk-plane { position: absolute; left: 25%; bottom: 70px; width: 140px; height: 50px; transform-origin: 50% 50%; z-index: 5; pointer-events: none;}
+        /* --- THE NEW ON-PLANE GYROSCOPE HUD --- */
+        #plane-container {
+            position: absolute; left: 40%; bottom: 70px; width: 140px; height: 50px;
+            transform: translateX(-50%); transform-origin: center center;
+            z-index: 5; pointer-events: none;
+        }
+        #tk-plane-img {
+            width: 100%; height: 100%; object-fit: contain;
+            transform-origin: center center; transition: transform 0.05s linear;
+        }
+        
+        /* The Holographic Ring */
+        #plane-hud {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 200px; height: 200px; border-radius: 50%;
+            border: 2px dashed rgba(255,255,255,0.4);
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        /* HUD Text Readouts */
+        .hud-text { position: absolute; font-weight: bold; text-shadow: 1px 1px 3px #000; text-align: center; }
+        #hud-spd { left: -60px; }
+        #hud-alt { right: -60px; }
+        #hud-pitch { top: -45px; transition: color 0.2s; }
+        #hud-score { bottom: -45px; color: var(--brand-gold); }
+        .hud-val { font-size: 1.3rem; display: block; margin-top: 2px; }
+
+        /* Crosshair Reticle in the middle */
+        .hud-reticle { position: absolute; width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); }
+        .hud-reticle::before { content: ''; position: absolute; top: 50%; left: -15px; right: -15px; height: 1px; background: rgba(255,255,255,0.5); transform: translateY(-50%); }
+        .hud-reticle::after { content: ''; position: absolute; left: 50%; top: -15px; bottom: -15px; width: 1px; background: rgba(255,255,255,0.5); transform: translateX(-50%); }
+
+        /* Enemies & Obstacles */
         #tk-enemy-plane { position: absolute; left: 150%; bottom: 70px; width: 160px; height: 60px; z-index: 4; pointer-events: none; display: none; }
         #tk-mountain { position: absolute; bottom: 70px; left: 100%; width: 200px; height: 200px; z-index: 2; display: none; pointer-events: none;}
-
         .pixel-particle { position: absolute; z-index: 10; pointer-events: none; }
 
-        /* Fullscreen HUD */
-        #tk-hud-top { position: absolute; top: max(15px, env(safe-area-inset-top)); left: max(20px, env(safe-area-inset-left)); right: max(20px, env(safe-area-inset-right)); display: flex; justify-content: space-between; z-index: 10; font-size: 1.5rem; font-weight: bold; text-shadow: 2px 2px 4px #000; pointer-events: none; }
-        #tk-spd-display { color: var(--brand-red); transition: color 0.3s; }
-        #tk-alt-display { color: #fff; }
-        #tk-score-display { color: var(--brand-gold); }
-        
-        /* Boxed Text Prompt at the very top */
-        #prompt-container { position: absolute; top: max(60px, env(safe-area-inset-top) + 45px); left: 0; width: 100%; display: flex; justify-content: center; z-index: 8; pointer-events: none; }
+        /* Floating Boxed Text Prompt */
+        #prompt-container { position: absolute; top: max(40px, env(safe-area-inset-top)); left: 0; width: 100%; display: flex; justify-content: center; z-index: 8; pointer-events: none; transition: opacity 0.3s ease; }
         #tk-touch-prompt { 
-            background: rgba(0, 0, 0, 0.7); border: 2px solid #fff; border-radius: 8px;
-            padding: 8px 24px; text-align: center; color: #fff; font-size: 1.3rem; 
+            background: rgba(0, 0, 0, 0.75); border: 2px solid #fff; border-radius: 8px;
+            padding: 10px 24px; text-align: center; color: #fff; font-size: 1.4rem; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
         .prompt-pulse { animation: pulseText 1.5s infinite alternate; }
-        .prompt-alert { background: rgba(215, 25, 32, 0.9) !important; color: #fff !important; font-size: 1.5rem !important; border-color: #fff !important; animation: rapidPulse 0.2s infinite alternate; }
+        .prompt-alert { background: rgba(215, 25, 32, 0.95) !important; color: #fff !important; font-size: 1.6rem !important; border-color: #fff !important; animation: rapidPulse 0.2s infinite alternate; }
         @keyframes pulseText { from { opacity: 0.9; transform: scale(0.98); } to { opacity: 1; transform: scale(1.02); } }
         @keyframes rapidPulse { from { opacity: 0.9; transform: scale(1); } to { opacity: 1; transform: scale(1.05); } }
 
-        /* The Pitch HUD moved to the LEFT */
-        #tk-gauge-container { position: absolute; left: max(15px, env(safe-area-inset-left)); top: 25%; bottom: 25%; width: 25px; background: rgba(0,0,0,0.5); border-radius: 6px; border: 2px solid rgba(255,255,255,0.5); z-index: 6; pointer-events: none; overflow: hidden;}
-        #tk-target-zone { position: absolute; left: 0; right: 0; background: rgba(46, 204, 113, 0.8); transition: bottom 0.2s linear, height 0.2s linear; box-shadow: 0 0 15px var(--gauge-green); }
-        #tk-needle { position: absolute; left: -8px; right: -8px; bottom: 50%; height: 4px; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.9); z-index: 8; transform: translateY(50%);}
-
         /* Floating Reset Button */
         #reset-btn { 
-            position: absolute; bottom: max(15px, env(safe-area-inset-bottom)); right: max(15px, env(safe-area-inset-right)); z-index: 20;
-            width: 45px; height: 45px; border-radius: 50%;
+            position: absolute; bottom: max(20px, env(safe-area-inset-bottom)); right: max(20px, env(safe-area-inset-right)); z-index: 20;
+            width: 50px; height: 50px; border-radius: 50%;
             background: var(--brand-red); color: white; border: 2px solid #fff;
             font-size: 1.2rem; cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; padding: 0;
         }
         #reset-btn:active { transform: scale(0.9); background: #b01015; }
 
-        /* Dashboard */
-        .takeoff-dashboard { display: flex; justify-content: space-around; align-items: flex-end; width: 100%; padding: 15px; background: #111; border-top: 2px solid #333; }
-        .v-gauge-container { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 30%; }
-        .v-gauge-label { color: #888; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; font-weight: bold;}
-        .v-gauge-bg { width: 35px; height: 100px; background: #000; border-radius: 4px; border: 1px solid #444; position: relative; overflow: hidden; }
-        .v-gauge-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; transition: height 0.1s linear, background-color 0.2s ease; }
-        .v-gauge-val { font-size: 1.2rem; min-height: 1.2rem; color: #fff; font-weight: bold; transition: color 0.2s; }
-
-        /* Responsive scaling for Landscape Mode */
-        @media (max-height: 500px) {
-            .takeoff-dashboard { padding: 5px 10px; }
-            .v-gauge-bg { height: 50px; }
-            .v-gauge-label { font-size: 0.7rem; margin-bottom: 2px; }
-            .v-gauge-val { font-size: 1rem; }
-            #prompt-container { top: max(45px, env(safe-area-inset-top) + 30px); }
-            #tk-touch-prompt { padding: 5px 15px; font-size: 1rem; }
-            #tk-hud-top { font-size: 1.2rem; }
-        }
     </style>
 </head>
 <body>
@@ -123,12 +126,6 @@
         <div id="takeoff-viewport">
             <div id="tk-alert-overlay"></div>
             
-            <div id="tk-hud-top">
-                <div id="tk-spd-display">SPD: 0</div>
-                <div id="tk-alt-display">ALT: 0m</div>
-                <div id="tk-score-display">SCORE: 0</div>
-            </div>
-            
             <div id="prompt-container">
                 <div id="tk-touch-prompt" class="prompt-pulse">TAP TO START ENGINES</div>
             </div>
@@ -136,38 +133,26 @@
             <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky1.png');"></div>
             <div id="tk-bg-city" class="parallax-layer" style="background-image: url('city1.png');"></div>
             
-            <div id="tk-gauge-container">
-                <div id="tk-target-zone"></div>
-                <div id="tk-needle"></div>
-            </div>
-            
             <div id="tk-mountain"><svg viewBox="0 0 100 100" shape-rendering="crispEdges" width="100%" height="100%"><rect x="50" y="40" width="10" height="60" fill="#3b3b3b"/><rect x="40" y="50" width="30" height="50" fill="#4a4a4a"/><rect x="20" y="60" width="70" height="40" fill="#2d2d2d"/><rect x="0" y="70" width="100" height="30" fill="#1f1f1f"/><rect x="50" y="40" width="10" height="10" fill="#fff"/><rect x="40" y="50" width="10" height="10" fill="#eee"/><rect x="60" y="50" width="10" height="10" fill="#eee"/></svg></div>
 
-            <div id="tk-plane"><img src="my-plane.png" onerror="this.style.display='none'; this.parentElement.style.background='#3498db';" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;"></div>
+            <div id="plane-container">
+                <img id="tk-plane-img" src="my-plane.png" onerror="this.style.display='none'; this.parentElement.style.background='#3498db';">
+                
+                <div id="plane-hud">
+                    <div class="hud-reticle"></div>
+                    
+                    <div id="hud-spd" class="hud-text" style="color:var(--brand-red);">SPD<span id="hud-spd-val" class="hud-val">0</span></div>
+                    <div id="hud-alt" class="hud-text">ALT<span id="hud-alt-val" class="hud-val">0m</span></div>
+                    <div id="hud-pitch" class="hud-text">PITCH<span id="hud-pitch-val" class="hud-val">0&deg;</span></div>
+                    <div id="hud-score" class="hud-text">SCORE<span id="hud-score-val" class="hud-val">0</span></div>
+                </div>
+            </div>
             
-            <div id="tk-enemy-plane"><img src="my-plane-golden.png" onerror="this.style.display='none'; this.parentElement.style.background='gold';" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none; transform: scaleX(-1);"></div>
+            <div id="tk-enemy-plane"><img src="my-plane-golden.png" onerror="this.style.display='none'; this.parentElement.style.background='gold';" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;"></div>
             
             <div id="tk-runway"><div id="tk-runway-stripes"></div></div>
             
             <button id="reset-btn" onclick="startFlight()">❌</button>
-        </div>
-        
-        <div class="takeoff-dashboard">
-            <div class="v-gauge-container">
-                <div class="v-gauge-label">SPEED</div>
-                <div class="v-gauge-bg"><div class="v-gauge-fill" id="tk-speed-bar" style="background:var(--brand-red);"></div></div>
-                <div class="v-gauge-val" id="tk-speed-val" style="color:var(--brand-red);">0</div>
-            </div>
-            <div class="v-gauge-container">
-                <div class="v-gauge-label">PROGRESS</div>
-                <div class="v-gauge-bg"><div class="v-gauge-fill" id="tk-prog-bar" style="background:var(--aux-blue);"></div></div>
-                <div class="v-gauge-val" style="color:var(--aux-blue);" id="tk-prog-val">0%</div>
-            </div>
-            <div class="v-gauge-container">
-                <div class="v-gauge-label">PITCH</div>
-                <div class="v-gauge-bg"><div class="v-gauge-fill" id="tk-pitch-bar" style="background:#fff;"></div></div>
-                <div class="v-gauge-val" id="tk-pitch-val" style="color:#fff;">0&deg;</div>
-            </div>
         </div>
     </div>
 
@@ -232,18 +217,21 @@
                 actualTargetMin: 10, actualTargetMax: 16
             };
 
-            document.getElementById('tk-plane').style.display = 'block';
+            document.getElementById('plane-container').style.display = 'block';
             document.getElementById('tk-enemy-plane').style.display = 'none';
             document.getElementById('tk-mountain').style.display = 'none';
             document.getElementById('tk-alert-overlay').className = '';
-            document.getElementById('tk-score-display').textContent = `SCORE: 0`;
-            document.getElementById('tk-alt-display').textContent = `ALT: 0m`;
+            
+            document.getElementById('hud-score-val').textContent = `0`;
+            document.getElementById('hud-alt-val').textContent = `0m`;
             
             document.getElementById('tk-bg-sky').style.transform = `translateY(0px)`;
             document.getElementById('tk-bg-city').style.transform = `translateY(0px)`;
             document.getElementById('tk-runway').style.transform = `translateY(0px)`;
 
+            const promptContainer = document.getElementById('prompt-container');
             const prompt = document.getElementById('tk-touch-prompt');
+            promptContainer.style.opacity = '1';
             prompt.textContent = "ACCELERATING...";
             prompt.className = 'prompt-pulse';
 
@@ -251,9 +239,12 @@
         }
 
         function checkCollision() {
-            const pRect = document.getElementById('tk-plane').getBoundingClientRect();
+            // True Pixel-Perfect Bounding Box Collision (Plane Image vs Enemy Plane Image)
+            // It ignores the large circular HUD entirely!
+            const pRect = document.getElementById('tk-plane-img').getBoundingClientRect();
             const eRect = document.getElementById('tk-enemy-plane').getBoundingClientRect();
-            const margin = 15; 
+            
+            const margin = 10; 
             
             let hit = !(pRect.right - margin < eRect.left + margin || 
                         pRect.left + margin > eRect.right - margin || 
@@ -268,8 +259,12 @@
             if (delta < 15) { tkState.frameId = requestAnimationFrame(gameLoop); return; }
             tkState.lastFrameTime = timestamp;
 
+            const promptContainer = document.getElementById('prompt-container');
             const prompt = document.getElementById('tk-touch-prompt');
-            const spdEl = document.getElementById('tk-spd-display');
+            
+            const spdEl = document.getElementById('hud-spd-val');
+            const pitchEl = document.getElementById('hud-pitch-val');
+            const hudRing = document.getElementById('plane-hud');
 
             // --- 1. SPEED & PROGRESS ---
             if (tkState.phase < 6) {
@@ -283,6 +278,7 @@
                 let minSpeed = (tkState.phase === 0) ? 0 : 100;
                 tkState.speed = Math.max(minSpeed, Math.min(220, tkState.speed));
             } else {
+                // Touchdown Rollout Braking
                 tkState.speed -= 1.5;
                 tkState.speed = Math.max(0, tkState.speed);
                 if (tkState.speed === 0) return triggerWin();
@@ -292,11 +288,11 @@
                 tkState.progress += (tkState.speed / 4500); 
             }
 
-            spdEl.textContent = `SPD: ${Math.floor(tkState.speed)}`;
+            spdEl.textContent = Math.floor(tkState.speed);
             if (tkState.phase === 5) {
-                spdEl.style.color = (tkState.speed > 150) ? "var(--brand-red)" : "var(--gauge-green)";
+                spdEl.parentElement.style.color = (tkState.speed > 150) ? "var(--brand-red)" : "var(--gauge-green)";
             } else {
-                spdEl.style.color = (tkState.speed >= 150) ? "var(--gauge-green)" : "var(--brand-red)";
+                spdEl.parentElement.style.color = (tkState.speed >= 150) ? "var(--gauge-green)" : "var(--brand-red)";
             }
 
             // --- 2. PITCH & PHYSICS ---
@@ -310,6 +306,7 @@
             tkState.pitch += tkState.pitchVelocity;
             tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch));
             
+            // NOSE DIVE LOCK ON GROUND
             if (tkState.altitude <= 0 && (tkState.phase === 0 || tkState.phase === 1 || tkState.phase === 6)) {
                 if (tkState.pitch < 0) {
                     tkState.pitch = 0;
@@ -319,7 +316,6 @@
             if(tkState.pitch === 25 || tkState.pitch === -25) tkState.pitchVelocity = 0;
 
             let targetVSpeed = tkState.pitch * 0.35;
-            // Add artificial gravity sink if speed drops too low
             if (tkState.speed < 140 && tkState.altitude > 0) {
                 targetVSpeed -= (140 - tkState.speed) * 0.05; 
             }
@@ -360,11 +356,15 @@
                 if (tkState.phase === 1) {
                     // Safe, lifting off
                 } else if (tkState.phase === 5) {
-                    if (tkState.pitch >= -5 && tkState.pitch <= 15) {
+                    if (tkState.speed > 150) {
+                        tkState.altitude = 0;
+                        return triggerCrash("TOO FAST! CRASHED!");
+                    } else if (tkState.pitch >= -5 && tkState.pitch <= 15) {
                         tkState.phase = 6;
                         tkState.altitude = 0;
                         tkState.vSpeed = 0;
                         setTargetZone(-2, 8); 
+                        promptContainer.style.opacity = '1';
                         prompt.textContent = "TOUCHDOWN! BRAKING...";
                         prompt.className = "prompt-pulse";
                     } else {
@@ -377,11 +377,13 @@
                 }
             }
 
+            // Dynamic Camera Tracking
             const vpHeight = document.getElementById('takeoff-viewport').offsetHeight;
             let optimalCameraY = tkState.altitude - (vpHeight * 0.35); 
             let targetCameraY = Math.max(0, optimalCameraY);
             tkState.cameraY += (targetCameraY - tkState.cameraY) * 0.08; 
 
+            // Target Zone Smoothing
             tkState.actualTargetMin += (tkState.currTargetMin - tkState.actualTargetMin) * 0.1;
             tkState.actualTargetMax += (tkState.currTargetMax - tkState.actualTargetMax) * 0.1;
             let inZone = (tkState.pitch >= tkState.actualTargetMin - 0.5 && tkState.pitch <= tkState.actualTargetMax + 0.5);
@@ -389,16 +391,17 @@
             // --- 3. SCORE INCREMENT ---
             if (inZone && tkState.phase > 0 && tkState.phase < 6) {
                 tkState.score += 5;
-                document.getElementById('tk-score-display').textContent = `SCORE: ${Math.floor(tkState.score)}`;
+                document.getElementById('hud-score-val').textContent = Math.floor(tkState.score);
             }
-            document.getElementById('tk-alt-display').textContent = `ALT: ${Math.floor(tkState.altitude)}m`;
+            document.getElementById('hud-alt-val').textContent = `${Math.floor(tkState.altitude)}m`;
+            pitchEl.innerHTML = `${Math.floor(tkState.pitch)}&deg;`;
 
             // --- 4. PHASE STATE MACHINE ---
             if (tkState.phase === 0) {
                 prompt.textContent = `TARGET 150 KTS`;
                 if (tkState.speed >= 150) {
                     tkState.phase = 1;
-                    prompt.textContent = "V1! PULL UP TO 15°";
+                    prompt.textContent = "V1! PITCH TO 15°";
                 }
             } 
             else if (tkState.phase === 1) {
@@ -414,6 +417,7 @@
                     setTargetZone(-16, -6); 
                     prompt.textContent = "TRAFFIC! DIVE NOW!";
                     prompt.className = "prompt-alert";
+                    promptContainer.style.opacity = '1';
                     document.getElementById('tk-alert-overlay').className = "flashing";
                     document.getElementById('tk-enemy-plane').style.display = 'block';
                     
@@ -431,6 +435,7 @@
                     setTargetZone(-3, 3); 
                     prompt.textContent = "CLEAR. LEVEL OUT.";
                     prompt.className = "prompt-pulse";
+                    promptContainer.style.opacity = '1';
                     document.getElementById('tk-alert-overlay').className = "";
                 }
             }
@@ -438,7 +443,8 @@
                 if (tkState.progress > 65) {
                     tkState.phase = 5;
                     setTargetZone(-8, -2); 
-                    prompt.textContent = "LANDING APPROACH - DESCEND";
+                    prompt.textContent = "LANDING APPROACH: DESCEND < 150 SPD";
+                    promptContainer.style.opacity = '1';
                 }
             }
 
@@ -456,43 +462,35 @@
             document.getElementById('tk-runway').style.transform = `translateY(${tkState.cameraY}px)`;
             document.getElementById('tk-mountain').style.transform = `translateY(${tkState.cameraY}px)`;
 
-            const heightPercent = (tkState.actualTargetMax - tkState.actualTargetMin) * 2; 
-            const bottomPercent = 50 + (tkState.actualTargetMin - tkState.pitch) * 2;
-            
-            const zoneEl = document.getElementById('tk-target-zone');
-            zoneEl.style.bottom = `${bottomPercent}%`;
-            zoneEl.style.height = `${heightPercent}%`;
-
+            // HUD COLORS & PROMPT FADING
             if (inZone && tkState.phase > 0 && tkState.phase !== 6) {
-                document.getElementById('tk-needle').style.boxShadow = "0 0 15px var(--gauge-green)";
+                hudRing.style.borderColor = "var(--gauge-green)";
+                hudRing.style.boxShadow = "0 0 15px rgba(46, 204, 113, 0.4)";
+                pitchEl.parentElement.style.color = "var(--gauge-green)";
+                
+                // Fade out the prompt if doing well, except during alarms
+                if(tkState.phase !== 3) promptContainer.style.opacity = '0'; 
             } else if (tkState.phase !== 6) {
-                document.getElementById('tk-needle').style.boxShadow = "0 0 8px rgba(255,255,255,0.9)";
+                hudRing.style.borderColor = "rgba(255,255,255,0.4)";
+                hudRing.style.boxShadow = "none";
+                pitchEl.parentElement.style.color = "#fff";
+                
+                // Show the prompt if out of position
+                promptContainer.style.opacity = '1';
             }
 
-            document.getElementById('tk-speed-bar').style.height = `${Math.min(100, (tkState.speed / 250) * 100)}%`;
-            document.getElementById('tk-prog-bar').style.height = `${Math.min(100, tkState.progress)}%`;
-            document.getElementById('tk-prog-val').textContent = `${Math.floor(tkState.progress)}%`;
-            
-            const pitchEl = document.getElementById('tk-pitch-val');
-            pitchEl.textContent = `${Math.floor(tkState.pitch)}°`;
-            document.getElementById('tk-pitch-bar').style.height = `${((tkState.pitch + 25) / 50) * 100}%`;
-            
-            if (inZone && tkState.phase > 0 && tkState.phase !== 6) {
-                pitchEl.style.color = "var(--gauge-green)";
-                document.getElementById('tk-pitch-bar').style.backgroundColor = "var(--gauge-green)";
-            } else if (tkState.phase !== 6) {
-                pitchEl.style.color = "#fff";
-                document.getElementById('tk-pitch-bar').style.backgroundColor = "#fff";
-            }
-
+            // --- RENDER PLANES ON SCREEN ---
             let planeVisualY = -(tkState.altitude - tkState.cameraY);
             let visualPitch = -tkState.pitch;
-            document.getElementById('tk-plane').style.transform = `translateY(${planeVisualY}px) rotate(${visualPitch}deg)`;
+            
+            // Container moves up/down. Image rotates.
+            document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeVisualY}px)`;
+            document.getElementById('tk-plane-img').style.transform = `rotate(${visualPitch}deg)`;
             
             if (tkState.phase === 3) {
                 let enemyVisualY = -(tkState.enemyAltitude - tkState.cameraY);
                 document.getElementById('tk-enemy-plane').style.left = `${tkState.enemyX}%`;
-                document.getElementById('tk-enemy-plane').style.transform = `translateY(${enemyVisualY}px) scaleX(-1)`;
+                document.getElementById('tk-enemy-plane').style.transform = `translateY(${enemyVisualY}px)`;
             }
 
             tkState.frameId = requestAnimationFrame(gameLoop);
@@ -500,11 +498,14 @@
 
         function triggerCrash(reason) {
             tkState.active = false;
-            document.getElementById('tk-plane').style.display = 'none';
+            document.getElementById('plane-container').style.display = 'none';
             document.getElementById('tk-enemy-plane').style.display = 'none';
             document.getElementById('tk-alert-overlay').className = "";
             
+            const promptContainer = document.getElementById('prompt-container');
             const prompt = document.getElementById('tk-touch-prompt');
+            
+            promptContainer.style.opacity = '1';
             prompt.textContent = reason;
             prompt.className = "prompt-alert";
             
@@ -534,8 +535,8 @@
             setTimeout(() => vp.style.background = "linear-gradient(to bottom, #1e3c72 0%, #2a5298 50%, #87CEEB 100%)", 100);
             
             setTimeout(() => {
-                document.getElementById('tk-touch-prompt').textContent = "TAP TO RETRY";
-                document.getElementById('tk-touch-prompt').className = "prompt-pulse";
+                prompt.textContent = "TAP TO RETRY";
+                prompt.className = "prompt-pulse";
             }, 3000);
         }
 
@@ -553,16 +554,25 @@
         function triggerWin() {
             tkState.active = false;
             
+            const promptContainer = document.getElementById('prompt-container');
             const prompt = document.getElementById('tk-touch-prompt');
+            
+            promptContainer.style.opacity = '1';
             prompt.textContent = `SAFE LANDING! (+${Math.floor(tkState.score)})`;
             prompt.className = "prompt-pulse";
+            prompt.style.color = "var(--gauge-green)";
+            prompt.style.borderColor = "var(--gauge-green)";
             
             let planeVisualY = -(tkState.altitude - tkState.cameraY);
-            document.getElementById('tk-plane').style.transform = `translateY(${planeVisualY}px) rotate(0deg)`;
+            document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeVisualY}px)`;
+            document.getElementById('tk-plane-img').style.transform = `rotate(0deg)`;
+            
             confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
             
             setTimeout(() => {
-                document.getElementById('tk-touch-prompt').textContent = "TAP TO FLY AGAIN";
+                prompt.textContent = "TAP TO FLY AGAIN";
+                prompt.style.color = "#fff";
+                prompt.style.borderColor = "#fff";
             }, 4000);
         }
     </script>

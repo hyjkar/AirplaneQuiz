@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Audiovisual Sim</title>
+    <title>Hangar 5 - Loud & Epic Sim</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -155,16 +155,29 @@
     <script>
         const SPEED_MOD = 0.75; 
 
-        // --- CUSTOM WEB AUDIO SYNTHESIZER ---
+        // --- BULLETPROOF AUDIO SYNTHESIZER ---
         const sfx = {
             ctx: null, engineNode: null, engineGain: null, bgmNode: null, bgmGain: null, alarmInterval: null, isAlarming: false,
             init: function() {
                 if (!this.ctx) {
                     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // iOS/Safari Unlocker: Play a silent sound immediately
+                    let silentOsc = this.ctx.createOscillator();
+                    let silentGain = this.ctx.createGain();
+                    silentGain.gain.value = 0;
+                    silentOsc.connect(silentGain);
+                    silentGain.connect(this.ctx.destination);
+                    silentOsc.start(0);
+                    silentOsc.stop(this.ctx.currentTime + 0.1);
+
                     this.startEngine();
                     this.startBGM();
                 }
-                if (this.ctx.state === 'suspended') this.ctx.resume();
+                // Always ensure it is resumed on user gesture
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
             },
             startEngine: function() {
                 this.engineNode = this.ctx.createOscillator();
@@ -172,10 +185,9 @@
                 this.engineGain = this.ctx.createGain();
                 this.engineGain.gain.value = 0;
                 
-                // Low pass filter to make the engine sound like a low rumble
                 let filter = this.ctx.createBiquadFilter();
                 filter.type = 'lowpass';
-                filter.frequency.value = 200;
+                filter.frequency.value = 300; // Increased to let more sound through
 
                 this.engineNode.connect(filter);
                 filter.connect(this.engineGain);
@@ -183,21 +195,20 @@
                 this.engineNode.start();
             },
             updateEngine: function(speed) {
-                if(!this.engineNode) return;
-                // Pitch up and volume up based on speed
-                let freq = 40 + (speed * 0.4);
-                let vol = speed > 0 ? 0.05 + (speed / 1500) : 0;
+                if(!this.engineNode || !this.ctx) return;
+                let freq = 50 + (speed * 0.5); // Higher pitch for better laptop speaker audibility
+                // Increased volume multiplier
+                let vol = speed > 0 ? 0.15 + (speed / 800) : 0; 
                 this.engineNode.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.1);
                 this.engineGain.gain.setTargetAtTime(vol, this.ctx.currentTime, 0.1);
             },
             startBGM: function() {
-                // Cinematic pulsating drone
                 this.bgmNode = this.ctx.createOscillator();
                 this.bgmNode.type = 'sine';
-                this.bgmNode.frequency.value = 55; // Low tension note
+                this.bgmNode.frequency.value = 65; 
                 
                 let lfo = this.ctx.createOscillator();
-                lfo.frequency.value = 0.5; // 1 pulse every 2 seconds
+                lfo.frequency.value = 0.5; 
                 let lfoGain = this.ctx.createGain();
                 lfoGain.gain.value = 15;
                 
@@ -205,7 +216,7 @@
                 lfoGain.connect(this.bgmNode.frequency);
                 
                 this.bgmGain = this.ctx.createGain();
-                this.bgmGain.gain.value = 0.1;
+                this.bgmGain.gain.value = 0.3; // Boosted background music volume
                 
                 this.bgmNode.connect(this.bgmGain);
                 this.bgmGain.connect(this.ctx.destination);
@@ -217,14 +228,13 @@
                 if(!this.ctx) return;
                 if(active && !this.isAlarming) {
                     this.isAlarming = true;
-                    // Create intermittent beep
                     this.alarmInterval = setInterval(() => {
                         let osc = this.ctx.createOscillator();
                         let gain = this.ctx.createGain();
                         osc.type = 'square';
-                        osc.frequency.value = 800; // High pitch warning
+                        osc.frequency.value = 900; 
                         
-                        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                        gain.gain.setValueAtTime(0.15, this.ctx.currentTime); // Louder alarm
                         gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
                         
                         osc.connect(gain);
@@ -239,47 +249,25 @@
             },
             playExplosion: function() {
                 if(!this.ctx) return;
-                // Sub-bass hit
                 let osc = this.ctx.createOscillator();
                 let oscGain = this.ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(100, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1);
-                oscGain.gain.setValueAtTime(0.5, this.ctx.currentTime);
-                oscGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1);
+                osc.type = 'square'; // Changed to square for harsher impact
+                osc.frequency.setValueAtTime(80, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
+                oscGain.gain.setValueAtTime(0.8, this.ctx.currentTime); // LOUD
+                oscGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
                 osc.connect(oscGain);
                 oscGain.connect(this.ctx.destination);
                 osc.start();
-                osc.stop(this.ctx.currentTime + 1);
-
-                // White noise burst
-                let bufferSize = this.ctx.sampleRate * 2;
-                let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                let data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-                let noise = this.ctx.createBufferSource();
-                noise.buffer = buffer;
-                
-                let noiseFilter = this.ctx.createBiquadFilter();
-                noiseFilter.type = 'lowpass';
-                noiseFilter.frequency.value = 800; // Muffled explosion
-                
-                let noiseGain = this.ctx.createGain();
-                noiseGain.gain.setValueAtTime(0.5, this.ctx.currentTime);
-                noiseGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
-                
-                noise.connect(noiseFilter);
-                noiseFilter.connect(noiseGain);
-                noiseGain.connect(this.ctx.destination);
-                noise.start();
+                osc.stop(this.ctx.currentTime + 1.5);
             },
             playSpark: function() {
-                if(!this.ctx || Math.random() > 0.3) return; // Don't overwhelm audio context
+                if(!this.ctx || Math.random() > 0.4) return; 
                 let osc = this.ctx.createOscillator();
                 let gain = this.ctx.createGain();
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(1500 + Math.random()*1500, this.ctx.currentTime);
-                gain.gain.setValueAtTime(0.02, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(2000 + Math.random()*2000, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -308,6 +296,7 @@
         // --- CONTROLS ---
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
+            sfx.init(); // MUST trigger on exact user interaction
             if (!tkState.active && tkState.speed === 0) startFlight();
             tkState.pressing = true;
         });
@@ -318,6 +307,7 @@
             if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault(); 
                 if (e.repeat) return; 
+                sfx.init(); // MUST trigger on exact user interaction
                 if (!tkState.active && tkState.speed === 0) startFlight();
                 tkState.pressing = true;
             }
@@ -336,8 +326,6 @@
         function startFlight() {
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
             document.querySelectorAll('.pixel-particle, .spark-particle').forEach(p => p.remove());
-            
-            sfx.init(); // Init Audio
             
             document.getElementById('tk-plane-img').src = 'my-plane.png';
 
@@ -412,6 +400,7 @@
         function triggerEpicCollision(x, y) {
             sfx.playExplosion();
             const vp = document.getElementById('takeoff-viewport');
+            
             vp.style.backgroundColor = "#ffffff";
             setTimeout(() => { vp.style.backgroundColor = "#4a9ae9"; }, 150);
 
@@ -430,6 +419,7 @@
             applyShake();
 
             const colors = ['#ffffff', '#ffea00', '#ff5500', '#d71920', '#333333', '#111111'];
+            
             for(let i=0; i<200; i++) {
                 let p = document.createElement('div');
                 p.className = 'pixel-particle';
@@ -446,7 +436,8 @@
                 let v = (Math.random() * 40 + 5) * SPEED_MOD; 
                 let vx = Math.cos(a) * v; 
                 let vy = Math.sin(a) * v;
-                let age = 0; let maxAge = Math.random() * 80 + 60; 
+                let age = 0;
+                let maxAge = Math.random() * 80 + 60; 
                 
                 function move() {
                     let timeScale = age < 2 ? 1.0 : (age < 6 ? 0.3 : 0.05); 
@@ -649,7 +640,7 @@
                  prompt.textContent = "BRACE! SKIDDING ON RUNWAY!";
             }
 
-            // 5. STRICT THRESHOLD CAMERA
+            // 5. STRICT THRESHOLD CAMERA (Prevents Cropping)
             tkState.bgX_sky -= (tkState.speed * 0.006 * SPEED_MOD);
             tkState.bgX_city -= (tkState.speed * 0.03 * SPEED_MOD);
             tkState.bgX_runway -= (tkState.speed * 0.18 * SPEED_MOD);

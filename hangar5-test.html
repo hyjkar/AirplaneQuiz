@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Epic Flight Sim</title>
+    <title>Hangar 5 - Audiovisual Sim</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -155,6 +155,146 @@
     <script>
         const SPEED_MOD = 0.75; 
 
+        // --- CUSTOM WEB AUDIO SYNTHESIZER ---
+        const sfx = {
+            ctx: null, engineNode: null, engineGain: null, bgmNode: null, bgmGain: null, alarmInterval: null, isAlarming: false,
+            init: function() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.startEngine();
+                    this.startBGM();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            },
+            startEngine: function() {
+                this.engineNode = this.ctx.createOscillator();
+                this.engineNode.type = 'sawtooth';
+                this.engineGain = this.ctx.createGain();
+                this.engineGain.gain.value = 0;
+                
+                // Low pass filter to make the engine sound like a low rumble
+                let filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 200;
+
+                this.engineNode.connect(filter);
+                filter.connect(this.engineGain);
+                this.engineGain.connect(this.ctx.destination);
+                this.engineNode.start();
+            },
+            updateEngine: function(speed) {
+                if(!this.engineNode) return;
+                // Pitch up and volume up based on speed
+                let freq = 40 + (speed * 0.4);
+                let vol = speed > 0 ? 0.05 + (speed / 1500) : 0;
+                this.engineNode.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.1);
+                this.engineGain.gain.setTargetAtTime(vol, this.ctx.currentTime, 0.1);
+            },
+            startBGM: function() {
+                // Cinematic pulsating drone
+                this.bgmNode = this.ctx.createOscillator();
+                this.bgmNode.type = 'sine';
+                this.bgmNode.frequency.value = 55; // Low tension note
+                
+                let lfo = this.ctx.createOscillator();
+                lfo.frequency.value = 0.5; // 1 pulse every 2 seconds
+                let lfoGain = this.ctx.createGain();
+                lfoGain.gain.value = 15;
+                
+                lfo.connect(lfoGain);
+                lfoGain.connect(this.bgmNode.frequency);
+                
+                this.bgmGain = this.ctx.createGain();
+                this.bgmGain.gain.value = 0.1;
+                
+                this.bgmNode.connect(this.bgmGain);
+                this.bgmGain.connect(this.ctx.destination);
+                
+                this.bgmNode.start();
+                lfo.start();
+            },
+            playAlarm: function(active) {
+                if(!this.ctx) return;
+                if(active && !this.isAlarming) {
+                    this.isAlarming = true;
+                    // Create intermittent beep
+                    this.alarmInterval = setInterval(() => {
+                        let osc = this.ctx.createOscillator();
+                        let gain = this.ctx.createGain();
+                        osc.type = 'square';
+                        osc.frequency.value = 800; // High pitch warning
+                        
+                        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+                        
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start();
+                        osc.stop(this.ctx.currentTime + 0.2);
+                    }, 300);
+                } else if (!active && this.isAlarming) {
+                    this.isAlarming = false;
+                    clearInterval(this.alarmInterval);
+                }
+            },
+            playExplosion: function() {
+                if(!this.ctx) return;
+                // Sub-bass hit
+                let osc = this.ctx.createOscillator();
+                let oscGain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(100, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1);
+                oscGain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                oscGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1);
+                osc.connect(oscGain);
+                oscGain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 1);
+
+                // White noise burst
+                let bufferSize = this.ctx.sampleRate * 2;
+                let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                let data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                let noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                
+                let noiseFilter = this.ctx.createBiquadFilter();
+                noiseFilter.type = 'lowpass';
+                noiseFilter.frequency.value = 800; // Muffled explosion
+                
+                let noiseGain = this.ctx.createGain();
+                noiseGain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
+                
+                noise.connect(noiseFilter);
+                noiseFilter.connect(noiseGain);
+                noiseGain.connect(this.ctx.destination);
+                noise.start();
+            },
+            playSpark: function() {
+                if(!this.ctx || Math.random() > 0.3) return; // Don't overwhelm audio context
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(1500 + Math.random()*1500, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.02, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            },
+            stopAll: function() {
+                this.updateEngine(0);
+                this.playAlarm(false);
+                if(this.bgmGain) {
+                    this.bgmGain.gain.setTargetAtTime(0, this.ctx.currentTime, 1);
+                }
+            }
+        };
+
         let tkState = {
             active: false, phase: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             progress: 0, altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, 
@@ -165,7 +305,7 @@
 
         const CRUISE_ALT = 300; 
 
-        // --- MOUSE & TOUCH CONTROLS ---
+        // --- CONTROLS ---
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
             if (!tkState.active && tkState.speed === 0) startFlight();
@@ -174,7 +314,6 @@
         window.addEventListener('pointerup', () => tkState.pressing = false);
         window.addEventListener('touchend', () => tkState.pressing = false);
 
-        // --- KEYBOARD CONTROLS (SPACEBAR) ---
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault(); 
@@ -198,6 +337,8 @@
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
             document.querySelectorAll('.pixel-particle, .spark-particle').forEach(p => p.remove());
             
+            sfx.init(); // Init Audio
+            
             document.getElementById('tk-plane-img').src = 'my-plane.png';
 
             tkState = {
@@ -219,6 +360,7 @@
         }
 
         function triggerGearExplosion(x, y) {
+            sfx.playExplosion();
             const colors = ['#fff', '#ffaa00', '#d71920', '#333', '#111'];
             for(let i=0; i<35; i++) {
                 let p = document.createElement('div');
@@ -245,6 +387,7 @@
         }
 
         function spawnSpark(x, y, isMidAir) {
+            sfx.playSpark();
             let p = document.createElement('div');
             p.className = 'spark-particle';
             p.style.backgroundColor = Math.random() > 0.4 ? '#ffaa00' : '#ff3300';
@@ -266,22 +409,19 @@
             } move();
         }
 
-        // --- EPIC SLOW-MOTION COLLISION ---
         function triggerEpicCollision(x, y) {
+            sfx.playExplosion();
             const vp = document.getElementById('takeoff-viewport');
-            
-            // Instantly flash screen white
             vp.style.backgroundColor = "#ffffff";
             setTimeout(() => { vp.style.backgroundColor = "#4a9ae9"; }, 150);
 
-            // Violent Screen Shake
             let shakeAmount = 35;
             function applyShake() {
                 if (shakeAmount > 0.5) {
                     let ox = (Math.random() - 0.5) * shakeAmount;
                     let oy = (Math.random() - 0.5) * shakeAmount;
                     vp.style.transform = `translate(${ox}px, ${oy}px)`;
-                    shakeAmount *= 0.85; // Dampen shake over time
+                    shakeAmount *= 0.85; 
                     requestAnimationFrame(applyShake);
                 } else {
                     vp.style.transform = `translate(0, 0)`;
@@ -290,8 +430,6 @@
             applyShake();
 
             const colors = ['#ffffff', '#ffea00', '#ff5500', '#d71920', '#333333', '#111111'];
-            
-            // Spawn 200 particles for massive destruction
             for(let i=0; i<200; i++) {
                 let p = document.createElement('div');
                 p.className = 'pixel-particle';
@@ -299,31 +437,22 @@
                 p.style.left = x + 'px'; p.style.top = y + 'px';
                 
                 let size = Math.random() * 6 + 2; 
-                p.style.width = size + 'px';
-                p.style.height = size + 'px';
-                
-                // Add an intense glow to the first 50 "hot" particles
+                p.style.width = size + 'px'; p.style.height = size + 'px';
                 if(i < 50) p.style.boxShadow = `0 0 ${size * 2}px ${p.style.backgroundColor}`;
 
                 vp.appendChild(p);
                 
                 let a = Math.random() * 6.28; 
-                let v = (Math.random() * 40 + 5) * SPEED_MOD; // Huge explosive blast
+                let v = (Math.random() * 40 + 5) * SPEED_MOD; 
                 let vx = Math.cos(a) * v; 
                 let vy = Math.sin(a) * v;
-                let age = 0;
-                let maxAge = Math.random() * 80 + 60; 
+                let age = 0; let maxAge = Math.random() * 80 + 60; 
                 
                 function move() {
-                    // THE SLOW MOTION MAGIC:
-                    // Frames 0-2: Full speed explosion burst
-                    // Frames 3-6: Rapid deceleration
-                    // Frames 7+: 5% speed (Bullet-Time)
                     let timeScale = age < 2 ? 1.0 : (age < 6 ? 0.3 : 0.05); 
-                    
                     age += timeScale; 
-                    vx *= Math.pow(0.92, timeScale); // Air resistance applies dynamically
-                    vy += (0.3 * SPEED_MOD) * timeScale; // Gravity applies slowly
+                    vx *= Math.pow(0.92, timeScale); 
+                    vy += (0.3 * SPEED_MOD) * timeScale; 
                     
                     p.style.left = (parseFloat(p.style.left) + (vx * timeScale)) + 'px';
                     p.style.top = (parseFloat(p.style.top) + (vy * timeScale)) + 'px';
@@ -347,6 +476,10 @@
 
             const prompt = document.getElementById('tk-touch-prompt');
             const hudRing = document.getElementById('plane-hud');
+
+            // --- AUDIO SYNC ---
+            sfx.updateEngine(tkState.speed);
+            sfx.playAlarm((tkState.pitch >= 24.2 && tkState.altitude > 10) || tkState.phase === 3);
 
             // --- DIALOGUE SYSTEM ---
             const bubble = document.getElementById('dialogue-bubble');
@@ -388,6 +521,7 @@
                     tkState.active = false; 
                     prompt.textContent = "SUCCESSFUL BELLY LANDING! EVACUATE!"; 
                     triggerWin();
+                    sfx.stopAll();
                     return; 
                 }
             }
@@ -428,6 +562,7 @@
             // FATAL IMPACT CHECK
             if (tkState.altitude <= 0 && tkState.phase > 0 && tkState.phase < 6) {
                 if (isStalling || tkState.pitch < -5 || tkState.pitch > 15) {
+                    sfx.stopAll();
                     const r = document.getElementById('tk-plane-img').getBoundingClientRect();
                     triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
                     document.getElementById('plane-container').style.display = 'none';
@@ -457,9 +592,8 @@
                 if (tkState.takeoffDist < 25 && tkState.altitude < 60) {
                     const mtn = document.getElementById('tk-mountain');
                     mtn.style.display = 'block'; mtn.style.left = (tkState.takeoffDist * 4) + '%';
-                    
-                    // Runway end collision trigger
                     if (tkState.takeoffDist <= 0) {
+                         sfx.stopAll();
                          const r = document.getElementById('tk-plane-img').getBoundingClientRect();
                          triggerEpicCollision(r.left+r.width/2, r.top+r.height/2);
                          document.getElementById('plane-container').style.display='none';
@@ -486,7 +620,7 @@
                 const er = document.getElementById('tk-enemy-plane').getBoundingClientRect();
                 const margin = 12;
                 if (!(pr.right-margin < er.left+margin || pr.left+margin > er.right-margin || pr.bottom-margin < er.top+margin || pr.top+margin > er.bottom-margin)) {
-                     // Mid-air collision trigger
+                     sfx.stopAll();
                      triggerEpicCollision(pr.left+pr.width/2, pr.top+pr.height/2);
                      document.getElementById('plane-container').style.display='none';
                      tkState.active=false; prompt.textContent="MID-AIR COLLISION";
@@ -515,7 +649,7 @@
                  prompt.textContent = "BRACE! SKIDDING ON RUNWAY!";
             }
 
-            // 5. STRICT THRESHOLD CAMERA (Prevents Cropping)
+            // 5. STRICT THRESHOLD CAMERA
             tkState.bgX_sky -= (tkState.speed * 0.006 * SPEED_MOD);
             tkState.bgX_city -= (tkState.speed * 0.03 * SPEED_MOD);
             tkState.bgX_runway -= (tkState.speed * 0.18 * SPEED_MOD);

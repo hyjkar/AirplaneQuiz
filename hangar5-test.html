@@ -173,6 +173,10 @@
         window.addEventListener('pointerup', () => tkState.pressing = false);
         window.addEventListener('touchend', () => tkState.pressing = false);
 
+        function triggerWin() {
+            confetti({ particleCount: 250, spread: 120, origin: { y: 0.6 } });
+        }
+
         function startFlight() {
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
             document.querySelectorAll('.pixel-particle, .spark-particle').forEach(p => p.remove());
@@ -231,8 +235,11 @@
             if (isMidAir) p.style.width = '5px', p.style.height = '5px'; 
             document.getElementById('takeoff-viewport').appendChild(p);
             
-            let vx = isMidAir ? -(Math.random() * 5 + 2) * SPEED_MOD : -(Math.random() * 14 + 5) * SPEED_MOD; 
-            let vy = isMidAir ? (Math.random() * 4 + 2) * SPEED_MOD : -(Math.random() * 3) * SPEED_MOD;
+            // On the ground, speed of sparks scales with the plane's speed
+            let speedFactor = isMidAir ? 1 : (tkState.speed / 100);
+            
+            let vx = isMidAir ? -(Math.random() * 5 + 2) * SPEED_MOD : -(Math.random() * 14 + 5) * SPEED_MOD * speedFactor; 
+            let vy = isMidAir ? (Math.random() * 4 + 2) * SPEED_MOD : -(Math.random() * 3) * SPEED_MOD * speedFactor;
             let age = 0;
             function move() {
                 age++; vx *= 0.95; vy += (0.5 * SPEED_MOD); 
@@ -247,20 +254,17 @@
         function triggerEpicCollision(x, y) {
             const vp = document.getElementById('takeoff-viewport');
             
-            // Screen flash effect
             vp.style.backgroundColor = "#ffffff";
             setTimeout(() => { vp.style.backgroundColor = "#4a9ae9"; }, 100);
 
             const colors = ['#ffffff', '#ffea00', '#ff5500', '#d71920', '#333333', '#111111'];
             
-            // 150 Particles for a massive cinematic explosion
             for(let i=0; i<150; i++) {
                 let p = document.createElement('div');
                 p.className = 'pixel-particle';
                 p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
                 p.style.left = x + 'px'; p.style.top = y + 'px';
                 
-                // Variable size for debris chunks vs fine dust
                 let size = Math.random() * 6 + 2; 
                 p.style.width = size + 'px';
                 p.style.height = size + 'px';
@@ -268,16 +272,16 @@
                 vp.appendChild(p);
                 
                 let a = Math.random() * 6.28; 
-                let v = (Math.random() * 25 + 5) * SPEED_MOD; // Massive velocity variance
+                let v = (Math.random() * 25 + 5) * SPEED_MOD; 
                 let vx = Math.cos(a) * v; 
                 let vy = Math.sin(a) * v;
                 let age = 0;
-                let maxAge = Math.random() * 40 + 30; // Random burn-out times
+                let maxAge = Math.random() * 40 + 30; 
                 
                 function move() {
                     age++; 
-                    vx *= 0.92; // High air drag
-                    vy += (0.25 * SPEED_MOD); // Gravity pull
+                    vx *= 0.92; 
+                    vy += (0.25 * SPEED_MOD); 
                     p.style.left = (parseFloat(p.style.left)+vx)+'px';
                     p.style.top = (parseFloat(p.style.top)+vy)+'px';
                     p.style.opacity = 1 - (age / maxAge);
@@ -324,7 +328,7 @@
                 setDialogue("<span class='capt-text'>CAPT:</span> ...it's stuck :(", 4000);
             }
 
-            // 1. EXTENDED SPEED ENGINE
+            // 1. SPEED ENGINE
             let inHUDZone = (tkState.pitch >= tkState.currTargetMin && tkState.pitch <= tkState.currTargetMax);
             if (tkState.phase < 6) {
                 let accel = (tkState.phase === 5) ? -1.6 : (tkState.phase === 0 ? 0.8 : 1.5); 
@@ -336,8 +340,14 @@
                 
                 tkState.speed = Math.max((tkState.phase === 0 ? 0 : 85), Math.min(240, tkState.speed + accel));
             } else {
-                tkState.speed = Math.max(0, tkState.speed - (5.0 * SPEED_MOD));
-                if (tkState.speed <= 0) { tkState.active = false; prompt.textContent = "EVACUATE AIRCRAFT!"; return; }
+                // REDUCED DECELERATION: Allows the plane to slide on the runway instead of stopping instantly
+                tkState.speed = Math.max(0, tkState.speed - (1.3 * SPEED_MOD));
+                if (tkState.speed <= 0) { 
+                    tkState.active = false; 
+                    prompt.textContent = "SUCCESSFUL BELLY LANDING! EVACUATE!"; 
+                    triggerWin();
+                    return; 
+                }
             }
             if (tkState.phase > 0 && tkState.phase < 6) tkState.progress += ((tkState.speed / 6000) * SPEED_MOD);
 
@@ -349,10 +359,17 @@
             document.getElementById('hud-spd-val').textContent = Math.floor(tkState.speed);
 
             // 2. PITCH & PHYSICS
-            if (tkState.pressing && tkState.speed >= 85) tkState.pitchVelocity += (0.11 * SPEED_MOD);
-            else if (tkState.speed >= 85) tkState.pitchVelocity -= (0.08 * SPEED_MOD);
-            tkState.pitchVelocity *= 0.88;
-            tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch + tkState.pitchVelocity));
+            if (tkState.phase === 6) {
+                // AUTO-LEVEL: During the runway slide, physically drop the nose to flat (0 degrees)
+                tkState.pitch += (0 - tkState.pitch) * 0.1;
+                tkState.pitchVelocity = 0;
+            } else {
+                // Normal pitch physics
+                if (tkState.pressing && tkState.speed >= 85) tkState.pitchVelocity += (0.11 * SPEED_MOD);
+                else if (tkState.speed >= 85) tkState.pitchVelocity -= (0.08 * SPEED_MOD);
+                tkState.pitchVelocity *= 0.88;
+                tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch + tkState.pitchVelocity));
+            }
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
@@ -366,6 +383,8 @@
 
             tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.12;
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
+            
+            // Lock altitude at 0 during slide, otherwise normal
             if (tkState.phase !== 6) tkState.altitude = Math.max(0, tkState.altitude + tkState.vSpeed);
 
             // FATAL IMPACT CHECK
@@ -440,11 +459,15 @@
                 triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
                 document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png';
             }
+            // TOUCHDOWN TRANSITION TO SLIDE (Phase 6)
             if (tkState.phase === 5 && tkState.altitude <= 0) {
-                 tkState.phase = 6; tkState.altitude = 0; tkState.vSpeed = 0; prompt.textContent = "BRACE! BELLY LANDING!";
+                 tkState.phase = 6; 
+                 tkState.altitude = 0; 
+                 tkState.vSpeed = 0; 
+                 prompt.textContent = "BRACE! SKIDDING ON RUNWAY!";
             }
 
-            // 5. STRICT THRESHOLD CAMERA (Prevents Cropping)
+            // 5. STRICT THRESHOLD CAMERA
             tkState.bgX_sky -= (tkState.speed * 0.006 * SPEED_MOD);
             tkState.bgX_city -= (tkState.speed * 0.03 * SPEED_MOD);
             tkState.bgX_runway -= (tkState.speed * 0.18 * SPEED_MOD);
@@ -452,7 +475,6 @@
             document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`;
             document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
 
-            // Max visual lift is hard-capped to 60px so HUD never crops top screen.
             let maxVisualAltitude = Math.min(60, window.innerHeight * 0.15);
             let targetCam = Math.max(0, tkState.altitude - maxVisualAltitude);
             tkState.cameraY += (targetCam - tkState.cameraY) * 0.15;
@@ -466,13 +488,19 @@
             document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeY}px)`;
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
 
-            // EFFECTS
+            // --- EMERGENCY VISUAL EFFECTS ---
             const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
             if (tkState.phase === 5 && Math.random() > 0.4) spawnSpark(pr.left + pr.width/2 - 10, pr.bottom - 15, true);
+            
+            // DYNAMIC RUNWAY SPARKS DURING SLIDE
             if (tkState.phase === 6 && tkState.speed > 0) {
-                spawnSpark(pr.left + pr.width/2 + (Math.random()*20 - 10), pr.bottom - 5, false);
-                if (Math.random() > 0.3) spawnSpark(pr.left + pr.width/2 + (Math.random()*20), pr.bottom - 5, false);
-                if (Math.random() > 0.6) spawnSpark(pr.left + pr.width/2 - 15, pr.bottom - 5, false);
+                // Spark count scales with speed so they die out smoothly
+                let sparkCount = Math.floor(tkState.speed / 40); 
+                for(let i=0; i<sparkCount; i++) {
+                    spawnSpark(pr.left + pr.width/2 + (Math.random()*40 - 20), pr.bottom - 5, false);
+                }
+                // Random trailing sparks
+                if (Math.random() > 0.3) spawnSpark(pr.left + pr.width/2 + (Math.random()*30), pr.bottom - 5, false);
             }
 
             tkState.frameId = requestAnimationFrame(gameLoop);

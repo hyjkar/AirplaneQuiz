@@ -34,7 +34,7 @@
         #takeoff-viewport {
             position: relative; width: 100%; height: 350px; 
             border: 4px solid #444; border-radius: 8px; overflow: hidden; 
-            background-color: #87CEEB; /* Sky fallback color so it blends smoothly */
+            background: linear-gradient(to bottom, #1e3c72 0%, #2a5298 50%, #87CEEB 100%);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             cursor: pointer;
         }
@@ -51,21 +51,22 @@
             to { box-shadow: inset 0 0 80px rgba(215, 25, 32, 0.8); background: rgba(215, 25, 32, 0.3); } 
         }
 
-        /* Scenery Layers */
-        .parallax-layer { position: absolute; left: 0; right: 0; pointer-events: none; background-repeat: repeat-x; }
+        /* Scenery */
+        .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; pointer-events: none; }
+        #tk-clouds { 
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><circle cx="50" cy="50" r="30" fill="white" opacity="0.15"/><circle cx="90" cy="60" r="40" fill="white" opacity="0.15"/><circle cx="140" cy="40" r="35" fill="white" opacity="0.15"/></svg>') repeat-x; 
+            background-size: 300px 150px; height: 200%; z-index: 1; 
+        }
         
-        #tk-bg-sky { top: -50px; bottom: 32px; background-image: url('sky1.png'); background-size: 1024px 100%; z-index: 0; }
-        #tk-bg-city { height: 50%; bottom: 32px; background-image: url('city1.png'); background-size: 1024px 100%; background-position: bottom left; z-index: 1; }
-        #tk-bg-ground { height: 25%; bottom: 32px; background-image: url('ground1.png'); background-size: 1024px 100%; background-position: bottom left; z-index: 2; }
-        
-        /* Ground / Runway */
-        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 32px; background: #222; z-index: 3;}
+        /* Ground */
+        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: #222; z-index: 3;}
         #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 14px; background-size: 200px 4px; background-repeat: repeat-x;}
 
         /* Entities */
         #tk-plane { position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px; transform-origin: 50% 50%; z-index: 5; pointer-events: none;}
-        #tk-enemy-plane { position: absolute; left: 150%; bottom: 152px; width: 140px; height: 50px; z-index: 4; pointer-events: none; display: none; }
-        
+        #tk-enemy-plane { position: absolute; left: 150%; bottom: 32px; width: 140px; height: 50px; z-index: 4; pointer-events: none; display: none; }
+        #tk-mountain { position: absolute; bottom: 32px; left: 100%; width: 150px; height: 150px; z-index: 2; display: none; pointer-events: none;}
+
         .pixel-particle { position: absolute; z-index: 10; pointer-events: none; }
 
         /* UI Elements inside Viewport */
@@ -96,6 +97,9 @@
         button { flex: 1; padding: 15px; background: var(--brand-gold); color: #000; border: none; border-radius: 8px; font-family: 'Share Tech Mono'; font-size: 1.1rem; font-weight: bold; cursor: pointer; text-transform: uppercase;}
         button:active { transform: scale(0.95); }
     </style>
+</head>
+<body>
+
     <div style="text-align: center; margin-bottom: 10px;">
         <h1 style="color: var(--brand-gold); margin: 0; font-size: 2rem;">HANGAR 5 PROTOTYPE</h1>
         <h2 style="color: #aaa; margin: 5px 0;">Dynamic Flight Simulator</h2>
@@ -114,13 +118,15 @@
             
             <div id="tk-bg-sky" class="parallax-layer"></div>
             <div id="tk-bg-city" class="parallax-layer"></div>
-            <div id="tk-bg-ground" class="parallax-layer"></div>
+            <div id="tk-clouds" class="parallax-layer"></div>
             
             <div id="tk-gauge-container">
                 <div id="tk-target-zone"></div>
                 <div id="tk-needle"></div>
             </div>
             
+            <div id="tk-mountain"><svg viewBox="0 0 100 100" shape-rendering="crispEdges" width="100%" height="100%"><rect x="50" y="40" width="10" height="60" fill="#3b3b3b"/><rect x="40" y="50" width="30" height="50" fill="#4a4a4a"/><rect x="20" y="60" width="70" height="40" fill="#2d2d2d"/><rect x="0" y="70" width="100" height="30" fill="#1f1f1f"/><rect x="50" y="40" width="10" height="10" fill="#fff"/><rect x="40" y="50" width="10" height="10" fill="#eee"/><rect x="60" y="50" width="10" height="10" fill="#eee"/></svg></div>
+
             <div id="tk-plane"><img src="my-plane.png" onerror="this.style.display='none'; this.parentElement.style.background='#3498db';" style="width: 125%; height: 125%; object-fit: contain; pointer-events: none;"></div>
             
             <div id="tk-enemy-plane"><img src="my-plane-golden.png" onerror="this.style.display='none'; this.parentElement.style.background='gold';" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none; transform: scaleX(-1);"></div>
@@ -150,26 +156,27 @@
             <button onclick="startFlight()">Reset Mission</button>
         </div>
     </div>
-<script>
+
+    <script>
         // State variables
         let tkState = {
             active: false,
             phase: 0,         // 0: Ground, 1: Liftoff, 2: Cruise, 3: Evade, 4: Recover, 5: Landing, 6: Rollout
             pitch: 0,         // Pitch angle: -20 (dive) to +30 (steep climb)
             pitchVelocity: 0,
+            vSpeed: 0,        // Smooth vertical speed for realistic liftoff
             speed: 0,
             progress: 0,      // 0 to 100% completion of the mission
             altitude: 0,      // True physical height from the ground
             cameraY: 0,       // Tracks altitude to keep plane centered
             score: 0,
+            takeoffDistance: 100, // Distance before runway ends
             pressing: false,
             frameId: null,
             lastFrameTime: 0,
             
-            bgPosSky: 0,
-            bgPosCity: 0,
-            bgPosGround: 0,
             bgPosRunway: 0,
+            bgPosClouds: 0,
             
             currTargetMin: 10, currTargetMax: 16,
             actualTargetMin: 10, actualTargetMax: 16,
@@ -209,17 +216,17 @@
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
             
             tkState = {
-                active: true, phase: 0, pitch: 0, pitchVelocity: 0, speed: 0, progress: 0, 
-                altitude: 0, cameraY: 0, score: 0,
+                active: true, phase: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, progress: 0, 
+                altitude: 0, cameraY: 0, score: 0, takeoffDistance: 100,
                 pressing: false, frameId: null, lastFrameTime: performance.now(),
-                bgPosSky: 0, bgPosCity: 0, bgPosGround: 0, bgPosRunway: 0, 
-                enemyX: 150, enemyAltitude: 0,
+                bgPosRunway: 0, bgPosClouds: 0, enemyX: 150, enemyAltitude: 0,
                 currTargetMin: 10, currTargetMax: 16, 
                 actualTargetMin: 10, actualTargetMax: 16
             };
 
             document.getElementById('tk-plane').style.display = 'block';
             document.getElementById('tk-enemy-plane').style.display = 'none';
+            document.getElementById('tk-mountain').style.display = 'none';
             document.getElementById('tk-alert-overlay').className = '';
             document.getElementById('tk-score-display').textContent = `SCORE: 0`;
             document.getElementById('tk-alt-display').textContent = `ALT: 0m`;
@@ -227,8 +234,8 @@
             // Ensure scenery is in original vertical position
             document.getElementById('tk-bg-sky').style.transform = `translateY(0px)`;
             document.getElementById('tk-bg-city').style.transform = `translateY(0px)`;
-            document.getElementById('tk-bg-ground').style.transform = `translateY(0px)`;
             document.getElementById('tk-runway').style.transform = `translateY(0px)`;
+            document.getElementById('tk-clouds').style.transform = `translateY(0px)`;
 
             const prompt = document.getElementById('tk-touch-prompt');
             prompt.textContent = "ACCELERATING...";
@@ -274,36 +281,65 @@
                 speedBar.style.backgroundColor = "var(--brand-red)";
             }
 
-            // --- 2. PITCH & ALTITUDE PHYSICS ---
+            // --- 2. PITCH & PHYSICS ---
             if (tkState.pressing && tkState.speed >= 100) {
                 tkState.pitchVelocity += 0.06; // Smoother pull up
             } else if (tkState.speed >= 100) {
-                tkState.pitchVelocity -= 0.04; // Smoother drop
+                tkState.pitchVelocity -= 0.04; // Nose naturally drops
             }
-            tkState.pitchVelocity *= 0.88; 
+            tkState.pitchVelocity *= 0.88; // Friction
             tkState.pitchVelocity = Math.max(-1.5, Math.min(1.5, tkState.pitchVelocity));
             tkState.pitch += tkState.pitchVelocity;
             tkState.pitch = Math.max(-20, Math.min(30, tkState.pitch));
             
-            // Ground Constraint: Plane cannot nose dive through the tarmac before liftoff or after landing
-            if (tkState.altitude <= 0 && tkState.pitch < 0 && (tkState.phase === 0 || tkState.phase === 6)) {
-                tkState.pitch = 0;
-                if (tkState.pitchVelocity < 0) tkState.pitchVelocity = 0;
+            // PREVENT NOSE DIVE ON RUNWAY
+            if (tkState.altitude <= 0 && (tkState.phase === 0 || tkState.phase === 1 || tkState.phase === 6)) {
+                if (tkState.pitch < 0) {
+                    tkState.pitch = 0;
+                    if (tkState.pitchVelocity < 0) tkState.pitchVelocity = 0;
+                }
             }
-            
             if(tkState.pitch === 30 || tkState.pitch === -20) tkState.pitchVelocity = 0;
 
-            // Altitude increases based on pitch
-            if (tkState.phase > 0 && tkState.phase < 6) {
-                tkState.altitude += tkState.pitch * 0.4; 
+            // SMOOTH VERTICAL LIFT
+            let targetVSpeed = 0;
+            if (tkState.speed >= 130) {
+                targetVSpeed = tkState.pitch * 0.35;
+            }
+            tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.08;
+
+            // Apply Lift
+            if (tkState.altitude <= 0 && tkState.phase <= 1) {
+                // Must have high enough pitch and speed to break gravity
+                if (tkState.pitch >= 8 && tkState.speed >= 150) {
+                    tkState.altitude += Math.max(0, tkState.vSpeed);
+                }
+            } else {
+                tkState.altitude += tkState.vSpeed;
             }
 
-            // --- GROUND COLLISION DETECTION ---
+            // --- RUNWAY DISTANCE & END OF RUNWAY CRASH ---
+            if (tkState.phase < 2) {
+                tkState.takeoffDistance -= (tkState.speed / 1200);
+                
+                if (tkState.takeoffDistance < 20 && tkState.altitude < 50) {
+                    const mtn = document.getElementById('tk-mountain');
+                    mtn.style.display = 'block';
+                    mtn.style.left = `calc(${tkState.takeoffDistance * 5}% + 40px)`;
+                } else {
+                    document.getElementById('tk-mountain').style.display = 'none';
+                }
+
+                if (tkState.takeoffDistance <= 0 && tkState.altitude < 50) {
+                    return triggerCrash("CRASHED AT END OF RUNWAY!");
+                }
+            }
+
+            // --- GROUND COLLISION DETECTION (LANDING) ---
             const prompt = document.getElementById('tk-touch-prompt');
-            if (tkState.altitude <= 0 && tkState.phase > 0) {
+            if (tkState.altitude <= 0 && tkState.phase > 0 && tkState.phase < 6) {
                 if (tkState.phase === 1) {
-                    // In Phase 1, we are just lifting off. Don't crash unless nose diving hard into the tarmac.
-                    if (tkState.pitch < -5) return triggerCrash("NOSE DIVED INTO RUNWAY!");
+                    // Safe, just rolling on runway
                 } else if (tkState.phase === 5) {
                     // Touchdown! Allow a forgiving pitch angle between -5 and +15 degrees.
                     if (tkState.pitch >= -5 && tkState.pitch <= 15) {
@@ -317,7 +353,7 @@
                         tkState.altitude = 0;
                         return triggerCrash("BAD LANDING ANGLE! CRASHED!");
                     }
-                } else if (tkState.phase !== 6) {
+                } else {
                     // Crashed randomly outside of landing phase
                     tkState.altitude = 0;
                     return triggerCrash("CRASHED INTO GROUND!");
@@ -364,14 +400,16 @@
                     prompt.className = "prompt-alert";
                     document.getElementById('tk-alert-overlay').className = "flashing";
                     document.getElementById('tk-enemy-plane').style.display = 'block';
+                    
                     tkState.enemyX = 150; 
-                    tkState.enemyAltitude = tkState.altitude; // Lock enemy to your CURRENT altitude
+                    // Lock the enemy directly to the player's CURRENT altitude!
+                    tkState.enemyAltitude = tkState.altitude; 
                 }
             }
             else if (tkState.phase === 3) {
-                tkState.enemyX -= 0.8; 
+                tkState.enemyX -= 1.0; 
                 
-                // Collision Detection against Golden Plane
+                // True Physical Collision Detection
                 if (tkState.enemyX < 35 && tkState.enemyX > -10) {
                     if (Math.abs(tkState.altitude - tkState.enemyAltitude) < 60) {
                         return triggerCrash("MID-AIR COLLISION!");
@@ -395,22 +433,15 @@
             }
 
             // --- 5. UPDATE VISUALS ---
-            // Horizontal Scrolling
-            tkState.bgPosSky -= tkState.speed * 0.001;
-            tkState.bgPosCity -= tkState.speed * 0.008;
-            tkState.bgPosGround -= tkState.speed * 0.025;
             tkState.bgPosRunway -= tkState.speed * 0.08;
-            
-            document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgPosSky}px 0px`;
-            document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgPosCity}px 100%`;
-            document.getElementById('tk-bg-ground').style.backgroundPosition = `${tkState.bgPosGround}px 100%`;
+            tkState.bgPosClouds -= tkState.speed * 0.002;
             document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgPosRunway}px 14px`;
+            document.getElementById('tk-clouds').style.backgroundPosition = `${tkState.bgPosClouds}px 50px`;
 
             // Vertical Parallax (Based on Camera Altitude)
-            document.getElementById('tk-bg-sky').style.transform = `translateY(${tkState.cameraY * 0.05}px)`;
-            document.getElementById('tk-bg-city').style.transform = `translateY(${tkState.cameraY * 0.6}px)`;
-            document.getElementById('tk-bg-ground').style.transform = `translateY(${tkState.cameraY}px)`;
             document.getElementById('tk-runway').style.transform = `translateY(${tkState.cameraY}px)`;
+            document.getElementById('tk-mountain').style.transform = `translateY(${tkState.cameraY}px)`;
+            document.getElementById('tk-clouds').style.transform = `translateY(${tkState.cameraY * 0.4}px)`;
 
             // Gauges
             const bottomPercent = pitchToPercent(tkState.actualTargetMin);
@@ -448,7 +479,7 @@
             document.getElementById('tk-plane').style.transform = `translateY(${planeVisualY}px) rotate(${visualPitch}deg)`;
             
             if (tkState.phase === 3) {
-                // Enemy flies perfectly level at the locked altitude
+                // Enemy plane rendered exactly relative to the tracking camera
                 let enemyVisualY = -(tkState.enemyAltitude - tkState.cameraY);
                 document.getElementById('tk-enemy-plane').style.left = `${tkState.enemyX}%`;
                 document.getElementById('tk-enemy-plane').style.transform = `translateY(${enemyVisualY}px) scaleX(-1)`;
@@ -473,7 +504,7 @@
             const spawnX = (tkState.phase === 3 && reason === "MID-AIR COLLISION!") ? 100 : 50; 
             let planeVisualY = -(tkState.altitude - tkState.cameraY);
             
-            // explosion happens exactly where the plane died visually
+            // Explosion happens exactly where the plane died visually
             const spawnY = vp.offsetHeight - 32 + planeVisualY - 20; 
             
             for(let i = 0; i < 200; i++) {
@@ -518,6 +549,8 @@
             document.getElementById('tk-touch-prompt').style.opacity = '1';
             document.getElementById('tk-touch-prompt').style.color = "var(--gauge-green)";
             
+            let planeVisualY = -(tkState.altitude - tkState.cameraY);
+            document.getElementById('tk-plane').style.transform = `translateY(${planeVisualY}px) rotate(0deg)`;
             confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
             
             setTimeout(() => {

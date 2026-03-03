@@ -150,6 +150,7 @@
             <button onclick="startFlight()">Reset Mission</button>
         </div>
     </div>
+
     <script>
         // State variables
         let tkState = {
@@ -353,7 +354,7 @@
                 }
             }
 
-            // Floor crash check (Hitting the ground)
+            // Floor crash check (Hitting the ground after takeoff)
             if (tkState.phase > 1 && tkState.altitude <= 0) return triggerCrash("CRASHED INTO GROUND!");
 
             // --- 5. UPDATE VISUALS ---

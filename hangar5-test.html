@@ -129,7 +129,7 @@
         </div>
         
         <div id="prompt-container">
-            <div id="tk-touch-prompt">TAP TO START ENGINES</div>
+            <div id="tk-touch-prompt">TAP OR SPACE TO START ENGINES</div>
         </div>
         
         <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky1.png');"></div>
@@ -165,6 +165,7 @@
 
         const CRUISE_ALT = 300; 
 
+        // --- MOUSE & TOUCH CONTROLS ---
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
             if (!tkState.active && tkState.speed === 0) startFlight();
@@ -172,6 +173,22 @@
         });
         window.addEventListener('pointerup', () => tkState.pressing = false);
         window.addEventListener('touchend', () => tkState.pressing = false);
+
+        // --- KEYBOARD CONTROLS (SPACEBAR) ---
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault(); // Stop spacebar from scrolling the page
+                if (e.repeat) return; // Prevent repeated triggers if held down
+                if (!tkState.active && tkState.speed === 0) startFlight();
+                tkState.pressing = true;
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault();
+                tkState.pressing = false;
+            }
+        });
 
         function triggerWin() {
             confetti({ particleCount: 250, spread: 120, origin: { y: 0.6 } });
@@ -467,7 +484,7 @@
                  prompt.textContent = "BRACE! SKIDDING ON RUNWAY!";
             }
 
-            // 5. STRICT THRESHOLD CAMERA
+            // 5. STRICT THRESHOLD CAMERA (Prevents Cropping)
             tkState.bgX_sky -= (tkState.speed * 0.006 * SPEED_MOD);
             tkState.bgX_city -= (tkState.speed * 0.03 * SPEED_MOD);
             tkState.bgX_runway -= (tkState.speed * 0.18 * SPEED_MOD);

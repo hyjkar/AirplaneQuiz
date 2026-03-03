@@ -158,7 +158,7 @@
         // State variables
         let tkState = {
             active: false,
-            phase: 0,         // 0: Ground, 1: Liftoff, 2: Level, 3: Evade, 4: Final Level
+            phase: 0,         // 0: Ground, 1: Liftoff, 2: Cruise, 3: Evade, 4: Recover, 5: Landing, 6: Rollout
             pitch: 0,         // Pitch angle: -20 (dive) to +30 (steep climb)
             pitchVelocity: 0,
             speed: 0,
@@ -176,10 +176,11 @@
             currTargetMin: 10, currTargetMax: 16,
             actualTargetMin: 10, actualTargetMax: 16,
 
-            enemyX: 150
+            enemyX: 150,
+            enemyAltitude: 0
         };
 
-        const CRUISE_ALT = 1200;
+        const CRUISE_ALT = 800; // The altitude the game pushes you to level off at
 
         // Pitch to Percentage Converter (-20 to +30 total range = 50 degrees)
         function pitchToPercent(degrees) {
@@ -213,7 +214,7 @@
                 active: true, phase: 0, pitch: 0, pitchVelocity: 0, speed: 0, progress: 0, 
                 altitude: 0, cameraY: 0, score: 0,
                 pressing: false, frameId: null, lastFrameTime: performance.now(),
-                bgPosRunway: 0, bgPosClouds: 0, enemyX: 150,
+                bgPosRunway: 0, bgPosClouds: 0, enemyX: 150, enemyAltitude: 0,
                 currTargetMin: 10, currTargetMax: 16, 
                 actualTargetMin: 10, actualTargetMax: 16
             };
@@ -224,7 +225,6 @@
             document.getElementById('tk-score-display').textContent = `SCORE: 0`;
             document.getElementById('tk-alt-display').textContent = `ALT: 0m`;
             
-            // Ensure runway is in original position
             document.getElementById('tk-runway').style.transform = `translateY(0px)`;
             document.getElementById('tk-clouds').style.transform = `translateY(0px)`;
 
@@ -243,14 +243,21 @@
             tkState.lastFrameTime = timestamp;
 
             // --- 1. SPEED & PROGRESS ---
-            let acceleration = 1.0; 
-            if (tkState.pitch > 0) acceleration -= (tkState.pitch * 0.05); 
-            if (tkState.pitch < 0) acceleration += (Math.abs(tkState.pitch) * 0.03); 
+            if (tkState.phase < 6) {
+                let acceleration = 1.0; 
+                if (tkState.pitch > 0) acceleration -= (tkState.pitch * 0.05); 
+                if (tkState.pitch < 0) acceleration += (Math.abs(tkState.pitch) * 0.03); 
 
-            tkState.speed += acceleration;
-            tkState.speed = Math.max(0, Math.min(220, tkState.speed));
+                tkState.speed += acceleration;
+                tkState.speed = Math.max(0, Math.min(220, tkState.speed));
+            } else {
+                // Phase 6 is touchdown rollout (braking)
+                tkState.speed -= 1.5;
+                tkState.speed = Math.max(0, tkState.speed);
+                if (tkState.speed === 0) return triggerWin();
+            }
             
-            if (tkState.phase > 0) {
+            if (tkState.phase > 0 && tkState.phase < 6) {
                 tkState.progress += (tkState.speed / 4500); 
             }
 
@@ -265,28 +272,52 @@
                 speedBar.style.backgroundColor = "var(--brand-red)";
             }
 
-            // --- 2. PITCH & TRUE ALTITUDE PHYSICS ---
-            if (tkState.pressing && tkState.speed >= 150) {
-                tkState.pitchVelocity += 0.06; // Pull up
-            } else if (tkState.speed >= 150) {
-                tkState.pitchVelocity -= 0.04; // Drop
+            // --- 2. PITCH & ALTITUDE PHYSICS ---
+            if (tkState.pressing && tkState.speed >= 100) {
+                tkState.pitchVelocity += 0.06; // Smoother pull up
+            } else if (tkState.speed >= 100) {
+                tkState.pitchVelocity -= 0.04; // Smoother drop
             }
             tkState.pitchVelocity *= 0.88; 
             tkState.pitchVelocity = Math.max(-1.5, Math.min(1.5, tkState.pitchVelocity));
             tkState.pitch += tkState.pitchVelocity;
             tkState.pitch = Math.max(-20, Math.min(30, tkState.pitch));
+            
+            // Ground Constraint: Plane cannot nose dive through the tarmac
+            if (tkState.altitude <= 0 && tkState.pitch < 0 && (tkState.phase === 0 || tkState.phase === 6)) {
+                tkState.pitch = 0;
+                if (tkState.pitchVelocity < 0) tkState.pitchVelocity = 0;
+            }
+            
             if(tkState.pitch === 30 || tkState.pitch === -20) tkState.pitchVelocity = 0;
 
             // Altitude increases based on pitch
-            if (tkState.phase > 0) {
-                tkState.altitude += tkState.pitch * 0.3; // Speed of altitude climb/fall
-                tkState.altitude = Math.max(0, tkState.altitude); // Hard floor
+            if (tkState.phase > 0 && tkState.phase < 6) {
+                tkState.altitude += tkState.pitch * 0.4; 
             }
 
-            // Camera Tracking Logic (Creates the panning up/down effect smoothly)
-            let optimalCameraY = tkState.altitude - 120; 
+            // Ground Collision Detection logic
+            const prompt = document.getElementById('tk-touch-prompt');
+            if (tkState.altitude <= 0 && tkState.phase > 0) {
+                if (tkState.phase === 5 && tkState.pitch >= 0 && tkState.pitch <= 10) {
+                    // Safe Touchdown!
+                    tkState.phase = 6;
+                    tkState.altitude = 0;
+                    setTargetZone(0, 5); // Flare zone
+                    prompt.textContent = "TOUCHDOWN! BRAKING...";
+                    prompt.className = "prompt-pulse";
+                    prompt.style.color = "var(--gauge-green)";
+                } else if (tkState.phase !== 6) {
+                    // Crashed outside of landing phase or nose-dived
+                    tkState.altitude = 0;
+                    return triggerCrash("CRASHED INTO RUNWAY!");
+                }
+            }
+
+            // Camera Tracking Logic
+            let optimalCameraY = tkState.altitude - 100; 
             let targetCameraY = Math.max(0, optimalCameraY);
-            tkState.cameraY += (targetCameraY - tkState.cameraY) * 0.08; // Smooth follow
+            tkState.cameraY += (targetCameraY - tkState.cameraY) * 0.08; 
 
             // Target Zone Smoothing
             tkState.actualTargetMin += (tkState.currTargetMin - tkState.actualTargetMin) * 0.1;
@@ -294,15 +325,13 @@
             let inZone = (tkState.pitch >= tkState.actualTargetMin - 0.5 && tkState.pitch <= tkState.actualTargetMax + 0.5);
 
             // --- 3. SCORE INCREMENT ---
-            if (inZone && tkState.phase > 0) {
+            if (inZone && tkState.phase > 0 && tkState.phase < 6) {
                 tkState.score += 5;
                 document.getElementById('tk-score-display').textContent = `SCORE: ${Math.floor(tkState.score)}`;
             }
             document.getElementById('tk-alt-display').textContent = `ALT: ${Math.floor(tkState.altitude)}m`;
 
             // --- 4. PHASE STATE MACHINE ---
-            const prompt = document.getElementById('tk-touch-prompt');
-
             if (tkState.phase === 0) {
                 prompt.textContent = `SPEED: ${Math.floor(tkState.speed)} KTS (WAIT FOR 150)`;
                 if (tkState.speed >= 150) {
@@ -311,52 +340,52 @@
                 }
             } 
             else if (tkState.phase === 1) {
-                // Reach 1200m to level off
                 if (tkState.altitude >= CRUISE_ALT) {
                     tkState.phase = 2;
-                    setTargetZone(-3, 3); // Level out at 0
+                    setTargetZone(-3, 3); // Level out
                     prompt.textContent = "LEVEL THE PLANE (0°)";
                 }
             }
             else if (tkState.phase === 2) {
-                if (tkState.progress > 45) {
+                if (tkState.progress > 30) {
                     tkState.phase = 3;
                     setTargetZone(-16, -6); // EVASIVE DIVE!
                     prompt.textContent = "TRAFFIC! DIVE NOW!";
                     prompt.className = "prompt-alert";
                     document.getElementById('tk-alert-overlay').className = "flashing";
                     document.getElementById('tk-enemy-plane').style.display = 'block';
-                    tkState.enemyX = 150; // Spawns off screen right
+                    tkState.enemyX = 150; 
+                    tkState.enemyAltitude = tkState.altitude; // Lock enemy to your CURRENT altitude
                 }
             }
             else if (tkState.phase === 3) {
-                // Enemy approaches steadily
-                tkState.enemyX -= 1.0; 
+                tkState.enemyX -= 0.8; 
                 
-                // True Physical Collision Detection
+                // Collision Detection against Golden Plane
                 if (tkState.enemyX < 35 && tkState.enemyX > -10) {
-                    // If the player's altitude is within 80 meters of 1200, they hit the plane!
-                    if (Math.abs(tkState.altitude - CRUISE_ALT) < 80) {
+                    if (Math.abs(tkState.altitude - tkState.enemyAltitude) < 60) {
                         return triggerCrash("MID-AIR COLLISION!");
                     }
                 }
                 
                 if (tkState.enemyX < -30) {
                     tkState.phase = 4;
-                    setTargetZone(-3, 3); // Back to level
+                    setTargetZone(-3, 3); // Recover level
                     prompt.textContent = "CLEAR. LEVEL OUT.";
                     prompt.className = "prompt-pulse";
                     document.getElementById('tk-alert-overlay').className = "";
                 }
             }
             else if (tkState.phase === 4) {
-                if (tkState.progress >= 100) {
-                    return triggerWin();
+                if (tkState.progress > 65) {
+                    tkState.phase = 5;
+                    setTargetZone(-8, -2); // Descent angle
+                    prompt.textContent = "LANDING APPROACH - DESCEND";
                 }
             }
-
-            // Floor crash check (Hitting the ground after takeoff)
-            if (tkState.phase > 1 && tkState.altitude <= 0) return triggerCrash("CRASHED INTO GROUND!");
+            else if (tkState.phase === 5) {
+                // Wait for altitude to hit 0 (Handled by ground collision block above)
+            }
 
             // --- 5. UPDATE VISUALS ---
             tkState.bgPosRunway -= tkState.speed * 0.08;
@@ -388,11 +417,11 @@
             pitchEl.textContent = `${Math.floor(tkState.pitch)}°`;
             document.getElementById('tk-pitch-bar').style.height = `${pitchToPercent(tkState.pitch)}%`;
             
-            if (inZone && tkState.phase > 0) {
+            if (inZone && tkState.phase > 0 && tkState.phase !== 6) {
                 pitchEl.style.color = "var(--gauge-green)";
                 document.getElementById('tk-pitch-bar').style.backgroundColor = "var(--gauge-green)";
                 if(tkState.phase !== 3) prompt.style.opacity = '0'; 
-            } else {
+            } else if (tkState.phase !== 6) {
                 pitchEl.style.color = "var(--brand-red)";
                 document.getElementById('tk-pitch-bar').style.backgroundColor = "var(--brand-red)";
                 prompt.style.opacity = '1';
@@ -404,7 +433,8 @@
             document.getElementById('tk-plane').style.transform = `translateY(${planeVisualY}px) rotate(${visualPitch}deg)`;
             
             if (tkState.phase === 3) {
-                let enemyVisualY = -(CRUISE_ALT - tkState.cameraY);
+                // Enemy flies exactly at its locked altitude
+                let enemyVisualY = -(tkState.enemyAltitude - tkState.cameraY);
                 document.getElementById('tk-enemy-plane').style.left = `${tkState.enemyX}%`;
                 document.getElementById('tk-enemy-plane').style.transform = `translateY(${enemyVisualY}px) scaleX(-1)`;
             }
@@ -426,8 +456,9 @@
             const colors = ['#fff', 'var(--brand-red)', '#f39c12', '#1a1a1a', '#555'];
             
             const spawnX = (tkState.phase === 3 && reason === "MID-AIR COLLISION!") ? 100 : 50; 
-            let planeVisualY = tkState.altitude - tkState.cameraY;
-            const spawnY = vp.offsetHeight - 32 - planeVisualY - 20; 
+            let planeVisualY = -(tkState.altitude - tkState.cameraY);
+            // offset the spawn position to match where the plane visually was
+            const spawnY = vp.offsetHeight - 32 + planeVisualY - 20; 
             
             for(let i = 0; i < 200; i++) {
                 let p = document.createElement('div');
@@ -466,13 +497,11 @@
 
         function triggerWin() {
             tkState.active = false;
-            document.getElementById('tk-touch-prompt').textContent = `MISSION ACCOMPLISHED! (+${Math.floor(tkState.score)})`;
+            document.getElementById('tk-touch-prompt').textContent = `SAFE LANDING! (+${Math.floor(tkState.score)})`;
             document.getElementById('tk-touch-prompt').className = "prompt-pulse";
             document.getElementById('tk-touch-prompt').style.opacity = '1';
             document.getElementById('tk-touch-prompt').style.color = "var(--gauge-green)";
             
-            let planeVisualY = -(tkState.altitude - tkState.cameraY);
-            document.getElementById('tk-plane').style.transform = `translateY(${planeVisualY}px) rotate(0deg)`;
             confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
             
             setTimeout(() => {

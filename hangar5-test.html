@@ -53,9 +53,14 @@
 
         /* Scenery */
         .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; pointer-events: none; }
+        
+        /* Make sure sky and city are visible and span the screen */
+        #tk-bg-sky { background-size: 1024px 100%; z-index: 0; height: 150%; background-color: #87CEEB;}
+        #tk-bg-city { height: 60%; background-size: 1024px 100%; background-position: bottom left; z-index: 1; bottom: 32px; top: auto; }
+        
         #tk-clouds { 
             background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><circle cx="50" cy="50" r="30" fill="white" opacity="0.15"/><circle cx="90" cy="60" r="40" fill="white" opacity="0.15"/><circle cx="140" cy="40" r="35" fill="white" opacity="0.15"/></svg>') repeat-x; 
-            background-size: 300px 150px; height: 200%; z-index: 1; 
+            background-size: 300px 150px; height: 200%; z-index: 2; 
         }
         
         /* Ground */
@@ -64,7 +69,7 @@
 
         /* Entities */
         #tk-plane { position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px; transform-origin: 50% 50%; z-index: 5; pointer-events: none;}
-        #tk-enemy-plane { position: absolute; left: 150%; bottom: 32px; width: 140px; height: 50px; z-index: 4; pointer-events: none; display: none; }
+        #tk-enemy-plane { position: absolute; left: 150%; bottom: 152px; width: 140px; height: 50px; z-index: 4; pointer-events: none; display: none; }
         #tk-mountain { position: absolute; bottom: 32px; left: 100%; width: 150px; height: 150px; z-index: 2; display: none; pointer-events: none;}
 
         .pixel-particle { position: absolute; z-index: 10; pointer-events: none; }
@@ -116,8 +121,8 @@
             
             <div id="tk-touch-prompt" class="prompt-pulse">TAP TO START ENGINES</div>
             
-            <div id="tk-bg-sky" class="parallax-layer"></div>
-            <div id="tk-bg-city" class="parallax-layer"></div>
+            <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky1.png');"></div>
+            <div id="tk-bg-city" class="parallax-layer" style="background-image: url('city1.png');"></div>
             <div id="tk-clouds" class="parallax-layer"></div>
             
             <div id="tk-gauge-container">
@@ -175,6 +180,8 @@
             frameId: null,
             lastFrameTime: 0,
             
+            bgPosSky: 0,
+            bgPosCity: 0,
             bgPosRunway: 0,
             bgPosClouds: 0,
             
@@ -219,7 +226,7 @@
                 active: true, phase: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, progress: 0, 
                 altitude: 0, cameraY: 0, score: 0, takeoffDistance: 100,
                 pressing: false, frameId: null, lastFrameTime: performance.now(),
-                bgPosRunway: 0, bgPosClouds: 0, enemyX: 150, enemyAltitude: 0,
+                bgPosSky: 0, bgPosCity: 0, bgPosRunway: 0, bgPosClouds: 0, enemyX: 150, enemyAltitude: 0,
                 currTargetMin: 10, currTargetMax: 16, 
                 actualTargetMin: 10, actualTargetMax: 16
             };
@@ -250,6 +257,8 @@
             let delta = timestamp - tkState.lastFrameTime;
             if (delta < 15) { tkState.frameId = requestAnimationFrame(gameLoop); return; }
             tkState.lastFrameTime = timestamp;
+
+            const prompt = document.getElementById('tk-touch-prompt');
 
             // --- 1. SPEED & PROGRESS ---
             if (tkState.phase < 6) {
@@ -336,7 +345,6 @@
             }
 
             // --- GROUND COLLISION DETECTION (LANDING) ---
-            const prompt = document.getElementById('tk-touch-prompt');
             if (tkState.altitude <= 0 && tkState.phase > 0 && tkState.phase < 6) {
                 if (tkState.phase === 1) {
                     // Safe, just rolling on runway
@@ -433,12 +441,20 @@
             }
 
             // --- 5. UPDATE VISUALS ---
+            // Horizontal Parallax
             tkState.bgPosRunway -= tkState.speed * 0.08;
             tkState.bgPosClouds -= tkState.speed * 0.002;
+            tkState.bgPosSky -= tkState.speed * 0.001;
+            tkState.bgPosCity -= tkState.speed * 0.008;
+            
             document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgPosRunway}px 14px`;
             document.getElementById('tk-clouds').style.backgroundPosition = `${tkState.bgPosClouds}px 50px`;
+            document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgPosSky}px 0px`;
+            document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgPosCity}px 100%`;
 
             // Vertical Parallax (Based on Camera Altitude)
+            document.getElementById('tk-bg-sky').style.transform = `translateY(${tkState.cameraY * 0.05}px)`;
+            document.getElementById('tk-bg-city').style.transform = `translateY(${tkState.cameraY * 0.6}px)`;
             document.getElementById('tk-runway').style.transform = `translateY(${tkState.cameraY}px)`;
             document.getElementById('tk-mountain').style.transform = `translateY(${tkState.cameraY}px)`;
             document.getElementById('tk-clouds').style.transform = `translateY(${tkState.cameraY * 0.4}px)`;
@@ -479,7 +495,7 @@
             document.getElementById('tk-plane').style.transform = `translateY(${planeVisualY}px) rotate(${visualPitch}deg)`;
             
             if (tkState.phase === 3) {
-                // Enemy plane rendered exactly relative to the tracking camera
+                // Enemy flies perfectly level at the locked altitude
                 let enemyVisualY = -(tkState.enemyAltitude - tkState.cameraY);
                 document.getElementById('tk-enemy-plane').style.left = `${tkState.enemyX}%`;
                 document.getElementById('tk-enemy-plane').style.transform = `translateY(${enemyVisualY}px) scaleX(-1)`;
@@ -494,9 +510,11 @@
             document.getElementById('tk-plane').style.display = 'none';
             document.getElementById('tk-enemy-plane').style.display = 'none';
             document.getElementById('tk-alert-overlay').className = "";
-            document.getElementById('tk-touch-prompt').textContent = reason;
-            document.getElementById('tk-touch-prompt').className = "prompt-alert";
-            document.getElementById('tk-touch-prompt').style.opacity = '1';
+            
+            const prompt = document.getElementById('tk-touch-prompt');
+            prompt.textContent = reason;
+            prompt.className = "prompt-alert";
+            prompt.style.opacity = '1';
             
             const vp = document.getElementById('takeoff-viewport');
             const colors = ['#fff', 'var(--brand-red)', '#f39c12', '#1a1a1a', '#555'];
@@ -528,6 +546,7 @@
             setTimeout(() => {
                 document.getElementById('tk-touch-prompt').textContent = "TAP TO RETRY";
                 document.getElementById('tk-touch-prompt').className = "prompt-pulse";
+                document.getElementById('tk-touch-prompt').style.color = "#fff";
             }, 3000);
         }
 
@@ -544,13 +563,13 @@
 
         function triggerWin() {
             tkState.active = false;
-            document.getElementById('tk-touch-prompt').textContent = `SAFE LANDING! (+${Math.floor(tkState.score)})`;
-            document.getElementById('tk-touch-prompt').className = "prompt-pulse";
-            document.getElementById('tk-touch-prompt').style.opacity = '1';
-            document.getElementById('tk-touch-prompt').style.color = "var(--gauge-green)";
             
-            let planeVisualY = -(tkState.altitude - tkState.cameraY);
-            document.getElementById('tk-plane').style.transform = `translateY(${planeVisualY}px) rotate(0deg)`;
+            const prompt = document.getElementById('tk-touch-prompt');
+            prompt.textContent = `SAFE LANDING! (+${Math.floor(tkState.score)})`;
+            prompt.className = "prompt-pulse";
+            prompt.style.opacity = '1';
+            prompt.style.color = "var(--gauge-green)";
+            
             confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
             
             setTimeout(() => {

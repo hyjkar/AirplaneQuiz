@@ -30,11 +30,11 @@
             display: flex; flex-direction: column; gap: 15px;
         }
 
-        /* Viewport & Environment */
+        /* Viewport & Environment - Solid blue matches the top of sky1.png */
         #takeoff-viewport {
             position: relative; width: 100%; height: 350px; 
             border: 4px solid #444; border-radius: 8px; overflow: hidden; 
-            background: linear-gradient(to bottom, #1e3c72 0%, #2a5298 50%, #87CEEB 100%);
+            background-color: #4a9ae9; /* Clean sky top color */
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             cursor: pointer;
         }
@@ -54,13 +54,8 @@
         /* Scenery */
         .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; pointer-events: none; }
         
-        #tk-bg-sky { background-size: 1024px 100%; z-index: 0; height: 150%; background-color: #87CEEB;}
+        #tk-bg-sky { background-size: 1024px 100%; z-index: 0; height: 150%; }
         #tk-bg-city { height: 60%; background-size: 1024px 100%; background-position: bottom left; z-index: 1; bottom: 32px; top: auto; }
-        
-        #tk-clouds { 
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><circle cx="50" cy="50" r="30" fill="white" opacity="0.15"/><circle cx="90" cy="60" r="40" fill="white" opacity="0.15"/><circle cx="140" cy="40" r="35" fill="white" opacity="0.15"/></svg>') repeat-x; 
-            background-size: 300px 150px; height: 200%; z-index: 2; 
-        }
         
         /* Ground */
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: #222; z-index: 3;}
@@ -84,11 +79,11 @@
         @keyframes pulseText { from { opacity: 0.5; transform: scale(0.98); } to { opacity: 1; transform: scale(1.02); } }
         @keyframes rapidPulse { from { opacity: 0.8; transform: scale(1); } to { opacity: 1; transform: scale(1.1); } }
 
-        /* The Pitch Gauge (-25 to +25 degrees) -> 0 is EXACTLY in the middle (50%) */
-        #tk-gauge-container { position: absolute; right: 15px; top: 25px; bottom: 25px; width: 25px; background: rgba(0,0,0,0.6); border-radius: 4px; border: 2px solid #fff; z-index: 6; pointer-events: none;}
-        #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); transition: bottom 0.2s linear, height 0.2s linear; box-shadow: 0 0 10px var(--gauge-green); }
-        #tk-zero-line { position: absolute; left: -5px; right: -5px; bottom: 50%; height: 2px; background: rgba(255,255,255,0.8); z-index: 7;}
-        #tk-needle { position: absolute; left: -8px; right: -8px; bottom: 50%; height: 4px; background: #fff; transition: bottom 0.05s linear; box-shadow: 0 0 6px rgba(255,255,255,0.8); z-index: 8;}
+        /* TRUE HUD PITCH GAUGE */
+        #tk-gauge-container { position: absolute; right: 15px; top: 60px; bottom: 15px; width: 25px; background: rgba(0,0,0,0.6); border-radius: 4px; border: 2px solid #fff; z-index: 6; pointer-events: none; overflow: hidden;}
+        #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); box-shadow: 0 0 10px var(--gauge-green); }
+        /* The needle (plane indicator) is permanently fixed in the dead center! */
+        #tk-needle { position: absolute; left: -8px; right: -8px; bottom: 50%; height: 4px; background: #fff; box-shadow: 0 0 6px rgba(255,255,255,0.8); z-index: 8; transform: translateY(50%);}
 
         /* Dashboard */
         .takeoff-dashboard { display: flex; justify-content: space-around; align-items: flex-end; width: 100%; padding: 15px; background: var(--bg-dark); border-radius: 8px; border: 2px solid #333; }
@@ -123,11 +118,9 @@
             
             <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky1.png');"></div>
             <div id="tk-bg-city" class="parallax-layer" style="background-image: url('city1.png');"></div>
-            <div id="tk-clouds" class="parallax-layer"></div>
             
             <div id="tk-gauge-container">
                 <div id="tk-target-zone"></div>
-                <div id="tk-zero-line"></div>
                 <div id="tk-needle"></div>
             </div>
             
@@ -184,7 +177,6 @@
             bgPosSky: 0,
             bgPosCity: 0,
             bgPosRunway: 0,
-            bgPosClouds: 0,
             
             currTargetMin: 10, currTargetMax: 16,
             actualTargetMin: 10, actualTargetMax: 16,
@@ -195,7 +187,7 @@
 
         const CRUISE_ALT = 1200; 
 
-        // -25 to +25 total range = 50 degrees. 0 is exactly 50%.
+        // Dashboard uses standard fill calculation
         function pitchToPercent(degrees) {
             return ((degrees + 25) / 50) * 100;
         }
@@ -226,7 +218,7 @@
                 active: true, phase: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, progress: 0, 
                 altitude: 0, cameraY: 0, score: 0, takeoffDistance: 100,
                 pressing: false, frameId: null, lastFrameTime: performance.now(),
-                bgPosSky: 0, bgPosCity: 0, bgPosRunway: 0, bgPosClouds: 0, enemyX: 150, enemyAltitude: 0,
+                bgPosSky: 0, bgPosCity: 0, bgPosRunway: 0, enemyX: 150, enemyAltitude: 0,
                 currTargetMin: 10, currTargetMax: 16, 
                 actualTargetMin: 10, actualTargetMax: 16
             };
@@ -241,7 +233,6 @@
             document.getElementById('tk-bg-sky').style.transform = `translateY(0px)`;
             document.getElementById('tk-bg-city').style.transform = `translateY(0px)`;
             document.getElementById('tk-runway').style.transform = `translateY(0px)`;
-            document.getElementById('tk-clouds').style.transform = `translateY(0px)`;
 
             const prompt = document.getElementById('tk-touch-prompt');
             prompt.textContent = "ACCELERATING...";
@@ -252,12 +243,11 @@
         }
 
         function checkCollision() {
-            // Precise AABB (Axis-Aligned Bounding Box) visual collision
+            // True Pixel-Perfect Bounding Box Collision
             const pRect = document.getElementById('tk-plane').getBoundingClientRect();
             const eRect = document.getElementById('tk-enemy-plane').getBoundingClientRect();
             
-            // 15px margin to ignore transparent pixels around the plane PNGs
-            const margin = 15; 
+            const margin = 15; // Ignore transparent PNG whitespace
             
             let hit = !(pRect.right - margin < eRect.left + margin || 
                         pRect.left + margin > eRect.right - margin || 
@@ -283,6 +273,7 @@
                 tkState.speed += acceleration;
                 tkState.speed = Math.max(0, Math.min(220, tkState.speed));
             } else {
+                // Touchdown Rollout
                 tkState.speed -= 1.5;
                 tkState.speed = Math.max(0, tkState.speed);
                 if (tkState.speed === 0) return triggerWin();
@@ -350,10 +341,10 @@
                 }
             }
 
-            // --- GROUND COLLISION (LANDING) ---
+            // --- GROUND COLLISION ---
             if (tkState.altitude <= 0 && tkState.phase > 0 && tkState.phase < 6) {
                 if (tkState.phase === 1) {
-                    // Safe, rolling
+                    // Rolling
                 } else if (tkState.phase === 5) {
                     if (tkState.pitch >= -5 && tkState.pitch <= 15) {
                         tkState.phase = 6;
@@ -372,7 +363,7 @@
                 }
             }
 
-            // Camera Tracking Logic - 120px offset centers the plane perfectly on the 0 degree line
+            // Camera Tracking Logic - The 120px offset aligns the plane exactly with the 0° line
             let optimalCameraY = tkState.altitude - 120; 
             let targetCameraY = Math.max(0, optimalCameraY);
             tkState.cameraY += (targetCameraY - tkState.cameraY) * 0.08; 
@@ -414,14 +405,14 @@
                     document.getElementById('tk-enemy-plane').style.display = 'block';
                     
                     tkState.enemyX = 150; 
-                    // Lock enemy EXACTLY to player's current altitude to guarantee collision if they don't move
+                    // Lock enemy EXACTLY to player's current altitude. Collision is guaranteed if they stay at 0°.
                     tkState.enemyAltitude = tkState.altitude; 
                 }
             }
             else if (tkState.phase === 3) {
                 tkState.enemyX -= 1.0; 
                 
-                // True HTML Element Physical Bounding Box Collision
+                // Pure HTML Image Box Collision
                 if (checkCollision()) {
                     return triggerCrash("MID-AIR COLLISION!");
                 }
@@ -444,29 +435,29 @@
 
             // --- 5. UPDATE VISUALS ---
             tkState.bgPosRunway -= tkState.speed * 0.08;
-            tkState.bgPosClouds -= tkState.speed * 0.002;
             tkState.bgPosSky -= tkState.speed * 0.001;
             tkState.bgPosCity -= tkState.speed * 0.008;
             
             document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgPosRunway}px 14px`;
-            document.getElementById('tk-clouds').style.backgroundPosition = `${tkState.bgPosClouds}px 50px`;
             document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgPosSky}px 0px`;
             document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgPosCity}px 100%`;
 
+            // Vertical Parallax
             document.getElementById('tk-bg-sky').style.transform = `translateY(${tkState.cameraY * 0.05}px)`;
             document.getElementById('tk-bg-city').style.transform = `translateY(${tkState.cameraY * 0.6}px)`;
             document.getElementById('tk-runway').style.transform = `translateY(${tkState.cameraY}px)`;
             document.getElementById('tk-mountain').style.transform = `translateY(${tkState.cameraY}px)`;
-            document.getElementById('tk-clouds').style.transform = `translateY(${tkState.cameraY * 0.4}px)`;
 
-            const bottomPercent = pitchToPercent(tkState.actualTargetMin);
-            const heightPercent = pitchToPercent(tkState.actualTargetMax) - bottomPercent;
+            // --- TRUE HUD GAUGE LOGIC ---
+            // Needle stays fixed at 50%. The Green Zone moves around it based on pitch relative to target!
+            const heightPercent = (tkState.actualTargetMax - tkState.actualTargetMin) * 2; // 2% per degree
+            const bottomPercent = 50 + (tkState.actualTargetMin - tkState.pitch) * 2;
             
             const zoneEl = document.getElementById('tk-target-zone');
             zoneEl.style.bottom = `${bottomPercent}%`;
             zoneEl.style.height = `${heightPercent}%`;
-            document.getElementById('tk-needle').style.bottom = `${pitchToPercent(tkState.pitch)}%`;
 
+            // Dashboard Updates
             document.getElementById('tk-speed-bar').style.height = `${Math.min(100, (tkState.speed / 250) * 100)}%`;
             speedEl.textContent = Math.floor(tkState.speed);
             
@@ -477,18 +468,18 @@
             pitchEl.textContent = `${Math.floor(tkState.pitch)}°`;
             document.getElementById('tk-pitch-bar').style.height = `${pitchToPercent(tkState.pitch)}%`;
             
-            // Neutral Pitch Color Updates
+            // Neutral Dashboard Pitch Color
             if (inZone && tkState.phase > 0 && tkState.phase !== 6) {
                 pitchEl.style.color = "var(--gauge-green)";
                 document.getElementById('tk-pitch-bar').style.backgroundColor = "var(--gauge-green)";
                 if(tkState.phase !== 3) prompt.style.opacity = '0'; 
             } else if (tkState.phase !== 6) {
-                pitchEl.style.color = "#fff";
+                pitchEl.style.color = "#fff"; // Stays clean white unless hitting target
                 document.getElementById('tk-pitch-bar').style.backgroundColor = "#fff";
                 prompt.style.opacity = '1';
             }
 
-            // --- RENDER PLANES ON SCREEN ---
+            // --- MOVE PLANES ---
             let planeVisualY = -(tkState.altitude - tkState.cameraY);
             let visualPitch = -tkState.pitch;
             document.getElementById('tk-plane').style.transform = `translateY(${planeVisualY}px) rotate(${visualPitch}deg)`;
@@ -502,7 +493,6 @@
             tkState.frameId = requestAnimationFrame(gameLoop);
         }
 
-        // --- EXPLOSIONS AND RESOLUTIONS ---
         function triggerCrash(reason) {
             tkState.active = false;
             document.getElementById('tk-plane').style.display = 'none';
@@ -519,7 +509,6 @@
             
             const spawnX = (tkState.phase === 3 && reason === "MID-AIR COLLISION!") ? 100 : 50; 
             let planeVisualY = -(tkState.altitude - tkState.cameraY);
-            
             const spawnY = vp.offsetHeight - 32 + planeVisualY - 20; 
             
             for(let i = 0; i < 200; i++) {
@@ -538,7 +527,7 @@
             }
             
             vp.style.background = "#ff3333";
-            setTimeout(() => vp.style.background = "linear-gradient(to bottom, #1e3c72 0%, #2a5298 50%, #87CEEB 100%)", 100);
+            setTimeout(() => vp.style.background = "#4a9ae9", 100);
             
             setTimeout(() => {
                 document.getElementById('tk-touch-prompt').textContent = "TAP TO RETRY";

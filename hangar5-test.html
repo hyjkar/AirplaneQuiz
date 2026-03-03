@@ -1,3 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hangar 5 - Dynamic Flight Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --brand-red: #d71920;
+            --gauge-green: #2ecc71;
+            --gauge-orange: #f39c12;
+            --bg-dark: #1a1a1a;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: #222; color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; overflow: hidden; user-select: none;
+        }
+
+        #game-wrapper {
+            width: 100%; max-width: 600px;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        /* Viewport & Environment */
+        #takeoff-viewport {
+            position: relative; width: 100%; height: 350px; 
+            border: 4px solid #444; border-radius: 8px; overflow: hidden; 
+            background: linear-gradient(to bottom, #1e3c72 0%, #2a5298 50%, #87CEEB 100%);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+        
+        /* Red flashing overlay for alerts */
+        #tk-alert-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            box-shadow: inset 0 0 0px rgba(215, 25, 32, 0);
+            pointer-events: none; z-index: 7; transition: box-shadow 0.2s;
+        }
+        .flashing { animation: redAlert 0.4s infinite alternate; }
+        @keyframes redAlert { from { box-shadow: inset 0 0 10px rgba(215, 25, 32, 0.2); background: rgba(215, 25, 32, 0.1); } to { box-shadow: inset 0 0 80px rgba(215, 25, 32, 0.8); background: rgba(215, 25, 32, 0.3); } }
+
+        /* Scenery */
+        .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; pointer-events: none; }
+        #tk-clouds { 
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><circle cx="50" cy="50" r="30" fill="white" opacity="0.15"/><circle cx="90" cy="60" r="40" fill="white" opacity="0.15"/><circle cx="140" cy="40" r="35" fill="white" opacity="0.15"/></svg>') repeat-x; 
+            background-size: 300px 150px; height: 200%; z-index: 1; 
+        }
+        
+        /* Ground */
+        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: #222; z-index: 3;}
+        #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 14px; background-size: 200px 4px; background-repeat: repeat-x;}
+
+        /* Entities */
+        #tk-plane { position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px; transform-origin: 50% 50%; z-index: 5; pointer-events: none;}
+        #tk-enemy-plane { position: absolute; left: 150%; bottom: 152px; width: 140px; height: 50px; z-index: 4; pointer-events: none; display: none; }
+        
+        .pixel-particle { position: absolute; z-index: 10; pointer-events: none; }
+
+        /* UI Elements inside Viewport */
+        #tk-hud-top { position: absolute; top: 10px; left: 15px; right: 15px; display: flex; justify-content: space-between; z-index: 10; font-size: 1.2rem; font-weight: bold; text-shadow: 2px 2px 0px #000; pointer-events: none; }
+        #tk-alt-display { color: #fff; }
+        #tk-score-display { color: var(--brand-gold); }
+        
+        #tk-touch-prompt { position: absolute; top: 35px; left: 0; width: 100%; text-align: center; color: #fff; font-size: 1.3rem; text-shadow: 2px 2px 0 #000; pointer-events: none; z-index: 8; }
+        .prompt-pulse { animation: pulseText 1s infinite alternate; }
+        .prompt-alert { color: #ff3333 !important; animation: rapidPulse 0.2s infinite alternate; font-weight: bold; font-size: 1.5rem !important; text-shadow: 0 0 10px red, 2px 2px 0 #000 !important;}
+        @keyframes pulseText { from { opacity: 0.5; transform: scale(0.98); } to { opacity: 1; transform: scale(1.02); } }
+        @keyframes rapidPulse { from { opacity: 0.8; transform: scale(1); } to { opacity: 1; transform: scale(1.1); } }
+
+        /* The Pitch Gauge (-20 to +30 degrees) */
+        #tk-gauge-container { position: absolute; right: 15px; top: 60px; bottom: 15px; width: 25px; background: rgba(0,0,0,0.6); border-radius: 4px; border: 2px solid #fff; z-index: 6; pointer-events: none;}
+        #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); transition: bottom 0.2s linear, height 0.2s linear; box-shadow: 0 0 10px var(--gauge-green); }
+        #tk-zero-line { position: absolute; left: -5px; right: -5px; bottom: 40%; height: 2px; background: rgba(255,255,255,0.8); z-index: 7;} /* 0 degree marker at 40% height */
+        #tk-needle { position: absolute; left: -8px; right: -8px; bottom: 40%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; box-shadow: 0 0 5px red; z-index: 8;}
+
+        /* Dashboard */
+        .takeoff-dashboard { display: flex; justify-content: space-around; align-items: flex-end; width: 100%; padding: 15px; background: var(--bg-dark); border-radius: 8px; border: 2px solid #333; }
+        .v-gauge-container { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 30%; }
+        .v-gauge-label { color: #888; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; }
+        .v-gauge-bg { width: 35px; height: 100px; background: #000; border-radius: 4px; border: 1px solid #444; position: relative; overflow: hidden; }
+        .v-gauge-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; transition: height 0.1s linear, background-color 0.2s ease; }
+        .v-gauge-val { font-size: 1.2rem; min-height: 1.2rem; color: #fff; font-weight: bold; transition: color 0.2s; }
+
+        .btn-panel { display: flex; gap: 10px; width: 100%; margin-top: 10px; }
+        button { flex: 1; padding: 15px; background: var(--brand-gold); color: #000; border: none; border-radius: 8px; font-family: 'Share Tech Mono'; font-size: 1.1rem; font-weight: bold; cursor: pointer; text-transform: uppercase;}
+        button:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+
+    <div style="text-align: center; margin-bottom: 10px;">
+        <h1 style="color: var(--brand-gold); margin: 0; font-size: 2rem;">HANGAR 5 PROTOTYPE</h1>
+        <h2 style="color: #aaa; margin: 5px 0;">Dynamic Flight Simulator</h2>
+    </div>
+
+    <div id="game-wrapper">
+        <div id="takeoff-viewport">
+            <div id="tk-alert-overlay"></div>
+            
+            <div id="tk-hud-top">
+                <div id="tk-alt-display">ALT: 0m</div>
+                <div id="tk-score-display">SCORE: 0</div>
+            </div>
+            
+            <div id="tk-touch-prompt" class="prompt-pulse">TAP TO START ENGINES</div>
+            
+            <div id="tk-clouds" class="parallax-layer"></div>
+            
+            <div id="tk-gauge-container">
+                <div id="tk-zero-line"></div>
+                <div id="tk-target-zone"></div>
+                <div id="tk-needle"></div>
+            </div>
+            
+            <div id="tk-plane"><img src="my-plane.png" onerror="this.style.display='none'; this.parentElement.style.background='#3498db';" style="width: 125%; height: 125%; object-fit: contain; pointer-events: none;"></div>
+            
+            <div id="tk-enemy-plane"><img src="my-plane-golden.png" onerror="this.style.display='none'; this.parentElement.style.background='gold';" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none; transform: scaleX(-1);"></div>
+            
+            <div id="tk-runway"><div id="tk-runway-stripes"></div></div>
+        </div>
+        
+        <div class="takeoff-dashboard">
+            <div class="v-gauge-container">
+                <div class="v-gauge-label">SPEED</div>
+                <div class="v-gauge-bg"><div class="v-gauge-fill" id="tk-speed-bar" style="background:var(--brand-red);"></div></div>
+                <div class="v-gauge-val" id="tk-speed-val" style="color:var(--brand-red);">0</div>
+            </div>
+            <div class="v-gauge-container">
+                <div class="v-gauge-label">PROGRESS</div>
+                <div class="v-gauge-bg"><div class="v-gauge-fill" id="tk-prog-bar" style="background:var(--aux-blue);"></div></div>
+                <div class="v-gauge-val" style="color:var(--aux-blue);" id="tk-prog-val">0%</div>
+            </div>
+            <div class="v-gauge-container">
+                <div class="v-gauge-label">PITCH</div>
+                <div class="v-gauge-bg"><div class="v-gauge-fill" id="tk-pitch-bar" style="background:var(--gauge-green);"></div></div>
+                <div class="v-gauge-val" id="tk-pitch-val" style="color:var(--gauge-green);">0&deg;</div>
+            </div>
+        </div>
+
+        <div class="btn-panel">
+            <button onclick="startFlight()">Reset Mission</button>
+        </div>
+    </div>
 <script>
         // State variables
         let tkState = {

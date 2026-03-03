@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Autopilot & Risk</title>
+    <title>Hangar 5 - Night Storm Operations</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -26,7 +26,7 @@
 
         #takeoff-viewport {
             width: 100%; height: 100%; position: relative; overflow: hidden; 
-            background-color: #4a9ae9; cursor: pointer; transition: background-color 0.1s;
+            background-color: #4a9ae9; cursor: pointer; transition: background-color 0.5s;
         }
         
         #tk-alert-overlay {
@@ -39,7 +39,6 @@
             to { background: rgba(215, 25, 32, 0.35); } 
         }
 
-        /* Camera Rig wraps all 3D/scrolling elements for zooming */
         #camera-rig {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             transform-origin: 30% 80%; 
@@ -49,24 +48,63 @@
         .parallax-layer { 
             position: absolute; left: 0; right: 0; top: 0; bottom: 0; 
             pointer-events: none; background-repeat: repeat-x; 
+            transition: filter 0.5s, background-color 0.5s;
         }
         #tk-bg-sky { background-size: 1024px 100%; z-index: 0; height: 400%; background-color: #87CEEB; top: -150%;}
         #tk-bg-city { height: 100%; background-size: 1024px 100%; background-position: bottom left; z-index: 1; top: 0; }
         
-        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3;}
+        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3; transition: filter 0.5s;}
         #tk-runway-stripes { 
             width: 100%; height: 100%; 
             background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); 
             background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x;
         }
 
-        /* Plane & Mini HUD */
-        #plane-container {
-            position: absolute; left: 30%; bottom: 65px; 
-            transform: translateX(-50%); z-index: 10; pointer-events: none;
+        /* Weather Layers */
+        .weather-layer { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
+        .night-weather .weather-layer { display: block; }
+        
+        /* Night Filter Coloring */
+        .night-weather { background-color: #0b1021 !important; }
+        .night-weather #tk-bg-sky { background-color: #0b1021 !important; background-image: none !important; }
+        .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain {
+            filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2);
         }
+        .night-weather #tk-plane-img, .night-weather #tk-enemy-plane img { filter: brightness(0.55); }
+        
+        /* Fog Animations */
+        .fog-layer.layer-back {
+            background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%);
+            background-size: 300% 200%;
+            animation: fogPulse 15s ease-in-out infinite alternate;
+            z-index: 8; /* Behind plane */
+        }
+        .fog-layer.layer-front {
+            background: radial-gradient(ellipse at center, rgba(200, 210, 220, 0.95) 0%, transparent 40%);
+            background-size: 200% 100%;
+            animation: fogSweep 7s linear infinite;
+            z-index: 15; /* In front of plane */
+        }
+        
+        /* Pixel Rain Animations */
+        .rain-layer.layer-1 {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect x='10' y='10' width='2' height='15' fill='rgba(255,255,255,0.4)'/><rect x='40' y='60' width='1' height='10' fill='rgba(255,255,255,0.2)'/><rect x='70' y='30' width='2' height='20' fill='rgba(255,255,255,0.5)'/><rect x='90' y='80' width='1' height='12' fill='rgba(255,255,255,0.3)'/></svg>");
+            animation: rainAnim1 0.4s linear infinite; z-index: 11;
+        }
+        .rain-layer.layer-2 {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><rect x='20' y='20' width='3' height='25' fill='rgba(255,255,255,0.6)'/><rect x='60' y='80' width='2' height='15' fill='rgba(255,255,255,0.4)'/><rect x='100' y='40' width='3' height='30' fill='rgba(255,255,255,0.7)'/></svg>");
+            animation: rainAnim2 0.3s linear infinite; z-index: 16;
+        }
+        
+        @keyframes fogSweep { 0% { background-position: 200% 50%; } 100% { background-position: -100% 50%; } }
+        @keyframes fogPulse { 0% { opacity: 0.2; transform: scale(1); } 100% { opacity: 0.6; transform: scale(1.2); } }
+        @keyframes rainAnim1 { from { background-position: 0 0; } to { background-position: -60px 100px; } }
+        @keyframes rainAnim2 { from { background-position: 0 0; } to { background-position: -90px 120px; } }
+
+        /* Plane & Mini HUD */
+        #plane-container { position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; pointer-events: none; }
         #plane-rotate-group { position: relative; width: 150px; height: 50px; transform-origin: center center; }
-        #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; z-index: 12; }
+        #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; z-index: 12; transition: filter 0.5s;}
         
         #plane-hud {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -77,7 +115,6 @@
         .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; }
         .hud-label { font-size: 0.5rem; opacity: 0.8; display: block; }
         .hud-val { font-size: 1rem; display: block; }
-
         #hud-spd { left: -5px; top: 50%; transform: translate(-100%, -50%); }
         #hud-pitch { right: -5px; top: 50%; transform: translate(100%, -50%); }
         #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); }
@@ -85,107 +122,55 @@
         /* Slow-Mo Landing Guide */
         #landing-guide {
             position: absolute; top: 25px; left: 75px; transform: translate(-50%, -50%);
-            width: 220px; height: 80px;
-            border: 2px solid transparent;
-            border-left: 4px solid var(--gauge-green);
-            border-right: 4px solid var(--gauge-green);
-            border-radius: 15px;
-            display: flex; justify-content: center; align-items: center;
+            width: 220px; height: 80px; border: 2px solid transparent;
+            border-left: 4px solid var(--gauge-green); border-right: 4px solid var(--gauge-green);
+            border-radius: 15px; display: flex; justify-content: center; align-items: center;
             opacity: 0; transition: opacity 0.3s ease; z-index: 5;
         }
-        .guide-label {
-            position: absolute; bottom: -20px; text-align: center;
-            color: var(--gauge-green); font-weight: bold; font-size: 0.8rem; text-shadow: 1px 1px 2px #000;
-        }
+        .guide-label { position: absolute; bottom: -20px; text-align: center; color: var(--gauge-green); font-weight: bold; font-size: 0.8rem; text-shadow: 1px 1px 2px #000; }
 
         /* Speech Bubble */
         #dialogue-bubble {
             position: absolute; bottom: 95px; left: 75px; transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95); color: #111;
-            padding: 8px 14px; border-radius: 8px; font-size: 0.85rem;
-            white-space: nowrap; opacity: 0; transition: opacity 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20;
+            background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem;
+            white-space: nowrap; opacity: 0; transition: opacity 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20;
         }
-        #dialogue-bubble::after {
-            content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px;
-            border-width: 6px; border-style: solid; border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent;
-        }
+        #dialogue-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent; }
         .capt-text { color: var(--brand-red); font-weight: bold; margin-right: 5px;}
         .fo-text { color: var(--fo-blue); font-weight: bold; margin-right: 5px;}
 
         /* UI Overlays */
-        #tk-hud-top { 
-            position: absolute; top: 15px; left: 15px; right: 15px; 
-            display: flex; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; 
-        }
+        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; }
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
-        
         #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold);}
         
-        #reset-btn { 
-            background: rgba(215, 25, 32, 0.9); border: 2px solid #fff; border-radius: 8px;
-            color: #fff; font-size: 1rem; cursor: pointer; width: 40px; height: 40px;
-            display: flex; align-items: center; justify-content: center;
-        }
+        #reset-btn { background: rgba(215, 25, 32, 0.9); border: 2px solid #fff; border-radius: 8px; color: #fff; font-size: 1rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
         
-        /* Autopilot Button */
-        #ap-btn {
-            background: #333; border: 2px solid #aaa; border-radius: 8px;
-            color: #aaa; font-size: 0.9rem; cursor: pointer; padding: 0 12px; height: 40px;
-            font-family: 'Share Tech Mono', monospace; font-weight: bold;
-            transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
+        #ap-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #aaa; font-size: 0.9rem; cursor: pointer; padding: 0 12px; height: 40px; font-family: 'Share Tech Mono', monospace; font-weight: bold; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         #ap-btn:active { transform: scale(0.95); }
 
-        #prompt-container {
-            position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20;
-            pointer-events: none; width: 95%; max-width: 400px; display: flex; justify-content: center;
-        }
-        #tk-touch-prompt { 
-            background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px;
-            padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase;
-        }
+        #prompt-container { position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: flex; justify-content: center; }
+        #tk-touch-prompt { background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px; padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase; }
 
-        #tk-enemy-plane { position: absolute; left: 150%; bottom: 65px; width: 162px; height: 56px; z-index: 9; pointer-events: none; display: none; }
-        #tk-mountain { position: absolute; bottom: 65px; left: 100%; width: 220px; height: 120px; z-index: 2; display: none; pointer-events: none;}
+        #tk-enemy-plane { position: absolute; left: 150%; bottom: 65px; width: 162px; height: 56px; z-index: 9; pointer-events: none; display: none; transition: filter 0.5s; }
+        #tk-mountain { position: absolute; bottom: 65px; left: 100%; width: 220px; height: 120px; z-index: 2; display: none; pointer-events: none; transition: filter 0.5s; }
         .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; }
         .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; }
 
         /* End Screen UI */
-        #tk-end-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 100;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
-        }
+        #tk-end-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
         #tk-end-screen.visible { opacity: 1; pointer-events: auto; }
-        .end-panel {
-            background: #111; border: 2px solid var(--brand-gold); border-radius: 15px;
-            padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-            transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .end-panel { background: #111; border: 2px solid var(--brand-gold); border-radius: 15px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         #tk-end-screen.visible .end-panel { transform: scale(1); }
         .end-title { font-size: 2rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; }
         .end-subtitle { font-size: 1rem; color: #aaa; margin-bottom: 20px; }
         .end-score { font-size: 3.5rem; color: var(--gauge-green); margin-bottom: 25px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
-        
         .reward-icons { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; height: 60px; }
-        .reward-icon { 
-            width: 60px; height: 60px; fill: #333; 
-            transform: scale(0); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), fill 0.3s; 
-        }
+        .reward-icon { width: 60px; height: 60px; fill: #333; transform: scale(0); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), fill 0.3s; }
         .reward-icon.pop { transform: scale(1); }
         .reward-icon.golden { fill: var(--brand-gold); filter: drop-shadow(0 0 12px var(--brand-gold)); }
-        
-        .play-again-btn {
-            background: var(--brand-gold); color: #000; border: none; padding: 15px 30px;
-            font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer;
-            font-family: 'Share Tech Mono', monospace; text-transform: uppercase;
-            transition: transform 0.1s, filter 0.1s;
-        }
+        .play-again-btn { background: var(--brand-gold); color: #000; border: none; padding: 15px 30px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; }
         .play-again-btn:active { transform: scale(0.95); filter: brightness(0.8); }
-
     </style>
 </head>
 <body>
@@ -209,6 +194,9 @@
             <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky1.png');"></div>
             <div id="tk-bg-city" class="parallax-layer" style="background-image: url('mountain.png');"></div>
             
+            <div class="weather-layer fog-layer layer-back"></div>
+            <div class="weather-layer rain-layer layer-1"></div>
+
             <div id="plane-container">
                 <div id="dialogue-bubble"></div>
                 <div id="landing-guide"><div class="guide-label">-5&deg; TO 15&deg;</div></div>
@@ -226,6 +214,9 @@
             <div id="tk-enemy-plane"><img src="my-plane-golden.png" style="width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1);"></div>
             <div id="tk-runway"><div id="tk-runway-stripes"></div></div>
             <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M42,35 L50,20 L58,35 Z" fill="#fff"/></svg></div>
+            
+            <div class="weather-layer fog-layer layer-front"></div>
+            <div class="weather-layer rain-layer layer-2"></div>
         </div>
 
         <div id="tk-end-screen">
@@ -244,11 +235,12 @@
     </div>
 
     <script>
-let SPEED_MOD = 0.75; 
+        let SPEED_MOD = 0.75; 
 
         // --- CUSTOM WEB AUDIO SYNTHESIZER ---
         const sfx = {
-            ctx: null, engineNode: null, engineGain: null, bgmNode: null, bgmGain: null, alarmInterval: null, isAlarming: false,
+            ctx: null, engineNode: null, engineGain: null, bgmNode: null, bgmGain: null, 
+            rainNode: null, rainGain: null, alarmInterval: null, isAlarming: false,
             init: function() {
                 if (!this.ctx) {
                     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -300,6 +292,36 @@ let SPEED_MOD = 0.75;
                 this.bgmGain.connect(this.ctx.destination);
                 this.bgmNode.start();
                 lfo.start();
+            },
+            playRain: function(active) {
+                if(!this.ctx) return;
+                if(active && !this.rainNode) {
+                    let bufferSize = this.ctx.sampleRate * 2;
+                    let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    let data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                    this.rainNode = this.ctx.createBufferSource();
+                    this.rainNode.buffer = buffer;
+                    this.rainNode.loop = true;
+                    
+                    let filter = this.ctx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 1200;
+                    
+                    this.rainGain = this.ctx.createGain();
+                    this.rainGain.gain.value = 0; 
+                    this.rainGain.gain.setTargetAtTime(0.08, this.ctx.currentTime, 1);
+                    
+                    this.rainNode.connect(filter);
+                    filter.connect(this.rainGain);
+                    this.rainGain.connect(this.ctx.destination);
+                    this.rainNode.start();
+                } else if (!active && this.rainNode) {
+                    this.rainGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 1);
+                    setTimeout(() => { 
+                        if(this.rainNode) { this.rainNode.stop(); this.rainNode = null; }
+                    }, 1000);
+                }
             },
             playAlarm: function(active) {
                 if(!this.ctx) return;
@@ -365,13 +387,13 @@ let SPEED_MOD = 0.75;
             stopAll: function() {
                 this.updateEngine(0);
                 this.playAlarm(false);
+                this.playRain(false);
                 if(this.bgmGain) {
                     this.bgmGain.gain.setTargetAtTime(0, this.ctx.currentTime, 1);
                 }
             }
         };
 
-        // Added trackers for end-screen animations so they don't leak into replays
         let endScreenAnimInterval = null;
         let endScreenTimeouts = [];
 
@@ -381,7 +403,7 @@ let SPEED_MOD = 0.75;
             lastFrameTime: 0, enemyX: 150, enemyAltitude: 0, currTargetMin: 10, currTargetMax: 16,
             bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260,
             dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "",
-            zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false
+            zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false, isNight: false
         };
 
         const CRUISE_ALT = 300; 
@@ -427,6 +449,11 @@ let SPEED_MOD = 0.75;
                 if (!tkState.active && tkState.speed === 0 && document.getElementById('tk-end-screen').style.display !== 'flex') startFlight();
                 tkState.pressing = true;
             }
+            if (e.code === 'Enter' || e.key === 'Enter') {
+                e.preventDefault();
+                if (e.repeat) return;
+                toggleAutoPilot(e);
+            }
         });
         window.addEventListener('keyup', (e) => {
             if (e.code === 'Space' || e.key === ' ') {
@@ -439,7 +466,6 @@ let SPEED_MOD = 0.75;
         function showEndScreen(finalScore) {
             let es = document.getElementById('tk-end-screen');
             es.style.display = 'flex';
-            
             setTimeout(() => { es.classList.add('visible'); }, 50);
 
             let icons = document.querySelectorAll('.reward-icon');
@@ -457,9 +483,7 @@ let SPEED_MOD = 0.75;
             let cur = 0;
             let step = Math.max(1, Math.ceil(finalScore / 40));
             
-            // Clear any lingering intervals just in case
             clearInterval(endScreenAnimInterval);
-            
             endScreenAnimInterval = setInterval(() => {
                 cur += step;
                 if(cur >= finalScore) { 
@@ -479,7 +503,7 @@ let SPEED_MOD = 0.75;
                     if(i < count) {
                         icons[i].classList.add('golden');
                         sfx.playDing(1 + (i * 0.2)); 
-                        confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
+                        confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 }, zIndex: 200 });
                     } else {
                         sfx.playDing(0.6); 
                     }
@@ -491,7 +515,6 @@ let SPEED_MOD = 0.75;
         function startFlight() {
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
             
-            // CLEAN UP ANIMATIONS & TIMERS FROM PREVIOUS FLIGHT
             clearInterval(endScreenAnimInterval);
             endScreenTimeouts.forEach(t => clearTimeout(t));
             endScreenTimeouts = [];
@@ -501,7 +524,6 @@ let SPEED_MOD = 0.75;
             es.classList.remove('visible');
             setTimeout(() => { es.style.display = 'none'; }, 300); 
 
-            // Reset Autopilot UI
             const apBtn = document.getElementById('ap-btn');
             apBtn.style.background = '#333';
             apBtn.style.borderColor = '#aaa';
@@ -509,6 +531,17 @@ let SPEED_MOD = 0.75;
             apBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
 
             document.getElementById('tk-plane-img').src = 'my-plane.png';
+            
+            // Randomize Weather
+            let isNight = Math.random() > 0.5;
+            let vp = document.getElementById('takeoff-viewport');
+            if (isNight) {
+                vp.classList.add('night-weather');
+                sfx.playRain(true);
+            } else {
+                vp.classList.remove('night-weather');
+                sfx.playRain(false);
+            }
 
             tkState = {
                 active: true, phase: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, progress: 0, 
@@ -516,7 +549,7 @@ let SPEED_MOD = 0.75;
                 lastFrameTime: performance.now(), enemyX: 150, enemyAltitude: 0,
                 currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_city: 0, bgX_runway: 0, 
                 takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "",
-                zoom: 1.0, speedMod: 0.75, autoPilot: false
+                zoom: 1.0, speedMod: 0.75, autoPilot: false, isNight: isNight
             };
             SPEED_MOD = 0.75; 
 
@@ -587,7 +620,9 @@ let SPEED_MOD = 0.75;
             const vp = document.getElementById('takeoff-viewport');
             
             vp.style.backgroundColor = "#ffffff";
-            setTimeout(() => { vp.style.backgroundColor = "#4a9ae9"; }, 150);
+            setTimeout(() => { 
+                vp.style.backgroundColor = tkState.isNight ? "#0b1021" : "#4a9ae9"; 
+            }, 150);
 
             let shakeAmount = 35;
             function applyShake() {

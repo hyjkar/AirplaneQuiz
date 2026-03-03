@@ -54,7 +54,6 @@
         /* Scenery */
         .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; pointer-events: none; }
         
-        /* Make sure sky and city are visible and span the screen */
         #tk-bg-sky { background-size: 1024px 100%; z-index: 0; height: 150%; background-color: #87CEEB;}
         #tk-bg-city { height: 60%; background-size: 1024px 100%; background-position: bottom left; z-index: 1; bottom: 32px; top: auto; }
         
@@ -69,7 +68,7 @@
 
         /* Entities */
         #tk-plane { position: absolute; left: 20px; bottom: 32px; width: 120px; height: 45px; transform-origin: 50% 50%; z-index: 5; pointer-events: none;}
-        #tk-enemy-plane { position: absolute; left: 150%; bottom: 152px; width: 140px; height: 50px; z-index: 4; pointer-events: none; display: none; }
+        #tk-enemy-plane { position: absolute; left: 150%; bottom: 32px; width: 140px; height: 50px; z-index: 4; pointer-events: none; display: none; }
         #tk-mountain { position: absolute; bottom: 32px; left: 100%; width: 150px; height: 150px; z-index: 2; display: none; pointer-events: none;}
 
         .pixel-particle { position: absolute; z-index: 10; pointer-events: none; }
@@ -88,7 +87,8 @@
         /* The Pitch Gauge (-20 to +30 degrees) */
         #tk-gauge-container { position: absolute; right: 15px; top: 60px; bottom: 15px; width: 25px; background: rgba(0,0,0,0.6); border-radius: 4px; border: 2px solid #fff; z-index: 6; pointer-events: none;}
         #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); transition: bottom 0.2s linear, height 0.2s linear; box-shadow: 0 0 10px var(--gauge-green); }
-        #tk-needle { position: absolute; left: -8px; right: -8px; bottom: 40%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; box-shadow: 0 0 5px red; z-index: 8;}
+        /* Changed Needle to a neutral white indicator */
+        #tk-needle { position: absolute; left: -8px; right: -8px; bottom: 40%; height: 4px; background: #fff; transition: bottom 0.05s linear; box-shadow: 0 0 6px rgba(255,255,255,0.8); z-index: 8;}
 
         /* Dashboard */
         .takeoff-dashboard { display: flex; justify-content: space-around; align-items: flex-end; width: 100%; padding: 15px; background: var(--bg-dark); border-radius: 8px; border: 2px solid #333; }
@@ -152,8 +152,8 @@
             </div>
             <div class="v-gauge-container">
                 <div class="v-gauge-label">PITCH</div>
-                <div class="v-gauge-bg"><div class="v-gauge-fill" id="tk-pitch-bar" style="background:var(--gauge-green);"></div></div>
-                <div class="v-gauge-val" id="tk-pitch-val" style="color:var(--gauge-green);">0&deg;</div>
+                <div class="v-gauge-bg"><div class="v-gauge-fill" id="tk-pitch-bar" style="background:#fff;"></div></div>
+                <div class="v-gauge-val" id="tk-pitch-val" style="color:#fff;">0&deg;</div>
             </div>
         </div>
 
@@ -163,19 +163,18 @@
     </div>
 
     <script>
-        // State variables
         let tkState = {
             active: false,
             phase: 0,         // 0: Ground, 1: Liftoff, 2: Cruise, 3: Evade, 4: Recover, 5: Landing, 6: Rollout
-            pitch: 0,         // Pitch angle: -20 (dive) to +30 (steep climb)
+            pitch: 0,         
             pitchVelocity: 0,
-            vSpeed: 0,        // Smooth vertical speed for realistic liftoff
+            vSpeed: 0,        
             speed: 0,
-            progress: 0,      // 0 to 100% completion of the mission
-            altitude: 0,      // True physical height from the ground
-            cameraY: 0,       // Tracks altitude to keep plane centered
+            progress: 0,      
+            altitude: 0,      
+            cameraY: 0,       
             score: 0,
-            takeoffDistance: 100, // Distance before runway ends
+            takeoffDistance: 100, 
             pressing: false,
             frameId: null,
             lastFrameTime: 0,
@@ -192,14 +191,12 @@
             enemyAltitude: 0
         };
 
-        const CRUISE_ALT = 1200; // The altitude the game pushes you to level off at
+        const CRUISE_ALT = 1200; 
 
-        // Pitch to Percentage Converter (-20 to +30 total range = 50 degrees)
         function pitchToPercent(degrees) {
             return ((degrees + 20) / 50) * 100;
         }
 
-        // Handle Touch/Click anywhere
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
             e.preventDefault();
@@ -238,7 +235,6 @@
             document.getElementById('tk-score-display').textContent = `SCORE: 0`;
             document.getElementById('tk-alt-display').textContent = `ALT: 0m`;
             
-            // Ensure scenery is in original vertical position
             document.getElementById('tk-bg-sky').style.transform = `translateY(0px)`;
             document.getElementById('tk-bg-city').style.transform = `translateY(0px)`;
             document.getElementById('tk-runway').style.transform = `translateY(0px)`;
@@ -250,6 +246,21 @@
             prompt.style.opacity = '1';
 
             tkState.frameId = requestAnimationFrame(gameLoop);
+        }
+
+        function checkCollision() {
+            // Precise AABB (Axis-Aligned Bounding Box) visual collision
+            const pRect = document.getElementById('tk-plane').getBoundingClientRect();
+            const eRect = document.getElementById('tk-enemy-plane').getBoundingClientRect();
+            
+            // 15px margin to ignore transparent pixels around the plane PNGs
+            const margin = 15; 
+            
+            let hit = !(pRect.right - margin < eRect.left + margin || 
+                        pRect.left + margin > eRect.right - margin || 
+                        pRect.bottom - margin < eRect.top + margin || 
+                        pRect.top + margin > eRect.bottom - margin);
+            return hit;
         }
 
         function gameLoop(timestamp) {
@@ -292,11 +303,11 @@
 
             // --- 2. PITCH & PHYSICS ---
             if (tkState.pressing && tkState.speed >= 100) {
-                tkState.pitchVelocity += 0.06; // Smoother pull up
+                tkState.pitchVelocity += 0.06; 
             } else if (tkState.speed >= 100) {
-                tkState.pitchVelocity -= 0.04; // Nose naturally drops
+                tkState.pitchVelocity -= 0.04; 
             }
-            tkState.pitchVelocity *= 0.88; // Friction
+            tkState.pitchVelocity *= 0.88; 
             tkState.pitchVelocity = Math.max(-1.5, Math.min(1.5, tkState.pitchVelocity));
             tkState.pitch += tkState.pitchVelocity;
             tkState.pitch = Math.max(-20, Math.min(30, tkState.pitch));
@@ -319,7 +330,6 @@
 
             // Apply Lift
             if (tkState.altitude <= 0 && tkState.phase <= 1) {
-                // Must have high enough pitch and speed to break gravity
                 if (tkState.pitch >= 8 && tkState.speed >= 150) {
                     tkState.altitude += Math.max(0, tkState.vSpeed);
                 }
@@ -347,13 +357,13 @@
             // --- GROUND COLLISION DETECTION (LANDING) ---
             if (tkState.altitude <= 0 && tkState.phase > 0 && tkState.phase < 6) {
                 if (tkState.phase === 1) {
-                    // Safe, just rolling on runway
+                    // Safe, rolling
                 } else if (tkState.phase === 5) {
-                    // Touchdown! Allow a forgiving pitch angle between -5 and +15 degrees.
+                    // Forgiving Touchdown Angle (-5 to 15 degrees)
                     if (tkState.pitch >= -5 && tkState.pitch <= 15) {
                         tkState.phase = 6;
                         tkState.altitude = 0;
-                        setTargetZone(-2, 8); // Relaxed flare zone
+                        setTargetZone(-2, 8); 
                         prompt.textContent = "TOUCHDOWN! BRAKING...";
                         prompt.className = "prompt-pulse";
                         prompt.style.color = "var(--gauge-green)";
@@ -362,7 +372,6 @@
                         return triggerCrash("BAD LANDING ANGLE! CRASHED!");
                     }
                 } else {
-                    // Crashed randomly outside of landing phase
                     tkState.altitude = 0;
                     return triggerCrash("CRASHED INTO GROUND!");
                 }
@@ -417,11 +426,9 @@
             else if (tkState.phase === 3) {
                 tkState.enemyX -= 1.0; 
                 
-                // True Physical Collision Detection
-                if (tkState.enemyX < 35 && tkState.enemyX > -10) {
-                    if (Math.abs(tkState.altitude - tkState.enemyAltitude) < 60) {
-                        return triggerCrash("MID-AIR COLLISION!");
-                    }
+                // Perfect Visual Bounding-Box Collision
+                if (checkCollision()) {
+                    return triggerCrash("MID-AIR COLLISION!");
                 }
                 
                 if (tkState.enemyX < -30) {
@@ -479,13 +486,15 @@
             pitchEl.textContent = `${Math.floor(tkState.pitch)}°`;
             document.getElementById('tk-pitch-bar').style.height = `${pitchToPercent(tkState.pitch)}%`;
             
+            // Neutral Pitch Color Update
             if (inZone && tkState.phase > 0 && tkState.phase !== 6) {
                 pitchEl.style.color = "var(--gauge-green)";
                 document.getElementById('tk-pitch-bar').style.backgroundColor = "var(--gauge-green)";
                 if(tkState.phase !== 3) prompt.style.opacity = '0'; 
             } else if (tkState.phase !== 6) {
-                pitchEl.style.color = "var(--brand-red)";
-                document.getElementById('tk-pitch-bar').style.backgroundColor = "var(--brand-red)";
+                // Pitch stays white/neutral instead of looking like a red warning error
+                pitchEl.style.color = "#fff";
+                document.getElementById('tk-pitch-bar').style.backgroundColor = "#fff";
                 prompt.style.opacity = '1';
             }
 
@@ -495,7 +504,8 @@
             document.getElementById('tk-plane').style.transform = `translateY(${planeVisualY}px) rotate(${visualPitch}deg)`;
             
             if (tkState.phase === 3) {
-                // Enemy flies perfectly level at the locked altitude
+                // Enemy flies perfectly level at the locked altitude. 
+                // Because they share the exact base bottom: 32px CSS, their coordinates align precisely!
                 let enemyVisualY = -(tkState.enemyAltitude - tkState.cameraY);
                 document.getElementById('tk-enemy-plane').style.left = `${tkState.enemyX}%`;
                 document.getElementById('tk-enemy-plane').style.transform = `translateY(${enemyVisualY}px) scaleX(-1)`;

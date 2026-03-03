@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Landscape Pro</title>
+    <title>Hangar 5 - Mobile Optimized Simulator</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -32,13 +32,12 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 7; transition: background 0.2s;
         }
-        .flashing { animation: redAlert 0.3s infinite alternate; }
+        .flashing { animation: redAlert 0.4s infinite alternate; }
         @keyframes redAlert { 
             from { background: rgba(215, 25, 32, 0); } 
-            to { background: rgba(215, 25, 32, 0.35); } 
+            to { background: rgba(215, 25, 32, 0.3); } 
         }
 
-        /* Scenery Layers */
         .parallax-layer { 
             position: absolute; left: 0; right: 0; top: 0; bottom: 0; 
             pointer-events: none; background-repeat: repeat-x; 
@@ -53,35 +52,29 @@
             background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x;
         }
 
-        /* Plane & HUD - Anchored for Landscape Visibility */
+        /* Plane & Mini HUD - Anchored for Landscape */
         #plane-container {
-            position: absolute; 
-            left: 30%; 
-            bottom: 45%; /* Visually anchored in the middle-bottom area */
-            transform: translateX(-50%); 
-            z-index: 10; 
-            pointer-events: none;
+            position: absolute; left: 30%; bottom: 45%;
+            transform: translateX(-50%); z-index: 10; pointer-events: none;
         }
-        #plane-rotate-group { position: relative; width: 120px; height: 40px; transform-origin: center center; }
+        #plane-rotate-group { position: relative; width: 110px; height: 35px; transform-origin: center center; }
         #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; z-index: 12; }
         
         #plane-hud {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 150px; height: 150px; border-radius: 50%;
-            border: 2px dashed #fff; 
-            display: flex; align-items: center; justify-content: center;
-            z-index: 11;
+            width: 130px; height: 130px; border-radius: 50%;
+            border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11;
         }
         
         .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; }
         .hud-label { font-size: 0.5rem; opacity: 0.8; display: block; }
-        .hud-val { font-size: 1rem; display: block; }
+        .hud-val { font-size: 0.9rem; display: block; }
 
         #hud-spd { left: -5px; top: 50%; transform: translate(-100%, -50%); }
         #hud-pitch { right: -5px; top: 50%; transform: translate(100%, -50%); }
         #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); }
 
-        /* UI */
+        /* UI Elements */
         #tk-hud-top { 
             position: absolute; top: 15px; left: 15px; right: 15px; 
             display: flex; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; 
@@ -99,12 +92,12 @@
         }
         #tk-touch-prompt { 
             background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px;
-            padding: 6px 12px; text-align: center; color: #fff; font-size: 0.85rem; font-weight: bold;
+            padding: 6px 12px; text-align: center; color: #fff; font-size: 0.8rem; font-weight: bold;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase;
         }
 
-        #tk-enemy-plane { position: absolute; left: 150%; bottom: 45%; width: 140px; height: 50px; z-index: 9; pointer-events: none; display: none; }
-        #tk-mountain { position: absolute; bottom: 0; left: 100%; width: 220px; height: 130px; z-index: 2; display: none; pointer-events: none;}
+        #tk-enemy-plane { position: absolute; left: 150%; bottom: 45%; width: 130px; height: 45px; z-index: 9; pointer-events: none; display: none; }
+        #tk-mountain { position: absolute; bottom: 0; left: 100%; width: 200px; height: 120px; z-index: 2; display: none; pointer-events: none;}
         .pixel-particle { position: absolute; z-index: 100; pointer-events: none; width: 6px; height: 6px; border-radius: 1px; }
     </style>
 </head>
@@ -142,9 +135,12 @@
     </div>
 
     <script>
+        // 25% Reduction Factor applied to all movement
+        const SPEED_MOD = 0.75; 
+
         let tkState = {
             active: false, phase: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
-            progress: 0, altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, 
+            progress: 0, altitude: 0, score: 0, pressing: false, frameId: null, 
             lastFrameTime: 0, enemyX: 150, enemyAltitude: 0, currTargetMin: 10, currTargetMax: 16,
             bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 100
         };
@@ -165,7 +161,7 @@
             
             tkState = {
                 active: true, phase: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, progress: 0, 
-                altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, 
+                altitude: 0, score: 0, pressing: false, frameId: null, 
                 lastFrameTime: performance.now(), enemyX: 150, enemyAltitude: 0,
                 currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 100
             };
@@ -188,10 +184,10 @@
                 p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
                 p.style.left = x + 'px'; p.style.top = y + 'px';
                 document.getElementById('takeoff-viewport').appendChild(p);
-                let a = Math.random()*6.28, v = Math.random()*10+2, vx = Math.cos(a)*v, vy = Math.sin(a)*v;
+                let a = Math.random()*6.28, v = (Math.random()*10+2) * SPEED_MOD, vx = Math.cos(a)*v, vy = Math.sin(a)*v;
                 let age = 0;
                 function move() {
-                    age++; vx *= 0.96; vy += 0.22;
+                    age++; vx *= 0.96; vy += (0.22 * SPEED_MOD);
                     p.style.left = (parseFloat(p.style.left)+vx)+'px';
                     p.style.top = (parseFloat(p.style.top)+vy)+'px';
                     if(age < 50) requestAnimationFrame(move); else p.remove();
@@ -208,21 +204,23 @@
             const prompt = document.getElementById('tk-touch-prompt');
             const hudRing = document.getElementById('plane-hud');
 
-            // 1. SPEED & ACCEL ENGINE (25% Reduced for Smoothness)
+            // 1. SPEED & ACCEL ENGINE (75% Simulation Speed)
             let inHUDZone = (tkState.pitch >= tkState.currTargetMin && tkState.pitch <= tkState.currTargetMax);
             if (tkState.phase < 6) {
                 let accel = (tkState.phase === 5) ? -0.3 : 1.4; 
+                accel *= SPEED_MOD; // Slowed down
+                
                 if (!inHUDZone && tkState.phase > 0) accel *= 0.3;
-                if (tkState.pitch > 0) accel -= (tkState.pitch * 0.04);
-                if (tkState.pitch < 0) accel += (Math.abs(tkState.pitch) * 0.03);
+                if (tkState.pitch > 0) accel -= (tkState.pitch * 0.04 * SPEED_MOD);
+                if (tkState.pitch < 0) accel += (Math.abs(tkState.pitch) * 0.03 * SPEED_MOD);
                 tkState.speed = Math.max((tkState.phase === 0 ? 0 : 85), Math.min(240, tkState.speed + accel));
             } else {
-                tkState.speed = Math.max(0, tkState.speed - 1.5);
+                tkState.speed = Math.max(0, tkState.speed - (1.5 * SPEED_MOD));
                 if (tkState.speed <= 0) { tkState.active = false; prompt.textContent = "MISSION COMPLETE"; return; }
             }
-            if (tkState.phase > 0 && tkState.phase < 6) tkState.progress += (tkState.speed / 6000);
+            if (tkState.phase > 0 && tkState.phase < 6) tkState.progress += ((tkState.speed / 6000) * SPEED_MOD);
 
-            // SPEED HUD COLOR
+            // SPEED COLOR LOGIC
             let spdHue = 0;
             if (tkState.phase < 2) spdHue = (tkState.speed >= 150) ? 120 : 0;
             else if (tkState.phase === 5) spdHue = (tkState.speed <= 150) ? 120 : 0;
@@ -230,16 +228,16 @@
             document.getElementById('hud-spd').style.color = `hsl(${spdHue}, 85%, 55%)`;
             document.getElementById('hud-spd-val').textContent = Math.floor(tkState.speed);
 
-            // 2. PITCH & STALL
-            if (tkState.pressing && tkState.speed >= 85) tkState.pitchVelocity += 0.11;
-            else if (tkState.speed >= 85) tkState.pitchVelocity -= 0.08;
+            // 2. PITCH & DEATH STALL (75% Simulation Speed)
+            if (tkState.pressing && tkState.speed >= 85) tkState.pitchVelocity += (0.11 * SPEED_MOD);
+            else if (tkState.speed >= 85) tkState.pitchVelocity -= (0.08 * SPEED_MOD);
             tkState.pitchVelocity *= 0.88;
             tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch + tkState.pitchVelocity));
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
-            let targetVSpeed = tkState.pitch * 0.55;
+            let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
             if (isStalling) { 
-                targetVSpeed = -11; 
+                targetVSpeed = -11 * SPEED_MOD; 
                 document.getElementById('tk-alert-overlay').className = 'flashing';
                 prompt.textContent = "STALL DETECTED: DROP NOSE!";
             } else if (tkState.phase !== 3) {
@@ -263,7 +261,7 @@
                 }
             }
 
-            // 3. HUD PITCH & ALTITUDE
+            // 3. HUD UPDATES
             document.getElementById('hud-alt-val').textContent = Math.floor(tkState.altitude) + 'm';
             document.getElementById('hud-pitch-val').innerHTML = Math.floor(tkState.pitch) + '&deg;';
             let center = (tkState.currTargetMin + tkState.currTargetMax) / 2;
@@ -278,7 +276,7 @@
 
             // 4. PHASE LOGIC
             if (tkState.phase < 2) {
-                tkState.takeoffDist -= (tkState.speed / 1100);
+                tkState.takeoffDist -= ((tkState.speed / 1100) * SPEED_MOD);
                 if (tkState.takeoffDist < 25 && tkState.altitude < 60) {
                     const mtn = document.getElementById('tk-mountain');
                     mtn.style.display = 'block'; mtn.style.left = (tkState.takeoffDist * 4) + '%';
@@ -301,7 +299,7 @@
                 tkState.enemyX = 140; tkState.enemyAltitude = tkState.altitude;
             }
             else if (tkState.phase === 3) {
-                tkState.enemyX -= 1.8; document.getElementById('tk-enemy-plane').style.left = tkState.enemyX + '%';
+                tkState.enemyX -= (1.8 * SPEED_MOD); document.getElementById('tk-enemy-plane').style.left = tkState.enemyX + '%';
                 let enemyVisualY = -(tkState.enemyAltitude - tkState.altitude);
                 document.getElementById('tk-enemy-plane').style.transform = `translateY(${enemyVisualY}px)`;
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
@@ -323,11 +321,10 @@
                  tkState.phase = 6; tkState.altitude = 0; tkState.vSpeed = 0; prompt.textContent = "TOUCHDOWN! APPLY BRAKES";
             }
 
-            // 5. LOCKED CAMERA VISUALS
-            // Instead of the plane moving up, we move the WORLD down by altitude
-            tkState.bgX_sky -= tkState.speed * 0.006;
-            tkState.bgX_city -= tkState.speed * 0.03;
-            tkState.bgX_runway -= tkState.speed * 0.18;
+            // 5. LOCKED CAMERA VISUALS (75% Simulation Speed)
+            tkState.bgX_sky -= (tkState.speed * 0.006 * SPEED_MOD);
+            tkState.bgX_city -= (tkState.speed * 0.03 * SPEED_MOD);
+            tkState.bgX_runway -= (tkState.speed * 0.18 * SPEED_MOD);
             document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 0px`;
             document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`;
             document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
@@ -339,7 +336,7 @@
             document.getElementById('tk-bg-sky').style.transform = `translateY(${worldY * 0.1}px)`;
             document.getElementById('tk-mountain').style.transform = `translateY(${worldY}px)`;
 
-            // Plane stays locked to bottom 45%, but rotates
+            // Plane rotates in place
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
 
             tkState.frameId = requestAnimationFrame(gameLoop);

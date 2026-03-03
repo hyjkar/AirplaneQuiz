@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Dynamic Atmosphere</title>
+    <title>Hangar 5 - Ambient Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -273,7 +273,11 @@
         // --- CUSTOM WEB AUDIO SYNTHESIZER ---
         const sfx = {
             ctx: null, engineNode: null, engineGain: null, bgmNode: null, bgmGain: null, 
-            rainNode: null, rainGain: null, alarmInterval: null, isAlarming: false,
+            alarmInterval: null, isAlarming: false,
+            
+            // Wind variables
+            windBuffer: null, windNodes: [], shouldPlayWind: false, windTimeout: null,
+
             init: function() {
                 if (!this.ctx) {
                     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -284,11 +288,90 @@
                     silentGain.connect(this.ctx.destination);
                     silentOsc.start(0);
                     silentOsc.stop(this.ctx.currentTime + 0.1);
+                    
+                    this.loadWind();
                     this.startEngine();
                     this.startBGM();
                 }
                 if (this.ctx.state === 'suspended') this.ctx.resume();
+                this.startWind();
             },
+
+            // --- CROSSFADE WIND LOOP SYSTEM ---
+            loadWind: async function() {
+                try {
+                    const response = await fetch('wind.wav');
+                    const arrayBuffer = await response.arrayBuffer();
+                    this.windBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+                    // Start immediately if it was requested while loading
+                    if (this.shouldPlayWind && this.windNodes.length === 0) {
+                        this.scheduleNextWind(this.ctx.currentTime);
+                    }
+                } catch(e) { 
+                    console.warn("Could not load wind.wav. Make sure the file exists in the same folder.", e); 
+                }
+            },
+            scheduleNextWind: function(startTime) {
+                if (!this.shouldPlayWind || !this.windBuffer) return;
+                
+                let source = this.ctx.createBufferSource();
+                source.buffer = this.windBuffer;
+                let gain = this.ctx.createGain();
+                
+                let duration = this.windBuffer.duration;
+                // Max 2-second crossfade, or 20% of track length (whichever is smaller)
+                let fadeTime = Math.min(2.0, duration * 0.2); 
+                let targetVol = 0.4; // Base wind volume
+
+                // Fade In
+                gain.gain.setValueAtTime(0.001, startTime);
+                gain.gain.linearRampToValueAtTime(targetVol, startTime + fadeTime);
+
+                // Fade Out
+                let fadeOutStart = startTime + duration - fadeTime;
+                let endTime = startTime + duration;
+                gain.gain.setValueAtTime(targetVol, fadeOutStart);
+                gain.gain.linearRampToValueAtTime(0.001, endTime);
+
+                source.connect(gain);
+                gain.connect(this.ctx.destination);
+                source.start(startTime);
+                source.stop(endTime);
+
+                this.windNodes.push({ source, gain, endTime });
+                
+                // Cleanup old tracked nodes
+                this.windNodes = this.windNodes.filter(n => n.endTime > this.ctx.currentTime);
+
+                // Schedule next overlap
+                let nextStartTime = fadeOutStart;
+                let timeToWait = (nextStartTime - this.ctx.currentTime - 0.5) * 1000;
+                
+                this.windTimeout = setTimeout(() => {
+                    this.scheduleNextWind(nextStartTime);
+                }, Math.max(0, timeToWait));
+            },
+            startWind: function() {
+                this.shouldPlayWind = true;
+                if (this.windBuffer && this.windNodes.length === 0) {
+                    this.scheduleNextWind(this.ctx.currentTime);
+                }
+            },
+            stopWind: function() {
+                this.shouldPlayWind = false;
+                clearTimeout(this.windTimeout);
+                this.windNodes.forEach(n => {
+                    try {
+                        n.gain.gain.cancelScheduledValues(this.ctx.currentTime);
+                        n.gain.gain.setValueAtTime(n.gain.gain.value, this.ctx.currentTime);
+                        n.gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
+                        setTimeout(() => { try { n.source.stop(); } catch(e){} }, 500);
+                    } catch(e) {}
+                });
+                this.windNodes = [];
+            },
+            
+            // --- CORE ENGINE SOUNDS ---
             startEngine: function() {
                 this.engineNode = this.ctx.createOscillator();
                 this.engineNode.type = 'sawtooth';
@@ -325,36 +408,6 @@
                 this.bgmGain.connect(this.ctx.destination);
                 this.bgmNode.start();
                 lfo.start();
-            },
-            playRain: function(active) {
-                if(!this.ctx) return;
-                if(active && !this.rainNode) {
-                    let bufferSize = this.ctx.sampleRate * 2;
-                    let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                    let data = buffer.getChannelData(0);
-                    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-                    this.rainNode = this.ctx.createBufferSource();
-                    this.rainNode.buffer = buffer;
-                    this.rainNode.loop = true;
-                    
-                    let filter = this.ctx.createBiquadFilter();
-                    filter.type = 'lowpass';
-                    filter.frequency.value = 1200;
-                    
-                    this.rainGain = this.ctx.createGain();
-                    this.rainGain.gain.value = 0; 
-                    this.rainGain.gain.setTargetAtTime(0.08, this.ctx.currentTime, 1);
-                    
-                    this.rainNode.connect(filter);
-                    filter.connect(this.rainGain);
-                    this.rainGain.connect(this.ctx.destination);
-                    this.rainNode.start();
-                } else if (!active && this.rainNode) {
-                    this.rainGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 1);
-                    setTimeout(() => { 
-                        if(this.rainNode) { this.rainNode.stop(); this.rainNode = null; }
-                    }, 1000);
-                }
             },
             playAlarm: function(active) {
                 if(!this.ctx) return;
@@ -420,7 +473,7 @@
             stopAll: function() {
                 this.updateEngine(0);
                 this.playAlarm(false);
-                this.playRain(false);
+                this.stopWind();
                 if(this.bgmGain) {
                     this.bgmGain.gain.setTargetAtTime(0, this.ctx.currentTime, 1);
                 }
@@ -574,13 +627,10 @@
             if (rand > 0.66) {
                 weather = 'night';
                 vp.classList.add('night-weather');
-                sfx.playRain(true);
+                // Relying on our seamless audio loop for rain/storm instead of noise generator
             } else if (rand > 0.33) {
                 weather = 'sunrise';
                 vp.classList.add('sunrise-weather');
-                sfx.playRain(false);
-            } else {
-                sfx.playRain(false);
             }
 
             tkState = {
@@ -761,7 +811,6 @@
                 const flareCont = document.getElementById('tk-flare-container');
                 const sunRect = sun.getBoundingClientRect();
                 
-                // Calculate Sun Center
                 let sx = sunRect.left + sunRect.width / 2;
                 let sy = sunRect.top + sunRect.height / 2;
                 let cx = window.innerWidth / 2;
@@ -770,7 +819,6 @@
                 let dx = cx - sx;
                 let dy = cy - sy;
                 
-                // Map flares exactly opposite the sun relative to center screen
                 document.getElementById('pf1').style.left = (sx + dx * 1.4) + 'px';
                 document.getElementById('pf1').style.top = (sy + dy * 1.4) + 'px';
                 document.getElementById('pf2').style.left = (sx + dx * 0.6) + 'px';
@@ -780,7 +828,6 @@
                 document.getElementById('pf4').style.left = (sx + dx * 2.2) + 'px';
                 document.getElementById('pf4').style.top = (sy + dy * 2.2) + 'px';
                 
-                // Fade out when sun dips below mountains (bottom 100px of screen)
                 let fade = Math.max(0, Math.min(1, (window.innerHeight - 100 - sy) / 100));
                 flareCont.style.opacity = fade;
             }
@@ -1001,7 +1048,7 @@
                  if(tkState.autoPilot) toggleAutoPilot();
             }
 
-            // 5. PARALLAX CAMERA
+            // 5. STRICT THRESHOLD CAMERA
             tkState.bgX_sky -= (tkState.speed * 0.006 * SPEED_MOD);
             tkState.bgX_city -= (tkState.speed * 0.03 * SPEED_MOD);
             tkState.bgX_runway -= (tkState.speed * 0.18 * SPEED_MOD);
@@ -1011,7 +1058,9 @@
 
             let maxVisualAltitude = Math.min(60, window.innerHeight * 0.15);
             let baseTargetCam = Math.max(0, tkState.altitude - maxVisualAltitude);
+            
             if (isLandingApproach) baseTargetCam -= 20; 
+
             tkState.cameraY += (baseTargetCam - tkState.cameraY) * 0.15;
 
             document.getElementById('tk-runway').style.transform = `translateY(${tkState.cameraY}px)`;

@@ -53,12 +53,12 @@
             background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x;
         }
 
-        /* Plane & Mini HUD */
+        /* Plane & Mini HUD (Plane size increased by 25%) */
         #plane-container {
             position: absolute; left: 30%; bottom: 65px; 
             transform: translateX(-50%); z-index: 10; pointer-events: none;
         }
-        #plane-rotate-group { position: relative; width: 120px; height: 40px; transform-origin: center center; }
+        #plane-rotate-group { position: relative; width: 150px; height: 50px; transform-origin: center center; }
         #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; z-index: 12; }
         
         #plane-hud {
@@ -77,7 +77,7 @@
 
         /* Speech Bubble */
         #dialogue-bubble {
-            position: absolute; bottom: 75px; left: 50%; transform: translateX(-50%);
+            position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.95); color: #111;
             padding: 8px 14px; border-radius: 8px; font-size: 0.85rem;
             white-space: nowrap; opacity: 0; transition: opacity 0.3s ease;
@@ -112,7 +112,8 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase;
         }
 
-        #tk-enemy-plane { position: absolute; left: 150%; bottom: 65px; width: 130px; height: 45px; z-index: 9; pointer-events: none; display: none; }
+        /* Enemy Plane (Increased by 25%) */
+        #tk-enemy-plane { position: absolute; left: 150%; bottom: 65px; width: 162px; height: 56px; z-index: 9; pointer-events: none; display: none; }
         #tk-mountain { position: absolute; bottom: 65px; left: 100%; width: 220px; height: 120px; z-index: 2; display: none; pointer-events: none;}
         .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; }
         .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; }
@@ -162,7 +163,6 @@
                 if (!this.ctx) {
                     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
                     
-                    // iOS/Safari Unlocker: Play a silent sound immediately
                     let silentOsc = this.ctx.createOscillator();
                     let silentGain = this.ctx.createGain();
                     silentGain.gain.value = 0;
@@ -174,7 +174,6 @@
                     this.startEngine();
                     this.startBGM();
                 }
-                // Always ensure it is resumed on user gesture
                 if (this.ctx.state === 'suspended') {
                     this.ctx.resume();
                 }
@@ -187,7 +186,7 @@
                 
                 let filter = this.ctx.createBiquadFilter();
                 filter.type = 'lowpass';
-                filter.frequency.value = 300; // Increased to let more sound through
+                filter.frequency.value = 300; 
 
                 this.engineNode.connect(filter);
                 filter.connect(this.engineGain);
@@ -196,8 +195,7 @@
             },
             updateEngine: function(speed) {
                 if(!this.engineNode || !this.ctx) return;
-                let freq = 50 + (speed * 0.5); // Higher pitch for better laptop speaker audibility
-                // Increased volume multiplier
+                let freq = 50 + (speed * 0.5); 
                 let vol = speed > 0 ? 0.15 + (speed / 800) : 0; 
                 this.engineNode.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.1);
                 this.engineGain.gain.setTargetAtTime(vol, this.ctx.currentTime, 0.1);
@@ -216,7 +214,7 @@
                 lfoGain.connect(this.bgmNode.frequency);
                 
                 this.bgmGain = this.ctx.createGain();
-                this.bgmGain.gain.value = 0.3; // Boosted background music volume
+                this.bgmGain.gain.value = 0.3; 
                 
                 this.bgmNode.connect(this.bgmGain);
                 this.bgmGain.connect(this.ctx.destination);
@@ -234,7 +232,7 @@
                         osc.type = 'square';
                         osc.frequency.value = 900; 
                         
-                        gain.gain.setValueAtTime(0.15, this.ctx.currentTime); // Louder alarm
+                        gain.gain.setValueAtTime(0.15, this.ctx.currentTime); 
                         gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
                         
                         osc.connect(gain);
@@ -251,10 +249,10 @@
                 if(!this.ctx) return;
                 let osc = this.ctx.createOscillator();
                 let oscGain = this.ctx.createGain();
-                osc.type = 'square'; // Changed to square for harsher impact
+                osc.type = 'square'; 
                 osc.frequency.setValueAtTime(80, this.ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
-                oscGain.gain.setValueAtTime(0.8, this.ctx.currentTime); // LOUD
+                oscGain.gain.setValueAtTime(0.8, this.ctx.currentTime); 
                 oscGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
                 osc.connect(oscGain);
                 oscGain.connect(this.ctx.destination);
@@ -296,7 +294,7 @@
         // --- CONTROLS ---
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
-            sfx.init(); // MUST trigger on exact user interaction
+            sfx.init(); 
             if (!tkState.active && tkState.speed === 0) startFlight();
             tkState.pressing = true;
         });
@@ -307,7 +305,7 @@
             if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault(); 
                 if (e.repeat) return; 
-                sfx.init(); // MUST trigger on exact user interaction
+                sfx.init(); 
                 if (!tkState.active && tkState.speed === 0) startFlight();
                 tkState.pressing = true;
             }
@@ -427,7 +425,8 @@
                 p.style.left = x + 'px'; p.style.top = y + 'px';
                 
                 let size = Math.random() * 6 + 2; 
-                p.style.width = size + 'px'; p.style.height = size + 'px';
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
                 if(i < 50) p.style.boxShadow = `0 0 ${size * 2}px ${p.style.backgroundColor}`;
 
                 vp.appendChild(p);
@@ -640,7 +639,7 @@
                  prompt.textContent = "BRACE! SKIDDING ON RUNWAY!";
             }
 
-            // 5. STRICT THRESHOLD CAMERA (Prevents Cropping)
+            // 5. STRICT THRESHOLD CAMERA
             tkState.bgX_sky -= (tkState.speed * 0.006 * SPEED_MOD);
             tkState.bgX_city -= (tkState.speed * 0.03 * SPEED_MOD);
             tkState.bgX_runway -= (tkState.speed * 0.18 * SPEED_MOD);

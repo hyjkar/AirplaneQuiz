@@ -24,9 +24,14 @@
             height: 100vh; width: 100vw; overflow: hidden; user-select: none; touch-action: none;
         }
 
+        #game-wrapper {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+        }
+
         /* Fullscreen Viewport */
         #takeoff-viewport {
-            width: 100%; height: 100%; position: relative; overflow: hidden; 
+            flex-grow: 1; width: 100%; height: 100%; position: relative; overflow: hidden; 
             background-color: #4a9ae9; 
             cursor: pointer;
         }
@@ -255,7 +260,7 @@
         }
 
         function checkCollision() {
-            // True Pixel-Perfect Bounding Box Collision (Plane Image vs Enemy Image)
+            // True Pixel-Perfect Bounding Box Collision
             const pRect = document.getElementById('tk-plane-img').getBoundingClientRect();
             const eRect = document.getElementById('tk-enemy-plane').getBoundingClientRect();
             const margin = 10; 
@@ -290,6 +295,7 @@
                 let minSpeed = (tkState.phase === 0) ? 0 : 100;
                 tkState.speed = Math.max(minSpeed, Math.min(220, tkState.speed));
             } else {
+                // Touchdown Rollout Braking
                 tkState.speed -= 1.5;
                 tkState.speed = Math.max(0, tkState.speed);
                 if (tkState.speed === 0) return triggerWin();
@@ -301,7 +307,7 @@
 
             // Fluent Speed Color
             spdEl.textContent = Math.floor(tkState.speed);
-            let spdHue = 120; // Default Green
+            let spdHue = 120; 
             if (tkState.phase === 5) {
                 if (tkState.speed > 150) spdHue = Math.max(0, 120 - ((tkState.speed - 150) / 30) * 120);
             } else if (tkState.phase > 0 && tkState.phase < 5) {
@@ -320,6 +326,7 @@
             tkState.pitch += tkState.pitchVelocity;
             tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch));
             
+            // NOSE DIVE LOCK ON GROUND
             if (tkState.altitude <= 0 && (tkState.phase === 0 || tkState.phase === 1 || tkState.phase === 6)) {
                 if (tkState.pitch < 0) {
                     tkState.pitch = 0;
@@ -357,13 +364,16 @@
                 } else {
                     document.getElementById('tk-mountain').style.display = 'none';
                 }
-                if (tkState.takeoffDistance <= 0 && tkState.altitude < 50) return triggerCrash("CRASHED AT END OF RUNWAY!");
+
+                if (tkState.takeoffDistance <= 0 && tkState.altitude < 50) {
+                    return triggerCrash("CRASHED AT END OF RUNWAY!");
+                }
             }
 
             // --- GROUND COLLISION (LANDING) ---
             if (tkState.altitude <= 0 && tkState.phase > 0 && tkState.phase < 6) {
                 if (tkState.phase === 1) {
-                    // Safe
+                    // Safe, lifting off
                 } else if (tkState.phase === 5) {
                     if (tkState.speed > 150) {
                         tkState.altitude = 0;
@@ -375,8 +385,6 @@
                         setTargetZone(-2, 8); 
                         prompt.textContent = "TOUCHDOWN! BRAKING...";
                         prompt.className = "prompt-pulse";
-                        prompt.style.color = "var(--gauge-green)";
-                        prompt.style.borderColor = "var(--gauge-green)";
                     } else {
                         tkState.altitude = 0;
                         return triggerCrash("BAD LANDING ANGLE! CRASHED!");
@@ -494,6 +502,7 @@
             let planeVisualY = -(tkState.altitude - tkState.cameraY);
             let visualPitch = -tkState.pitch;
             
+            // Container moves up/down. Image rotates.
             document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeVisualY}px)`;
             document.getElementById('tk-plane-img').style.transform = `rotate(${visualPitch}deg)`;
             
@@ -512,7 +521,10 @@
             document.getElementById('tk-enemy-plane').style.display = 'none';
             document.getElementById('tk-alert-overlay').className = "";
             
+            const promptContainer = document.getElementById('prompt-container');
             const prompt = document.getElementById('tk-touch-prompt');
+            
+            promptContainer.style.opacity = '1';
             prompt.textContent = reason;
             prompt.className = "prompt-alert";
             
@@ -561,7 +573,10 @@
         function triggerWin() {
             tkState.active = false;
             
+            const promptContainer = document.getElementById('prompt-container');
             const prompt = document.getElementById('tk-touch-prompt');
+            
+            promptContainer.style.opacity = '1';
             prompt.textContent = `SAFE LANDING! (+${Math.floor(tkState.score)})`;
             prompt.className = "prompt-pulse";
             prompt.style.color = "var(--gauge-green)";

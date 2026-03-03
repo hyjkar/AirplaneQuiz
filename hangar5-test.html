@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - The Final Approach</title>
+    <title>Hangar 5 - Autopilot & Risk</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -119,12 +118,24 @@
             position: absolute; top: 15px; left: 15px; right: 15px; 
             display: flex; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; 
         }
+        .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
+        
         #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold);}
+        
         #reset-btn { 
             background: rgba(215, 25, 32, 0.9); border: 2px solid #fff; border-radius: 8px;
             color: #fff; font-size: 1rem; cursor: pointer; width: 40px; height: 40px;
-            display: flex; align-items: center; justify-content: center; pointer-events: auto;
+            display: flex; align-items: center; justify-content: center;
         }
+        
+        /* Autopilot Button */
+        #ap-btn {
+            background: #333; border: 2px solid #aaa; border-radius: 8px;
+            color: #aaa; font-size: 0.9rem; cursor: pointer; padding: 0 12px; height: 40px;
+            font-family: 'Share Tech Mono', monospace; font-weight: bold;
+            transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        #ap-btn:active { transform: scale(0.95); }
 
         #prompt-container {
             position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20;
@@ -132,7 +143,7 @@
         }
         #tk-touch-prompt { 
             background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px;
-            padding: 8px 16px; text-align: center; color: #fff; font-size: 1rem; font-weight: bold;
+            padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase;
         }
 
@@ -183,12 +194,15 @@
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
-            <button id="reset-btn" onclick="startFlight()">❌</button>
+            <div class="top-left-controls">
+                <button id="reset-btn" onclick="startFlight()">❌</button>
+                <button id="ap-btn" onclick="toggleAutoPilot(event)">AUTO</button>
+            </div>
             <div id="tk-score-display">SCORE: <span id="score-val">0</span></div>
         </div>
         
         <div id="prompt-container">
-            <div id="tk-touch-prompt">START ENGINES</div>
+            <div id="tk-touch-prompt">TAP OR SPACE TO START</div>
         </div>
         
         <div id="camera-rig">
@@ -363,10 +377,34 @@
             lastFrameTime: 0, enemyX: 150, enemyAltitude: 0, currTargetMin: 10, currTargetMax: 16,
             bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260,
             dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "",
-            zoom: 1.0, targetZoom: 1.0, speedMod: 0.75
+            zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false
         };
 
         const CRUISE_ALT = 300; 
+
+        // --- AUTOPILOT TOGGLE ---
+        function toggleAutoPilot(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            // Only allow autopilot while actively flying
+            if (!tkState.active || tkState.phase === 0 || tkState.phase >= 6) return; 
+
+            tkState.autoPilot = !tkState.autoPilot;
+            const btn = document.getElementById('ap-btn');
+            
+            if (tkState.autoPilot) {
+                btn.style.background = 'var(--gauge-green)';
+                btn.style.borderColor = '#fff';
+                btn.style.color = '#000';
+                btn.style.boxShadow = '0 0 15px var(--gauge-green)';
+                sfx.playDing(1.5); 
+            } else {
+                btn.style.background = '#333';
+                btn.style.borderColor = '#aaa';
+                btn.style.color = '#aaa';
+                btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
+                sfx.playDing(0.8);
+            }
+        }
 
         // --- CONTROLS ---
         window.addEventListener('pointerdown', (e) => {
@@ -399,9 +437,7 @@
             let es = document.getElementById('tk-end-screen');
             es.style.display = 'flex';
             
-            setTimeout(() => { 
-                es.classList.add('visible'); 
-            }, 50);
+            setTimeout(() => { es.classList.add('visible'); }, 50);
 
             let icons = document.querySelectorAll('.reward-icon');
             icons.forEach(i => { 
@@ -453,6 +489,13 @@
             es.classList.remove('visible');
             setTimeout(() => { es.style.display = 'none'; }, 300); 
 
+            // Reset Autopilot UI
+            const apBtn = document.getElementById('ap-btn');
+            apBtn.style.background = '#333';
+            apBtn.style.borderColor = '#aaa';
+            apBtn.style.color = '#aaa';
+            apBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
+
             document.getElementById('tk-plane-img').src = 'my-plane.png';
 
             tkState = {
@@ -461,7 +504,7 @@
                 lastFrameTime: performance.now(), enemyX: 150, enemyAltitude: 0,
                 currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_city: 0, bgX_runway: 0, 
                 takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "",
-                zoom: 1.0, speedMod: 0.75
+                zoom: 1.0, speedMod: 0.75, autoPilot: false
             };
             SPEED_MOD = 0.75; 
 
@@ -678,10 +721,14 @@
             document.getElementById('hud-spd').style.color = `hsl(${spdHue}, 85%, 55%)`;
             document.getElementById('hud-spd-val').textContent = Math.floor(tkState.speed);
 
-            // 2. PITCH & PHYSICS
+            // 2. PITCH & PHYSICS (WITH AUTOPILOT LOGIC)
             if (tkState.phase === 6) {
                 tkState.pitch += (0 - tkState.pitch) * 0.1;
                 tkState.pitchVelocity = 0;
+            } else if (tkState.autoPilot) {
+                // Autopilot freezes pitch movement perfectly
+                tkState.pitchVelocity *= 0.5;
+                tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch + tkState.pitchVelocity));
             } else {
                 if (tkState.pressing && tkState.speed >= 85) tkState.pitchVelocity += (0.11 * SPEED_MOD);
                 else if (tkState.speed >= 85) tkState.pitchVelocity -= (0.08 * SPEED_MOD);
@@ -695,6 +742,7 @@
                 targetVSpeed = -12 * SPEED_MOD; 
                 document.getElementById('tk-alert-overlay').className = 'flashing';
                 prompt.textContent = "STALL WARNING!";
+                if(tkState.autoPilot) toggleAutoPilot(); // Disengage AP in stall
             } else if (tkState.phase !== 3) {
                 document.getElementById('tk-alert-overlay').className = '';
             }
@@ -727,7 +775,7 @@
                 }
             }
 
-            // 3. HUD UPDATES
+            // 3. HUD UPDATES & AUTOPILOT SCORING
             document.getElementById('hud-alt-val').textContent = Math.floor(tkState.altitude) + 'm';
             document.getElementById('hud-pitch-val').innerHTML = Math.floor(tkState.pitch) + '&deg;';
             let center = (tkState.currTargetMin + tkState.currTargetMax) / 2;
@@ -737,8 +785,20 @@
             let dynColor = `hsl(${p_hue}, 85%, 55%)`;
             hudRing.style.borderColor = dynColor;
             document.getElementById('hud-pitch').style.color = dynColor;
-            if (inHUDZone && tkState.phase > 0 && tkState.phase < 6) tkState.score += 4;
-            document.getElementById('score-val').textContent = Math.floor(tkState.score);
+            
+            const scoreValEl = document.getElementById('score-val');
+            if (inHUDZone && tkState.phase > 0 && tkState.phase < 6) {
+                if (tkState.autoPilot) {
+                    tkState.score += 10; // Gold Rush points!
+                    scoreValEl.style.color = '#cfa86e';
+                } else {
+                    tkState.score += 4;
+                    scoreValEl.style.color = '#fff';
+                }
+            } else {
+                scoreValEl.style.color = '#fff';
+            }
+            scoreValEl.textContent = Math.floor(tkState.score);
 
             // 4. PHASE LOGIC & MOUNTAINS
             if (tkState.phase < 2) {
@@ -783,6 +843,7 @@
                 prompt.textContent = "TRAFFIC! DIVE!"; document.getElementById('tk-alert-overlay').className = 'flashing';
                 document.getElementById('tk-enemy-plane').style.display = 'block';
                 tkState.enemyX = 140; tkState.enemyAltitude = tkState.altitude;
+                if(tkState.autoPilot) toggleAutoPilot(); // Force AP off during emergency
             }
             else if (tkState.phase === 3) {
                 tkState.enemyX -= (1.8 * SPEED_MOD); document.getElementById('tk-enemy-plane').style.left = tkState.enemyX + '%';
@@ -809,6 +870,7 @@
                 tkState.currTargetMin = -8; tkState.currTargetMax = -2; 
                 prompt.textContent = "LAND NOW!"; 
                 setDialogue("<span class='capt-text'>CAPT:</span> MOUNTAIN AHEAD! GET IT DOWN!", 4000);
+                if(tkState.autoPilot) toggleAutoPilot(); // Force AP off for landing approach
                 
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
                 triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
@@ -820,6 +882,7 @@
                  tkState.altitude = 0; 
                  tkState.vSpeed = 0; 
                  prompt.textContent = "BRAKES ON!";
+                 if(tkState.autoPilot) toggleAutoPilot();
             }
 
             // 5. STRICT THRESHOLD CAMERA

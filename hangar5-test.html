@@ -82,7 +82,6 @@
         /* The Pitch Gauge (-20 to +30 degrees) */
         #tk-gauge-container { position: absolute; right: 15px; top: 60px; bottom: 15px; width: 25px; background: rgba(0,0,0,0.6); border-radius: 4px; border: 2px solid #fff; z-index: 6; pointer-events: none;}
         #tk-target-zone { position: absolute; left: 0; right: 0; background: var(--gauge-green); transition: bottom 0.2s linear, height 0.2s linear; box-shadow: 0 0 10px var(--gauge-green); }
-        #tk-zero-line { position: absolute; left: -5px; right: -5px; bottom: 40%; height: 2px; background: rgba(255,255,255,0.8); z-index: 7;} /* 0 degree marker at 40% height */
         #tk-needle { position: absolute; left: -8px; right: -8px; bottom: 40%; height: 4px; background: var(--brand-red); transition: bottom 0.05s linear; box-shadow: 0 0 5px red; z-index: 8;}
 
         /* Dashboard */
@@ -119,7 +118,6 @@
             <div id="tk-clouds" class="parallax-layer"></div>
             
             <div id="tk-gauge-container">
-                <div id="tk-zero-line"></div>
                 <div id="tk-target-zone"></div>
                 <div id="tk-needle"></div>
             </div>
@@ -180,7 +178,7 @@
             enemyAltitude: 0
         };
 
-        const CRUISE_ALT = 800; // The altitude the game pushes you to level off at
+        const CRUISE_ALT = 1200; // The altitude the game pushes you to level off at
 
         // Pitch to Percentage Converter (-20 to +30 total range = 50 degrees)
         function pitchToPercent(degrees) {
@@ -225,6 +223,7 @@
             document.getElementById('tk-score-display').textContent = `SCORE: 0`;
             document.getElementById('tk-alt-display').textContent = `ALT: 0m`;
             
+            // Ensure runway is in original position
             document.getElementById('tk-runway').style.transform = `translateY(0px)`;
             document.getElementById('tk-clouds').style.transform = `translateY(0px)`;
 
@@ -283,7 +282,7 @@
             tkState.pitch += tkState.pitchVelocity;
             tkState.pitch = Math.max(-20, Math.min(30, tkState.pitch));
             
-            // Ground Constraint: Plane cannot nose dive through the tarmac
+            // Ground Constraint: Plane cannot nose dive through the tarmac before liftoff
             if (tkState.altitude <= 0 && tkState.pitch < 0 && (tkState.phase === 0 || tkState.phase === 6)) {
                 tkState.pitch = 0;
                 if (tkState.pitchVelocity < 0) tkState.pitchVelocity = 0;
@@ -296,21 +295,29 @@
                 tkState.altitude += tkState.pitch * 0.4; 
             }
 
-            // Ground Collision Detection logic
+            // --- GROUND COLLISION DETECTION ---
             const prompt = document.getElementById('tk-touch-prompt');
             if (tkState.altitude <= 0 && tkState.phase > 0) {
-                if (tkState.phase === 5 && tkState.pitch >= 0 && tkState.pitch <= 10) {
-                    // Safe Touchdown!
-                    tkState.phase = 6;
-                    tkState.altitude = 0;
-                    setTargetZone(0, 5); // Flare zone
-                    prompt.textContent = "TOUCHDOWN! BRAKING...";
-                    prompt.className = "prompt-pulse";
-                    prompt.style.color = "var(--gauge-green)";
+                if (tkState.phase === 1) {
+                    // In Phase 1, we are just lifting off. Don't crash unless nose diving hard into the tarmac.
+                    if (tkState.pitch < -5) return triggerCrash("NOSE DIVED INTO RUNWAY!");
+                } else if (tkState.phase === 5) {
+                    // Touchdown! Allow a forgiving pitch angle between -5 and +15 degrees.
+                    if (tkState.pitch >= -5 && tkState.pitch <= 15) {
+                        tkState.phase = 6;
+                        tkState.altitude = 0;
+                        setTargetZone(-2, 8); // Relaxed flare zone
+                        prompt.textContent = "TOUCHDOWN! BRAKING...";
+                        prompt.className = "prompt-pulse";
+                        prompt.style.color = "var(--gauge-green)";
+                    } else {
+                        tkState.altitude = 0;
+                        return triggerCrash("BAD LANDING ANGLE! CRASHED!");
+                    }
                 } else if (tkState.phase !== 6) {
-                    // Crashed outside of landing phase or nose-dived
+                    // Crashed randomly outside of landing phase
                     tkState.altitude = 0;
-                    return triggerCrash("CRASHED INTO RUNWAY!");
+                    return triggerCrash("CRASHED INTO GROUND!");
                 }
             }
 
@@ -382,9 +389,6 @@
                     setTargetZone(-8, -2); // Descent angle
                     prompt.textContent = "LANDING APPROACH - DESCEND";
                 }
-            }
-            else if (tkState.phase === 5) {
-                // Wait for altitude to hit 0 (Handled by ground collision block above)
             }
 
             // --- 5. UPDATE VISUALS ---

@@ -133,7 +133,7 @@
         </div>
         
         <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky1.png');"></div>
-        <div id="tk-bg-city" class="parallax-layer" style="background-image: url('city1.png');"></div>
+        <div id="tk-bg-city" class="parallax-layer" style="background-image: url('mountain.png');"></div>
         
         <div id="plane-container">
             <div id="dialogue-bubble"></div>
@@ -313,7 +313,7 @@
 
             if (tkState.phase === 0 && tkState.speed > 25 && tkState.dialogueStep === 0) {
                 tkState.dialogueStep = 1;
-                setDialogue("<span class='capt-text'>CAPT:</span> Did they fix the issue with the landing gear?", 4000);
+                setDialogue("<span class='capt-text'>CAPT:</span> Did they fix the landing gear?", 4000);
             }
             if (tkState.phase === 0 && tkState.speed > 95 && tkState.dialogueStep === 1) {
                 tkState.dialogueStep = 2;
@@ -321,7 +321,7 @@
             }
             if (tkState.phase === 1 && tkState.altitude > 80 && tkState.dialogueStep === 2) {
                 tkState.dialogueStep = 3;
-                setDialogue("<span class='capt-text'>CAPT:</span> Bad news: the landing gear is stuck.", 4000);
+                setDialogue("<span class='capt-text'>CAPT:</span> ...it's stuck :(", 4000);
             }
 
             // 1. EXTENDED SPEED ENGINE

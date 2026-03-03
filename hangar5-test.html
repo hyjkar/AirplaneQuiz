@@ -133,20 +133,11 @@
         let tkState = {
             active: false, phase: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             progress: 0, altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, 
-            lastFrameTime: 0, enemyX: 150, enemyAltitude: 0, currTargetMin: 10, currTargetMax: 16
+            lastFrameTime: 0, enemyX: 150, enemyAltitude: 0, currTargetMin: 10, currTargetMax: 16,
+            bgX_sky: 0, bgX_city: 0, bgX_runway: 0
         };
 
         const CRUISE_ALT = 1200;
-
-        // Initialization
-        window.onload = () => {
-            // Check if essential elements exist to prevent startup crash
-            if (!document.getElementById('takeoff-viewport')) {
-                console.error("Critical UI elements missing.");
-                return;
-            }
-            console.log("Simulator Ready.");
-        };
 
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
@@ -162,7 +153,8 @@
                 active: true, phase: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, progress: 0, 
                 altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, 
                 lastFrameTime: performance.now(), enemyX: 150, enemyAltitude: 0,
-                currTargetMin: 10, currTargetMax: 16
+                currTargetMin: 10, currTargetMax: 16,
+                bgX_sky: 0, bgX_city: 0, bgX_runway: 0
             };
 
             document.getElementById('plane-container').style.display = 'block';
@@ -210,11 +202,9 @@
             tkState.pitchVelocity *= 0.88;
             tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch + tkState.pitchVelocity));
 
-            // Prevent nose dive on ground
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
 
             let targetVSpeed = tkState.pitch * 0.4;
-            // Gravity effect if slow
             if (tkState.speed < 140 && tkState.altitude > 0) targetVSpeed -= 2.5;
             tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.1;
 
@@ -260,9 +250,20 @@
                 else { tkState.active = false; prompt.textContent = "CRASHED ON LANDING!"; return; }
             }
 
-            // 5. CAMERA & SCENERY
-            let targetCam = Math.max(0, tkState.altitude - 150);
+            // 5. SCROLLING & CAMERA
+            // Horizontal Scrolling logic
+            tkState.bgX_sky -= tkState.speed * 0.01;
+            tkState.bgX_city -= tkState.speed * 0.05;
+            tkState.bgX_runway -= tkState.speed * 0.4;
+            
+            document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 0px`;
+            document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`;
+            document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
+
+            // Vertical Parallax logic
+            let targetCam = Math.max(0, tkState.altitude - (window.innerHeight * 0.3));
             tkState.cameraY += (targetCam - tkState.cameraY) * 0.1;
+            
             document.getElementById('tk-runway').style.transform = `translateY(${tkState.cameraY}px)`;
             document.getElementById('tk-bg-city').style.transform = `translateY(${tkState.cameraY * 0.6}px)`;
             

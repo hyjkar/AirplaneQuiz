@@ -177,8 +177,8 @@
         // --- KEYBOARD CONTROLS (SPACEBAR) ---
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space' || e.key === ' ') {
-                e.preventDefault(); // Stop spacebar from scrolling the page
-                if (e.repeat) return; // Prevent repeated triggers if held down
+                e.preventDefault(); 
+                if (e.repeat) return; 
                 if (!tkState.active && tkState.speed === 0) startFlight();
                 tkState.pressing = true;
             }
@@ -252,12 +252,11 @@
             if (isMidAir) p.style.width = '5px', p.style.height = '5px'; 
             document.getElementById('takeoff-viewport').appendChild(p);
             
-            // On the ground, speed of sparks scales with the plane's speed
             let speedFactor = isMidAir ? 1 : (tkState.speed / 100);
-            
             let vx = isMidAir ? -(Math.random() * 5 + 2) * SPEED_MOD : -(Math.random() * 14 + 5) * SPEED_MOD * speedFactor; 
             let vy = isMidAir ? (Math.random() * 4 + 2) * SPEED_MOD : -(Math.random() * 3) * SPEED_MOD * speedFactor;
             let age = 0;
+            
             function move() {
                 age++; vx *= 0.95; vy += (0.5 * SPEED_MOD); 
                 p.style.left = (parseFloat(p.style.left)+vx)+'px';
@@ -267,16 +266,33 @@
             } move();
         }
 
-        // EPIC MID-AIR COLLISION / FATAL CRASH
+        // --- EPIC SLOW-MOTION COLLISION ---
         function triggerEpicCollision(x, y) {
             const vp = document.getElementById('takeoff-viewport');
             
+            // Instantly flash screen white
             vp.style.backgroundColor = "#ffffff";
-            setTimeout(() => { vp.style.backgroundColor = "#4a9ae9"; }, 100);
+            setTimeout(() => { vp.style.backgroundColor = "#4a9ae9"; }, 150);
+
+            // Violent Screen Shake
+            let shakeAmount = 35;
+            function applyShake() {
+                if (shakeAmount > 0.5) {
+                    let ox = (Math.random() - 0.5) * shakeAmount;
+                    let oy = (Math.random() - 0.5) * shakeAmount;
+                    vp.style.transform = `translate(${ox}px, ${oy}px)`;
+                    shakeAmount *= 0.85; // Dampen shake over time
+                    requestAnimationFrame(applyShake);
+                } else {
+                    vp.style.transform = `translate(0, 0)`;
+                }
+            }
+            applyShake();
 
             const colors = ['#ffffff', '#ffea00', '#ff5500', '#d71920', '#333333', '#111111'];
             
-            for(let i=0; i<150; i++) {
+            // Spawn 200 particles for massive destruction
+            for(let i=0; i<200; i++) {
                 let p = document.createElement('div');
                 p.className = 'pixel-particle';
                 p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
@@ -285,22 +301,32 @@
                 let size = Math.random() * 6 + 2; 
                 p.style.width = size + 'px';
                 p.style.height = size + 'px';
+                
+                // Add an intense glow to the first 50 "hot" particles
+                if(i < 50) p.style.boxShadow = `0 0 ${size * 2}px ${p.style.backgroundColor}`;
 
                 vp.appendChild(p);
                 
                 let a = Math.random() * 6.28; 
-                let v = (Math.random() * 25 + 5) * SPEED_MOD; 
+                let v = (Math.random() * 40 + 5) * SPEED_MOD; // Huge explosive blast
                 let vx = Math.cos(a) * v; 
                 let vy = Math.sin(a) * v;
                 let age = 0;
-                let maxAge = Math.random() * 40 + 30; 
+                let maxAge = Math.random() * 80 + 60; 
                 
                 function move() {
-                    age++; 
-                    vx *= 0.92; 
-                    vy += (0.25 * SPEED_MOD); 
-                    p.style.left = (parseFloat(p.style.left)+vx)+'px';
-                    p.style.top = (parseFloat(p.style.top)+vy)+'px';
+                    // THE SLOW MOTION MAGIC:
+                    // Frames 0-2: Full speed explosion burst
+                    // Frames 3-6: Rapid deceleration
+                    // Frames 7+: 5% speed (Bullet-Time)
+                    let timeScale = age < 2 ? 1.0 : (age < 6 ? 0.3 : 0.05); 
+                    
+                    age += timeScale; 
+                    vx *= Math.pow(0.92, timeScale); // Air resistance applies dynamically
+                    vy += (0.3 * SPEED_MOD) * timeScale; // Gravity applies slowly
+                    
+                    p.style.left = (parseFloat(p.style.left) + (vx * timeScale)) + 'px';
+                    p.style.top = (parseFloat(p.style.top) + (vy * timeScale)) + 'px';
                     p.style.opacity = 1 - (age / maxAge);
 
                     if(age < maxAge) requestAnimationFrame(move); else p.remove();
@@ -357,7 +383,6 @@
                 
                 tkState.speed = Math.max((tkState.phase === 0 ? 0 : 85), Math.min(240, tkState.speed + accel));
             } else {
-                // REDUCED DECELERATION: Allows the plane to slide on the runway instead of stopping instantly
                 tkState.speed = Math.max(0, tkState.speed - (1.3 * SPEED_MOD));
                 if (tkState.speed <= 0) { 
                     tkState.active = false; 
@@ -377,11 +402,9 @@
 
             // 2. PITCH & PHYSICS
             if (tkState.phase === 6) {
-                // AUTO-LEVEL: During the runway slide, physically drop the nose to flat (0 degrees)
                 tkState.pitch += (0 - tkState.pitch) * 0.1;
                 tkState.pitchVelocity = 0;
             } else {
-                // Normal pitch physics
                 if (tkState.pressing && tkState.speed >= 85) tkState.pitchVelocity += (0.11 * SPEED_MOD);
                 else if (tkState.speed >= 85) tkState.pitchVelocity -= (0.08 * SPEED_MOD);
                 tkState.pitchVelocity *= 0.88;
@@ -400,8 +423,6 @@
 
             tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.12;
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
-            
-            // Lock altitude at 0 during slide, otherwise normal
             if (tkState.phase !== 6) tkState.altitude = Math.max(0, tkState.altitude + tkState.vSpeed);
 
             // FATAL IMPACT CHECK
@@ -412,7 +433,7 @@
                     document.getElementById('plane-container').style.display = 'none';
                     tkState.active = false;
                     prompt.textContent = "IMPACT CRASH: FATAL ANGLE";
-                    setTimeout(() => { prompt.textContent = "TAP TO RE-FLY"; }, 3500);
+                    setTimeout(() => { prompt.textContent = "TAP TO RE-FLY"; }, 4500);
                     return;
                 }
             }
@@ -436,6 +457,16 @@
                 if (tkState.takeoffDist < 25 && tkState.altitude < 60) {
                     const mtn = document.getElementById('tk-mountain');
                     mtn.style.display = 'block'; mtn.style.left = (tkState.takeoffDist * 4) + '%';
+                    
+                    // Runway end collision trigger
+                    if (tkState.takeoffDist <= 0) {
+                         const r = document.getElementById('tk-plane-img').getBoundingClientRect();
+                         triggerEpicCollision(r.left+r.width/2, r.top+r.height/2);
+                         document.getElementById('plane-container').style.display='none';
+                         tkState.active=false; prompt.textContent="RUNWAY END COLLISION";
+                         setTimeout(()=>prompt.textContent="TAP TO RE-FLY", 4500);
+                         return;
+                    }
                 }
             }
             if (tkState.phase === 0 && tkState.speed >= 150) { tkState.phase = 1; prompt.textContent = "V1: ROTATE TO 15°"; }
@@ -455,10 +486,11 @@
                 const er = document.getElementById('tk-enemy-plane').getBoundingClientRect();
                 const margin = 12;
                 if (!(pr.right-margin < er.left+margin || pr.left+margin > er.right-margin || pr.bottom-margin < er.top+margin || pr.top+margin > er.bottom-margin)) {
+                     // Mid-air collision trigger
                      triggerEpicCollision(pr.left+pr.width/2, pr.top+pr.height/2);
                      document.getElementById('plane-container').style.display='none';
                      tkState.active=false; prompt.textContent="MID-AIR COLLISION";
-                     setTimeout(()=>prompt.textContent="TAP TO RE-FLY", 3500);
+                     setTimeout(()=>prompt.textContent="TAP TO RE-FLY", 4500);
                      return;
                 }
                 if (tkState.enemyX < -30) {
@@ -476,7 +508,6 @@
                 triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
                 document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png';
             }
-            // TOUCHDOWN TRANSITION TO SLIDE (Phase 6)
             if (tkState.phase === 5 && tkState.altitude <= 0) {
                  tkState.phase = 6; 
                  tkState.altitude = 0; 
@@ -505,18 +536,14 @@
             document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeY}px)`;
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
 
-            // --- EMERGENCY VISUAL EFFECTS ---
+            // EFFECTS
             const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
             if (tkState.phase === 5 && Math.random() > 0.4) spawnSpark(pr.left + pr.width/2 - 10, pr.bottom - 15, true);
-            
-            // DYNAMIC RUNWAY SPARKS DURING SLIDE
             if (tkState.phase === 6 && tkState.speed > 0) {
-                // Spark count scales with speed so they die out smoothly
                 let sparkCount = Math.floor(tkState.speed / 40); 
                 for(let i=0; i<sparkCount; i++) {
                     spawnSpark(pr.left + pr.width/2 + (Math.random()*40 - 20), pr.bottom - 5, false);
                 }
-                // Random trailing sparks
                 if (Math.random() > 0.3) spawnSpark(pr.left + pr.width/2 + (Math.random()*30), pr.bottom - 5, false);
             }
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Tactical HUD Simulator</title>
+    <title>Hangar 5 - Physics Mastery</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -14,17 +14,14 @@
             --brand-gold: #cfa86e;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
         body, html {
             background-color: #000; color: #fff;
             font-family: 'Share Tech Mono', monospace;
-            margin: 0; padding: 0;
             width: 100%; height: 100%;
             overflow: hidden; user-select: none; touch-action: none;
         }
-
-        #game-wrapper { width: 100%; height: 100%; position: relative; }
 
         #takeoff-viewport {
             width: 100%; height: 100%; position: relative; overflow: hidden; 
@@ -35,106 +32,107 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 7; transition: box-shadow 0.2s;
         }
-        .flashing { animation: redAlert 0.4s infinite alternate; }
+        .flashing { animation: redAlert 0.3s infinite alternate; }
         @keyframes redAlert { 
-            from { box-shadow: inset 0 0 10px rgba(215, 25, 32, 0.2); background: rgba(215, 25, 32, 0.1); } 
-            to { box-shadow: inset 0 0 120px rgba(215, 25, 32, 0.8); background: rgba(215, 25, 32, 0.4); } 
+            from { background: rgba(215, 25, 32, 0); } 
+            to { background: rgba(215, 25, 32, 0.3); } 
         }
 
-        .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 60px; pointer-events: none; background-repeat: repeat-x; }
+        .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 80px; pointer-events: none; background-repeat: repeat-x; }
         #tk-bg-sky { background-size: 1024px 100%; z-index: 0; height: 150%; background-color: #87CEEB;}
-        #tk-bg-city { height: 60%; background-size: 1024px 100%; background-position: bottom left; z-index: 1; bottom: 60px; top: auto; }
+        #tk-bg-city { height: 60%; background-size: 1024px 100%; background-position: bottom left; z-index: 1; bottom: 80px; top: auto; }
         
-        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: #222; z-index: 3;}
+        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3;}
         #tk-runway-stripes { 
             width: 100%; height: 100%; 
             background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); 
             background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x;
         }
 
+        /* Plane & HUD Container */
         #plane-container {
-            position: absolute; left: 30%; bottom: 50px; 
+            position: absolute; left: 30%; bottom: 65px; 
             transform: translateX(-50%); z-index: 10; pointer-events: none;
         }
-        #plane-rotate-group { position: relative; width: 120px; height: 40px; transform-origin: center center; }
+        #plane-rotate-group { position: relative; width: 130px; height: 45px; transform-origin: center center; }
         #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; z-index: 12; }
         
         #plane-hud {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 170px; height: 170px; border-radius: 50%;
-            border: 2px dashed rgba(255,255,255,0.5);
+            width: 180px; height: 180px; border-radius: 50%;
+            border: 3px dashed #fff; /* Color handled by JS */
             display: flex; align-items: center; justify-content: center;
-            transition: border-color 0.1s; z-index: 11;
+            z-index: 11;
         }
         
-        .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; }
-        .hud-label { font-size: 0.6rem; color: rgba(255,255,255,0.7); display: block; }
-        .hud-val { font-size: 1.1rem; display: block; }
+        @media (max-height: 500px) { #plane-hud { width: 140px; height: 140px; } }
 
-        #hud-spd { left: -8px; top: 50%; transform: translate(-100%, -50%); color: var(--brand-red); }
-        #hud-pitch { right: -8px; top: 50%; transform: translate(100%, -50%); color: #fff; }
-        #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); color: #fff; }
+        .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; }
+        .hud-label { font-size: 0.6rem; opacity: 0.8; display: block; }
+        .hud-val { font-size: 1.2rem; display: block; }
 
-        /* HUD TOP UI */
+        #hud-spd { left: -10px; top: 50%; transform: translate(-100%, -50%); }
+        #hud-pitch { right: -10px; top: 50%; transform: translate(100%, -50%); }
+        #hud-alt { bottom: -10px; left: 50%; transform: translate(-50%, 100%); }
+
+        /* UI */
         #tk-hud-top { 
-            position: absolute; top: max(10px, env(safe-area-inset-top)); left: 15px; right: 15px; 
+            position: absolute; top: 15px; left: 15px; right: 15px; 
             display: flex; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; 
         }
-        #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 6px; border: 1px solid var(--brand-gold);}
+        #tk-score-display { color: var(--brand-gold); font-size: 1.2rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 8px; border: 1px solid var(--brand-gold);}
         #reset-btn { 
-            background: rgba(215, 25, 32, 0.8); border: 2px solid #fff; border-radius: 8px;
-            color: #fff; font-size: 1rem; cursor: pointer; width: 40px; height: 40px;
+            background: rgba(215, 25, 32, 0.9); border: 2px solid #fff; border-radius: 8px;
+            color: #fff; font-size: 1.2rem; cursor: pointer; width: 45px; height: 45px;
             display: flex; align-items: center; justify-content: center; pointer-events: auto;
         }
 
         #prompt-container {
-            position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); z-index: 15;
-            pointer-events: none; width: 90%; max-width: 350px; display: flex; justify-content: center;
+            position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 15;
+            pointer-events: none; width: 90%; max-width: 400px; display: flex; justify-content: center;
         }
         #tk-touch-prompt { 
             background: rgba(0, 0, 0, 0.85); border: 2px solid #fff; border-radius: 8px;
-            padding: 8px 16px; text-align: center; color: #fff; font-size: 1rem; font-weight: bold;
+            padding: 10px 20px; text-align: center; color: #fff; font-size: 1.1rem; font-weight: bold;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        #tk-enemy-plane { position: absolute; left: 150%; bottom: 50px; width: 140px; height: 50px; z-index: 9; pointer-events: none; display: none; }
-        #tk-mountain { position: absolute; bottom: 50px; left: 100%; width: 180px; height: 140px; z-index: 2; display: none; pointer-events: none;}
-        .pixel-particle { position: absolute; z-index: 50; pointer-events: none; width: 6px; height: 6px; border-radius: 1px; }
+        #tk-enemy-plane { position: absolute; left: 150%; bottom: 65px; width: 160px; height: 60px; z-index: 9; pointer-events: none; display: none; }
+        #tk-mountain { position: absolute; bottom: 65px; left: 100%; width: 220px; height: 140px; z-index: 2; display: none; pointer-events: none;}
+        .pixel-particle { position: absolute; z-index: 100; pointer-events: none; width: 6px; height: 6px; }
     </style>
 </head>
 <body>
 
-    <div id="game-wrapper">
-        <div id="takeoff-viewport">
-            <div id="tk-alert-overlay"></div>
-            
-            <div id="tk-hud-top">
-                <button id="reset-btn" onclick="startFlight()">❌</button>
-                <div id="tk-score-display">SCORE: <span id="score-val">0</span></div>
-            </div>
-            
-            <div id="prompt-container">
-                <div id="tk-touch-prompt">TAP TO START ENGINES</div>
-            </div>
-            
-            <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky1.png');"></div>
-            <div id="tk-bg-city" class="parallax-layer" style="background-image: url('city1.png');"></div>
-            
-            <div id="plane-container">
-                <div id="plane-rotate-group">
-                    <img id="tk-plane-img" src="my-plane.png" onerror="this.style.backgroundColor='blue';">
-                    <div id="plane-hud">
-                        <div id="hud-spd" class="hud-text"><span class="hud-label">SPD</span><span id="hud-spd-val" class="hud-val">0</span></div>
-                        <div id="hud-pitch" class="hud-text"><span class="hud-label">PITCH</span><span id="hud-pitch-val" class="hud-val">0&deg;</span></div>
-                        <div id="hud-alt" class="hud-text"><span class="hud-label">ALT</span><span id="hud-alt-val" class="hud-val">0m</span></div>
-                    </div>
+    <div id="takeoff-viewport">
+        <div id="tk-alert-overlay"></div>
+        
+        <div id="tk-hud-top">
+            <button id="reset-btn" onclick="startFlight()">❌</button>
+            <div id="tk-score-display">SCORE: <span id="score-val">0</span></div>
+        </div>
+        
+        <div id="prompt-container">
+            <div id="tk-touch-prompt">TAP TO START ENGINES</div>
+        </div>
+        
+        <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky1.png');"></div>
+        <div id="tk-bg-city" class="parallax-layer" style="background-image: url('city1.png');"></div>
+        
+        <div id="plane-container">
+            <div id="plane-rotate-group">
+                <img id="tk-plane-img" src="my-plane.png" onerror="this.style.backgroundColor='blue';">
+                <div id="plane-hud">
+                    <div id="hud-spd" class="hud-text"><span class="hud-label">SPD</span><span id="hud-spd-val" class="hud-val">0</span></div>
+                    <div id="hud-pitch" class="hud-text"><span class="hud-label">PITCH</span><span id="hud-pitch-val" class="hud-val">0&deg;</span></div>
+                    <div id="hud-alt" class="hud-text"><span class="hud-label">ALT</span><span id="hud-alt-val" class="hud-val">0m</span></div>
                 </div>
             </div>
-            
-            <div id="tk-enemy-plane"><img src="my-plane-golden.png" style="width: 100%; height: 100%; object-fit: contain;"></div>
-            <div id="tk-runway"><div id="tk-runway-stripes"></div></div>
-            <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M40,36 L50,20 L60,36 Z" fill="#fff"/></svg></div>
         </div>
+        
+        <div id="tk-enemy-plane"><img src="my-plane-golden.png" style="width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1);"></div>
+        <div id="tk-runway"><div id="tk-runway-stripes"></div></div>
+        <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M42,35 L50,20 L58,35 Z" fill="#fff"/></svg></div>
     </div>
 
     <script>
@@ -142,7 +140,7 @@
             active: false, phase: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             progress: 0, altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, 
             lastFrameTime: 0, enemyX: 150, enemyAltitude: 0, currTargetMin: 10, currTargetMax: 16,
-            bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDistance: 100
+            bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 100
         };
 
         const CRUISE_ALT = 1200;
@@ -163,8 +161,7 @@
                 active: true, phase: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, progress: 0, 
                 altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, 
                 lastFrameTime: performance.now(), enemyX: 150, enemyAltitude: 0,
-                currTargetMin: 10, currTargetMax: 16,
-                bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDistance: 100
+                currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 100
             };
 
             document.getElementById('plane-container').style.display = 'block';
@@ -172,15 +169,9 @@
             document.getElementById('tk-mountain').style.display = 'none';
             document.getElementById('tk-alert-overlay').className = '';
             document.getElementById('score-val').textContent = '0';
+            document.getElementById('tk-touch-prompt').textContent = 'FULL THROTTLE...';
 
             tkState.frameId = requestAnimationFrame(gameLoop);
-        }
-
-        function checkCollision() {
-            const p = document.getElementById('tk-plane-img').getBoundingClientRect();
-            const e = document.getElementById('tk-enemy-plane').getBoundingClientRect();
-            const m = 12; 
-            return !(p.right - m < e.left + m || p.left + m > e.right - m || p.bottom - m < e.top + m || p.top + m > e.bottom - m);
         }
 
         function triggerExplosion(x, y) {
@@ -191,11 +182,12 @@
                 p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
                 p.style.left = x + 'px'; p.style.top = y + 'px';
                 document.getElementById('takeoff-viewport').appendChild(p);
-                let a = Math.random() * Math.PI * 2, v = Math.random() * 10 + 2, vx = Math.cos(a) * v, vy = Math.sin(a) * v, age = 0;
+                let a = Math.random()*6.28, v = Math.random()*12+3, vx = Math.cos(a)*v, vy = Math.sin(a)*v;
+                let age = 0;
                 function move() {
-                    age++; vx *= 0.96; vy += 0.25;
-                    p.style.left = (parseFloat(p.style.left) + vx) + 'px';
-                    p.style.top = (parseFloat(p.style.top) + vy) + 'px';
+                    age++; vx *= 0.97; vy += 0.25;
+                    p.style.left = (parseFloat(p.style.left)+vx)+'px';
+                    p.style.top = (parseFloat(p.style.top)+vy)+'px';
                     if(age < 60) requestAnimationFrame(move); else p.remove();
                 } move();
             }
@@ -208,115 +200,125 @@
             tkState.lastFrameTime = timestamp;
 
             const prompt = document.getElementById('tk-touch-prompt');
-            const spdEl = document.getElementById('hud-spd');
-            const spdVal = document.getElementById('hud-spd-val');
-            const altVal = document.getElementById('hud-alt-val');
-            const pitchVal = document.getElementById('hud-pitch-val');
             const hudRing = document.getElementById('plane-hud');
+            const spdText = document.getElementById('hud-spd');
+            const pitchText = document.getElementById('hud-pitch');
 
-            // 1. SPEED & PERFORMANCE ENGINE
+            // --- 1. CORE SPEED LOGIC ---
+            let inZone = (tkState.pitch >= tkState.currTargetMin && tkState.pitch <= tkState.currTargetMax);
             if (tkState.phase < 6) {
-                let inZone = (tkState.pitch >= tkState.currTargetMin && tkState.pitch <= tkState.currTargetMax);
-                let accelBase = (tkState.phase === 5) ? -0.5 : 2.2; // Buffed takeoff thrust
+                let accel = (tkState.phase === 5) ? -0.4 : 2.5; // High base acceleration
                 
-                if (!inZone && tkState.phase > 0) accelBase *= 0.4;
-                if (tkState.pitch > 0) accelBase -= (tkState.pitch * 0.06);
-                if (tkState.pitch < 0) accelBase += (Math.abs(tkState.pitch) * 0.04);
+                // Speed is penalized if not in the requested zone
+                if (!inZone && tkState.phase > 0) accel *= 0.3;
                 
-                tkState.speed = Math.max((tkState.phase === 0 ? 0 : 80), Math.min(250, tkState.speed + accelBase));
+                // Physical drag logic
+                if (tkState.pitch > 0) accel -= (tkState.pitch * 0.08);
+                if (tkState.pitch < 0) accel += (Math.abs(tkState.pitch) * 0.04);
+                
+                tkState.speed = Math.max((tkState.phase === 0 ? 0 : 85), Math.min(250, tkState.speed + accel));
             } else {
-                tkState.speed = Math.max(0, tkState.speed - 2.0);
+                tkState.speed = Math.max(0, tkState.speed - 2.2);
                 if (tkState.speed <= 0) { tkState.active = false; prompt.textContent = "SAFE LANDING COMPLETED"; return; }
             }
             if (tkState.phase > 0 && tkState.phase < 6) tkState.progress += (tkState.speed / 5000);
 
-            // SPEED HUD COLOR LOGIC
-            spdVal.textContent = Math.floor(tkState.speed);
-            let spdHue = 0; // Default Red
-            if (tkState.phase === 0 || tkState.phase === 1) {
-                spdHue = (tkState.speed >= 150) ? 120 : 0;
-            } else if (tkState.phase === 5) {
-                spdHue = (tkState.speed <= 150) ? 120 : 0;
-            } else {
-                spdHue = (tkState.speed >= 130) ? 120 : 0; // Flight speed
-            }
-            spdEl.style.color = `hsl(${spdHue}, 85%, 55%)`;
+            // SPEED HUD COLOR FORCING
+            let spdHue = 0;
+            if (tkState.phase === 0 || tkState.phase === 1) spdHue = (tkState.speed >= 150) ? 120 : 0;
+            else if (tkState.phase === 5) spdHue = (tkState.speed <= 150) ? 120 : 0;
+            else spdHue = (tkState.speed > 130) ? 120 : 0;
+            spdText.style.color = `hsl(${spdHue}, 85%, 55%)`;
+            document.getElementById('hud-spd-val').textContent = Math.floor(tkState.speed);
 
-            // 2. PITCH & ALTITUDE
-            if (tkState.pressing && tkState.speed >= 80) tkState.pitchVelocity += 0.12;
-            else if (tkState.speed >= 80) tkState.pitchVelocity -= 0.08;
+            // --- 2. PITCH & DEATH STALL ---
+            if (tkState.pressing && tkState.speed >= 85) tkState.pitchVelocity += 0.14;
+            else if (tkState.speed >= 85) tkState.pitchVelocity -= 0.1;
             tkState.pitchVelocity *= 0.88;
             tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch + tkState.pitchVelocity));
 
-            let isStalling = (tkState.pitch >= 24 && tkState.altitude > 80) || (tkState.speed < 110 && tkState.altitude > 50);
-            let targetVSpeed = tkState.pitch * 0.6;
-            if (isStalling) { targetVSpeed = -10; document.getElementById('tk-alert-overlay').className = 'flashing'; }
-            else if (tkState.phase !== 3) document.getElementById('tk-alert-overlay').className = '';
+            let isStalling = (tkState.pitch >= 24.5 && tkState.altitude > 20);
+            let targetVSpeed = tkState.pitch * 0.65;
+            if (isStalling) { 
+                targetVSpeed = -12; // DROPPING LIKE A STONE
+                document.getElementById('tk-alert-overlay').className = 'flashing';
+                prompt.textContent = "CRITICAL STALL: DANGER!";
+            } else if (tkState.phase !== 3) {
+                document.getElementById('tk-alert-overlay').className = '';
+            }
 
-            tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.12;
+            tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.15;
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
             if (tkState.phase !== 6) tkState.altitude = Math.max(0, tkState.altitude + tkState.vSpeed);
 
-            // 3. HUD UPDATES
-            altVal.textContent = Math.floor(tkState.altitude) + 'm';
-            pitchVal.innerHTML = Math.floor(tkState.pitch) + '&deg;';
+            // STALL IMPACT EXPLOSION
+            if (isStalling && tkState.altitude <= 0) return triggerCrash("STALL IMPACT CRASH");
+
+            // --- 3. HUD PITCH COLORS ---
+            document.getElementById('hud-alt-val').textContent = Math.floor(tkState.altitude) + 'm';
+            document.getElementById('hud-pitch-val').innerHTML = Math.floor(tkState.pitch) + '&deg;';
             
             let center = (tkState.currTargetMin + tkState.currTargetMax) / 2;
             let error = Math.abs(tkState.pitch - center);
-            let hue = (error < (tkState.currTargetMax - tkState.currTargetMin)/2) ? 120 : Math.max(0, 120 - error * 9);
-            if (isStalling) hue = 0;
+            let p_hue = inZone ? 120 : Math.max(0, 120 - error * 10);
+            if (isStalling) p_hue = 0;
             
-            let color = `hsl(${hue}, 85%, 55%)`;
-            hudRing.style.borderColor = color;
-            document.getElementById('hud-pitch').style.color = color;
-            if (hue > 100 && tkState.phase > 0 && tkState.phase < 6) tkState.score += 4;
+            let dynColor = `hsl(${p_hue}, 85%, 55%)`;
+            hudRing.style.borderColor = dynColor;
+            pitchText.style.color = dynColor;
+            if (inZone && tkState.phase > 0 && tkState.phase < 6) tkState.score += 5;
             document.getElementById('score-val').textContent = Math.floor(tkState.score);
 
-            // 4. PHASE LOGIC
+            // --- 4. PHASE LOGIC ---
             if (tkState.phase < 2) {
-                tkState.takeoffDistance -= (tkState.speed / 900);
-                if (tkState.takeoffDistance < 25 && tkState.altitude < 60) {
+                tkState.takeoffDist -= (tkState.speed / 850);
+                if (tkState.takeoffDist < 25 && tkState.altitude < 60) {
                     const mtn = document.getElementById('tk-mountain');
-                    mtn.style.display = 'block'; mtn.style.left = (tkState.takeoffDistance * 4) + '%';
-                    if (tkState.takeoffDistance <= 0) return triggerCrash("RUNWAY END CRASH");
+                    mtn.style.display = 'block'; mtn.style.left = (tkState.takeoffDist * 4) + '%';
+                    if (tkState.takeoffDist <= 0) return triggerCrash("RUNWAY END COLLISION");
                 }
             }
-            if (tkState.phase === 0 && tkState.speed >= 150) { tkState.phase = 1; prompt.textContent = "V1: ROTATE NOSE TO 15°"; }
-            else if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { tkState.phase = 2; tkState.currTargetMin = -3; tkState.currTargetMax = 3; prompt.textContent = "CRUISE: LEVEL OFF"; }
+
+            if (tkState.phase === 0 && tkState.speed >= 150) { tkState.phase = 1; prompt.textContent = "V1: ROTATE NOSE 15°"; }
+            else if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { tkState.phase = 2; tkState.currTargetMin = -3; tkState.currTargetMax = 3; prompt.textContent = "LEVEL OFF (0°)"; }
             else if (tkState.phase === 2 && tkState.progress > 35) {
-                tkState.phase = 3; tkState.currTargetMin = -22; tkState.currTargetMax = -12;
+                tkState.phase = 3; tkState.currTargetMin = -24; tkState.currTargetMax = -12;
                 prompt.textContent = "TRAFFIC ALERT: DIVE!"; document.getElementById('tk-alert-overlay').className = 'flashing';
                 document.getElementById('tk-enemy-plane').style.display = 'block';
-                tkState.enemyX = 130; tkState.enemyAltitude = tkState.altitude;
+                tkState.enemyX = 140; tkState.enemyAltitude = tkState.altitude;
             }
             else if (tkState.phase === 3) {
-                tkState.enemyX -= 2.0; document.getElementById('tk-enemy-plane').style.left = tkState.enemyX + '%';
+                tkState.enemyX -= 2.2; document.getElementById('tk-enemy-plane').style.left = tkState.enemyX + '%';
                 document.getElementById('tk-enemy-plane').style.transform = `translateY(${-(tkState.enemyAltitude - tkState.cameraY)}px)`;
-                if (checkCollision()) return triggerCrash("MID-AIR COLLISION");
+                
+                const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
+                const er = document.getElementById('tk-enemy-plane').getBoundingClientRect();
+                if (!(pr.right<er.left || pr.left>er.right || pr.bottom<er.top || pr.top>er.bottom)) return triggerCrash("MID-AIR COLLISION");
+
                 if (tkState.enemyX < -30) {
                     tkState.phase = 4; tkState.currTargetMin = -3; tkState.currTargetMax = 3;
-                    prompt.textContent = "CLEAR: REGAIN CRUISE"; document.getElementById('tk-alert-overlay').className = '';
+                    prompt.textContent = "CLEAR: RESUME CRUISE"; document.getElementById('tk-alert-overlay').className = '';
                 }
             }
-            else if (tkState.phase === 4 && tkState.progress > 75) { tkState.phase = 5; tkState.currTargetMin = -8; tkState.currTargetMax = -2; prompt.textContent = "APPROACH: GLIDE TO RUNWAY"; }
+            else if (tkState.phase === 4 && tkState.progress > 75) { tkState.phase = 5; tkState.currTargetMin = -8; tkState.currTargetMax = -2; prompt.textContent = "APPROACH: GLIDE DOWN"; }
             
             if (tkState.phase === 5 && tkState.altitude <= 0) {
-                if (tkState.pitch >= -5 && tkState.pitch <= 15) { tkState.phase = 6; tkState.altitude = 0; tkState.vSpeed = 0; prompt.textContent = "TOUCHDOWN! APPLY BRAKES"; }
+                if (tkState.pitch >= -5 && tkState.pitch <= 15) { tkState.phase = 6; tkState.altitude = 0; prompt.textContent = "TOUCHDOWN! APPLY BRAKES"; }
                 else return triggerCrash("HARD LANDING CRASH");
             }
 
-            // 5. SCROLLING & CAMERA
-            tkState.bgX_sky -= tkState.speed * 0.006;
-            tkState.bgX_city -= tkState.speed * 0.035;
-            tkState.bgX_runway -= tkState.speed * 0.22;
+            // --- 5. VISUALS & CAMERA ---
+            tkState.bgX_sky -= tkState.speed * 0.008;
+            tkState.bgX_city -= tkState.speed * 0.04;
+            tkState.bgX_runway -= tkState.speed * 0.25;
             document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 0px`;
             document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`;
             document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
 
-            let targetCam = Math.max(0, tkState.altitude - (window.innerHeight * 0.42));
-            tkState.cameraY += (targetCam - tkState.cameraY) * 0.12;
+            let targetCam = Math.max(0, tkState.altitude - (window.innerHeight * 0.45));
+            tkState.cameraY += (targetCam - tkState.cameraY) * 0.15;
             document.getElementById('tk-runway').style.transform = `translateY(${tkState.cameraY}px)`;
-            document.getElementById('tk-bg-city').style.transform = `translateY(${tkState.cameraY * 0.65}px)`;
+            document.getElementById('tk-bg-city').style.transform = `translateY(${tkState.cameraY * 0.7}px)`;
             document.getElementById('tk-mountain').style.transform = `translateY(${tkState.cameraY}px)`;
             
             let planeY = -(tkState.altitude - tkState.cameraY);
@@ -329,17 +331,11 @@
         function triggerCrash(msg) {
             tkState.active = false;
             const container = document.getElementById('plane-container');
-            const rect = container.getBoundingClientRect();
-            triggerExplosion(rect.left + rect.width/2, rect.top + rect.height/2);
+            const r = container.getBoundingClientRect();
+            triggerExplosion(r.left + r.width/2, r.top + r.height/2);
             container.style.display = 'none';
             document.getElementById('tk-touch-prompt').textContent = msg;
-            setTimeout(() => { document.getElementById('tk-touch-prompt').textContent = "TAP TO RE-FLY"; }, 2500);
-        }
-
-        function triggerWin() {
-            tkState.active = false;
-            document.getElementById('tk-touch-prompt').textContent = "MISSION ACCOMPLISHED!";
-            confetti({ particleCount: 200, spread: 80, origin: { y: 0.7 } });
+            setTimeout(() => { document.getElementById('tk-touch-prompt').textContent = "TAP TO RE-FLY"; }, 3000);
         }
     </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Tactical HUD Flight</title>
+    <title>Hangar 5 - Professional Flight HUD</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -24,10 +24,10 @@
             overflow: hidden; user-select: none; touch-action: none;
         }
 
-        #game-wrapper { width: 100%; height: 100%; position: relative; display: flex; flex-direction: column; }
+        #game-wrapper { width: 100%; height: 100%; position: relative; }
 
         #takeoff-viewport {
-            flex-grow: 1; width: 100%; position: relative; overflow: hidden; 
+            width: 100%; height: 100%; position: relative; overflow: hidden; 
             background-color: #4a9ae9; cursor: pointer;
         }
         
@@ -41,21 +41,27 @@
             to { box-shadow: inset 0 0 100px rgba(215, 25, 32, 0.8); background: rgba(215, 25, 32, 0.4); } 
         }
 
-        .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 80px; pointer-events: none; background-repeat: repeat-x; }
+        /* Scenery Layers */
+        .parallax-layer { 
+            position: absolute; left: 0; right: 0; top: 0; bottom: 80px; 
+            pointer-events: none; background-repeat: repeat-x; 
+        }
         #tk-bg-sky { background-size: 1024px 100%; z-index: 0; height: 150%; background-color: #87CEEB;}
         #tk-bg-city { height: 60%; background-size: 1024px 100%; background-position: bottom left; z-index: 1; bottom: 80px; top: auto; }
         
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3;}
-        #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x;}
+        #tk-runway-stripes { 
+            width: 100%; height: 100%; 
+            background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); 
+            background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x;
+        }
 
         /* HUD & Plane Container */
         #plane-container {
             position: absolute; left: 30%; bottom: 70px; 
             transform: translateX(-50%); z-index: 10; pointer-events: none;
-            transition: transform 0.05s linear;
         }
-        
-        /* The scale wrapper now handles the ENTIRE ROTATION of plane + HUD */
+
         #plane-rotate-group { 
             position: relative; width: 140px; height: 50px; 
             transform-origin: center center;
@@ -65,22 +71,22 @@
         
         #plane-hud {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 230px; height: 230px; border-radius: 50%;
+            width: 240px; height: 240px; border-radius: 50%;
             border: 3px dashed rgba(255,255,255,0.5);
             display: flex; align-items: center; justify-content: center;
             transition: border-color 0.1s; z-index: 11;
         }
         
         .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; white-space: nowrap;}
-        .hud-label { font-size: 0.7rem; color: rgba(255,255,255,0.7); }
+        .hud-label { font-size: 0.7rem; color: rgba(255,255,255,0.7); display: block; }
         .hud-val { font-size: 1.4rem; display: block; }
 
-        /* Positions locked to the ring, rotating with the plane */
-        #hud-spd { left: -10px; top: 50%; transform: translate(-100%, -50%); }
-        #hud-pitch { right: -10px; top: 50%; transform: translate(100%, -50%); }
-        #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); }
+        /* HUD Layout locked to plane parts */
+        #hud-spd { left: -5px; top: 50%; transform: translate(-100%, -50%); } /* Tail/Speed */
+        #hud-pitch { right: -5px; top: 50%; transform: translate(100%, -50%); } /* Nose/Pitch */
+        #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); } /* Belly/Alt */
 
-        /* HUD TOP UI */
+        /* TOP UI */
         #tk-hud-top { 
             position: absolute; top: 15px; left: 15px; right: 15px; 
             display: flex; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; 
@@ -125,16 +131,15 @@
             <div id="plane-container">
                 <div id="plane-rotate-group">
                     <img id="tk-plane-img" src="my-plane.png" onerror="this.style.backgroundColor='blue';">
-                    
                     <div id="plane-hud">
-                        <div id="hud-spd" class="hud-text"><div class="hud-label">SPD</div><div id="hud-spd-val" class="hud-val">0</div></div>
-                        <div id="hud-pitch" class="hud-text"><div class="hud-label">PITCH</div><div id="hud-pitch-val" class="hud-val">0&deg;</div></div>
-                        <div id="hud-alt" class="hud-text"><div class="hud-label">ALT</div><div id="hud-alt-val" class="hud-val">0m</div></div>
+                        <div id="hud-spd" class="hud-text"><span class="hud-label">SPEED</span><span id="hud-spd-val" class="hud-val">0</span></div>
+                        <div id="hud-pitch" class="hud-text"><span class="hud-label">PITCH</span><span id="hud-pitch-val" class="hud-val">0&deg;</span></div>
+                        <div id="hud-alt" class="hud-text"><span class="hud-label">ALT</span><span id="hud-alt-val" class="hud-val">0m</span></div>
                     </div>
                 </div>
             </div>
             
-            <div id="tk-enemy-plane"><img src="my-plane-golden.png" style="width: 100%; height: 100%; object-fit: contain;"></div>
+            <div id="tk-enemy-plane"><img src="my-plane-golden.png" style="width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1);"></div>
             <div id="tk-runway"><div id="tk-runway-stripes"></div></div>
         </div>
     </div>
@@ -155,6 +160,7 @@
             tkState.pressing = true;
         });
         window.addEventListener('pointerup', () => tkState.pressing = false);
+        window.addEventListener('touchend', () => tkState.pressing = false);
 
         function startFlight() {
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
@@ -179,8 +185,8 @@
         function checkCollision() {
             const p = document.getElementById('tk-plane-img').getBoundingClientRect();
             const e = document.getElementById('tk-enemy-plane').getBoundingClientRect();
-            // Collision box with 10px buffer
-            return !(p.right - 10 < e.left + 10 || p.left + 10 > e.right - 10 || p.bottom - 10 < e.top + 10 || p.top + 10 > e.bottom - 10);
+            // Tighter collision box (8px buffer)
+            return !(p.right - 8 < e.left + 8 || p.left + 8 > e.right - 8 || p.bottom - 8 < e.top + 8 || p.top + 8 > e.bottom - 8);
         }
 
         function gameLoop(timestamp) {
@@ -195,17 +201,32 @@
             const pitchVal = document.getElementById('hud-pitch-val');
             const hudRing = document.getElementById('plane-hud');
 
-            // 1. SPEED & PROGRESS
+            // --- Performance-Based Color Logic ---
+            let inZone = (tkState.pitch >= tkState.currTargetMin && tkState.pitch <= tkState.currTargetMax);
+            let targetCenter = (tkState.currTargetMin + tkState.currTargetMax) / 2;
+            let error = Math.abs(tkState.pitch - targetCenter);
+            let hue = inZone ? 120 : Math.max(0, 120 - (error * 7));
+            let dynamicColor = `hsl(${hue}, 85%, 55%)`;
+
+            // 1. SPEED & PROGRESS (Speed now reacts to performance)
             if (tkState.phase < 6) {
-                let accel = (tkState.phase === 5) ? -0.2 : 0.8;
-                if (tkState.pitch > 0) accel -= (tkState.pitch * 0.04);
-                if (tkState.pitch < 0) accel += (Math.abs(tkState.pitch) * 0.02);
-                tkState.speed = Math.max((tkState.phase === 0 ? 0 : 100), Math.min(220, tkState.speed + accel));
+                // If in landing phase (5), we bleed speed. Else we accelerate.
+                let baseAccel = (tkState.phase === 5) ? -0.25 : 0.85;
+                
+                // PERFORMANCE BONUS: Speed increases faster if you are in the green zone!
+                let performanceFactor = inZone ? 1.0 : 0.2; 
+                let actualAccel = baseAccel * performanceFactor;
+
+                // Aerodynamic Drag/Lift physics
+                if (tkState.pitch > 0) actualAccel -= (tkState.pitch * 0.04);
+                if (tkState.pitch < 0) actualAccel += (Math.abs(tkState.pitch) * 0.02);
+                
+                tkState.speed = Math.max((tkState.phase === 0 ? 0 : 100), Math.min(220, tkState.speed + actualAccel));
             } else {
                 tkState.speed = Math.max(0, tkState.speed - 1.2);
                 if (tkState.speed <= 0) { tkState.active = false; prompt.textContent = "MISSION COMPLETE!"; return; }
             }
-            if (tkState.phase > 0 && tkState.phase < 6) tkState.progress += (tkState.speed / 5500);
+            if (tkState.phase > 0 && tkState.phase < 6) tkState.progress += (tkState.speed / 6000);
 
             // 2. PITCH & ALTITUDE
             if (tkState.pressing && tkState.speed >= 100) tkState.pitchVelocity += 0.07;
@@ -215,8 +236,8 @@
 
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
 
-            let targetVSpeed = tkState.pitch * 0.4;
-            if (tkState.speed < 140 && tkState.altitude > 0) targetVSpeed -= 2.5;
+            let targetVSpeed = tkState.pitch * 0.45;
+            if (tkState.speed < 140 && tkState.altitude > 0) targetVSpeed -= 3.0; // Stall risk
             tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.1;
 
             if (tkState.phase !== 6) tkState.altitude = Math.max(0, tkState.altitude + tkState.vSpeed);
@@ -226,11 +247,8 @@
             altVal.textContent = Math.floor(tkState.altitude) + 'm';
             pitchVal.innerHTML = Math.floor(tkState.pitch) + '&deg;';
             
-            let inZone = (tkState.pitch >= tkState.currTargetMin && tkState.pitch <= tkState.currTargetMax);
-            let hue = inZone ? 120 : Math.max(0, 120 - Math.abs(tkState.pitch - (tkState.currTargetMin+tkState.currTargetMax)/2) * 8);
-            let color = `hsl(${hue}, 85%, 55%)`;
-            hudRing.style.borderColor = color;
-            pitchVal.parentElement.style.color = color;
+            hudRing.style.borderColor = dynamicColor;
+            pitchVal.parentElement.style.color = dynamicColor;
             if (inZone && tkState.phase > 0 && tkState.phase < 6) tkState.score += 2;
             document.getElementById('score-val').textContent = Math.floor(tkState.score);
 
@@ -238,7 +256,7 @@
             if (tkState.phase === 0 && tkState.speed >= 150) { tkState.phase = 1; prompt.textContent = "PITCH NOSE UP TO 15°"; }
             else if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { tkState.phase = 2; tkState.currTargetMin = -3; tkState.currTargetMax = 3; prompt.textContent = "CRUISE: LEVEL OFF (0°)"; }
             else if (tkState.phase === 2 && tkState.progress > 35) {
-                tkState.phase = 3; tkState.currTargetMin = -20; tkState.currTargetMax = -10;
+                tkState.phase = 3; tkState.currTargetMin = -22; tkState.currTargetMax = -12;
                 prompt.textContent = "TRAFFIC ALERT: DIVE NOW!"; document.getElementById('tk-alert-overlay').className = 'flashing';
                 document.getElementById('tk-enemy-plane').style.display = 'block';
                 tkState.enemyX = 150; tkState.enemyAltitude = tkState.altitude;
@@ -247,7 +265,7 @@
                 tkState.enemyX -= 1.4;
                 document.getElementById('tk-enemy-plane').style.left = tkState.enemyX + '%';
                 let enemyY = -(tkState.enemyAltitude - tkState.cameraY);
-                document.getElementById('tk-enemy-plane').style.transform = `translateY(${enemyY}px)`;
+                document.getElementById('tk-enemy-plane').style.transform = `translateY(${enemyY}px) scaleX(-1)`;
                 if (checkCollision()) { tkState.active = false; prompt.textContent = "MID-AIR COLLISION!"; return; }
                 if (tkState.enemyX < -25) {
                     tkState.phase = 4; tkState.currTargetMin = -3; tkState.currTargetMax = 3;
@@ -261,9 +279,9 @@
                 else { tkState.active = false; prompt.textContent = "CRASHED ON LANDING!"; return; }
             }
 
-            // 5. SCROLLING & CAMERA (Slowed down significantly)
+            // 5. SCROLLING & CAMERA (Corrected slow parallax)
             tkState.bgX_sky -= tkState.speed * 0.005;
-            tkState.bgX_city -= tkState.speed * 0.025;
+            tkState.bgX_city -= tkState.speed * 0.03;
             tkState.bgX_runway -= tkState.speed * 0.15;
             
             document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 0px`;
@@ -277,7 +295,7 @@
             document.getElementById('tk-bg-city').style.transform = `translateY(${tkState.cameraY * 0.6}px)`;
             
             let planeY = -(tkState.altitude - tkState.cameraY);
-            // Move container for Altitude, rotate group for Pitch
+            // Move container for Altitude, rotate group for Pitch/HUD alignment
             document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeY}px)`;
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
 

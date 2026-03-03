@@ -1,3 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hangar 5 - Autopilot & Risk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --brand-red: #d71920;
+            --gauge-green: #2ecc71;
+            --brand-gold: #cfa86e;
+            --fo-blue: #3498db;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        
+        body, html {
+            background-color: #000; color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            width: 100%; height: 100%;
+            overflow: hidden; user-select: none; touch-action: none;
+        }
+
+        #takeoff-viewport {
+            width: 100%; height: 100%; position: relative; overflow: hidden; 
+            background-color: #4a9ae9; cursor: pointer; transition: background-color 0.1s;
+        }
+        
+        #tk-alert-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 30; transition: background 0.2s;
+        }
+        .flashing { animation: redAlert 0.3s infinite alternate; }
+        @keyframes redAlert { 
+            from { background: rgba(215, 25, 32, 0); } 
+            to { background: rgba(215, 25, 32, 0.35); } 
+        }
+
+        /* Camera Rig wraps all 3D/scrolling elements for zooming */
+        #camera-rig {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            transform-origin: 30% 80%; 
+            will-change: transform; z-index: 1;
+        }
+
+        .parallax-layer { 
+            position: absolute; left: 0; right: 0; top: 0; bottom: 0; 
+            pointer-events: none; background-repeat: repeat-x; 
+        }
+        #tk-bg-sky { background-size: 1024px 100%; z-index: 0; height: 400%; background-color: #87CEEB; top: -150%;}
+        #tk-bg-city { height: 100%; background-size: 1024px 100%; background-position: bottom left; z-index: 1; top: 0; }
+        
+        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3;}
+        #tk-runway-stripes { 
+            width: 100%; height: 100%; 
+            background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); 
+            background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x;
+        }
+
+        /* Plane & Mini HUD */
+        #plane-container {
+            position: absolute; left: 30%; bottom: 65px; 
+            transform: translateX(-50%); z-index: 10; pointer-events: none;
+        }
+        #plane-rotate-group { position: relative; width: 150px; height: 50px; transform-origin: center center; }
+        #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; z-index: 12; }
+        
+        #plane-hud {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 140px; height: 140px; border-radius: 50%;
+            border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11;
+        }
+        
+        .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; }
+        .hud-label { font-size: 0.5rem; opacity: 0.8; display: block; }
+        .hud-val { font-size: 1rem; display: block; }
+
+        #hud-spd { left: -5px; top: 50%; transform: translate(-100%, -50%); }
+        #hud-pitch { right: -5px; top: 50%; transform: translate(100%, -50%); }
+        #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); }
+
+        /* Slow-Mo Landing Guide */
+        #landing-guide {
+            position: absolute; top: 25px; left: 75px; transform: translate(-50%, -50%);
+            width: 220px; height: 80px;
+            border: 2px solid transparent;
+            border-left: 4px solid var(--gauge-green);
+            border-right: 4px solid var(--gauge-green);
+            border-radius: 15px;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease; z-index: 5;
+        }
+        .guide-label {
+            position: absolute; bottom: -20px; text-align: center;
+            color: var(--gauge-green); font-weight: bold; font-size: 0.8rem; text-shadow: 1px 1px 2px #000;
+        }
+
+        /* Speech Bubble */
+        #dialogue-bubble {
+            position: absolute; bottom: 95px; left: 75px; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95); color: #111;
+            padding: 8px 14px; border-radius: 8px; font-size: 0.85rem;
+            white-space: nowrap; opacity: 0; transition: opacity 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20;
+        }
+        #dialogue-bubble::after {
+            content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px;
+            border-width: 6px; border-style: solid; border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent;
+        }
+        .capt-text { color: var(--brand-red); font-weight: bold; margin-right: 5px;}
+        .fo-text { color: var(--fo-blue); font-weight: bold; margin-right: 5px;}
+
+        /* UI Overlays */
+        #tk-hud-top { 
+            position: absolute; top: 15px; left: 15px; right: 15px; 
+            display: flex; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; 
+        }
+        .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
+        
+        #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold);}
+        
+        #reset-btn { 
+            background: rgba(215, 25, 32, 0.9); border: 2px solid #fff; border-radius: 8px;
+            color: #fff; font-size: 1rem; cursor: pointer; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        /* Autopilot Button */
+        #ap-btn {
+            background: #333; border: 2px solid #aaa; border-radius: 8px;
+            color: #aaa; font-size: 0.9rem; cursor: pointer; padding: 0 12px; height: 40px;
+            font-family: 'Share Tech Mono', monospace; font-weight: bold;
+            transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        #ap-btn:active { transform: scale(0.95); }
+
+        #prompt-container {
+            position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20;
+            pointer-events: none; width: 95%; max-width: 400px; display: flex; justify-content: center;
+        }
+        #tk-touch-prompt { 
+            background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px;
+            padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase;
+        }
+
+        #tk-enemy-plane { position: absolute; left: 150%; bottom: 65px; width: 162px; height: 56px; z-index: 9; pointer-events: none; display: none; }
+        #tk-mountain { position: absolute; bottom: 65px; left: 100%; width: 220px; height: 120px; z-index: 2; display: none; pointer-events: none;}
+        .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; }
+        .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; }
+
+        /* End Screen UI */
+        #tk-end-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 100;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
+        }
+        #tk-end-screen.visible { opacity: 1; pointer-events: auto; }
+        .end-panel {
+            background: #111; border: 2px solid var(--brand-gold); border-radius: 15px;
+            padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #tk-end-screen.visible .end-panel { transform: scale(1); }
+        .end-title { font-size: 2rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; }
+        .end-subtitle { font-size: 1rem; color: #aaa; margin-bottom: 20px; }
+        .end-score { font-size: 3.5rem; color: var(--gauge-green); margin-bottom: 25px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
+        
+        .reward-icons { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; height: 60px; }
+        .reward-icon { 
+            width: 60px; height: 60px; fill: #333; 
+            transform: scale(0); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), fill 0.3s; 
+        }
+        .reward-icon.pop { transform: scale(1); }
+        .reward-icon.golden { fill: var(--brand-gold); filter: drop-shadow(0 0 12px var(--brand-gold)); }
+        
+        .play-again-btn {
+            background: var(--brand-gold); color: #000; border: none; padding: 15px 30px;
+            font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer;
+            font-family: 'Share Tech Mono', monospace; text-transform: uppercase;
+            transition: transform 0.1s, filter 0.1s;
+        }
+        .play-again-btn:active { transform: scale(0.95); filter: brightness(0.8); }
+
+    </style>
+</head>
+<body>
+
+    <div id="takeoff-viewport">
+        <div id="tk-alert-overlay"></div>
+        
+        <div id="tk-hud-top">
+            <div class="top-left-controls">
+                <button id="reset-btn" onclick="startFlight()">❌</button>
+                <button id="ap-btn" onclick="toggleAutoPilot(event)">AUTO</button>
+            </div>
+            <div id="tk-score-display">SCORE: <span id="score-val">0</span></div>
+        </div>
+        
+        <div id="prompt-container">
+            <div id="tk-touch-prompt">TAP OR SPACE TO START</div>
+        </div>
+        
+        <div id="camera-rig">
+            <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky1.png');"></div>
+            <div id="tk-bg-city" class="parallax-layer" style="background-image: url('mountain.png');"></div>
+            
+            <div id="plane-container">
+                <div id="dialogue-bubble"></div>
+                <div id="landing-guide"><div class="guide-label">-5&deg; TO 15&deg;</div></div>
+
+                <div id="plane-rotate-group">
+                    <img id="tk-plane-img" src="my-plane.png" onerror="this.style.backgroundColor='blue';">
+                    <div id="plane-hud">
+                        <div id="hud-spd" class="hud-text"><span class="hud-label">SPD</span><span id="hud-spd-val" class="hud-val">0</span></div>
+                        <div id="hud-pitch" class="hud-text"><span class="hud-label">PITCH</span><span id="hud-pitch-val" class="hud-val">0&deg;</span></div>
+                        <div id="hud-alt" class="hud-text"><span class="hud-label">ALT</span><span id="hud-alt-val" class="hud-val">0m</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="tk-enemy-plane"><img src="my-plane-golden.png" style="width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1);"></div>
+            <div id="tk-runway"><div id="tk-runway-stripes"></div></div>
+            <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M42,35 L50,20 L58,35 Z" fill="#fff"/></svg></div>
+        </div>
+
+        <div id="tk-end-screen">
+            <div class="end-panel">
+                <div class="end-title">MISSION ACCOMPLISHED</div>
+                <div class="end-subtitle">SAFE EVACUATION COMPLETED</div>
+                <div class="end-score" id="end-score-val">0</div>
+                <div class="reward-icons">
+                    <svg viewBox="0 0 24 24" class="reward-icon"><path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg>
+                    <svg viewBox="0 0 24 24" class="reward-icon"><path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg>
+                    <svg viewBox="0 0 24 24" class="reward-icon"><path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg>
+                </div>
+                <button class="play-again-btn" onclick="startFlight()">PLAY AGAIN</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
 let SPEED_MOD = 0.75; 
 
         // --- CUSTOM WEB AUDIO SYNTHESIZER ---

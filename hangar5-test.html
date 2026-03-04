@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -119,7 +118,7 @@
         }
 
         #tk-bg-sky { 
-            background-size: auto 100vh; 
+            background-size: contain; 
             z-index: 0; 
             height: 400%; 
             background-color: #87CEEB; 
@@ -185,7 +184,7 @@
         .snow-weather .fog-layer { display: block; }
         
         .night-weather { background-color: #0b1021 !important; }
-        .night-weather #tk-bg-sky { background-color: #0b1021 !important; background-image: none !important; }
+        .night-weather #tk-bg-sky { background-color: #0b1021 !important; }
         .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain {
             filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2);
         }
@@ -194,10 +193,7 @@
         }
 
         .sunrise-weather { background-color: #ff9e7a !important; }
-        .sunrise-weather #tk-bg-sky { 
-            background-color: #ff9e7a !important; 
-            background-image: linear-gradient(to bottom, #2b5876 0%, #ff9e7a 60%, #ffe259 100%) !important; 
-        }
+        .sunrise-weather #tk-bg-sky { background-color: #ff9e7a !important; }
         .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain {
             filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8);
         }
@@ -206,7 +202,7 @@
         }
 
         .snow-weather { background-color: #b8c6d9 !important; }
-        .snow-weather #tk-bg-sky { background-color: #b8c6d9 !important; background-image: none !important; }
+        .snow-weather #tk-bg-sky { background-color: #b8c6d9 !important; }
         .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain {
             filter: grayscale(0.7) brightness(1.4) contrast(0.6);
         }

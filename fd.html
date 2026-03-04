@@ -131,11 +131,18 @@
             transition: filter 0.5s;
         }
         
-        /* Illuminated Windows for Fog Silhouette */
-        .passenger-windows { display: none; position: absolute; top: 48%; left: 30%; right: 20%; height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; }
+        /* Illuminated Windows for Fog Silhouette (ADJUSTED LOWER) */
+        .passenger-windows { 
+            display: none; position: absolute; top: 58%; left: 35%; right: 25%; 
+            height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; 
+        }
         .fog-scenario .passenger-windows { display: flex; }
-        .window-dot { width: 4px; height: 4px; background: #fffde7; box-shadow: 0 0 6px #fbc02d, 0 0 10px #f57f17; border-radius: 1px; animation: flicker 2s infinite alternate; }
-        .tk-enemy .passenger-windows { left: 20%; right: 30%; top: 48%; }
+        .window-dot { 
+            width: 4px; height: 4px; background: #fffde7; 
+            box-shadow: 0 0 6px #fbc02d, 0 0 10px #f57f17; 
+            border-radius: 1px; animation: flicker 2s infinite alternate; 
+        }
+        .tk-enemy .passenger-windows { left: 25%; right: 35%; top: 58%; }
         @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
         #tk-sun { display: none; position: absolute; right: 15%; bottom: 35%; width: 60px; height: 60px; background: #fff; box-shadow: 0 0 0 10px rgba(255, 240, 150, 0.8), 0 0 0 25px rgba(255, 200, 100, 0.4), 0 0 0 45px rgba(255, 100, 50, 0.2); z-index: 0; will-change: transform; }
@@ -212,6 +219,7 @@
         .capt-text { color: #111; font-weight: bold; }
         .alert-text { color: var(--brand-red); font-weight: bold; animation: pulseRed 0.8s infinite alternate; }
         .success-text { color: var(--gauge-green); font-weight: bold; }
+        @keyframes pulseRed { from { color: var(--brand-red); } to { color: #ff5555; } }
 
         #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; }
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
@@ -255,14 +263,19 @@
         .end-subtitle { font-size: 1rem; color: #aaa; margin-bottom: 15px; }
         .end-score { font-size: 3rem; color: var(--gauge-green); margin-bottom: 15px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
         
-        .completion-wrapper { margin-bottom: 25px; width: 100%; }
-        .completion-text { font-size: 1.1rem; color: #fff; margin-bottom: 15px; font-weight: bold; letter-spacing: 1px;}
+        /* Minimap Progress Bar (Centered with Custom Timeline Nodes) */
+        .completion-wrapper { margin-bottom: 35px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .completion-text { font-size: 1.1rem; color: #fff; margin-bottom: 15px; font-weight: bold; letter-spacing: 1px; text-align: center; width: 100%; }
         #end-completion-val { color: var(--fo-blue); }
-        #tk-minimap { width: 100%; height: 12px; background: #222; border-radius: 6px; position: relative; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); }
+        #tk-minimap { width: 90%; height: 12px; background: #222; border-radius: 6px; position: relative; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); margin: 0 auto; }
         #tk-minimap-progress { height: 100%; background: var(--fo-blue); border-radius: 6px; width: 0%; transition: width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.5s; }
-        .minimap-marker { position: absolute; top: -14px; font-size: 18px; transform: translateX(-50%); z-index: 10; cursor: help; text-shadow: 0 2px 4px rgba(0,0,0,0.8); transition: transform 0.2s;}
-        .minimap-marker:hover { transform: translateX(-50%) scale(1.3); }
-        .minimap-tooltip { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); color: #fff; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; white-space: nowrap; pointer-events: none; border: 1px solid #555; margin-bottom: 4px; z-index: 20;}
+        
+        .minimap-marker { position: absolute; top: -6px; transform: translateX(-50%); z-index: 10; cursor: help; transition: transform 0.2s; display: flex; flex-direction: column; align-items: center; }
+        .minimap-icon-box { width: 24px; height: 24px; background: #111; border: 2px solid var(--fo-blue); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        .minimap-label { margin-top: 6px; font-size: 0.65rem; white-space: nowrap; text-shadow: 1px 1px 2px #000; font-family: 'Share Tech Mono', monospace; font-weight: bold; }
+        
+        .minimap-marker:hover { transform: translateX(-50%) scale(1.3); z-index: 20; }
+        .minimap-tooltip { display: none; position: absolute; bottom: 45px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); color: #fff; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; white-space: nowrap; pointer-events: none; border: 1px solid #555; z-index: 20; }
         .minimap-marker:hover .minimap-tooltip { display: block; }
         .minimap-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -4px; border-width: 4px; border-style: solid; border-color: #555 transparent transparent transparent; }
 
@@ -278,8 +291,8 @@
             .end-title { width: 100%; margin-bottom: 0; font-size: 1.3rem; }
             .end-subtitle { display: none; }
             .end-score { font-size: 1.8rem; margin: 0; width: 30%; text-align: center;}
-            .completion-wrapper { width: 60%; margin: 0; display: flex; flex-direction: column; justify-content: center; }
-            .completion-text { font-size: 0.9rem; margin-bottom: 10px; text-align: left;}
+            .completion-wrapper { width: 100%; margin-bottom: 25px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+            .completion-text { font-size: 0.9rem; margin-bottom: 10px; text-align: center;}
             .reward-icons { display: none; }
             .play-again-btn { padding: 10px 20px; font-size: 1rem; width: 100%; max-width: 200px; margin-top: 10px;}
         }
@@ -290,7 +303,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v3.9 - Smooth 60 FPS Engine + Window Illumination</div>
+        <div id="tk-version">v4.0 - Custom Timeline & Lower Windows</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -635,8 +648,11 @@
             return Math.max(0, Math.min(100, pct));
         }
 
-        function logEvent(name, icon) {
-            tkState.events.push({ name: name, icon: icon, percent: getCompletionPercentage() });
+        function logEvent(name, icon, shortName, color) {
+            tkState.events.push({ 
+                name: name, icon: icon, shortName: shortName, 
+                color: color || 'var(--fo-blue)', percent: getCompletionPercentage() 
+            });
         }
 
         // --- END SCREEN LOGIC ---
@@ -663,11 +679,16 @@
             es.style.display = 'flex';
             setTimeout(() => { es.classList.add('visible'); }, 50);
 
-            // Populate Minimap
+            // Populate Minimap with Custom Timline Nodes
             let finalPct = isSuccess ? 100 : getCompletionPercentage();
             let markersHtml = '';
             tkState.events.forEach(ev => {
-                markersHtml += `<div class="minimap-marker" style="left: ${ev.percent}%">${ev.icon}<div class="minimap-tooltip">${ev.name}</div></div>`;
+                markersHtml += `
+                <div class="minimap-marker" style="left: ${ev.percent}%">
+                    <div class="minimap-icon-box" style="border-color: ${ev.color}">${ev.icon}</div>
+                    <div class="minimap-label" style="color: ${ev.color}">${ev.shortName}</div>
+                    <div class="minimap-tooltip">${ev.name}</div>
+                </div>`;
             });
             document.getElementById('tk-minimap-markers').innerHTML = markersHtml;
 
@@ -720,7 +741,7 @@
             triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
             document.getElementById('plane-container').style.display = 'none';
             tkState.active = false;
-            logEvent(`CRASH: ${reasonText}`, '❌');
+            logEvent(`CRASH: ${reasonText}`, "❌", "CRASH", "var(--brand-red)");
             setDialogue(`<span class='alert-text'>${reasonText}</span>`, 4500);
             
             setTimeout(() => { 
@@ -1007,7 +1028,7 @@
                 tkState.speed = Math.max(0, tkState.speed - (1.3 * SPEED_MOD));
                 if (tkState.speed <= 0) { 
                     tkState.active = false; 
-                    logEvent("SAFE LANDING", '🏁');
+                    logEvent("SAFE LANDING", "🏁", "LANDED", "var(--gauge-green)");
                     setDialogue("<span class='success-text'>SAFE! EVACUATE!</span>", 5000); 
                     sfx.stopAll(); 
                     setTimeout(() => { showEndScreen(Math.floor(tkState.score), true); tkState.canRestart = true; }, 1500); 
@@ -1062,7 +1083,7 @@
 
             if (tkState.altitude > 0 && !tkState.hasLiftedOff) {
                 tkState.hasLiftedOff = true;
-                logEvent("LIFTOFF", "🛫");
+                logEvent("LIFTOFF", "🛫", "LIFTOFF", "var(--gauge-green)");
             }
 
             // HUD UPDATES
@@ -1105,7 +1126,7 @@
             // Random Gear Break (Climb)
             if (tkState.phase === 1 && tkState.altitude >= tkState.gearBreakAlt && !tkState.gearBroken) {
                 tkState.gearBroken = true; sfx.playExplosion(); setDialogue("<span class='alert-text'>GEAR SNAP!</span>", 3000);
-                logEvent("GEAR SNAP", "⚙️");
+                logEvent("GEAR SNAP", "⚙️", "GEAR DMG", "var(--brand-gold)");
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
             }
             if (tkState.gearBroken && document.getElementById('tk-plane-img').src.indexOf('nolandinggear') === -1) { document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png'; }
@@ -1119,7 +1140,7 @@
             // Overtaker Scenario (Climb/Level)
             if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && !tkState.overtakerActive && tkState.altitude > 200 && tkState.overtakerX === -30 && Math.random() < 0.005) {
                 tkState.overtakerActive = true; tkState.overtakerAltitude = tkState.altitude;
-                logEvent("TRAFFIC BEHIND", "⚠️");
+                logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)");
                 setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 3000); document.getElementById('tk-overtaker-plane').style.display = 'block';
             }
             if (tkState.overtakerActive) {
@@ -1141,7 +1162,7 @@
             // Bird Flock Scenario (Climb/Level)
             if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 250 && tkState.phase < 4 && tkState.birdX === 150 && Math.random() < 0.005) {
                 tkState.birdActive = true; tkState.birdAlt = tkState.altitude + (Math.random() * 60 - 30);
-                logEvent("BIRD FLOCK", "🦅");
+                logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)");
                 document.getElementById('tk-bird-flock').style.display = 'block';
                 setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 2000);
             }
@@ -1164,7 +1185,7 @@
             // Engine Failure 
             if (tkState.phase === 2 && tkState.phaseTimer > 3000 && tkState.hasEngineFailureScenario && !tkState.engineFailure) {
                 tkState.engineFailure = true; 
-                logEvent("ENGINE FAILURE", "🔥");
+                logEvent("ENGINE FAILURE", "🔥", "ENGINE", "var(--brand-red)");
                 setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 4000); sfx.playExplosion();
                 document.getElementById('tk-alert-overlay').className = 'flashing'; 
                 setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800);
@@ -1174,7 +1195,7 @@
             if (tkState.phase === 2 && tkState.phaseTimer > 8000) {
                 tkState.phase = 3; tkState.phaseTimer = 0;
                 tkState.currTargetMin = -24; tkState.currTargetMax = -12;
-                logEvent("TRAFFIC SWARM", "✈️");
+                logEvent("TRAFFIC SWARM", "✈️", "SWARM", "var(--brand-red)");
                 setDialogue("<span class='alert-text'>TRAFFIC SWARM! DIVE!</span>", 4000);
                 document.getElementById('tk-alert-overlay').className = 'flashing';
                 setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800); 
@@ -1234,7 +1255,7 @@
                 tkState.currTargetMin = -8; tkState.currTargetMax = -2; 
                 if (!tkState.gearBroken) {
                     tkState.gearBroken = true; sfx.playExplosion(); 
-                    logEvent("GEAR LOST", "⚙️");
+                    logEvent("GEAR LOST", "🛬", "NO GEAR", "var(--brand-red)");
                     setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 4000);
                     const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
                 } else {

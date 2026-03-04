@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Winter Operations & Fleet Select</title>
+    <title>Hangar 5 - Smooth Operations</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -72,7 +72,6 @@
         /* --- WEATHER STATES --- */
         .weather-layer { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
         
-        /* Activate weather components based on class */
         .night-weather .rain-layer, .night-weather .fog-layer { display: block; }
         .snow-weather .snow-layer, .snow-weather .fog-layer { display: block; }
         
@@ -337,8 +336,6 @@
         const sfx = {
             ctx: null, engineNode: null, engineGain: null, bgmNode: null, bgmGain: null, 
             alarmInterval: null, isAlarming: false,
-            
-            // Wind variables
             windBuffer: null, windNodes: [], shouldPlayWind: false, windTimeout: null,
 
             init: function() {
@@ -360,7 +357,6 @@
                 this.startWind();
             },
 
-            // --- CROSSFADE WIND LOOP SYSTEM ---
             loadWind: async function() {
                 try {
                     const response = await fetch('wind.wav');
@@ -533,7 +529,7 @@
             }
         };
 
-        // --- BROWSER AUDIO CLEANUP (Mutes audio when switching tabs) ---
+        // --- BROWSER AUDIO CLEANUP ---
         document.addEventListener("visibilitychange", function() {
             if (document.hidden) {
                 sfx.stopAll();
@@ -561,7 +557,8 @@
             lastFrameTime: 0, enemyX: 150, enemyAltitude: 0, currTargetMin: 10, currTargetMax: 16,
             bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260,
             dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", weather: "day",
-            zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false
+            zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false,
+            canRestart: true // Fixes crash soft-lock
         };
 
         // --- FLEET SELECTION ---
@@ -576,8 +573,8 @@
                 
                 if (planeType === 'my-plane-golden.png') {
                     playerPlaneSkin = 'my-plane-golden.png';
-                    playerNoGearSkin = 'my-plane-golden.png'; // Fallback if no specific gearless exists
-                    enemyPlaneSkin = 'my-plane.png'; // Swap the enemy to standard
+                    playerNoGearSkin = 'my-plane-golden.png'; 
+                    enemyPlaneSkin = 'my-plane.png'; 
                 } else {
                     playerPlaneSkin = 'my-plane.png';
                     playerNoGearSkin = 'my-plane-nolandinggear.png';
@@ -617,7 +614,7 @@
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON' || e.target.closest('.plane-card') || !planeSelected) return;
             sfx.init(); 
-            if (!tkState.active && tkState.speed === 0 && document.getElementById('tk-end-screen').style.display !== 'flex') startFlight();
+            if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') startFlight();
             tkState.pressing = true;
         });
         window.addEventListener('pointerup', () => tkState.pressing = false);
@@ -629,7 +626,7 @@
                 e.preventDefault(); 
                 if (e.repeat) return; 
                 sfx.init(); 
-                if (!tkState.active && tkState.speed === 0 && document.getElementById('tk-end-screen').style.display !== 'flex') startFlight();
+                if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') startFlight();
                 tkState.pressing = true;
             }
             if (e.code === 'Enter' || e.key === 'Enter') {
@@ -738,7 +735,7 @@
                 lastFrameTime: performance.now(), enemyX: 150, enemyAltitude: 0,
                 currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_city: 0, bgX_runway: 0, 
                 takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "",
-                zoom: 1.0, speedMod: 0.75, autoPilot: false, weather: weather
+                zoom: 1.0, speedMod: 0.75, autoPilot: false, weather: weather, canRestart: false
             };
             SPEED_MOD = 0.75; 
 
@@ -757,7 +754,7 @@
         function triggerGearExplosion(x, y) {
             sfx.playExplosion();
             const colors = ['#fff', '#ffaa00', '#d71920', '#333', '#111'];
-            for(let i=0; i<35; i++) {
+            for(let i=0; i<25; i++) {
                 let p = document.createElement('div');
                 p.className = 'pixel-particle';
                 p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
@@ -804,6 +801,7 @@
             } move();
         }
 
+        // Optimized GPU-friendly collision 
         function triggerEpicCollision(x, y) {
             sfx.playExplosion();
             const vp = document.getElementById('takeoff-viewport');
@@ -830,9 +828,9 @@
             }
             applyShake();
 
-            const colors = ['#ffffff', '#ffea00', '#ff5500', '#d71920', '#333333', '#111111'];
+            const colors = ['#ffffff', '#ffffff', '#ffea00', '#ff5500', '#d71920', '#333333', '#111111'];
             
-            for(let i=0; i<200; i++) {
+            for(let i=0; i<120; i++) {
                 let p = document.createElement('div');
                 p.className = 'pixel-particle';
                 p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
@@ -841,7 +839,6 @@
                 let size = Math.random() * 6 + 2; 
                 p.style.width = size + 'px';
                 p.style.height = size + 'px';
-                if(i < 50) p.style.boxShadow = `0 0 ${size * 2}px ${p.style.backgroundColor}`;
 
                 document.getElementById('camera-rig').appendChild(p);
                 
@@ -850,7 +847,7 @@
                 let vx = Math.cos(a) * v; 
                 let vy = Math.sin(a) * v;
                 let age = 0;
-                let maxAge = Math.random() * 80 + 60; 
+                let maxAge = Math.random() * 60 + 40; 
                 
                 function move() {
                     let timeScale = age < 2 ? 1.0 : (age < 6 ? 0.3 : 0.05); 
@@ -1025,7 +1022,7 @@
                     document.getElementById('plane-container').style.display = 'none';
                     tkState.active = false;
                     prompt.textContent = "FATAL ANGLE!";
-                    setTimeout(() => { prompt.textContent = "TAP TO RE-FLY"; }, 4500);
+                    setTimeout(() => { prompt.textContent = "TAP TO RE-FLY"; tkState.canRestart = true; }, 4500);
                     return;
                 }
                 if (tkState.speed > 160 && tkState.phase === 5) {
@@ -1035,7 +1032,7 @@
                     document.getElementById('plane-container').style.display = 'none';
                     tkState.active = false;
                     prompt.textContent = "TOO FAST!";
-                    setTimeout(() => { prompt.textContent = "TAP TO RE-FLY"; }, 4500);
+                    setTimeout(() => { prompt.textContent = "TAP TO RE-FLY"; tkState.canRestart = true; }, 4500);
                     return;
                 }
             }
@@ -1077,7 +1074,7 @@
                          triggerEpicCollision(r.left+r.width/2, r.top+r.height/2);
                          document.getElementById('plane-container').style.display='none';
                          tkState.active=false; prompt.textContent="MOUNTAIN IMPACT!";
-                         setTimeout(()=>prompt.textContent="TAP TO RE-FLY", 4500);
+                         setTimeout(()=> { prompt.textContent="TAP TO RE-FLY"; tkState.canRestart = true; }, 4500);
                          return;
                     }
                 }
@@ -1093,7 +1090,7 @@
                      triggerEpicCollision(r.left+r.width/2, r.top+r.height/2);
                      document.getElementById('plane-container').style.display='none';
                      tkState.active=false; prompt.textContent="MOUNTAIN IMPACT!";
-                     setTimeout(()=>prompt.textContent="TAP TO RE-FLY", 4500);
+                     setTimeout(()=> { prompt.textContent="TAP TO RE-FLY"; tkState.canRestart = true; }, 4500);
                      return;
                 }
             } else {
@@ -1122,7 +1119,7 @@
                      triggerEpicCollision(pr.left+pr.width/2, pr.top+pr.height/2);
                      document.getElementById('plane-container').style.display='none';
                      tkState.active=false; prompt.textContent="MID-AIR CRASH!";
-                     setTimeout(()=>prompt.textContent="TAP TO RE-FLY", 4500);
+                     setTimeout(()=> { prompt.textContent="TAP TO RE-FLY"; tkState.canRestart = true; }, 4500);
                      return;
                 }
                 if (tkState.enemyX < -30) {

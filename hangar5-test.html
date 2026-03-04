@@ -954,7 +954,7 @@
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && tkState.speed > 145 && tkState.altitude > 0);
-            let isTooHigh = (tkState.altitude > 2000 && tkState.phase >= 1 && tkState.phase <= 4);
+            let isTooHigh = (tkState.altitude > 1500 && tkState.phase >= 1 && tkState.phase <= 4);
             
             tkState.stallFactor = isStalling ? Math.min(1.0, tkState.stallFactor + 0.015) : Math.max(0.0, tkState.stallFactor - 0.05);
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;

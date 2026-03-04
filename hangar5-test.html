@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - v1.3 Action UI & Fixes</title>
+    <title>Hangar 5 - v1.4 Gyro Physics</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -153,11 +153,19 @@
         .pf-3 { width: 100px; height: 100px; border: 4px solid rgba(255, 100, 50, 0.1); background: transparent; }
         .pf-4 { width: 15px; height: 15px; background: rgba(255, 255, 255, 0.4); }
 
-        /* Plane & Mini HUD */
-        #plane-container { position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; pointer-events: none; }
-        #plane-rotate-group { position: relative; width: 150px; height: 50px; transform-origin: center center; }
-        #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; z-index: 12; transition: filter 0.5s;}
+        /* Plane & Mini HUD Elements */
+        #plane-container { 
+            position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; pointer-events: none; 
+            width: 150px; height: 50px; /* Explicit size to center HUD accurately */
+        }
         
+        #plane-rotate-group { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            transform-origin: center center; z-index: 12; 
+        }
+        #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; transition: filter 0.5s; }
+        
+        /* Gyro HUD Ring decoupled from plane body */
         #plane-hud {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 140px; height: 140px; border-radius: 50%;
@@ -182,7 +190,7 @@
 
         /* Bubble Text Formatting */
         #dialogue-bubble {
-            position: absolute; bottom: 125px; left: 30%; transform: translateX(-50%);
+            position: absolute; bottom: 95px; left: 75px; transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem;
             white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20;
             font-weight: bold; text-transform: uppercase;
@@ -241,7 +249,7 @@
 <body>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v1.3</div>
+        <div id="tk-version">v1.4</div>
 
         <div id="tk-start-screen">
             <div class="start-panel">
@@ -284,11 +292,12 @@
 
                 <div id="plane-rotate-group">
                     <img id="tk-plane-img" src="my-plane.png" onerror="this.style.backgroundColor='blue';">
-                    <div id="plane-hud">
-                        <div id="hud-spd" class="hud-text"><span class="hud-label">SPD</span><span id="hud-spd-val" class="hud-val">0</span></div>
-                        <div id="hud-pitch" class="hud-text"><span class="hud-label">PITCH</span><span id="hud-pitch-val" class="hud-val">0&deg;</span></div>
-                        <div id="hud-alt" class="hud-text"><span class="hud-label">ALT</span><span id="hud-alt-val" class="hud-val">0m</span></div>
-                    </div>
+                </div>
+                
+                <div id="plane-hud">
+                    <div id="hud-spd" class="hud-text"><span class="hud-label">SPD</span><span id="hud-spd-val" class="hud-val">0</span></div>
+                    <div id="hud-pitch" class="hud-text"><span class="hud-label">PITCH</span><span id="hud-pitch-val" class="hud-val">0&deg;</span></div>
+                    <div id="hud-alt" class="hud-text"><span class="hud-label">ALT</span><span id="hud-alt-val" class="hud-val">0m</span></div>
                 </div>
             </div>
             
@@ -357,7 +366,7 @@
 
             loadWind: async function() {
                 try {
-                    const response = await fetch('wind.wav');
+                    const response = await fetch('wind.mp3');
                     const arrayBuffer = await response.arrayBuffer();
                     this.windBuffer = await this.ctx.decodeAudioData(arrayBuffer);
                     if (this.shouldPlayWind && this.windNodes.length === 0) {
@@ -553,7 +562,7 @@
             bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260,
             dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", weather: "day",
             zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false,
-            canRestart: true 
+            canRestart: true, hudPitch: 0, hudPitchVelocity: 0
         };
 
         function setDialogue(text, timeMs) {
@@ -731,7 +740,8 @@
                 lastFrameTime: performance.now(), enemyX: 150, enemyAltitude: 0,
                 currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_city: 0, bgX_runway: 0, 
                 takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "",
-                zoom: 1.0, speedMod: 0.75, autoPilot: false, weather: weather, canRestart: false
+                zoom: 1.0, speedMod: 0.75, autoPilot: false, weather: weather, canRestart: false,
+                hudPitch: 0, hudPitchVelocity: 0
             };
             SPEED_MOD = 0.75; 
             
@@ -826,7 +836,7 @@
 
             const colors = ['#ffffff', '#ffffff', '#ffea00', '#ff5500', '#d71920', '#333333', '#111111'];
             
-            for(let i=0; i<80; i++) { // Optimized particle count
+            for(let i=0; i<80; i++) { 
                 let p = document.createElement('div');
                 p.className = 'pixel-particle';
                 p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
@@ -871,7 +881,7 @@
             sfx.updateEngine(tkState.speed);
             sfx.playAlarm((tkState.pitch >= 24.2 && tkState.altitude > 10) || tkState.phase === 3);
 
-            // --- SLOW-MO ZOOM & PITCH GUIDE LOGIC ---
+            // --- SLOW-MO ZOOM LOGIC ---
             let isLandingApproach = (tkState.phase === 5 && tkState.altitude <= 70 && tkState.altitude > 0);
             let targetSpeedMod = isLandingApproach ? 0.25 : 0.75; 
             let targetZoom = isLandingApproach ? 1.8 : 1.0;
@@ -974,9 +984,10 @@
             document.getElementById('hud-spd').style.color = `hsl(${spdHue}, 85%, 55%)`;
             document.getElementById('hud-spd-val').textContent = Math.floor(tkState.speed);
 
-            // 2. PITCH & PHYSICS
-            if (tkState.phase === 0) {
-                tkState.pitch = 0; // Lock pitch to 0 during V1 takeoff roll to prevent instant crash
+            // 2. PITCH & PHYSICS (WITH GYRO OVERSHOOT)
+            if (tkState.phase === 0 && tkState.speed < 150) {
+                // FIXED: Lock plane to runway physically until V1 Speed is reached!
+                tkState.pitch = 0; 
                 tkState.pitchVelocity = 0;
             } else if (tkState.phase === 6) {
                 tkState.pitch += (0 - tkState.pitch) * 0.1;
@@ -990,6 +1001,11 @@
                 tkState.pitchVelocity *= 0.88;
                 tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch + tkState.pitchVelocity));
             }
+
+            // HUD Gyroscope Spring Physics (The HUD ring chases the plane's true pitch)
+            tkState.hudPitchVelocity += (tkState.pitch - tkState.hudPitch) * 0.1; 
+            tkState.hudPitchVelocity *= 0.8; // Dampening
+            tkState.hudPitch += tkState.hudPitchVelocity;
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
@@ -1008,7 +1024,10 @@
 
             // 3. HUD UPDATES
             document.getElementById('hud-alt-val').textContent = Math.floor(tkState.altitude) + 'm';
-            document.getElementById('hud-pitch-val').innerHTML = Math.floor(tkState.pitch) + '&deg;';
+            
+            // Text reads true pitch, but the ring visually lags
+            document.getElementById('hud-pitch-val').innerHTML = Math.floor(tkState.pitch) + '&deg;'; 
+            
             let center = (tkState.currTargetMin + tkState.currTargetMax) / 2;
             let error = Math.abs(tkState.pitch - center);
             let p_hue = inHUDZone ? 120 : Math.max(0, 120 - error * 9);
@@ -1106,7 +1125,7 @@
 
             if (tkState.phase === 0 && tkState.speed >= 150) { 
                 tkState.phase = 1; 
-                setDialogue("<span class='capt-text'>PULL UP!</span>", 3000);
+                setDialogue("<span class='capt-text'>V1! PULL UP!</span>", 3000);
             }
             else if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { 
                 tkState.phase = 2; 
@@ -1194,7 +1213,12 @@
 
             let planeY = -(tkState.altitude - tkState.cameraY);
             document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeY}px)`;
+            
+            // PHYSICAL ROTATION (PLANE)
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
+            
+            // HUD ROTATION (GYRO SPRING PHYSICS)
+            document.getElementById('plane-hud').style.transform = `translate(-50%, -50%) rotate(${-tkState.hudPitch}deg)`;
 
             // EFFECTS
             const pr = document.getElementById('tk-plane-img').getBoundingClientRect();

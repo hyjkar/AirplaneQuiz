@@ -128,7 +128,7 @@
             background-size: auto 150vh; 
             z-index: 14; 
             height: 120%; 
-            top: -30%; 
+            top: -100%; 
             opacity: 0.8; 
         }
 
@@ -383,7 +383,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v3.4 - Hitbox Adjusted</div>
+        <div id="tk-version">v3.5 - Player Hitbox Fixed</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -1006,7 +1006,7 @@
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && tkState.speed > 145 && tkState.altitude > 0);
-            let isTooHigh = (tkState.altitude > 720 && tkState.phase >= 1 && tkState.phase <= 4);
+            let isTooHigh = (tkState.altitude > 1500 && tkState.phase >= 1 && tkState.phase <= 4);
             
             tkState.stallFactor = isStalling ? Math.min(1.0, tkState.stallFactor + 0.015) : Math.max(0.0, tkState.stallFactor - 0.05);
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
@@ -1092,13 +1092,13 @@
                 tkState.overtakerX += (0.6 * SPEED_MOD); let gp = document.getElementById('tk-overtaker-plane');
                 gp.style.left = tkState.overtakerX + '%'; gp.style.transform = `translateY(${-(tkState.overtakerAltitude - tkState.cameraY)}px)`;
                 
-                // ADJUSTED BOUNDING BOX LOGIC FOR COLLISION FIX
+                // FIXED BOUNDING BOX LOGIC
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
                 const gr = gp.getBoundingClientRect();
                 if (!( (pr.right - 12) < (gr.left + 15) || 
                        (pr.left + 12) > (gr.right - 15) || 
-                       (pr.bottom - 12) < (gr.top + 25) || // 25px cutoff from the top 
-                       (pr.top + 12) > (gr.bottom - 10) )) {
+                       (pr.bottom - 12) < (gr.top + 25) || 
+                       (pr.top + 25) > (gr.bottom - 10) )) { // pr.top pushed down by 25px
                     return triggerCrash("MID-AIR CRASH!");
                 }
                 
@@ -1116,8 +1116,16 @@
                 tkState.birdX -= (1.1 * SPEED_MOD); 
                 let bEl = document.getElementById('tk-bird-flock');
                 bEl.style.left = tkState.birdX + '%'; bEl.style.transform = `translateY(${-(tkState.birdAlt - tkState.cameraY)}px)`;
-                const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); const br = bEl.getBoundingClientRect();
-                if (!(pr.right-10 < br.left+10 || pr.left+10 > br.right-10 || pr.bottom-10 < br.top+10 || pr.top+10 > br.bottom-10)) return triggerCrash("BIRD STRIKE!");
+                
+                // FIXED BOUNDING BOX LOGIC
+                const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
+                const br = bEl.getBoundingClientRect();
+                if (!( (pr.right - 10) < (br.left + 10) || 
+                       (pr.left + 10) > (br.right - 10) || 
+                       (pr.bottom - 10) < (br.top + 10) || 
+                       (pr.top + 25) > (br.bottom - 10) )) { // pr.top pushed down by 25px
+                    return triggerCrash("BIRD STRIKE!");
+                }
                 if (tkState.birdX < -20) { tkState.birdActive = false; bEl.style.display = 'none'; }
             }
 
@@ -1165,12 +1173,12 @@
                         el.style.left = e.x + '%';
                         el.style.transform = `translateY(${-(e.alt - tkState.cameraY)}px)`;
                         
-                        // ADJUSTED BOUNDING BOX LOGIC FOR COLLISION FIX
+                        // FIXED BOUNDING BOX LOGIC
                         const er = el.getBoundingClientRect();
                         if (!( (pr.right - 12) < (er.left + 15) || 
                                (pr.left + 12) > (er.right - 15) || 
-                               (pr.bottom - 12) < (er.top + 25) || // 25px cutoff from the top
-                               (pr.top + 12) > (er.bottom - 10) )) {
+                               (pr.bottom - 12) < (er.top + 25) || 
+                               (pr.top + 25) > (er.bottom - 10) )) { // pr.top pushed down by 25px
                             collision = true;
                         }
                         

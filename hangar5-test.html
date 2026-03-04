@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - v1.5 Gyro & UI Polish</title>
+    <title>Hangar 5 - v1.6 Stable Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -39,7 +39,6 @@
             to { background: rgba(215, 25, 32, 0.35); } 
         }
 
-        /* Version Display */
         #tk-version {
             position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4);
             font-size: 0.8rem; font-weight: bold; z-index: 50; pointer-events: none;
@@ -156,6 +155,7 @@
 
         /* Decoupled Plane & HUD */
         #plane-container { position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; pointer-events: none; width: 150px; height: 50px; }
+        
         #plane-rotate-group { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; z-index: 12; }
         #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; transition: filter 0.5s;}
         
@@ -245,7 +245,7 @@
 <body>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v1.5</div>
+        <div id="tk-version">v1.6</div>
 
         <div id="tk-start-screen">
             <div class="start-panel">
@@ -342,6 +342,7 @@
         const sfx = {
             ctx: null, engineNode: null, engineGain: null, alarmInterval: null, isAlarming: false,
             
+            // Note: Make sure hangar5-music.mp3 is in the same folder as this file!
             bgMusic: new Audio('hangar5-music.mp3'), 
 
             init: function() {
@@ -453,12 +454,11 @@
             }
         };
 
+        // --- BROWSER AUDIO CLEANUP ---
         document.addEventListener("visibilitychange", function() {
             if (document.hidden) {
                 sfx.stopAll();
-                if (sfx.ctx && sfx.ctx.state === 'running') {
-                    sfx.ctx.suspend();
-                }
+                if (sfx.ctx && sfx.ctx.state === 'running') sfx.ctx.suspend();
             } else {
                 if (tkState.active) {
                     if (sfx.ctx && sfx.ctx.state === 'suspended') sfx.ctx.resume();
@@ -484,9 +484,26 @@
             canRestart: true, hudPitch: 0, hudPitchVelocity: 0
         };
 
+        // --- BUBBLE DIALOGUE SYSTEM ---
         function setDialogue(text, timeMs) {
             tkState.dialogueText = text;
             tkState.dialogueTimeLeft = timeMs;
+        }
+
+        // --- UNIFIED CRASH LOGIC ---
+        function triggerCrash(reasonText) {
+            sfx.stopAll();
+            const r = document.getElementById('tk-plane-img').getBoundingClientRect();
+            triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
+            document.getElementById('plane-container').style.display = 'none';
+            tkState.active = false;
+            
+            setDialogue(`<span class='alert-text'>${reasonText}</span>`, 4500);
+            
+            setTimeout(() => { 
+                setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999); 
+                tkState.canRestart = true; 
+            }, 4500);
         }
 
         function selectPlane(planeType) {
@@ -664,7 +681,6 @@
             };
             SPEED_MOD = 0.75; 
             
-            document.getElementById('prompt-container').style.display = 'none';
             setDialogue("<span class='capt-text'>FULL POWER!</span>", 3000);
 
             document.getElementById('plane-container').style.display = 'block';
@@ -678,7 +694,6 @@
             tkState.frameId = requestAnimationFrame(gameLoop);
         }
 
-        // Optimized GPU-friendly collision
         function triggerGearExplosion(x, y) {
             sfx.playExplosion();
             const colors = ['#fff', '#ffaa00', '#d71920', '#333', '#111'];
@@ -802,7 +817,6 @@
             sfx.updateEngine(tkState.speed);
             sfx.playAlarm((tkState.pitch >= 24.2 && tkState.altitude > 10) || tkState.phase === 3);
 
-            // --- SLOW-MO ZOOM LOGIC ---
             let isLandingApproach = (tkState.phase === 5 && tkState.altitude <= 70 && tkState.altitude > 0);
             let targetSpeedMod = isLandingApproach ? 0.25 : 0.75; 
             let targetZoom = isLandingApproach ? 1.8 : 1.0;
@@ -825,7 +839,6 @@
                 guide.style.opacity = 0;
             }
 
-            // --- SUNRISE LENS FLARE SYSTEM ---
             if (tkState.weather === 'sunrise') {
                 const sun = document.getElementById('tk-sun');
                 const flareCont = document.getElementById('tk-flare-container');
@@ -852,7 +865,6 @@
                 flareCont.style.opacity = fade;
             }
 
-            // --- BUBBLE DIALOGUE TICKER ---
             const bubble = document.getElementById('dialogue-bubble');
             if (tkState.dialogueTimeLeft > 0) {
                 tkState.dialogueTimeLeft -= delta;
@@ -875,7 +887,6 @@
                 setDialogue("<span class='alert-text'>GEAR STUCK!</span>", 3000);
             }
 
-            // 1. SPEED ENGINE
             let inHUDZone = (tkState.pitch >= tkState.currTargetMin && tkState.pitch <= tkState.currTargetMax);
             if (tkState.phase < 6) {
                 let accel = (tkState.phase === 5) ? -1.6 : (tkState.phase === 0 ? 0.8 : 1.5); 
@@ -905,9 +916,7 @@
             document.getElementById('hud-spd').style.color = `hsl(${spdHue}, 85%, 55%)`;
             document.getElementById('hud-spd-val').textContent = Math.floor(tkState.speed);
 
-            // 2. PITCH & PHYSICS
             if (tkState.phase === 0 && tkState.speed < 150) {
-                // FIXED: Plane is strictly locked to ground until V1 speed is reached
                 tkState.pitch = 0;
                 tkState.pitchVelocity = 0;
             } else if (tkState.phase === 6) {
@@ -923,13 +932,13 @@
                 tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch + tkState.pitchVelocity));
             }
 
-            // HUD Gyroscope Spring Physics (The HUD ring visually chases the plane's true pitch)
             tkState.hudPitchVelocity += (tkState.pitch - tkState.hudPitch) * 0.1; 
-            tkState.hudPitchVelocity *= 0.8; // Dampening
+            tkState.hudPitchVelocity *= 0.8; 
             tkState.hudPitch += tkState.hudPitchVelocity;
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
+            
             if (isStalling) { 
                 targetVSpeed = -12 * SPEED_MOD; 
                 document.getElementById('tk-alert-overlay').className = 'flashing';
@@ -943,37 +952,6 @@
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
             if (tkState.phase !== 6) tkState.altitude = Math.max(0, tkState.altitude + tkState.vSpeed);
 
-            // FATAL IMPACT CHECKS
-            if (tkState.altitude <= 0 && tkState.phase > 0 && tkState.phase < 6) {
-                if (isStalling || tkState.pitch < -5 || tkState.pitch > 15) {
-                    sfx.stopAll();
-                    const r = document.getElementById('tk-plane-img').getBoundingClientRect();
-                    triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
-                    document.getElementById('plane-container').style.display = 'none';
-                    tkState.active = false;
-                    setDialogue("<span class='alert-text'>FATAL ANGLE!</span>", 4500);
-                    setTimeout(() => { 
-                        setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999); 
-                        tkState.canRestart = true; 
-                    }, 4500);
-                    return;
-                }
-                if (tkState.speed > 160 && tkState.phase === 5) {
-                    sfx.stopAll();
-                    const r = document.getElementById('tk-plane-img').getBoundingClientRect();
-                    triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
-                    document.getElementById('plane-container').style.display = 'none';
-                    tkState.active = false;
-                    setDialogue("<span class='alert-text'>TOO FAST!</span>", 4500);
-                    setTimeout(() => { 
-                        setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999);
-                        tkState.canRestart = true; 
-                    }, 4500);
-                    return;
-                }
-            }
-
-            // 3. HUD UPDATES
             document.getElementById('hud-alt-val').textContent = Math.floor(tkState.altitude) + 'm';
             document.getElementById('hud-pitch-val').innerHTML = Math.floor(tkState.pitch) + '&deg;';
             let center = (tkState.currTargetMin + tkState.currTargetMax) / 2;
@@ -998,24 +976,24 @@
             }
             scoreValEl.textContent = Math.floor(tkState.score);
 
-            // 4. PHASE LOGIC
+            // --- FATAL IMPACT CHECKS (UNIFIED) ---
+            if (tkState.altitude <= 0 && tkState.phase > 1 && tkState.phase < 6) {
+                if (isStalling || tkState.pitch < -5 || tkState.pitch > 15) {
+                    return triggerCrash("FATAL ANGLE!");
+                }
+            }
+            if (tkState.speed > 160 && tkState.phase === 5 && tkState.altitude <= 0) {
+                return triggerCrash("TOO FAST!");
+            }
+
+            // --- PHASE PROGRESSION & EVENTS ---
             if (tkState.phase < 2) {
                 tkState.takeoffDist -= ((tkState.speed / 1600) * SPEED_MOD);
                 if (tkState.takeoffDist < 25 && tkState.altitude < 60) {
                     const mtn = document.getElementById('tk-mountain');
                     mtn.style.display = 'block'; mtn.style.left = (tkState.takeoffDist * 4) + '%';
                     if (tkState.takeoffDist <= 0) {
-                         sfx.stopAll();
-                         const r = document.getElementById('tk-plane-img').getBoundingClientRect();
-                         triggerEpicCollision(r.left+r.width/2, r.top+r.height/2);
-                         document.getElementById('plane-container').style.display='none';
-                         tkState.active=false; 
-                         setDialogue("<span class='alert-text'>MOUNTAIN IMPACT!</span>", 4500);
-                         setTimeout(()=> { 
-                            setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999);
-                            tkState.canRestart = true; 
-                         }, 4500);
-                         return;
+                         return triggerCrash("MOUNTAIN IMPACT!");
                     }
                 }
             } else if (tkState.phase >= 5) {
@@ -1025,17 +1003,7 @@
                 mtn.style.left = tkState.landingDist + '%';
                 
                 if (tkState.landingDist <= 35 && tkState.speed > 0) {
-                     sfx.stopAll();
-                     const r = document.getElementById('tk-plane-img').getBoundingClientRect();
-                     triggerEpicCollision(r.left+r.width/2, r.top+r.height/2);
-                     document.getElementById('plane-container').style.display='none';
-                     tkState.active=false; 
-                     setDialogue("<span class='alert-text'>MOUNTAIN IMPACT!</span>", 4500);
-                     setTimeout(()=> { 
-                        setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999);
-                        tkState.canRestart = true; 
-                     }, 4500);
-                     return;
+                     return triggerCrash("MOUNTAIN IMPACT!");
                 }
             } else {
                 document.getElementById('tk-mountain').style.display = 'none';
@@ -1069,16 +1037,7 @@
                 const er = document.getElementById('tk-enemy-plane').getBoundingClientRect();
                 const margin = 12;
                 if (!(pr.right-margin < er.left+margin || pr.left+margin > er.right-margin || pr.bottom-margin < er.top+margin || pr.top+margin > er.bottom-margin)) {
-                     sfx.stopAll();
-                     triggerEpicCollision(pr.left+pr.width/2, pr.top+pr.height/2);
-                     document.getElementById('plane-container').style.display='none';
-                     tkState.active=false; 
-                     setDialogue("<span class='alert-text'>MID-AIR CRASH!</span>", 4500);
-                     setTimeout(()=> { 
-                        setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999);
-                        tkState.canRestart = true; 
-                     }, 4500);
-                     return;
+                     return triggerCrash("MID-AIR CRASH!");
                 }
                 if (tkState.enemyX < -30) {
                     tkState.phase = 4; 
@@ -1108,7 +1067,7 @@
                  if(tkState.autoPilot) toggleAutoPilot();
             }
 
-            // 5. STRICT THRESHOLD CAMERA
+            // 5. CAMERA LOGIC
             tkState.bgX_sky -= (tkState.speed * 0.006 * SPEED_MOD);
             tkState.bgX_city -= (tkState.speed * 0.03 * SPEED_MOD);
             tkState.bgX_runway -= (tkState.speed * 0.18 * SPEED_MOD);
@@ -1132,7 +1091,6 @@
             let planeY = -(tkState.altitude - tkState.cameraY);
             document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeY}px)`;
             
-            // HUD & Plane separated rotations
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
             document.getElementById('plane-hud').style.transform = `translate(-50%, -50%) rotate(${-tkState.hudPitch}deg)`;
 

@@ -116,6 +116,7 @@
             pointer-events: none; 
             background-repeat: repeat-x; 
             transition: filter 0.5s, background-color 0.5s;
+            will-change: background-position, transform; /* Hardware Acceleration */
         }
 
         #tk-bg-sky { 
@@ -161,6 +162,7 @@
             background: #fff;
             box-shadow: 0 0 0 10px rgba(255, 240, 150, 0.8), 0 0 0 25px rgba(255, 200, 100, 0.4), 0 0 0 45px rgba(255, 100, 50, 0.2);
             z-index: 0; 
+            will-change: transform;
         }
 
         .sunrise-weather #tk-sun { display: block; }
@@ -182,6 +184,7 @@
             background: #222; 
             z-index: 3; 
             transition: filter 0.5s;
+            will-change: transform;
         }
 
         #tk-runway-stripes { 
@@ -191,6 +194,7 @@
             background-position: 0px 10px; 
             background-size: 200px 6px; 
             background-repeat: repeat-x;
+            will-change: background-position;
         }
 
         /* --- WEATHER STATES --- */
@@ -256,11 +260,11 @@
         .pf-3 { width: 100px; height: 100px; border: 4px solid rgba(255, 100, 50, 0.1); background: transparent; }
         .pf-4 { width: 15px; height: 15px; background: rgba(255, 255, 255, 0.4); }
 
-        #plane-container { position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; pointer-events: none; width: 150px; height: 50px; }
-        #plane-rotate-group { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; z-index: 12; }
+        #plane-container { position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; pointer-events: none; width: 150px; height: 50px; will-change: transform; }
+        #plane-rotate-group { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; z-index: 12; will-change: transform; }
         #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; transition: filter 0.5s; }
         
-        #plane-hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; border-radius: 50%; border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11; }
+        #plane-hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; border-radius: 50%; border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11; will-change: transform; }
         .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; }
         .hud-label { font-size: 0.5rem; opacity: 0.8; display: block; }
         .hud-val { font-size: 1rem; display: block; }
@@ -314,16 +318,16 @@
         }
 
         /* Traffic Planes */
-        .tk-enemy, #tk-overtaker-plane { position: absolute; bottom: 65px; width: 162px; height: 56px; z-index: 9; display: none; }
+        .tk-enemy, #tk-overtaker-plane { position: absolute; bottom: 65px; width: 162px; height: 56px; z-index: 9; display: none; will-change: transform; }
         .tk-enemy img { width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1); }
         #tk-overtaker-plane img { width: 100%; height: 100%; object-fit: contain; } 
-        #tk-overtaker-plane { left: -30%; }
+        #tk-overtaker-plane { left: 0; transform: translateX(-100%); }
         
-        #tk-mountain { position: absolute; bottom: 65px; left: 100%; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; }
+        #tk-mountain { position: absolute; bottom: 65px; left: 100%; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform;}
         
         /* Bird Flock CSS */
         #tk-bird-flock {
-            position: absolute; bottom: 65px; width: 40px; height: 30px; z-index: 9; display: none; pointer-events: none;
+            position: absolute; bottom: 65px; width: 40px; height: 30px; z-index: 9; display: none; pointer-events: none; will-change: transform;
         }
         .bird {
             position: absolute; width: 4px; height: 4px; background: #111; border-radius: 50%;
@@ -332,11 +336,11 @@
         }
         @keyframes flap { 0% { transform: translateY(0px); } 100% { transform: translateY(3px); } }
 
-        /* Particles */
-        .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; }
-        .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; }
-        .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; }
-        .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; }
+        /* Hardware Accelerated Particles */
+        .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; left: 0; top: 0; will-change: transform, opacity; }
+        .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
+        .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
+        .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
 
         /* End Screen UI */
         #tk-end-screen { 
@@ -396,7 +400,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v3.8 - Fullscreen & Minimap</div>
+        <div id="tk-version">v3.9 - 60 FPS GPU Lock</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -502,13 +506,13 @@
         // --- PWA INSTALLATION LOGIC ---
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); // Prevent standard mini-infobar
-            deferredPrompt = e; // Stash event for later
-            document.getElementById('install-btn').style.display = 'block'; // Show install button
+            e.preventDefault(); 
+            deferredPrompt = e; 
+            document.getElementById('install-btn').style.display = 'block'; 
         });
 
         function installApp(e) {
-            e.stopPropagation(); // Prevents tapping from starting the game
+            e.stopPropagation(); 
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choiceResult) => {
@@ -660,11 +664,26 @@
             tkState.dialogueTimeLeft = timeMs;
         }
 
+        function toggleAutoPilot(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (!tkState.active || tkState.phase === 0 || tkState.phase >= 6) return; 
+
+            tkState.autoPilot = !tkState.autoPilot;
+            const btn = document.getElementById('ap-btn');
+            
+            if (tkState.autoPilot) {
+                btn.style.background = 'var(--gauge-green)'; btn.style.borderColor = '#fff'; btn.style.color = '#000';
+                btn.style.boxShadow = '0 0 15px var(--gauge-green)'; sfx.playDing(1.5); 
+            } else {
+                btn.style.background = '#333'; btn.style.borderColor = '#aaa'; btn.style.color = '#aaa';
+                btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)'; sfx.playDing(0.8);
+            }
+        }
+
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
             sfx.init(); 
             
-            // Auto Fullscreen on first interaction if not already active
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 try {
                     let elem = document.documentElement;
@@ -805,22 +824,6 @@
             }, 2500); 
         }
 
-        function toggleAutoPilot(e) {
-            if (e) { e.preventDefault(); e.stopPropagation(); }
-            if (!tkState.active || tkState.phase === 0 || tkState.phase >= 6) return; 
-
-            tkState.autoPilot = !tkState.autoPilot;
-            const btn = document.getElementById('ap-btn');
-            
-            if (tkState.autoPilot) {
-                btn.style.background = 'var(--gauge-green)'; btn.style.borderColor = '#fff'; btn.style.color = '#000';
-                btn.style.boxShadow = '0 0 15px var(--gauge-green)'; sfx.playDing(1.5); 
-            } else {
-                btn.style.background = '#333'; btn.style.borderColor = '#aaa'; btn.style.color = '#aaa';
-                btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)'; sfx.playDing(0.8);
-            }
-        }
-
         function startFlight(e) {
             if (e) e.stopPropagation();
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
@@ -855,7 +858,7 @@
 
             tkState = {
                 active: true, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, altitude: 0, cameraY: 0, score: 0, 
-                pressing: false, frameId: null, lastFrameTime: performance.now(), 
+                pressing: false, frameId: null, lastFrameTime: 0, 
                 currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260, 
                 dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: 0.75, autoPilot: false, weather: weather, canRestart: false,
                 hudPitch: 0, hudPitchVelocity: 0, 
@@ -894,20 +897,27 @@
             tkState.frameId = requestAnimationFrame(gameLoop);
         }
 
+        // --- HARDWARE ACCELERATED PARTICLES ---
         function spawnSmoke(x, y) {
             let p = document.createElement('div'); p.className = 'smoke-particle';
             let gray = Math.floor(Math.random() * 80) + 20; p.style.backgroundColor = `rgba(${gray}, ${gray}, ${gray}, 0.8)`;
-            p.style.left = x + 'px'; p.style.top = y + 'px'; let size = Math.random() * 8 + 4; 
-            p.style.width = size + 'px'; p.style.height = size + 'px'; document.getElementById('camera-rig').appendChild(p);
+            
+            let size = Math.random() * 8 + 4; 
+            p.style.width = size + 'px'; p.style.height = size + 'px'; 
+            
+            let curX = x, curY = y;
+            p.style.transform = `translate3d(${curX}px, ${curY}px, 0) scale(1)`;
+            document.getElementById('camera-rig').appendChild(p);
             
             let speedFactor = Math.max(1, tkState.speed / 100);
             let vx = -(Math.random() * 6 + 4) * SPEED_MOD * speedFactor; let vy = (Math.random() * 2 - 1) * SPEED_MOD;
             let age = 0; let maxAge = Math.random() * 40 + 20;
+            let currentScale = 1;
             
             function move() {
-                age++; vx *= 0.98; vy -= 0.1; size += 0.3; 
-                p.style.width = size + 'px'; p.style.height = size + 'px';
-                p.style.left = (parseFloat(p.style.left) + vx) + 'px'; p.style.top = (parseFloat(p.style.top) + vy) + 'px';
+                age++; vx *= 0.98; vy -= 0.1; currentScale += 0.05; 
+                curX += vx; curY += vy;
+                p.style.transform = `translate3d(${curX}px, ${curY}px, 0) scale(${currentScale})`;
                 p.style.opacity = 0.8 * (1 - (age / maxAge));
                 if(age < maxAge) requestAnimationFrame(move); else p.remove();
             } move();
@@ -917,15 +927,19 @@
             let p = document.createElement('div'); p.className = 'score-particle';
             p.style.backgroundColor = '#cfa86e'; p.style.boxShadow = `0 0 8px #cfa86e`; 
             let rad = -pitch * (Math.PI / 180);
-            p.style.left = (cx + Math.cos(rad) * -65) + 'px'; p.style.top = (cy + Math.sin(rad) * -65) + 'px';
+            
+            let curX = cx + Math.cos(rad) * -65; let curY = cy + Math.sin(rad) * -65;
+            p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`;
             document.getElementById('camera-rig').appendChild(p);
+            
             let speedFactor = Math.max(1, tkState.speed / 100);
             let vx = -(Math.random() * 4 + 4) * SPEED_MOD * speedFactor; let vy = (Math.random() * 2 - 1) * SPEED_MOD;
             let age = 0; let maxAge = Math.random() * 20 + 15;
             
             function move() {
                 age++; vx *= 0.95; vy -= 0.1; 
-                p.style.left = (parseFloat(p.style.left) + vx) + 'px'; p.style.top = (parseFloat(p.style.top) + vy) + 'px';
+                curX += vx; curY += vy;
+                p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`;
                 p.style.opacity = 1 - (age / maxAge);
                 if(age < maxAge) requestAnimationFrame(move); else p.remove();
             } move();
@@ -936,20 +950,45 @@
             const colors = ['#fff', '#ffaa00', '#d71920', '#333', '#111'];
             for(let i=0; i<25; i++) {
                 let p = document.createElement('div'); p.className = 'pixel-particle'; p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
-                p.style.left = x + 'px'; p.style.top = y + 'px'; p.style.width = (Math.random()*5 + 2) + 'px'; p.style.height = p.style.width; document.getElementById('camera-rig').appendChild(p);
+                
+                let size = (Math.random()*5 + 2);
+                p.style.width = size + 'px'; p.style.height = size + 'px'; 
+                
+                let curX = x, curY = y;
+                p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`;
+                document.getElementById('camera-rig').appendChild(p);
+                
                 let a = Math.random() * Math.PI * 2; let v = (Math.random() * 12 + 2) * 0.75;
                 let vx = Math.cos(a)*v - 5; let vy = Math.sin(a)*v + 2; let age = 0;
-                function move() { age++; vx *= 0.92; vy += (0.4 * 0.75); p.style.left = (parseFloat(p.style.left)+vx)+'px'; p.style.top = (parseFloat(p.style.top)+vy)+'px'; if(age < 45) requestAnimationFrame(move); else p.remove(); } move();
+                function move() { 
+                    age++; vx *= 0.92; vy += (0.4 * 0.75); 
+                    curX += vx; curY += vy;
+                    p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`;
+                    if(age < 45) requestAnimationFrame(move); else p.remove(); 
+                } move();
             }
         }
 
         function spawnSpark(x, y, isMidAir) {
             sfx.playSpark();
             let p = document.createElement('div'); p.className = 'spark-particle'; p.style.backgroundColor = Math.random() > 0.4 ? '#ffaa00' : '#ff3300';
-            p.style.left = x + 'px'; p.style.top = y + 'px'; if (isMidAir) p.style.width = '5px', p.style.height = '5px'; document.getElementById('camera-rig').appendChild(p);
+            
+            if (isMidAir) { p.style.width = '5px'; p.style.height = '5px'; }
+            
+            let curX = x, curY = y;
+            p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`;
+            document.getElementById('camera-rig').appendChild(p);
+            
             let speedFactor = isMidAir ? 1 : (tkState.speed / 100); let vx = isMidAir ? -(Math.random() * 5 + 2) * SPEED_MOD : -(Math.random() * 14 + 5) * SPEED_MOD * speedFactor; 
             let vy = isMidAir ? (Math.random() * 4 + 2) * SPEED_MOD : -(Math.random() * 3) * SPEED_MOD * speedFactor; let age = 0;
-            function move() { age++; vx *= 0.95; vy += (0.5 * SPEED_MOD); p.style.left = (parseFloat(p.style.left)+vx)+'px'; p.style.top = (parseFloat(p.style.top)+vy)+'px'; p.style.opacity = 1 - (age / (isMidAir ? 30 : 15)); if(age < (isMidAir ? 30 : 15)) requestAnimationFrame(move); else p.remove(); } move();
+            
+            function move() { 
+                age++; vx *= 0.95; vy += (0.5 * SPEED_MOD); 
+                curX += vx; curY += vy;
+                p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`;
+                p.style.opacity = 1 - (age / (isMidAir ? 30 : 15)); 
+                if(age < (isMidAir ? 30 : 15)) requestAnimationFrame(move); else p.remove(); 
+            } move();
         }
 
         function triggerEpicCollision(x, y) {
@@ -959,22 +998,32 @@
                 if (tkState.weather === 'night') vp.style.backgroundColor = "#0b1021"; else if (tkState.weather === 'sunrise') vp.style.backgroundColor = "#ff9e7a";
                 else if (tkState.weather === 'snow') vp.style.backgroundColor = "#b8c6d9"; else vp.style.backgroundColor = "#87CEEB";
             }, 150);
+            
             let shakeAmount = 35;
             function applyShake() {
                 if (shakeAmount > 0.5) {
-                    vp.style.transform = `translate(${(Math.random() - 0.5) * shakeAmount}px, ${(Math.random() - 0.5) * shakeAmount}px)`;
+                    vp.style.transform = `translate3d(${(Math.random() - 0.5) * shakeAmount}px, ${(Math.random() - 0.5) * shakeAmount}px, 0)`;
                     shakeAmount *= 0.85; requestAnimationFrame(applyShake);
-                } else { vp.style.transform = `translate(0, 0)`; }
+                } else { vp.style.transform = `translate3d(0, 0, 0)`; }
             } applyShake();
+            
             const colors = ['#ffffff', '#ffffff', '#ffea00', '#ff5500', '#d71920', '#333333', '#111111'];
             for(let i=0; i<80; i++) { 
-                let p = document.createElement('div'); p.className = 'pixel-particle'; p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)]; p.style.left = x + 'px'; p.style.top = y + 'px';
-                let size = Math.random() * 6 + 2; p.style.width = size + 'px'; p.style.height = size + 'px'; document.getElementById('camera-rig').appendChild(p);
+                let p = document.createElement('div'); p.className = 'pixel-particle'; p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)]; 
+                
+                let size = Math.random() * 6 + 2; p.style.width = size + 'px'; p.style.height = size + 'px'; 
+                
+                let curX = x, curY = y;
+                p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`;
+                document.getElementById('camera-rig').appendChild(p);
+                
                 let a = Math.random() * 6.28; let v = (Math.random() * 40 + 5) * 0.75; let vx = Math.cos(a) * v; let vy = Math.sin(a) * v;
                 let age = 0; let maxAge = Math.random() * 60 + 40; 
                 function move() {
                     let timeScale = age < 2 ? 1.0 : (age < 6 ? 0.3 : 0.05); age += timeScale; vx *= Math.pow(0.92, timeScale); vy += (0.3 * 0.75) * timeScale; 
-                    p.style.left = (parseFloat(p.style.left) + (vx * timeScale)) + 'px'; p.style.top = (parseFloat(p.style.top) + (vy * timeScale)) + 'px'; p.style.opacity = 1 - (age / maxAge);
+                    curX += (vx * timeScale); curY += (vy * timeScale);
+                    p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`;
+                    p.style.opacity = 1 - (age / maxAge);
                     if(age < maxAge) requestAnimationFrame(move); else p.remove();
                 } move();
             }
@@ -982,10 +1031,16 @@
 
         function gameLoop(timestamp) {
             if (!tkState.active) return;
+            
+            // STRICT 60 FPS LOCK (16.66ms per frame)
             if (tkState.lastFrameTime === 0) tkState.lastFrameTime = timestamp;
             let delta = timestamp - tkState.lastFrameTime;
-            if (delta < 15) { tkState.frameId = requestAnimationFrame(gameLoop); return; }
-            tkState.lastFrameTime = timestamp;
+            if (delta < 16.66) { 
+                tkState.frameId = requestAnimationFrame(gameLoop); 
+                return; 
+            }
+            // Math adjustment to prevent time-drift
+            tkState.lastFrameTime = timestamp - (delta % 16.66);
 
             tkState.phaseTimer += delta;
 
@@ -1013,10 +1068,10 @@
                 const sun = document.getElementById('tk-sun'); const flareCont = document.getElementById('tk-flare-container'); const sunRect = sun.getBoundingClientRect();
                 let sx = sunRect.left + sunRect.width / 2; let sy = sunRect.top + sunRect.height / 2;
                 let cx = window.innerWidth / 2; let cy = window.innerHeight / 2; let dx = cx - sx; let dy = cy - sy;
-                document.getElementById('pf1').style.left = (sx + dx * 1.4) + 'px'; document.getElementById('pf1').style.top = (sy + dy * 1.4) + 'px';
-                document.getElementById('pf2').style.left = (sx + dx * 0.6) + 'px'; document.getElementById('pf2').style.top = (sy + dy * 0.6) + 'px';
-                document.getElementById('pf3').style.left = (sx + dx * 1.8) + 'px'; document.getElementById('pf3').style.top = (sy + dy * 1.8) + 'px';
-                document.getElementById('pf4').style.left = (sx + dx * 2.2) + 'px'; document.getElementById('pf4').style.top = (sy + dy * 2.2) + 'px';
+                document.getElementById('pf1').style.transform = `translate3d(${sx + dx * 1.4}px, ${sy + dy * 1.4}px, 0)`;
+                document.getElementById('pf2').style.transform = `translate3d(${sx + dx * 0.6}px, ${sy + dy * 0.6}px, 0)`;
+                document.getElementById('pf3').style.transform = `translate3d(${sx + dx * 1.8}px, ${sy + dy * 1.8}px, 0)`;
+                document.getElementById('pf4').style.transform = `translate3d(${sx + dx * 2.2}px, ${sy + dy * 2.2}px, 0)`;
                 flareCont.style.opacity = Math.max(0, Math.min(1, (window.innerHeight - 100 - sy) / 100));
             }
 
@@ -1112,7 +1167,7 @@
             } else { scoreValEl.style.color = '#fff'; }
             scoreValEl.textContent = Math.floor(tkState.score);
 
-            // FATAL IMPACT CHECKS
+            // FATAL IMPACT CHECKS WITH REASONS
             if (tkState.altitude <= 0 && tkState.hasLiftedOff) {
                 if (tkState.phase < 5) return triggerCrash("CRASHED INTO TERRAIN!");
                 else if (tkState.phase === 5) {
@@ -1153,7 +1208,7 @@
             }
             if (tkState.overtakerActive) {
                 tkState.overtakerX += (0.6 * SPEED_MOD); let gp = document.getElementById('tk-overtaker-plane');
-                gp.style.left = tkState.overtakerX + '%'; gp.style.transform = `translateY(${-(tkState.overtakerAltitude - tkState.cameraY)}px)`;
+                gp.style.transform = `translate3d(${tkState.overtakerX}%, ${-(tkState.overtakerAltitude - tkState.cameraY)}px, 0)`;
                 
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
                 const gr = gp.getBoundingClientRect();
@@ -1177,7 +1232,7 @@
             if (tkState.birdActive) {
                 tkState.birdX -= (1.1 * SPEED_MOD); 
                 let bEl = document.getElementById('tk-bird-flock');
-                bEl.style.left = tkState.birdX + '%'; bEl.style.transform = `translateY(${-(tkState.birdAlt - tkState.cameraY)}px)`;
+                bEl.style.transform = `translate3d(${tkState.birdX}%, ${-(tkState.birdAlt - tkState.cameraY)}px, 0)`;
                 
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
                 const br = bEl.getBoundingClientRect();
@@ -1206,7 +1261,7 @@
                 logEvent("TRAFFIC SWARM", "✈️");
                 setDialogue("<span class='alert-text'>TRAFFIC SWARM! DIVE!</span>", 4000);
                 document.getElementById('tk-alert-overlay').className = 'flashing';
-                setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800); // Only flash briefly
+                setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800); 
                 if(tkState.autoPilot) toggleAutoPilot();
             }
 
@@ -1233,8 +1288,7 @@
                     if (e.active) {
                         e.x -= e.spd;
                         let el = document.getElementById('enemy-' + i);
-                        el.style.left = e.x + '%';
-                        el.style.transform = `translateY(${-(e.alt - tkState.cameraY)}px)`;
+                        el.style.transform = `translate3d(${e.x}%, ${-(e.alt - tkState.cameraY)}px, 0)`;
                         
                         const er = el.getBoundingClientRect();
                         if (!( (pr.right - 12) < (er.left + 15) || 
@@ -1303,21 +1357,22 @@
             let fgSkyOpacity = Math.max(0, Math.min(1, (tkState.altitude - 650) / 100));
             document.getElementById('tk-fg-sky').style.opacity = fgSkyOpacity;
 
-            document.getElementById('tk-runway').style.transform = `translateY(${tkState.cameraY}px)`;
-            document.getElementById('tk-bg-city').style.transform = `translateY(${tkState.cameraY * 0.7}px)`;
-            document.getElementById('tk-bg-sky').style.transform = `translateY(${tkState.cameraY * 0.2}px)`;
-            document.getElementById('tk-fg-sky').style.transform = `translateY(${tkState.cameraY * 0.3}px)`;
-            document.getElementById('tk-mountain').style.transform = `translateY(${tkState.cameraY}px)`;
-            document.getElementById('tk-sun').style.transform = `translateY(${tkState.cameraY * 0.2}px)`;
+            // Apply Hardware Accelerated Transforms
+            document.getElementById('tk-runway').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`;
+            document.getElementById('tk-bg-city').style.transform = `translate3d(0, ${tkState.cameraY * 0.7}px, 0)`;
+            document.getElementById('tk-bg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`;
+            document.getElementById('tk-fg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.3}px, 0)`;
+            document.getElementById('tk-mountain').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`;
+            document.getElementById('tk-sun').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`;
 
             if (tkState.hasFogScenario) {
-                document.getElementById('tk-threat-fog').style.transform = `translateY(${tkState.cameraY * 0.45}px)`;
+                document.getElementById('tk-threat-fog').style.transform = `translate3d(0, ${tkState.cameraY * 0.45}px, 0)`;
             }
 
             let planeY = -(tkState.altitude - tkState.cameraY);
-            document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeY}px)`;
+            document.getElementById('plane-container').style.transform = `translate3d(-50%, ${planeY}px, 0)`;
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
-            document.getElementById('plane-hud').style.transform = `translate(-50%, -50%) rotate(${-tkState.hudPitch}deg)`;
+            document.getElementById('plane-hud').style.transform = `translate3d(-50%, -50%, 0) rotate(${-tkState.hudPitch}deg)`;
 
             // EFFECTS
             const pr = document.getElementById('tk-plane-img').getBoundingClientRect();

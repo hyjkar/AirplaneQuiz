@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Smooth Operations</title>
+    <title>Hangar 5 - Immersive Dialogue Update</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -22,6 +22,13 @@
             font-family: 'Share Tech Mono', monospace;
             width: 100%; height: 100%;
             overflow: hidden; user-select: none; touch-action: none;
+        }
+
+        /* Version Tag */
+        #tk-version {
+            position: absolute; bottom: 8px; right: 12px;
+            color: rgba(255, 255, 255, 0.4); font-size: 0.75rem;
+            z-index: 100; pointer-events: none; letter-spacing: 1px;
         }
 
         #takeoff-viewport {
@@ -75,67 +82,30 @@
         .night-weather .rain-layer, .night-weather .fog-layer { display: block; }
         .snow-weather .snow-layer, .snow-weather .fog-layer { display: block; }
         
-        /* Night Filter */
         .night-weather { background-color: #0b1021 !important; }
         .night-weather #tk-bg-sky { background-color: #0b1021 !important; background-image: none !important; }
-        .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain {
-            filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2);
-        }
+        .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain { filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2); }
         .night-weather #tk-plane-img, .night-weather #tk-enemy-plane img { filter: brightness(0.55); }
 
-        /* Sunrise Filter */
         .sunrise-weather { background-color: #ff9e7a !important; }
-        .sunrise-weather #tk-bg-sky { 
-            background-color: #ff9e7a !important; 
-            background-image: linear-gradient(to bottom, #2b5876 0%, #ff9e7a 60%, #ffe259 100%) !important; 
-        }
-        .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain {
-            filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8);
-        }
+        .sunrise-weather #tk-bg-sky { background-color: #ff9e7a !important; background-image: linear-gradient(to bottom, #2b5876 0%, #ff9e7a 60%, #ffe259 100%) !important; }
+        .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8); }
         .sunrise-weather #tk-plane-img, .sunrise-weather #tk-enemy-plane img { filter: sepia(0.3) saturate(1.2) brightness(0.9); }
 
-        /* Snow Filter */
         .snow-weather { background-color: #b8c6d9 !important; }
         .snow-weather #tk-bg-sky { background-color: #b8c6d9 !important; background-image: none !important; }
-        .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain {
-            filter: grayscale(0.7) brightness(1.4) contrast(0.6);
-        }
-        .snow-weather .fog-layer.layer-front {
-            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, transparent 65%);
-        }
-        .snow-weather .fog-layer.layer-back {
-            background: radial-gradient(circle at 50% 50%, rgba(240, 245, 250, 0.8) 0%, transparent 70%);
-        }
+        .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain { filter: grayscale(0.7) brightness(1.4) contrast(0.6); }
+        .snow-weather .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, transparent 65%); }
+        .snow-weather .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(240, 245, 250, 0.8) 0%, transparent 70%); }
         
-        /* Fog Animations */
-        .fog-layer.layer-back {
-            background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%);
-            background-size: 300% 200%; animation: fogPulse 15s ease-in-out infinite alternate; z-index: 8; 
-        }
-        .fog-layer.layer-front {
-            background: radial-gradient(ellipse at center, rgba(200, 210, 220, 0.95) 0%, transparent 40%);
-            background-size: 200% 100%; animation: fogSweep 7s linear infinite; z-index: 15; 
-        }
+        .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%); background-size: 300% 200%; animation: fogPulse 15s ease-in-out infinite alternate; z-index: 8; }
+        .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(200, 210, 220, 0.95) 0%, transparent 40%); background-size: 200% 100%; animation: fogSweep 7s linear infinite; z-index: 15; }
         
-        /* Rain Animations */
-        .rain-layer.layer-1 {
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='250'><rect x='20' y='20' width='2' height='15' fill='rgba(255,255,255,0.4)'/><rect x='150' y='120' width='1' height='10' fill='rgba(255,255,255,0.2)'/></svg>");
-            animation: rainAnim1 0.4s linear infinite; z-index: 11;
-        }
-        .rain-layer.layer-2 {
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect x='50' y='50' width='3' height='25' fill='rgba(255,255,255,0.6)'/><rect x='250' y='200' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>");
-            animation: rainAnim2 0.3s linear infinite; z-index: 16;
-        }
+        .rain-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='250'><rect x='20' y='20' width='2' height='15' fill='rgba(255,255,255,0.4)'/><rect x='150' y='120' width='1' height='10' fill='rgba(255,255,255,0.2)'/></svg>"); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
+        .rain-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect x='50' y='50' width='3' height='25' fill='rgba(255,255,255,0.6)'/><rect x='250' y='200' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
 
-        /* Snow Animations */
-        .snow-layer.layer-1 {
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><circle cx='20' cy='20' r='3' fill='rgba(255,255,255,0.8)'/><circle cx='100' cy='80' r='2' fill='rgba(255,255,255,0.6)'/><circle cx='150' cy='150' r='4' fill='rgba(255,255,255,0.9)'/><circle cx='50' cy='180' r='2' fill='rgba(255,255,255,0.5)'/></svg>");
-            animation: snowAnim1 2.5s linear infinite; z-index: 11;
-        }
-        .snow-layer.layer-2 {
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><circle cx='50' cy='50' r='5' fill='rgba(255,255,255,0.9)'/><circle cx='200' cy='150' r='6' fill='rgba(255,255,255,0.8)'/><circle cx='250' cy='280' r='4' fill='rgba(255,255,255,0.7)'/></svg>");
-            animation: snowAnim2 3.5s linear infinite; z-index: 16;
-        }
+        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><circle cx='20' cy='20' r='3' fill='rgba(255,255,255,0.8)'/><circle cx='100' cy='80' r='2' fill='rgba(255,255,255,0.6)'/><circle cx='150' cy='150' r='4' fill='rgba(255,255,255,0.9)'/><circle cx='50' cy='180' r='2' fill='rgba(255,255,255,0.5)'/></svg>"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
+        .snow-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><circle cx='50' cy='50' r='5' fill='rgba(255,255,255,0.9)'/><circle cx='200' cy='150' r='6' fill='rgba(255,255,255,0.8)'/><circle cx='250' cy='280' r='4' fill='rgba(255,255,255,0.7)'/></svg>"); animation: snowAnim2 3.5s linear infinite; z-index: 16; }
         
         @keyframes fogSweep { 0% { background-position: 200% 50%; } 100% { background-position: -100% 50%; } }
         @keyframes fogPulse { 0% { opacity: 0.2; transform: scale(1); } 100% { opacity: 0.6; transform: scale(1.2); } }
@@ -180,14 +150,21 @@
         }
         .guide-label { position: absolute; bottom: -20px; text-align: center; color: var(--gauge-green); font-weight: bold; font-size: 0.8rem; text-shadow: 1px 1px 2px #000; }
 
+        /* Speech Bubble Updates */
         #dialogue-bubble {
             position: absolute; bottom: 95px; left: 75px; transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: bold;
             white-space: nowrap; opacity: 0; transition: opacity 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20;
+            text-align: center;
         }
         #dialogue-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent; }
-        .capt-text { color: var(--brand-red); font-weight: bold; margin-right: 5px;}
-        .fo-text { color: var(--fo-blue); font-weight: bold; margin-right: 5px;}
+        
+        /* Formatted Dialogue Texts */
+        .capt-text { color: var(--brand-red); margin-right: 5px; }
+        .fo-text { color: var(--fo-blue); margin-right: 5px; }
+        .alert-text { color: var(--brand-red); text-shadow: 0 0 5px rgba(215, 25, 32, 0.5); animation: pulseRed 0.5s infinite alternate; }
+        .success-text { color: var(--gauge-green); text-shadow: 0 0 5px rgba(46, 204, 113, 0.5); }
+        @keyframes pulseRed { from { opacity: 1; } to { opacity: 0.6; } }
 
         /* UI Overlays */
         #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: none; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; }
@@ -198,6 +175,7 @@
         #ap-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #aaa; font-size: 0.9rem; cursor: pointer; padding: 0 12px; height: 40px; font-family: 'Share Tech Mono', monospace; font-weight: bold; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         #ap-btn:active { transform: scale(0.95); }
 
+        /* General Prompt Container (Used only for Start and Retry states now) */
         #prompt-container { position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: none; justify-content: center; }
         #tk-touch-prompt { background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px; padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase; }
 
@@ -239,6 +217,9 @@
 <body>
 
     <div id="takeoff-viewport">
+        
+        <div id="tk-version">v1.2.0</div>
+
         <div id="tk-start-screen">
             <div class="start-panel">
                 <div class="start-title">SELECT AIRCRAFT</div>
@@ -558,7 +539,7 @@
             bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260,
             dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", weather: "day",
             zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false,
-            canRestart: true // Fixes crash soft-lock
+            canRestart: true 
         };
 
         // --- FLEET SELECTION ---
@@ -585,6 +566,23 @@
                 document.getElementById('tk-enemy-img').src = enemyPlaneSkin;
                 planeSelected = true;
             }, 300);
+        }
+
+        // --- DIALOGUE HELPER ---
+        function setDialogue(text, timeMs, override = false) {
+            if (tkState.dialogueText !== text || override) {
+                tkState.dialogueText = text;
+                tkState.dialogueTimeLeft = timeMs;
+            } else {
+                tkState.dialogueTimeLeft = Math.max(tkState.dialogueTimeLeft, timeMs);
+            }
+        }
+        
+        // Force dialogue to show immediately (useful when physics loop stops during crash)
+        function forceDialogueUpdate() {
+            const bubble = document.getElementById('dialogue-bubble');
+            bubble.innerHTML = tkState.dialogueText;
+            bubble.style.opacity = 1;
         }
 
         // --- AUTOPILOT TOGGLE ---
@@ -704,6 +702,9 @@
             es.classList.remove('visible');
             setTimeout(() => { es.style.display = 'none'; }, 300); 
 
+            // Hide the startup prompt completely during gameplay
+            document.getElementById('prompt-container').style.display = 'none';
+
             const apBtn = document.getElementById('ap-btn');
             apBtn.style.background = '#333';
             apBtn.style.borderColor = '#aaa';
@@ -744,9 +745,9 @@
             document.getElementById('tk-mountain').style.display = 'none';
             document.getElementById('tk-alert-overlay').className = '';
             document.getElementById('score-val').textContent = '0';
-            document.getElementById('tk-touch-prompt').textContent = 'FULL POWER!';
             
             document.getElementById('camera-rig').style.transform = `scale(1)`;
+            setDialogue("FULL POWER!", 2500);
 
             tkState.frameId = requestAnimationFrame(gameLoop);
         }
@@ -864,18 +865,12 @@
             }
         }
 
-        function setDialogue(text, timeMs) {
-            tkState.dialogueText = text;
-            tkState.dialogueTimeLeft = timeMs;
-        }
-
         function gameLoop(timestamp) {
             if (!tkState.active) return;
             let delta = timestamp - tkState.lastFrameTime;
             if (delta < 16) { tkState.frameId = requestAnimationFrame(gameLoop); return; }
             tkState.lastFrameTime = timestamp;
 
-            const prompt = document.getElementById('tk-touch-prompt');
             const hudRing = document.getElementById('plane-hud');
 
             sfx.updateEngine(tkState.speed);
@@ -969,7 +964,8 @@
                 tkState.speed = Math.max(0, tkState.speed - (1.3 * SPEED_MOD));
                 if (tkState.speed <= 0) { 
                     tkState.active = false; 
-                    prompt.textContent = "SAFE! EVACUATE!"; 
+                    setDialogue("<span class='success-text'>SAFE! EVACUATE!</span>", 5000);
+                    forceDialogueUpdate();
                     sfx.stopAll();
                     showEndScreen(Math.floor(tkState.score));
                     return; 
@@ -1003,7 +999,7 @@
             if (isStalling) { 
                 targetVSpeed = -12 * SPEED_MOD; 
                 document.getElementById('tk-alert-overlay').className = 'flashing';
-                prompt.textContent = "STALL WARNING!";
+                setDialogue("<span class='alert-text'>STALL WARNING!</span>", 500);
                 if(tkState.autoPilot) toggleAutoPilot();
             } else if (tkState.phase !== 3) {
                 document.getElementById('tk-alert-overlay').className = '';
@@ -1021,8 +1017,13 @@
                     triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
                     document.getElementById('plane-container').style.display = 'none';
                     tkState.active = false;
-                    prompt.textContent = "FATAL ANGLE!";
-                    setTimeout(() => { prompt.textContent = "TAP TO RE-FLY"; tkState.canRestart = true; }, 4500);
+                    setDialogue("<span class='alert-text'>FATAL ANGLE!</span>", 4500);
+                    forceDialogueUpdate();
+                    setTimeout(() => { 
+                        document.getElementById('prompt-container').style.display = 'flex';
+                        document.getElementById('tk-touch-prompt').innerHTML = "TAP OR SPACE TO RE-FLY"; 
+                        tkState.canRestart = true; 
+                    }, 4500);
                     return;
                 }
                 if (tkState.speed > 160 && tkState.phase === 5) {
@@ -1031,8 +1032,13 @@
                     triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
                     document.getElementById('plane-container').style.display = 'none';
                     tkState.active = false;
-                    prompt.textContent = "TOO FAST!";
-                    setTimeout(() => { prompt.textContent = "TAP TO RE-FLY"; tkState.canRestart = true; }, 4500);
+                    setDialogue("<span class='alert-text'>TOO FAST!</span>", 4500);
+                    forceDialogueUpdate();
+                    setTimeout(() => { 
+                        document.getElementById('prompt-container').style.display = 'flex';
+                        document.getElementById('tk-touch-prompt').innerHTML = "TAP OR SPACE TO RE-FLY"; 
+                        tkState.canRestart = true; 
+                    }, 4500);
                     return;
                 }
             }
@@ -1073,8 +1079,14 @@
                          const r = document.getElementById('tk-plane-img').getBoundingClientRect();
                          triggerEpicCollision(r.left+r.width/2, r.top+r.height/2);
                          document.getElementById('plane-container').style.display='none';
-                         tkState.active=false; prompt.textContent="MOUNTAIN IMPACT!";
-                         setTimeout(()=> { prompt.textContent="TAP TO RE-FLY"; tkState.canRestart = true; }, 4500);
+                         tkState.active=false; 
+                         setDialogue("<span class='alert-text'>MOUNTAIN IMPACT!</span>", 4500);
+                         forceDialogueUpdate();
+                         setTimeout(()=> { 
+                            document.getElementById('prompt-container').style.display = 'flex';
+                            document.getElementById('tk-touch-prompt').innerHTML = "TAP OR SPACE TO RE-FLY"; 
+                            tkState.canRestart = true; 
+                         }, 4500);
                          return;
                     }
                 }
@@ -1089,20 +1101,34 @@
                      const r = document.getElementById('tk-plane-img').getBoundingClientRect();
                      triggerEpicCollision(r.left+r.width/2, r.top+r.height/2);
                      document.getElementById('plane-container').style.display='none';
-                     tkState.active=false; prompt.textContent="MOUNTAIN IMPACT!";
-                     setTimeout(()=> { prompt.textContent="TAP TO RE-FLY"; tkState.canRestart = true; }, 4500);
+                     tkState.active=false; 
+                     setDialogue("<span class='alert-text'>MOUNTAIN IMPACT!</span>", 4500);
+                     forceDialogueUpdate();
+                     setTimeout(()=> { 
+                        document.getElementById('prompt-container').style.display = 'flex';
+                        document.getElementById('tk-touch-prompt').innerHTML = "TAP OR SPACE TO RE-FLY"; 
+                        tkState.canRestart = true; 
+                     }, 4500);
                      return;
                 }
             } else {
                 document.getElementById('tk-mountain').style.display = 'none';
             }
 
-            if (tkState.phase === 0 && tkState.speed >= 150) { tkState.phase = 1; prompt.textContent = "PULL UP!"; }
-            else if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { tkState.phase = 2; tkState.currTargetMin = -3; tkState.currTargetMax = 3; prompt.textContent = "LEVEL OFF"; }
-            
+            if (tkState.phase === 0 && tkState.speed >= 150) { 
+                tkState.phase = 1; 
+                setDialogue("PULL UP!", 2500); 
+            }
+            else if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { 
+                tkState.phase = 2; 
+                tkState.currTargetMin = -3; tkState.currTargetMax = 3; 
+                setDialogue("LEVEL OFF", 2500); 
+            }
             else if (tkState.phase === 2 && tkState.progress > 20) {
-                tkState.phase = 3; tkState.currTargetMin = -24; tkState.currTargetMax = -12;
-                prompt.textContent = "TRAFFIC! DIVE!"; document.getElementById('tk-alert-overlay').className = 'flashing';
+                tkState.phase = 3; 
+                tkState.currTargetMin = -24; tkState.currTargetMax = -12;
+                setDialogue("<span class='alert-text'>TRAFFIC! DIVE!</span>", 3000); 
+                document.getElementById('tk-alert-overlay').className = 'flashing';
                 document.getElementById('tk-enemy-plane').style.display = 'block';
                 tkState.enemyX = 140; tkState.enemyAltitude = tkState.altitude;
                 if(tkState.autoPilot) toggleAutoPilot();
@@ -1118,20 +1144,27 @@
                      sfx.stopAll();
                      triggerEpicCollision(pr.left+pr.width/2, pr.top+pr.height/2);
                      document.getElementById('plane-container').style.display='none';
-                     tkState.active=false; prompt.textContent="MID-AIR CRASH!";
-                     setTimeout(()=> { prompt.textContent="TAP TO RE-FLY"; tkState.canRestart = true; }, 4500);
+                     tkState.active=false; 
+                     setDialogue("<span class='alert-text'>MID-AIR CRASH!</span>", 4500);
+                     forceDialogueUpdate();
+                     setTimeout(()=> { 
+                        document.getElementById('prompt-container').style.display = 'flex';
+                        document.getElementById('tk-touch-prompt').innerHTML = "TAP OR SPACE TO RE-FLY"; 
+                        tkState.canRestart = true; 
+                     }, 4500);
                      return;
                 }
                 if (tkState.enemyX < -30) {
-                    tkState.phase = 4; tkState.currTargetMin = -3; tkState.currTargetMax = 3;
-                    prompt.textContent = "CLEAR! LEVEL OFF"; document.getElementById('tk-alert-overlay').className = '';
+                    tkState.phase = 4; 
+                    tkState.currTargetMin = -3; tkState.currTargetMax = 3;
+                    setDialogue("CLEAR! LEVEL OFF", 2500); 
+                    document.getElementById('tk-alert-overlay').className = '';
                 }
             }
             else if (tkState.phase === 4 && tkState.progress > 35) { 
                 tkState.phase = 5; 
                 tkState.currTargetMin = -8; tkState.currTargetMax = -2; 
-                prompt.textContent = "LAND NOW!"; 
-                setDialogue("<span class='capt-text'>CAPT:</span> MOUNTAIN AHEAD! GET IT DOWN!", 4000);
+                setDialogue("<span class='alert-text'>MOUNTAIN AHEAD! LAND NOW!</span>", 4000); 
                 if(tkState.autoPilot) toggleAutoPilot();
                 
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
@@ -1143,7 +1176,7 @@
                  tkState.phase = 6; 
                  tkState.altitude = 0; 
                  tkState.vSpeed = 0; 
-                 prompt.textContent = "BRAKES ON!";
+                 setDialogue("BRAKES ON!", 3000);
                  if(tkState.autoPilot) toggleAutoPilot();
             }
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Simple Audio Edition</title>
+    <title>Hangar 5 - v1.5 Gyro & UI Polish</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -78,6 +78,7 @@
         /* --- WEATHER STATES --- */
         .weather-layer { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
         
+        /* Night weather ONLY uses back fog, NO front fog */
         .night-weather .rain-layer, .night-weather .fog-layer.layer-back { display: block; }
         .snow-weather .snow-layer, .snow-weather .fog-layer { display: block; }
         
@@ -153,13 +154,12 @@
         .pf-3 { width: 100px; height: 100px; border: 4px solid rgba(255, 100, 50, 0.1); background: transparent; }
         .pf-4 { width: 15px; height: 15px; background: rgba(255, 255, 255, 0.4); }
 
-        /* Plane & Mini HUD Decoupled */
+        /* Decoupled Plane & HUD */
         #plane-container { position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; pointer-events: none; width: 150px; height: 50px; }
-        
         #plane-rotate-group { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; z-index: 12; }
         #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; transition: filter 0.5s;}
         
-        /* HUD Ring Decoupled for Spring Physics */
+        /* HUD Gyro Ring - Separated for Spring Physics */
         #plane-hud {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 140px; height: 140px; border-radius: 50%;
@@ -173,7 +173,6 @@
         #hud-pitch { right: -5px; top: 50%; transform: translate(100%, -50%); }
         #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); }
 
-        /* Slow-Mo Landing Guide */
         #landing-guide {
             position: absolute; top: 25px; left: 75px; transform: translate(-50%, -50%);
             width: 220px; height: 80px; border: 2px solid transparent;
@@ -185,7 +184,7 @@
 
         /* Bubble Text Formatting */
         #dialogue-bubble {
-            position: absolute; bottom: 115px; left: 75px; transform: translateX(-50%);
+            position: absolute; bottom: 125px; left: 30%; transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem;
             white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20;
             font-weight: bold; text-transform: uppercase;
@@ -206,9 +205,8 @@
         #ap-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #aaa; font-size: 0.9rem; cursor: pointer; padding: 0 12px; height: 40px; font-family: 'Share Tech Mono', monospace; font-weight: bold; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: auto; }
         #ap-btn:active { transform: scale(0.95); }
 
-        #prompt-container { position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: flex; justify-content: center; }
-        #tk-touch-prompt { background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px; padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase; }
-
+        #prompt-container { position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: none; justify-content: center; }
+        
         #tk-enemy-plane { position: absolute; left: 150%; bottom: 65px; width: 162px; height: 56px; z-index: 9; pointer-events: none; display: none; transition: filter 0.5s; }
         #tk-mountain { position: absolute; bottom: 65px; left: 100%; width: 220px; height: 120px; z-index: 2; display: none; pointer-events: none; transition: filter 0.5s; }
         .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; }
@@ -247,7 +245,7 @@
 <body>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v1.4 - Simple Audio</div>
+        <div id="tk-version">v1.5</div>
 
         <div id="tk-start-screen">
             <div class="start-panel">
@@ -274,6 +272,8 @@
             </div>
             <div id="tk-score-display">SCORE: <span id="score-val">0</span></div>
         </div>
+        
+        <div id="prompt-container"></div>
         
         <div id="camera-rig">
             <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky1.png');"></div>
@@ -333,7 +333,6 @@
     <script>
         let SPEED_MOD = 0.75; 
         
-        // Player setup states
         let playerPlaneSkin = 'my-plane.png';
         let playerNoGearSkin = 'my-plane-nolandinggear.png';
         let enemyPlaneSkin = 'my-plane-golden.png';
@@ -343,7 +342,6 @@
         const sfx = {
             ctx: null, engineNode: null, engineGain: null, alarmInterval: null, isAlarming: false,
             
-            // Standard HTML5 Audio for local file playback
             bgMusic: new Audio('hangar5-music.mp3'), 
 
             init: function() {
@@ -357,7 +355,6 @@
                     silentOsc.start(0);
                     silentOsc.stop(this.ctx.currentTime + 0.1);
                     
-                    // Set up the background music
                     this.bgMusic.loop = true;
                     this.bgMusic.volume = 0.4; 
                     
@@ -365,7 +362,6 @@
                 }
                 if (this.ctx.state === 'suspended') this.ctx.resume();
                 
-                // Play the MP3
                 this.bgMusic.play().catch(e => console.log("Audio play blocked until interaction:", e));
             },
             
@@ -457,7 +453,6 @@
             }
         };
 
-        // --- BROWSER AUDIO CLEANUP ---
         document.addEventListener("visibilitychange", function() {
             if (document.hidden) {
                 sfx.stopAll();
@@ -489,13 +484,11 @@
             canRestart: true, hudPitch: 0, hudPitchVelocity: 0
         };
 
-        // --- BUBBLE DIALOGUE SYSTEM ---
         function setDialogue(text, timeMs) {
             tkState.dialogueText = text;
             tkState.dialogueTimeLeft = timeMs;
         }
 
-        // --- FLEET SELECTION ---
         function selectPlane(planeType) {
             let startScreen = document.getElementById('tk-start-screen');
             startScreen.style.opacity = 0;
@@ -522,7 +515,6 @@
             }, 300);
         }
 
-        // --- AUTOPILOT TOGGLE ---
         function toggleAutoPilot(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             if (!tkState.active || tkState.phase === 0 || tkState.phase >= 6) return; 
@@ -545,7 +537,6 @@
             }
         }
 
-        // --- CONTROLS ---
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON' || e.target.closest('.plane-card') || !planeSelected) return;
             sfx.init(); 
@@ -577,7 +568,6 @@
             }
         });
 
-        // --- END SCREEN LOGIC ---
         function showEndScreen(finalScore) {
             let es = document.getElementById('tk-end-screen');
             es.style.display = 'flex';
@@ -647,7 +637,6 @@
 
             document.getElementById('tk-plane-img').src = playerPlaneSkin;
             
-            // --- DYNAMIC WEATHER RANDOMIZATION ---
             let rand = Math.random();
             let weather = 'day';
             let vp = document.getElementById('takeoff-viewport');
@@ -689,7 +678,7 @@
             tkState.frameId = requestAnimationFrame(gameLoop);
         }
 
-        // Optimized GPU-friendly collision & sparks 
+        // Optimized GPU-friendly collision
         function triggerGearExplosion(x, y) {
             sfx.playExplosion();
             const colors = ['#fff', '#ffaa00', '#d71920', '#333', '#111'];
@@ -918,7 +907,7 @@
 
             // 2. PITCH & PHYSICS
             if (tkState.phase === 0 && tkState.speed < 150) {
-                // Plane is strictly locked to ground until V1 speed is reached
+                // FIXED: Plane is strictly locked to ground until V1 speed is reached
                 tkState.pitch = 0;
                 tkState.pitchVelocity = 0;
             } else if (tkState.phase === 6) {

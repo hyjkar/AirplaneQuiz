@@ -124,12 +124,33 @@
             top: -10%;
         }
 
+        /* Standard Foreground Clouds (Always Visible, Moved Up) */
         #tk-fg-sky { 
             background-size: auto 150vh; 
             z-index: 14; 
             height: 120%; 
-            top: -15%;
-            opacity: 0; 
+            top: -30%; 
+            opacity: 0.8; 
+        }
+
+        /* New Threat: Thick Fog */
+        #tk-threat-fog {
+            display: none;
+            background-size: auto 200vh;
+            z-index: 15; /* Sits completely in front of everything */
+            height: 150%;
+            top: -10%;
+            opacity: 0.95;
+            filter: blur(3px) brightness(1.1); /* Blurry and slightly blown out */
+        }
+        .fog-scenario #tk-threat-fog { display: block; }
+        
+        /* Turn planes into silhouettes when fog is active */
+        .fog-scenario #tk-plane-img,
+        .fog-scenario .tk-enemy img,
+        .fog-scenario #tk-overtaker-plane img {
+            filter: brightness(0) !important;
+            transition: filter 0.5s;
         }
         
         #tk-sun {
@@ -194,6 +215,9 @@
         .night-weather #tk-bg-sky, .night-weather #tk-fg-sky, .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain {
             filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2);
         }
+        /* Dynamic Fog matching weather */
+        .night-weather #tk-threat-fog { filter: brightness(0.3) sepia(0.5) hue-rotate(180deg) saturate(1.2) blur(3px); }
+        
         .night-weather #tk-plane-img, .night-weather .tk-enemy img, .night-weather #tk-overtaker-plane img { 
             filter: brightness(0.55); 
         }
@@ -202,6 +226,8 @@
         .sunrise-weather #tk-bg-sky, .sunrise-weather #tk-fg-sky, .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain {
             filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8);
         }
+        .sunrise-weather #tk-threat-fog { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.9) blur(3px); }
+        
         .sunrise-weather #tk-plane-img, .sunrise-weather .tk-enemy img, .sunrise-weather #tk-overtaker-plane img { 
             filter: sepia(0.3) saturate(1.2) brightness(0.9); 
         }
@@ -210,6 +236,8 @@
         .snow-weather #tk-bg-sky, .snow-weather #tk-fg-sky, .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain {
             filter: grayscale(0.7) brightness(1.4) contrast(0.6);
         }
+        .snow-weather #tk-threat-fog { filter: grayscale(0.7) brightness(1.4) blur(3px); }
+        
         .snow-weather .fog-layer.layer-front {
             background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, transparent 65%);
         }
@@ -372,7 +400,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v3.3 - Adjusted Swarm & Bird Speeds</div>
+        <div id="tk-version">v3.3 - Fog Threat Added</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -410,6 +438,8 @@
             </div>
 
             <div id="tk-fg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
+            
+            <div id="tk-threat-fog" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             
             <div id="enemy-0" class="tk-enemy"><img src="a22.png"></div>
             <div id="enemy-1" class="tk-enemy"><img src="a22.png"></div>
@@ -573,11 +603,12 @@
         let tkState = {
             active: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, 
-            currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_city: 0, bgX_runway: 0, 
+            currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
             weather: "day", zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false, canRestart: true, 
             hudPitch: 0, hudPitchVelocity: 0,
-            hasLiftedOff: false, // New property to track if we've left the ground
+            hasLiftedOff: false,
+            hasFogScenario: false,
             hasEngineFailureScenario: false, engineFailure: false,
             hasOvertakerScenario: false, overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
             hasBirdScenario: false, birdActive: false, birdX: 150, birdAlt: 0,
@@ -715,10 +746,11 @@
             tkState = {
                 active: true, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, altitude: 0, cameraY: 0, score: 0, 
                 pressing: false, frameId: null, lastFrameTime: performance.now(), 
-                currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260, 
+                currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260, 
                 dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: 0.75, autoPilot: false, weather: weather, canRestart: false,
                 hudPitch: 0, hudPitchVelocity: 0, 
-                hasLiftedOff: false, // Reset liftoff flag on restart
+                hasLiftedOff: false,
+                hasFogScenario: Math.random() < 0.25, // 25% Chance for Heavy Fog
                 hasEngineFailureScenario: Math.random() > 0.5, engineFailure: false,
                 hasOvertakerScenario: Math.random() > 0.5, overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
                 hasBirdScenario: Math.random() < 0.25, birdActive: false, birdX: 150, birdAlt: 0,
@@ -731,8 +763,16 @@
             };
             SPEED_MOD = 0.75; 
             
+            // Toggle fog scenario visuals
+            if (tkState.hasFogScenario) {
+                vp.classList.add('fog-scenario');
+                setDialogue("<span class='alert-text'>HEAVY FOG AHEAD!</span>", 4000);
+            } else {
+                vp.classList.remove('fog-scenario');
+                setDialogue("<span class='capt-text'>FULL POWER!</span>", 3000);
+            }
+
             document.getElementById('prompt-container').style.display = 'none';
-            setDialogue("<span class='capt-text'>FULL POWER!</span>", 3000);
 
             document.getElementById('plane-container').style.display = 'block';
             document.querySelectorAll('.tk-enemy').forEach(el => el.style.display = 'none');
@@ -926,7 +966,7 @@
                 document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 500);
             } else if (isTooHigh) {
                 document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>DESCEND! LOW VISIBILITY!</span>", 500); if(tkState.autoPilot) toggleAutoPilot();
-            } else if (tkState.phase !== 3 && tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>") {
+            } else if (tkState.phase !== 3 && tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!</span>") {
                 document.getElementById('tk-alert-overlay').className = '';
             }
 
@@ -1108,14 +1148,15 @@
             document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`;
             document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
 
+            if (tkState.hasFogScenario) {
+                tkState.bgX_threatFog -= (tkState.speed * 0.025 * SPEED_MOD); // Fog moves very fast
+                document.getElementById('tk-threat-fog').style.backgroundPosition = `${tkState.bgX_threatFog}px 50%`;
+            }
+
             let maxVisualAltitude = Math.min(60, window.innerHeight * 0.15);
             let baseTargetCam = Math.max(0, tkState.altitude - maxVisualAltitude);
             if (isLandingApproach) baseTargetCam -= 20; 
             tkState.cameraY += (baseTargetCam - tkState.cameraY) * 0.15;
-
-            // Visibility fade for foreground clouds based on altitude
-            let fgSkyOpacity = Math.max(0, Math.min(1, (tkState.altitude - 650) / 100));
-            document.getElementById('tk-fg-sky').style.opacity = fgSkyOpacity;
 
             document.getElementById('tk-runway').style.transform = `translateY(${tkState.cameraY}px)`;
             document.getElementById('tk-bg-city').style.transform = `translateY(${tkState.cameraY * 0.7}px)`;
@@ -1123,6 +1164,10 @@
             document.getElementById('tk-fg-sky').style.transform = `translateY(${tkState.cameraY * 0.3}px)`;
             document.getElementById('tk-mountain').style.transform = `translateY(${tkState.cameraY}px)`;
             document.getElementById('tk-sun').style.transform = `translateY(${tkState.cameraY * 0.2}px)`;
+
+            if (tkState.hasFogScenario) {
+                document.getElementById('tk-threat-fog').style.transform = `translateY(${tkState.cameraY * 0.45}px)`;
+            }
 
             let planeY = -(tkState.altitude - tkState.cameraY);
             document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeY}px)`;

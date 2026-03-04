@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Final Clean Edition</title>
+    <title>Hangar 5 - Gyro Physics & UI Updates</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -37,11 +38,6 @@
         @keyframes redAlert { 
             from { background: rgba(215, 25, 32, 0); } 
             to { background: rgba(215, 25, 32, 0.35); } 
-        }
-
-        #tk-version {
-            position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4);
-            font-size: 0.8rem; font-weight: bold; z-index: 50; pointer-events: none;
         }
 
         #camera-rig {
@@ -81,6 +77,7 @@
         .night-weather .rain-layer, .night-weather .fog-layer.layer-back { display: block; }
         .snow-weather .snow-layer, .snow-weather .fog-layer { display: block; }
         
+        /* Night Filter */
         .night-weather { background-color: #0b1021 !important; }
         .night-weather #tk-bg-sky { background-color: #0b1021 !important; background-image: none !important; }
         .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain {
@@ -88,6 +85,7 @@
         }
         .night-weather #tk-plane-img, .night-weather #tk-enemy-plane img { filter: brightness(0.55); }
 
+        /* Sunrise Filter */
         .sunrise-weather { background-color: #ff9e7a !important; }
         .sunrise-weather #tk-bg-sky { 
             background-color: #ff9e7a !important; 
@@ -98,6 +96,7 @@
         }
         .sunrise-weather #tk-plane-img, .sunrise-weather #tk-enemy-plane img { filter: sepia(0.3) saturate(1.2) brightness(0.9); }
 
+        /* Snow Filter */
         .snow-weather { background-color: #b8c6d9 !important; }
         .snow-weather #tk-bg-sky { background-color: #b8c6d9 !important; background-image: none !important; }
         .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain {
@@ -110,6 +109,7 @@
             background: radial-gradient(circle at 50% 50%, rgba(240, 245, 250, 0.8) 0%, transparent 70%);
         }
         
+        /* Fog Animations */
         .fog-layer.layer-back {
             background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%);
             background-size: 300% 200%; animation: fogPulse 15s ease-in-out infinite alternate; z-index: 8; 
@@ -119,6 +119,7 @@
             background-size: 200% 100%; animation: fogSweep 7s linear infinite; z-index: 15; 
         }
         
+        /* Sparse Pixel Rain */
         .rain-layer.layer-1 {
             background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='250'><rect x='20' y='20' width='2' height='15' fill='rgba(255,255,255,0.4)'/><rect x='150' y='120' width='1' height='10' fill='rgba(255,255,255,0.2)'/></svg>");
             animation: rainAnim1 0.4s linear infinite; z-index: 11;
@@ -128,6 +129,7 @@
             animation: rainAnim2 0.3s linear infinite; z-index: 16;
         }
 
+        /* Snow Animations */
         .snow-layer.layer-1 {
             background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><circle cx='20' cy='20' r='3' fill='rgba(255,255,255,0.8)'/><circle cx='100' cy='80' r='2' fill='rgba(255,255,255,0.6)'/><circle cx='150' cy='150' r='4' fill='rgba(255,255,255,0.9)'/><circle cx='50' cy='180' r='2' fill='rgba(255,255,255,0.5)'/></svg>");
             animation: snowAnim1 2.5s linear infinite; z-index: 11;
@@ -185,7 +187,7 @@
 
         /* Bubble Text Formatting */
         #dialogue-bubble {
-            position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%);
+            position: absolute; bottom: 115px; left: 75px; transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem;
             white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20;
             font-weight: bold; text-transform: uppercase;
@@ -208,10 +210,11 @@
 
         #prompt-container { position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: flex; justify-content: center; }
         #tk-touch-prompt { background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px; padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase; }
-        
+
         #tk-enemy-plane { position: absolute; left: 150%; bottom: 65px; width: 162px; height: 56px; z-index: 9; pointer-events: none; display: none; transition: filter 0.5s; }
         #tk-mountain { position: absolute; bottom: 65px; left: 100%; width: 220px; height: 120px; z-index: 2; display: none; pointer-events: none; transition: filter 0.5s; }
         .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; }
+        .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; }
 
         /* End Screen UI */
         #tk-end-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
@@ -232,7 +235,6 @@
 <body>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v2.0 - Final Cut</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -304,9 +306,224 @@
 
     <script>
         let SPEED_MOD = 0.75; 
-        
-        let playerPlaneSkin = 'my-plane.png';
-        let playerNoGearSkin = 'my-plane-nolandinggear.png';
+
+        // --- CUSTOM WEB AUDIO SYNTHESIZER ---
+        const sfx = {
+            ctx: null, engineNode: null, engineGain: null, bgmNode: null, bgmGain: null, 
+            alarmInterval: null, isAlarming: false,
+            
+            // Wind variables
+            windBuffer: null, windNodes: [], shouldPlayWind: false, windTimeout: null,
+
+            init: function() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    let silentOsc = this.ctx.createOscillator();
+                    let silentGain = this.ctx.createGain();
+                    silentGain.gain.value = 0;
+                    silentOsc.connect(silentGain);
+                    silentGain.connect(this.ctx.destination);
+                    silentOsc.start(0);
+                    silentOsc.stop(this.ctx.currentTime + 0.1);
+                    
+                    this.loadWind();
+                    this.startEngine();
+                    // this.startBGM();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                this.startWind();
+            },
+
+            loadWind: async function() {
+                try {
+                    const response = await fetch('hangar5-music.mp3');
+                    const arrayBuffer = await response.arrayBuffer();
+                    this.windBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+                    if (this.shouldPlayWind && this.windNodes.length === 0) {
+                        this.scheduleNextWind(this.ctx.currentTime);
+                    }
+                } catch(e) { }
+            },
+            scheduleNextWind: function(startTime) {
+                if (!this.shouldPlayWind || !this.windBuffer) return;
+                
+                let source = this.ctx.createBufferSource();
+                source.buffer = this.windBuffer;
+                let gain = this.ctx.createGain();
+                
+                let duration = this.windBuffer.duration;
+                let fadeTime = Math.min(2.0, duration * 0.2); 
+                let targetVol = 0.4; 
+
+                gain.gain.setValueAtTime(0.001, startTime);
+                gain.gain.linearRampToValueAtTime(targetVol, startTime + fadeTime);
+
+                let fadeOutStart = startTime + duration - fadeTime;
+                let endTime = startTime + duration;
+                gain.gain.setValueAtTime(targetVol, fadeOutStart);
+                gain.gain.linearRampToValueAtTime(0.001, endTime);
+
+                source.connect(gain);
+                gain.connect(this.ctx.destination);
+                source.start(startTime);
+                source.stop(endTime);
+
+                this.windNodes.push({ source, gain, endTime });
+                this.windNodes = this.windNodes.filter(n => n.endTime > this.ctx.currentTime);
+
+                let nextStartTime = fadeOutStart;
+                let timeToWait = (nextStartTime - this.ctx.currentTime - 0.5) * 1000;
+                
+                this.windTimeout = setTimeout(() => {
+                    this.scheduleNextWind(nextStartTime);
+                }, Math.max(0, timeToWait));
+            },
+            startWind: function() {
+                this.shouldPlayWind = true;
+                if (this.windBuffer && this.windNodes.length === 0) {
+                    this.scheduleNextWind(this.ctx.currentTime);
+                }
+            },
+            stopWind: function() {
+                this.shouldPlayWind = false;
+                clearTimeout(this.windTimeout);
+                this.windNodes.forEach(n => {
+                    try {
+                        n.gain.gain.cancelScheduledValues(this.ctx.currentTime);
+                        n.gain.gain.setValueAtTime(n.gain.gain.value, this.ctx.currentTime);
+                        n.gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
+                        setTimeout(() => { try { n.source.stop(); } catch(e){} }, 500);
+                    } catch(e) {}
+                });
+                this.windNodes = [];
+            },
+            
+            startEngine: function() {
+                this.engineNode = this.ctx.createOscillator();
+                this.engineNode.type = 'sawtooth';
+                this.engineGain = this.ctx.createGain();
+                this.engineGain.gain.value = 0;
+                let filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 300; 
+                this.engineNode.connect(filter);
+                filter.connect(this.engineGain);
+                this.engineGain.connect(this.ctx.destination);
+                this.engineNode.start();
+            },
+            updateEngine: function(speed) {
+                if(!this.engineNode || !this.ctx) return;
+                let freq = 50 + (speed * 0.5); 
+                let vol = speed > 0 ? 0.15 + (speed / 800) : 0; 
+                this.engineNode.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.1);
+                this.engineGain.gain.setTargetAtTime(vol, this.ctx.currentTime, 0.1);
+            },
+            startBGM: function() {
+                this.bgmNode = this.ctx.createOscillator();
+                this.bgmNode.type = 'sine';
+                this.bgmNode.frequency.value = 65; 
+                let lfo = this.ctx.createOscillator();
+                lfo.frequency.value = 0.5; 
+                let lfoGain = this.ctx.createGain();
+                lfoGain.gain.value = 15;
+                lfo.connect(lfoGain);
+                lfoGain.connect(this.bgmNode.frequency);
+                this.bgmGain = this.ctx.createGain();
+                this.bgmGain.gain.value = 0.3; 
+                this.bgmNode.connect(this.bgmGain);
+                this.bgmGain.connect(this.ctx.destination);
+                this.bgmNode.start();
+                lfo.start();
+            },
+            playAlarm: function(active) {
+                if(!this.ctx) return;
+                if(active && !this.isAlarming) {
+                    this.isAlarming = true;
+                    this.alarmInterval = setInterval(() => {
+                        let osc = this.ctx.createOscillator();
+                        let gain = this.ctx.createGain();
+                        osc.type = 'square';
+                        osc.frequency.value = 900; 
+                        gain.gain.setValueAtTime(0.15, this.ctx.currentTime); 
+                        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start();
+                        osc.stop(this.ctx.currentTime + 0.2);
+                    }, 300);
+                } else if (!active && this.isAlarming) {
+                    this.isAlarming = false;
+                    clearInterval(this.alarmInterval);
+                }
+            },
+            playExplosion: function() {
+                if(!this.ctx) return;
+                let osc = this.ctx.createOscillator();
+                let oscGain = this.ctx.createGain();
+                osc.type = 'square'; 
+                osc.frequency.setValueAtTime(80, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
+                oscGain.gain.setValueAtTime(0.8, this.ctx.currentTime); 
+                oscGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
+                osc.connect(oscGain);
+                oscGain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 1.5);
+            },
+            playSpark: function() {
+                if(!this.ctx || Math.random() > 0.4) return; 
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(2000 + Math.random()*2000, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            },
+            playDing: function(pitchMult = 1) {
+                if(!this.ctx) return;
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800 * pitchMult, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.5);
+            },
+            stopAll: function() {
+                this.updateEngine(0);
+                this.playAlarm(false);
+                this.stopWind();
+                if(this.bgmGain) {
+                    this.bgmGain.gain.setTargetAtTime(0, this.ctx.currentTime, 1);
+                }
+            }
+        };
+
+        // --- BROWSER AUDIO CLEANUP ---
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden) {
+                sfx.stopAll();
+                if (sfx.ctx && sfx.ctx.state === 'running') {
+                    sfx.ctx.suspend();
+                }
+            } else {
+                if (tkState.active && sfx.ctx && sfx.ctx.state === 'suspended') {
+                    sfx.ctx.resume();
+                    sfx.startWind();
+                }
+            }
+        });
+        window.addEventListener("pagehide", function() {
+            sfx.stopAll();
+            if (sfx.ctx) sfx.ctx.close();
+        });
 
         let endScreenAnimInterval = null;
         let endScreenTimeouts = [];
@@ -321,8 +538,7 @@
             canRestart: true, hudPitch: 0, hudPitchVelocity: 0
         };
 
-        // Initialize plain plane on load
-        document.getElementById('tk-plane-img').src = playerPlaneSkin;
+        const CRUISE_ALT = 300; 
 
         // --- BUBBLE DIALOGUE SYSTEM ---
         function setDialogue(text, timeMs) {
@@ -330,6 +546,7 @@
             tkState.dialogueTimeLeft = timeMs;
         }
 
+        // --- AUTOPILOT TOGGLE ---
         function toggleAutoPilot(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             if (!tkState.active || tkState.phase === 0 || tkState.phase >= 6) return; 
@@ -342,17 +559,20 @@
                 btn.style.borderColor = '#fff';
                 btn.style.color = '#000';
                 btn.style.boxShadow = '0 0 15px var(--gauge-green)';
+                sfx.playDing(1.5); 
             } else {
                 btn.style.background = '#333';
                 btn.style.borderColor = '#aaa';
                 btn.style.color = '#aaa';
                 btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
+                sfx.playDing(0.8);
             }
         }
 
         // --- CONTROLS ---
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
+            sfx.init(); 
             if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') startFlight();
             tkState.pressing = true;
         });
@@ -363,6 +583,7 @@
             if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault(); 
                 if (e.repeat) return; 
+                sfx.init(); 
                 if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') startFlight();
                 tkState.pressing = true;
             }
@@ -379,6 +600,7 @@
             }
         });
 
+        // --- END SCREEN LOGIC ---
         function showEndScreen(finalScore) {
             let es = document.getElementById('tk-end-screen');
             es.style.display = 'flex';
@@ -418,25 +640,14 @@
                     icons[i].classList.add('pop');
                     if(i < count) {
                         icons[i].classList.add('golden');
+                        sfx.playDing(1 + (i * 0.2)); 
                         confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 }, zIndex: 200 });
+                    } else {
+                        sfx.playDing(0.6); 
                     }
                 }, i * 500);
                 endScreenTimeouts.push(t);
             }
-        }
-
-        function triggerCrash(reasonText) {
-            const r = document.getElementById('tk-plane-img').getBoundingClientRect();
-            triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
-            document.getElementById('plane-container').style.display = 'none';
-            tkState.active = false;
-            
-            setDialogue(`<span class='alert-text'>${reasonText}</span>`, 4500);
-            
-            setTimeout(() => { 
-                setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999); 
-                tkState.canRestart = true; 
-            }, 4500);
         }
 
         function startFlight() {
@@ -445,7 +656,7 @@
             clearInterval(endScreenAnimInterval);
             endScreenTimeouts.forEach(t => clearTimeout(t));
             endScreenTimeouts = [];
-            document.querySelectorAll('.pixel-particle').forEach(p => p.remove());
+            document.querySelectorAll('.pixel-particle, .spark-particle').forEach(p => p.remove());
             
             let es = document.getElementById('tk-end-screen');
             es.classList.remove('visible');
@@ -457,8 +668,9 @@
             apBtn.style.color = '#aaa';
             apBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
 
-            document.getElementById('tk-plane-img').src = playerPlaneSkin;
+            document.getElementById('tk-plane-img').src = 'my-plane.png';
             
+            // --- DYNAMIC WEATHER RANDOMIZATION ---
             let rand = Math.random();
             let weather = 'day';
             let vp = document.getElementById('takeoff-viewport');
@@ -500,8 +712,8 @@
             tkState.frameId = requestAnimationFrame(gameLoop);
         }
 
-        // Cinematic but completely silent and GPU-friendly collision 
         function triggerGearExplosion(x, y) {
+            sfx.playExplosion();
             const colors = ['#fff', '#ffaa00', '#d71920', '#333', '#111'];
             for(let i=0; i<25; i++) {
                 let p = document.createElement('div');
@@ -527,7 +739,31 @@
             }
         }
 
+        function spawnSpark(x, y, isMidAir) {
+            sfx.playSpark();
+            let p = document.createElement('div');
+            p.className = 'spark-particle';
+            p.style.backgroundColor = Math.random() > 0.4 ? '#ffaa00' : '#ff3300';
+            p.style.left = x + 'px'; p.style.top = y + 'px';
+            if (isMidAir) p.style.width = '5px', p.style.height = '5px'; 
+            document.getElementById('camera-rig').appendChild(p);
+            
+            let speedFactor = isMidAir ? 1 : (tkState.speed / 100);
+            let vx = isMidAir ? -(Math.random() * 5 + 2) * SPEED_MOD : -(Math.random() * 14 + 5) * SPEED_MOD * speedFactor; 
+            let vy = isMidAir ? (Math.random() * 4 + 2) * SPEED_MOD : -(Math.random() * 3) * SPEED_MOD * speedFactor;
+            let age = 0;
+            
+            function move() {
+                age++; vx *= 0.95; vy += (0.5 * SPEED_MOD); 
+                p.style.left = (parseFloat(p.style.left)+vx)+'px';
+                p.style.top = (parseFloat(p.style.top)+vy)+'px';
+                p.style.opacity = 1 - (age / (isMidAir ? 30 : 15));
+                if(age < (isMidAir ? 30 : 15)) requestAnimationFrame(move); else p.remove();
+            } move();
+        }
+
         function triggerEpicCollision(x, y) {
+            sfx.playExplosion();
             const vp = document.getElementById('takeoff-viewport');
             
             vp.style.backgroundColor = "#ffffff";
@@ -596,6 +832,9 @@
 
             const hudRing = document.getElementById('plane-hud');
 
+            sfx.updateEngine(tkState.speed);
+            sfx.playAlarm((tkState.pitch >= 24.2 && tkState.altitude > 10) || tkState.phase === 3);
+
             // --- SLOW-MO ZOOM LOGIC ---
             let isLandingApproach = (tkState.phase === 5 && tkState.altitude <= 70 && tkState.altitude > 0);
             let targetSpeedMod = isLandingApproach ? 0.25 : 0.75; 
@@ -656,19 +895,6 @@
                 bubble.style.opacity = 0;
             }
 
-            if (tkState.phase === 0 && tkState.speed > 25 && tkState.dialogueStep === 0) {
-                tkState.dialogueStep = 1;
-                setDialogue("<span class='capt-text'>GEAR FIXED?</span>", 3000);
-            }
-            if (tkState.phase === 0 && tkState.speed > 95 && tkState.dialogueStep === 1) {
-                tkState.dialogueStep = 2;
-                setDialogue("<span class='fo-text'>HOPEFULLY...</span>", 3000);
-            }
-            if (tkState.phase === 1 && tkState.altitude > 80 && tkState.dialogueStep === 2) {
-                tkState.dialogueStep = 3;
-                setDialogue("<span class='alert-text'>GEAR STUCK!</span>", 3000);
-            }
-
             // 1. SPEED ENGINE
             let inHUDZone = (tkState.pitch >= tkState.currTargetMin && tkState.pitch <= tkState.currTargetMax);
             if (tkState.phase < 6) {
@@ -685,6 +911,7 @@
                 if (tkState.speed <= 0) { 
                     tkState.active = false; 
                     setDialogue("<span class='success-text'>SAFE! EVACUATE!</span>", 5000);
+                    sfx.stopAll();
                     showEndScreen(Math.floor(tkState.score));
                     return; 
                 }
@@ -700,7 +927,7 @@
 
             // 2. PITCH & PHYSICS
             if (tkState.phase === 0 && tkState.speed < 150) {
-                // FIXED: Runway takeoff lock strictly enforced
+                // Plane is strictly locked to ground until V1 speed is reached
                 tkState.pitch = 0;
                 tkState.pitchVelocity = 0;
             } else if (tkState.phase === 6) {
@@ -716,8 +943,9 @@
                 tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch + tkState.pitchVelocity));
             }
 
+            // HUD Gyroscope Spring Physics (The HUD ring visually chases the plane's true pitch)
             tkState.hudPitchVelocity += (tkState.pitch - tkState.hudPitch) * 0.1; 
-            tkState.hudPitchVelocity *= 0.8; 
+            tkState.hudPitchVelocity *= 0.8; // Dampening
             tkState.hudPitch += tkState.hudPitchVelocity;
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
@@ -735,6 +963,37 @@
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
             if (tkState.phase !== 6) tkState.altitude = Math.max(0, tkState.altitude + tkState.vSpeed);
 
+            // FATAL IMPACT CHECKS
+            if (tkState.altitude <= 0 && tkState.phase > 0 && tkState.phase < 6) {
+                if (isStalling || tkState.pitch < -5 || tkState.pitch > 15) {
+                    sfx.stopAll();
+                    const r = document.getElementById('tk-plane-img').getBoundingClientRect();
+                    triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
+                    document.getElementById('plane-container').style.display = 'none';
+                    tkState.active = false;
+                    setDialogue("<span class='alert-text'>FATAL ANGLE!</span>", 4500);
+                    setTimeout(() => { 
+                        setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999); 
+                        tkState.canRestart = true; 
+                    }, 4500);
+                    return;
+                }
+                if (tkState.speed > 160 && tkState.phase === 5) {
+                    sfx.stopAll();
+                    const r = document.getElementById('tk-plane-img').getBoundingClientRect();
+                    triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
+                    document.getElementById('plane-container').style.display = 'none';
+                    tkState.active = false;
+                    setDialogue("<span class='alert-text'>TOO FAST!</span>", 4500);
+                    setTimeout(() => { 
+                        setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999);
+                        tkState.canRestart = true; 
+                    }, 4500);
+                    return;
+                }
+            }
+
+            // 3. HUD UPDATES
             document.getElementById('hud-alt-val').textContent = Math.floor(tkState.altitude) + 'm';
             document.getElementById('hud-pitch-val').innerHTML = Math.floor(tkState.pitch) + '&deg;';
             let center = (tkState.currTargetMin + tkState.currTargetMax) / 2;
@@ -759,24 +1018,24 @@
             }
             scoreValEl.textContent = Math.floor(tkState.score);
 
-            // --- FATAL IMPACT CHECKS (UNIFIED & FIXED) ---
-            if (tkState.altitude <= 0 && tkState.phase >= 2 && tkState.phase < 6) {
-                if (isStalling || tkState.pitch < -5 || tkState.pitch > 15) {
-                    return triggerCrash("FATAL ANGLE!");
-                }
-            }
-            if (tkState.speed > 160 && tkState.phase === 5 && tkState.altitude <= 0) {
-                return triggerCrash("TOO FAST!");
-            }
-
-            // --- PHASE PROGRESSION & EVENTS ---
+            // 4. PHASE LOGIC
             if (tkState.phase < 2) {
                 tkState.takeoffDist -= ((tkState.speed / 1600) * SPEED_MOD);
                 if (tkState.takeoffDist < 25 && tkState.altitude < 60) {
                     const mtn = document.getElementById('tk-mountain');
                     mtn.style.display = 'block'; mtn.style.left = (tkState.takeoffDist * 4) + '%';
                     if (tkState.takeoffDist <= 0) {
-                         return triggerCrash("MOUNTAIN IMPACT!");
+                         sfx.stopAll();
+                         const r = document.getElementById('tk-plane-img').getBoundingClientRect();
+                         triggerEpicCollision(r.left+r.width/2, r.top+r.height/2);
+                         document.getElementById('plane-container').style.display='none';
+                         tkState.active=false; 
+                         setDialogue("<span class='alert-text'>MOUNTAIN IMPACT!</span>", 4500);
+                         setTimeout(()=> { 
+                            setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999);
+                            tkState.canRestart = true; 
+                         }, 4500);
+                         return;
                     }
                 }
             } else if (tkState.phase >= 5) {
@@ -786,7 +1045,17 @@
                 mtn.style.left = tkState.landingDist + '%';
                 
                 if (tkState.landingDist <= 35 && tkState.speed > 0) {
-                     return triggerCrash("MOUNTAIN IMPACT!");
+                     sfx.stopAll();
+                     const r = document.getElementById('tk-plane-img').getBoundingClientRect();
+                     triggerEpicCollision(r.left+r.width/2, r.top+r.height/2);
+                     document.getElementById('plane-container').style.display='none';
+                     tkState.active=false; 
+                     setDialogue("<span class='alert-text'>MOUNTAIN IMPACT!</span>", 4500);
+                     setTimeout(()=> { 
+                        setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999);
+                        tkState.canRestart = true; 
+                     }, 4500);
+                     return;
                 }
             } else {
                 document.getElementById('tk-mountain').style.display = 'none';
@@ -820,7 +1089,16 @@
                 const er = document.getElementById('tk-enemy-plane').getBoundingClientRect();
                 const margin = 12;
                 if (!(pr.right-margin < er.left+margin || pr.left+margin > er.right-margin || pr.bottom-margin < er.top+margin || pr.top+margin > er.bottom-margin)) {
-                     return triggerCrash("MID-AIR CRASH!");
+                     sfx.stopAll();
+                     triggerEpicCollision(pr.left+pr.width/2, pr.top+pr.height/2);
+                     document.getElementById('plane-container').style.display='none';
+                     tkState.active=false; 
+                     setDialogue("<span class='alert-text'>MID-AIR CRASH!</span>", 4500);
+                     setTimeout(()=> { 
+                        setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999);
+                        tkState.canRestart = true; 
+                     }, 4500);
+                     return;
                 }
                 if (tkState.enemyX < -30) {
                     tkState.phase = 4; 
@@ -837,8 +1115,9 @@
                 setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 4000);
                 if(tkState.autoPilot) toggleAutoPilot();
                 
-                triggerGearExplosion(document.getElementById('tk-plane-img').getBoundingClientRect().left + 75, document.getElementById('tk-plane-img').getBoundingClientRect().bottom - 10);
-                document.getElementById('tk-plane-img').src = playerNoGearSkin;
+                const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
+                triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
+                document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png';
             }
             
             if (tkState.phase === 5 && tkState.altitude <= 0) {
@@ -849,7 +1128,7 @@
                  if(tkState.autoPilot) toggleAutoPilot();
             }
 
-            // 5. CAMERA LOGIC
+            // 5. STRICT THRESHOLD CAMERA
             tkState.bgX_sky -= (tkState.speed * 0.006 * SPEED_MOD);
             tkState.bgX_city -= (tkState.speed * 0.03 * SPEED_MOD);
             tkState.bgX_runway -= (tkState.speed * 0.18 * SPEED_MOD);
@@ -873,8 +1152,20 @@
             let planeY = -(tkState.altitude - tkState.cameraY);
             document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeY}px)`;
             
+            // HUD & Plane separated rotations
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
             document.getElementById('plane-hud').style.transform = `translate(-50%, -50%) rotate(${-tkState.hudPitch}deg)`;
+
+            // EFFECTS
+            const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
+            if (tkState.phase === 5 && Math.random() > 0.4) spawnSpark(pr.left + pr.width/2 - 10, pr.bottom - 15, true);
+            if (tkState.phase === 6 && tkState.speed > 0) {
+                let sparkCount = Math.floor(tkState.speed / 40); 
+                for(let i=0; i<sparkCount; i++) {
+                    spawnSpark(pr.left + pr.width/2 + (Math.random()*40 - 20), pr.bottom - 5, false);
+                }
+                if (Math.random() > 0.3) spawnSpark(pr.left + pr.width/2 + (Math.random()*30), pr.bottom - 5, false);
+            }
 
             tkState.frameId = requestAnimationFrame(gameLoop);
         }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Gyro Physics & UI Updates</title>
+    <title>Hangar 5 - Engine Failure Scenario</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -160,10 +160,10 @@
         #plane-rotate-group { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; z-index: 12; }
         #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; transition: filter 0.5s;}
         
-        /* HUD Ring Decoupled & Resized to 170px to align text with plane nose */
+        /* HUD Ring Decoupled for Spring Physics */
         #plane-hud {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 170px; height: 170px; border-radius: 50%;
+            width: 140px; height: 140px; border-radius: 50%;
             border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11;
         }
         
@@ -215,9 +215,7 @@
         
         .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; }
         .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; }
-        
-        /* New Score Particles */
-        .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; }
+        .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; }
 
         /* End Screen UI */
         #tk-end-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
@@ -276,7 +274,7 @@
                 </div>
             </div>
             
-            <div id="tk-enemy-plane"><img id="tk-enemy-img" src="my-plane-golden.png" style="width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1);"></div>
+            <div id="tk-enemy-plane"><img src="my-plane-golden.png" style="width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1);"></div>
             <div id="tk-runway"><div id="tk-runway-stripes"></div></div>
             <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M42,35 L50,20 L58,35 Z" fill="#fff"/></svg></div>
             
@@ -314,7 +312,9 @@
         const sfx = {            
             ctx: null, alarmInterval: null, isAlarming: false,                        
             
+            // Simple HTML5 MP3 bg music
             bgMusic: new Audio('hangar5-music.mp3'),
+            hasStartedMusic: false,
             
             init: function() {                
                 if (!this.ctx) {                    
@@ -331,7 +331,11 @@
                     this.bgMusic.volume = 0.4;                
                 }                
                 if (this.ctx.state === 'suspended') this.ctx.resume();                
-                this.bgMusic.play().catch(e => console.log("Audio play blocked until interaction"));            
+                
+                if (!this.hasStartedMusic) {
+                    this.bgMusic.play().catch(e => console.log("Audio play blocked until interaction"));            
+                    this.hasStartedMusic = true;
+                }
             },
             
             playAlarm: function(active) {                
@@ -401,7 +405,7 @@
             
             stopAll: function() {                
                 this.playAlarm(false);                
-                try { this.bgMusic.pause(); } catch(e) {}            
+                try { this.bgMusic.pause(); this.hasStartedMusic = false; } catch(e) {}            
             }        
         };
         
@@ -435,7 +439,8 @@
             bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260,            
             dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", weather: "day",            
             zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false,            
-            canRestart: true, hudPitch: 0, hudPitchVelocity: 0        
+            canRestart: true, hudPitch: 0, hudPitchVelocity: 0,
+            hasEngineFailureScenario: false, engineFailure: false        
         };
         
         const CRUISE_ALT = 300; 
@@ -557,7 +562,7 @@
             clearInterval(endScreenAnimInterval);            
             endScreenTimeouts.forEach(t => clearTimeout(t));            
             endScreenTimeouts = [];            
-            document.querySelectorAll('.pixel-particle, .spark-particle, .score-particle').forEach(p => p.remove());                        
+            document.querySelectorAll('.pixel-particle, .spark-particle, .smoke-particle').forEach(p => p.remove());                        
             
             let es = document.getElementById('tk-end-screen');            
             es.classList.remove('visible');            
@@ -595,7 +600,9 @@
                 currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_city: 0, bgX_runway: 0,                 
                 takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "",                
                 zoom: 1.0, speedMod: 0.75, autoPilot: false, weather: weather, canRestart: false,                
-                hudPitch: 0, hudPitchVelocity: 0            
+                hudPitch: 0, hudPitchVelocity: 0,
+                hasEngineFailureScenario: Math.random() > 0.5,
+                engineFailure: false
             };            
             SPEED_MOD = 0.75;                         
             
@@ -612,6 +619,39 @@
             tkState.frameId = requestAnimationFrame(gameLoop);        
         }
         
+        function spawnSmoke(x, y) {
+            let p = document.createElement('div');
+            p.className = 'smoke-particle';
+            let gray = Math.floor(Math.random() * 80) + 20; 
+            p.style.backgroundColor = `rgba(${gray}, ${gray}, ${gray}, 0.8)`;
+            p.style.left = x + 'px'; 
+            p.style.top = y + 'px';
+            let size = Math.random() * 8 + 4; 
+            p.style.width = size + 'px'; 
+            p.style.height = size + 'px';
+            document.getElementById('camera-rig').appendChild(p);
+            
+            let speedFactor = Math.max(1, tkState.speed / 100);
+            let vx = -(Math.random() * 6 + 4) * SPEED_MOD * speedFactor; 
+            let vy = (Math.random() * 2 - 1) * SPEED_MOD;
+            let age = 0;
+            let maxAge = Math.random() * 40 + 20;
+            
+            function move() {
+                age++; 
+                vx *= 0.98; 
+                vy -= 0.1; // Smoke rises
+                size += 0.3; // Smoke dissipates
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                p.style.left = (parseFloat(p.style.left) + vx) + 'px';
+                p.style.top = (parseFloat(p.style.top) + vy) + 'px';
+                p.style.opacity = 0.8 * (1 - (age / maxAge));
+                
+                if(age < maxAge) requestAnimationFrame(move); else p.remove();
+            } move();
+        }
+
         function triggerGearExplosion(x, y) {            
             sfx.playExplosion();            
             const colors = ['#fff', '#ffaa00', '#d71920', '#333', '#111'];            
@@ -660,41 +700,6 @@
                 p.style.opacity = 1 - (age / (isMidAir ? 30 : 15));                
                 if(age < (isMidAir ? 30 : 15)) requestAnimationFrame(move); else p.remove();            
             } move();        
-        }
-
-        // --- NEW SCORE PARTICLE SYSTEM ---
-        function spawnScoreParticle(cx, cy, pitch, isAuto) {
-            let p = document.createElement('div');
-            p.className = 'score-particle';
-            p.style.backgroundColor = isAuto ? '#cfa86e' : '#2ecc71';
-            p.style.boxShadow = `0 0 6px ${p.style.backgroundColor}`;
-            
-            // Calculate tail position (-65px from center based on pitch angle)
-            let rad = -pitch * (Math.PI / 180);
-            let tx = cx + Math.cos(rad) * -65;
-            let ty = cy + Math.sin(rad) * -65;
-            
-            p.style.left = tx + 'px';
-            p.style.top = ty + 'px';
-            document.getElementById('camera-rig').appendChild(p);
-            
-            let speedFactor = Math.max(1, tkState.speed / 100);
-            let vx = -(Math.random() * 4 + 4) * SPEED_MOD * speedFactor; 
-            let vy = (Math.random() * 2 - 1) * SPEED_MOD;
-            let age = 0;
-            let maxAge = Math.random() * 20 + 15;
-            
-            function move() {
-                age++;
-                vx *= 0.95;
-                vy -= 0.1; // float up slightly
-                p.style.left = (parseFloat(p.style.left) + vx) + 'px';
-                p.style.top = (parseFloat(p.style.top) + vy) + 'px';
-                p.style.opacity = 1 - (age / maxAge);
-                
-                if(age < maxAge) requestAnimationFrame(move); else p.remove();
-            } 
-            move();
         }
         
         function triggerEpicCollision(x, y) {            
@@ -886,6 +891,12 @@
             } else {                
                 if (tkState.pressing && tkState.speed >= 85) tkState.pitchVelocity += (0.11 * SPEED_MOD);                
                 else if (tkState.speed >= 85) tkState.pitchVelocity -= (0.08 * SPEED_MOD);                
+                
+                // Apply wobble from engine failure
+                if (tkState.engineFailure && tkState.phase < 6) {
+                    tkState.pitchVelocity += (Math.random() - 0.5) * 0.8 * SPEED_MOD;
+                }
+
                 tkState.pitchVelocity *= 0.88;                
                 tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch + tkState.pitchVelocity));            
             }
@@ -896,19 +907,12 @@
             tkState.hudPitch += tkState.hudPitchVelocity;
             
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);            
-            let isTooFast = (tkState.phase === 5 && tkState.speed > 145 && tkState.altitude > 0);
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;            
-            
             if (isStalling) {                 
                 targetVSpeed = -12 * SPEED_MOD;                 
                 document.getElementById('tk-alert-overlay').className = 'flashing';                
                 setDialogue("<span class='alert-text'>STALL WARNING!</span>", 500);                
                 if(tkState.autoPilot) toggleAutoPilot();            
-            } else if (isTooFast) {
-                document.getElementById('tk-alert-overlay').className = 'flashing';
-                if (tkState.dialogueTimeLeft <= 0) {
-                    setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 500);
-                }
             } else if (tkState.phase !== 3) {                
                 document.getElementById('tk-alert-overlay').className = '';            
             }
@@ -920,13 +924,10 @@
             // 3. HUD UPDATES            
             document.getElementById('hud-alt-val').textContent = Math.floor(tkState.altitude) + 'm';            
             document.getElementById('hud-pitch-val').innerHTML = Math.floor(tkState.pitch) + '&deg;';            
-            
             let center = (tkState.currTargetMin + tkState.currTargetMax) / 2;            
             let error = Math.abs(tkState.pitch - center);            
             let p_hue = inHUDZone ? 120 : Math.max(0, 120 - error * 9);            
-            
             if (isStalling) p_hue = 0;            
-            
             let dynColor = `hsl(${p_hue}, 85%, 55%)`;            
             hudRing.style.borderColor = dynColor;            
             document.getElementById('hud-pitch').style.color = dynColor;                        
@@ -939,15 +940,7 @@
                 } else {                    
                     tkState.score += 4;                    
                     scoreValEl.style.color = '#fff';                
-                }
-                
-                // Spawn score particles when aligned
-                if (Math.random() > 0.4) {
-                    const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
-                    let cx = pr.left + pr.width / 2;
-                    let cy = pr.top + pr.height / 2;
-                    spawnScoreParticle(cx, cy, tkState.pitch, tkState.autoPilot);
-                }
+                }            
             } else {                
                 scoreValEl.style.color = '#fff';            
             }            
@@ -1036,7 +1029,14 @@
                 tkState.currTargetMax = 3;                 
                 setDialogue("<span class='capt-text'>LEVEL OFF</span>", 3000);             
             }            
-            else if (tkState.phase === 2 && tkState.progress > 20) {                
+            else if (tkState.phase === 2 && tkState.progress > 16 && tkState.hasEngineFailureScenario && !tkState.engineFailure) {
+                tkState.engineFailure = true;
+                setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 4000);
+                sfx.playExplosion();
+                document.getElementById('tk-alert-overlay').className = 'flashing';
+                setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800);
+            }
+            else if (tkState.phase === 2 && tkState.progress > 28) {                
                 tkState.phase = 3;                 
                 tkState.currTargetMin = -24;                 
                 tkState.currTargetMax = -12;                
@@ -1130,6 +1130,16 @@
                     spawnSpark(pr.left + pr.width/2 + (Math.random()*40 - 20), pr.bottom - 5, false);                
                 }                
                 if (Math.random() > 0.3) spawnSpark(pr.left + pr.width/2 + (Math.random()*30), pr.bottom - 5, false);            
+            }
+
+            // Engine Failure Smoke logic
+            if (tkState.engineFailure && tkState.phase > 0 && tkState.phase < 6 && Math.random() > 0.3) {
+                let cx = pr.left + pr.width / 2;
+                let cy = pr.top + pr.height / 2;
+                let rad = -tkState.pitch * (Math.PI / 180);
+                let noseX = cx + Math.cos(rad) * (pr.width / 2 - 10);
+                let noseY = cy + Math.sin(rad) * (pr.width / 2 - 10);
+                spawnSmoke(noseX, noseY);
             }
             
             tkState.frameId = requestAnimationFrame(gameLoop);        

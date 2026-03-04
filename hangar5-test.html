@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - v1.7 Stable Flight</title>
+    <title>Hangar 5 - v1.8 Simple Audio</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -157,6 +157,7 @@
         #plane-rotate-group { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; z-index: 12; }
         #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; transition: filter 0.5s;}
         
+        /* HUD Ring Decoupled for Spring Physics */
         #plane-hud {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 140px; height: 140px; border-radius: 50%;
@@ -202,8 +203,7 @@
         #ap-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #aaa; font-size: 0.9rem; cursor: pointer; padding: 0 12px; height: 40px; font-family: 'Share Tech Mono', monospace; font-weight: bold; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: auto; }
         #ap-btn:active { transform: scale(0.95); }
 
-        #prompt-container { position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: flex; justify-content: center; }
-        #tk-touch-prompt { background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px; padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase; }
+        #prompt-container { position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: none; justify-content: center; }
         
         #tk-enemy-plane { position: absolute; left: 150%; bottom: 65px; width: 162px; height: 56px; z-index: 9; pointer-events: none; display: none; transition: filter 0.5s; }
         #tk-mountain { position: absolute; bottom: 65px; left: 100%; width: 220px; height: 120px; z-index: 2; display: none; pointer-events: none; transition: filter 0.5s; }
@@ -229,7 +229,8 @@
 <body>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v1.7</div>
+        <div id="tk-version">v1.8 - Simplest Audio</div>
+
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -240,9 +241,7 @@
             <div id="tk-score-display">SCORE: <span id="score-val">0</span></div>
         </div>
         
-        <div id="prompt-container">
-            <div id="tk-touch-prompt">TAP OR SPACE TO START</div>
-        </div>
+        <div id="prompt-container"></div>
         
         <div id="camera-rig">
             <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky1.png');"></div>
@@ -302,129 +301,25 @@
     <script>
         let SPEED_MOD = 0.75; 
         
+        let playerPlaneSkin = 'my-plane.png';
+        let playerNoGearSkin = 'my-plane-nolandinggear.png';
+        let enemyPlaneSkin = 'my-plane-golden.png';
+
         // --- SIMPLIFIED HTML5 MP3 PLAYER ---
-        const sfx = {
-            ctx: null, engineNode: null, engineGain: null, alarmInterval: null, isAlarming: false,
-            
-            // Standard Audio object. Make sure hangar5-music.mp3 is in the same folder.
+        const musicPlayer = {
             bgMusic: new Audio('hangar5-music.mp3'), 
+            hasStarted: false,
 
             init: function() {
-                if (!this.ctx) {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    let silentOsc = this.ctx.createOscillator();
-                    let silentGain = this.ctx.createGain();
-                    silentGain.gain.value = 0;
-                    silentOsc.connect(silentGain);
-                    silentGain.connect(this.ctx.destination);
-                    silentOsc.start(0);
-                    silentOsc.stop(this.ctx.currentTime + 0.1);
-                    
+                if (!this.hasStarted) {
                     this.bgMusic.loop = true;
                     this.bgMusic.volume = 0.4; 
-                    
-                    this.startEngine();
+                    this.hasStarted = true;
                 }
-                if (this.ctx.state === 'suspended') this.ctx.resume();
                 this.bgMusic.play().catch(e => console.log("Audio play blocked by browser until tap"));
             },
             
-            startEngine: function() {
-                try {
-                    this.engineNode = this.ctx.createOscillator();
-                    this.engineNode.type = 'sawtooth';
-                    this.engineGain = this.ctx.createGain();
-                    this.engineGain.gain.value = 0;
-                    let filter = this.ctx.createBiquadFilter();
-                    filter.type = 'lowpass';
-                    filter.frequency.value = 300; 
-                    this.engineNode.connect(filter);
-                    filter.connect(this.engineGain);
-                    this.engineGain.connect(this.ctx.destination);
-                    this.engineNode.start();
-                } catch(e) {}
-            },
-            updateEngine: function(speed) {
-                if(!this.engineNode || !this.ctx || this.ctx.state !== 'running') return;
-                try {
-                    let freq = 50 + (speed * 0.5); 
-                    let vol = speed > 0 ? 0.15 + (speed / 800) : 0; 
-                    this.engineNode.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.1);
-                    this.engineGain.gain.setTargetAtTime(vol, this.ctx.currentTime, 0.1);
-                } catch(e) {}
-            },
-            playAlarm: function(active) {
-                if(!this.ctx || this.ctx.state !== 'running') return;
-                if(active && !this.isAlarming) {
-                    this.isAlarming = true;
-                    this.alarmInterval = setInterval(() => {
-                        try {
-                            let osc = this.ctx.createOscillator();
-                            let gain = this.ctx.createGain();
-                            osc.type = 'square';
-                            osc.frequency.value = 900; 
-                            gain.gain.setValueAtTime(0.15, this.ctx.currentTime); 
-                            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
-                            osc.connect(gain);
-                            gain.connect(this.ctx.destination);
-                            osc.start();
-                            osc.stop(this.ctx.currentTime + 0.2);
-                        } catch(e) {}
-                    }, 300);
-                } else if (!active && this.isAlarming) {
-                    this.isAlarming = false;
-                    clearInterval(this.alarmInterval);
-                }
-            },
-            playExplosion: function() {
-                if(!this.ctx || this.ctx.state !== 'running') return;
-                try {
-                    let osc = this.ctx.createOscillator();
-                    let oscGain = this.ctx.createGain();
-                    osc.type = 'square'; 
-                    osc.frequency.setValueAtTime(80, this.ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
-                    oscGain.gain.setValueAtTime(0.8, this.ctx.currentTime); 
-                    oscGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
-                    osc.connect(oscGain);
-                    oscGain.connect(this.ctx.destination);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + 1.5);
-                } catch(e) {}
-            },
-            playSpark: function() {
-                if(!this.ctx || this.ctx.state !== 'running' || Math.random() > 0.4) return; 
-                try {
-                    let osc = this.ctx.createOscillator();
-                    let gain = this.ctx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(2000 + Math.random()*2000, this.ctx.currentTime);
-                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + 0.1);
-                } catch(e) {}
-            },
-            playDing: function(pitchMult = 1) {
-                if(!this.ctx || this.ctx.state !== 'running') return;
-                try {
-                    let osc = this.ctx.createOscillator();
-                    let gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(800 * pitchMult, this.ctx.currentTime);
-                    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + 0.5);
-                } catch(e) {}
-            },
             stopAll: function() {
-                this.updateEngine(0);
-                this.playAlarm(false);
                 try { this.bgMusic.pause(); } catch(e) {}
             }
         };
@@ -432,18 +327,15 @@
         // --- BROWSER AUDIO CLEANUP ---
         document.addEventListener("visibilitychange", function() {
             if (document.hidden) {
-                sfx.stopAll();
-                if (sfx.ctx && sfx.ctx.state === 'running') sfx.ctx.suspend();
+                musicPlayer.stopAll();
             } else {
                 if (tkState.active) {
-                    if (sfx.ctx && sfx.ctx.state === 'suspended') sfx.ctx.resume();
-                    sfx.bgMusic.play().catch(e => {});
+                    musicPlayer.bgMusic.play().catch(e => {});
                 }
             }
         });
         window.addEventListener("pagehide", function() {
-            sfx.stopAll();
-            if (sfx.ctx) sfx.ctx.close();
+            musicPlayer.stopAll();
         });
 
         let endScreenAnimInterval = null;
@@ -476,20 +368,18 @@
                 btn.style.borderColor = '#fff';
                 btn.style.color = '#000';
                 btn.style.boxShadow = '0 0 15px var(--gauge-green)';
-                sfx.playDing(1.5); 
             } else {
                 btn.style.background = '#333';
                 btn.style.borderColor = '#aaa';
                 btn.style.color = '#aaa';
                 btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
-                sfx.playDing(0.8);
             }
         }
 
         // --- CONTROLS ---
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
-            sfx.init(); 
+            musicPlayer.init(); 
             if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') startFlight();
             tkState.pressing = true;
         });
@@ -500,7 +390,7 @@
             if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault(); 
                 if (e.repeat) return; 
-                sfx.init(); 
+                musicPlayer.init(); 
                 if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') startFlight();
                 tkState.pressing = true;
             }
@@ -556,10 +446,7 @@
                     icons[i].classList.add('pop');
                     if(i < count) {
                         icons[i].classList.add('golden');
-                        sfx.playDing(1 + (i * 0.2)); 
                         confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 }, zIndex: 200 });
-                    } else {
-                        sfx.playDing(0.6); 
                     }
                 }, i * 500);
                 endScreenTimeouts.push(t);
@@ -567,7 +454,7 @@
         }
 
         function triggerCrash(reasonText) {
-            sfx.stopAll();
+            musicPlayer.stopAll();
             const r = document.getElementById('tk-plane-img').getBoundingClientRect();
             triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
             document.getElementById('plane-container').style.display = 'none';
@@ -599,7 +486,7 @@
             apBtn.style.color = '#aaa';
             apBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
 
-            document.getElementById('tk-plane-img').src = 'my-plane.png';
+            document.getElementById('tk-plane-img').src = playerPlaneSkin;
             
             let rand = Math.random();
             let weather = 'day';
@@ -642,58 +529,8 @@
             tkState.frameId = requestAnimationFrame(gameLoop);
         }
 
-        function triggerGearExplosion(x, y) {
-            sfx.playExplosion();
-            const colors = ['#fff', '#ffaa00', '#d71920', '#333', '#111'];
-            for(let i=0; i<25; i++) {
-                let p = document.createElement('div');
-                p.className = 'pixel-particle';
-                p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
-                p.style.left = x + 'px'; p.style.top = y + 'px';
-                p.style.width = (Math.random()*5 + 2) + 'px';
-                p.style.height = p.style.width;
-                document.getElementById('camera-rig').appendChild(p);
-                
-                let a = Math.random() * Math.PI * 2; 
-                let v = (Math.random() * 12 + 2) * 0.75;
-                let vx = Math.cos(a)*v - 5; 
-                let vy = Math.sin(a)*v + 2; 
-                let age = 0;
-                
-                function move() {
-                    age++; vx *= 0.92; vy += (0.4 * 0.75);
-                    p.style.left = (parseFloat(p.style.left)+vx)+'px';
-                    p.style.top = (parseFloat(p.style.top)+vy)+'px';
-                    if(age < 45) requestAnimationFrame(move); else p.remove();
-                } move();
-            }
-        }
-
-        function spawnSpark(x, y, isMidAir) {
-            sfx.playSpark();
-            let p = document.createElement('div');
-            p.className = 'spark-particle';
-            p.style.backgroundColor = Math.random() > 0.4 ? '#ffaa00' : '#ff3300';
-            p.style.left = x + 'px'; p.style.top = y + 'px';
-            if (isMidAir) p.style.width = '5px', p.style.height = '5px'; 
-            document.getElementById('camera-rig').appendChild(p);
-            
-            let speedFactor = isMidAir ? 1 : (tkState.speed / 100);
-            let vx = isMidAir ? -(Math.random() * 5 + 2) * SPEED_MOD : -(Math.random() * 14 + 5) * SPEED_MOD * speedFactor; 
-            let vy = isMidAir ? (Math.random() * 4 + 2) * SPEED_MOD : -(Math.random() * 3) * SPEED_MOD * speedFactor;
-            let age = 0;
-            
-            function move() {
-                age++; vx *= 0.95; vy += (0.5 * SPEED_MOD); 
-                p.style.left = (parseFloat(p.style.left)+vx)+'px';
-                p.style.top = (parseFloat(p.style.top)+vy)+'px';
-                p.style.opacity = 1 - (age / (isMidAir ? 30 : 15));
-                if(age < (isMidAir ? 30 : 15)) requestAnimationFrame(move); else p.remove();
-            } move();
-        }
-
+        // Cinematic but GPU-friendly collision 
         function triggerEpicCollision(x, y) {
-            sfx.playExplosion();
             const vp = document.getElementById('takeoff-viewport');
             
             vp.style.backgroundColor = "#ffffff";
@@ -762,9 +599,7 @@
 
             const hudRing = document.getElementById('plane-hud');
 
-            sfx.updateEngine(tkState.speed);
-            sfx.playAlarm((tkState.pitch >= 24.2 && tkState.altitude > 10) || tkState.phase === 3);
-
+            // --- SLOW-MO ZOOM LOGIC ---
             let isLandingApproach = (tkState.phase === 5 && tkState.altitude <= 70 && tkState.altitude > 0);
             let targetSpeedMod = isLandingApproach ? 0.25 : 0.75; 
             let targetZoom = isLandingApproach ? 1.8 : 1.0;
@@ -787,6 +622,7 @@
                 guide.style.opacity = 0;
             }
 
+            // --- SUNRISE LENS FLARE SYSTEM ---
             if (tkState.weather === 'sunrise') {
                 const sun = document.getElementById('tk-sun');
                 const flareCont = document.getElementById('tk-flare-container');
@@ -813,6 +649,7 @@
                 flareCont.style.opacity = fade;
             }
 
+            // --- BUBBLE DIALOGUE TICKER ---
             const bubble = document.getElementById('dialogue-bubble');
             if (tkState.dialogueTimeLeft > 0) {
                 tkState.dialogueTimeLeft -= delta;
@@ -835,6 +672,7 @@
                 setDialogue("<span class='alert-text'>GEAR STUCK!</span>", 3000);
             }
 
+            // 1. SPEED ENGINE
             let inHUDZone = (tkState.pitch >= tkState.currTargetMin && tkState.pitch <= tkState.currTargetMax);
             if (tkState.phase < 6) {
                 let accel = (tkState.phase === 5) ? -1.6 : (tkState.phase === 0 ? 0.8 : 1.5); 
@@ -850,7 +688,7 @@
                 if (tkState.speed <= 0) { 
                     tkState.active = false; 
                     setDialogue("<span class='success-text'>SAFE! EVACUATE!</span>", 5000);
-                    sfx.stopAll();
+                    musicPlayer.stopAll();
                     showEndScreen(Math.floor(tkState.score));
                     return; 
                 }
@@ -864,6 +702,7 @@
             document.getElementById('hud-spd').style.color = `hsl(${spdHue}, 85%, 55%)`;
             document.getElementById('hud-spd-val').textContent = Math.floor(tkState.speed);
 
+            // 2. PITCH & PHYSICS
             if (tkState.phase === 0 && tkState.speed < 150) {
                 // FIXED: Runway takeoff lock
                 tkState.pitch = 0;
@@ -1002,9 +841,7 @@
                 setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 4000);
                 if(tkState.autoPilot) toggleAutoPilot();
                 
-                const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
-                triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
-                document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png';
+                document.getElementById('tk-plane-img').src = playerNoGearSkin;
             }
             
             if (tkState.phase === 5 && tkState.altitude <= 0) {
@@ -1041,17 +878,6 @@
             
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
             document.getElementById('plane-hud').style.transform = `translate(-50%, -50%) rotate(${-tkState.hudPitch}deg)`;
-
-            // EFFECTS
-            const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
-            if (tkState.phase === 5 && Math.random() > 0.4) spawnSpark(pr.left + pr.width/2 - 10, pr.bottom - 15, true);
-            if (tkState.phase === 6 && tkState.speed > 0) {
-                let sparkCount = Math.floor(tkState.speed / 40); 
-                for(let i=0; i<sparkCount; i++) {
-                    spawnSpark(pr.left + pr.width/2 + (Math.random()*40 - 20), pr.bottom - 5, false);
-                }
-                if (Math.random() > 0.3) spawnSpark(pr.left + pr.width/2 + (Math.random()*30), pr.bottom - 5, false);
-            }
 
             tkState.frameId = requestAnimationFrame(gameLoop);
         }

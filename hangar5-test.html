@@ -371,7 +371,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v3.1 - Swarm Edition</div>
+        <div id="tk-version">v3.2 - Swarm Speed Adjusted</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -1021,7 +1021,7 @@
                         let e = tkState.enemies[slotIdx];
                         e.active = true; e.x = 150;
                         e.alt = tkState.altitude + (Math.random() * 160 - 80); 
-                        e.spd = (1.6 + Math.random() * 1.2) * SPEED_MOD; 
+                        e.spd = (1.2 + Math.random() * 0.9) * SPEED_MOD; // 25% Slower than v3.1
                         document.getElementById('enemy-' + slotIdx).style.display = 'block';
                     }
                 }
@@ -1070,7 +1070,7 @@
             }
 
             // CAMERA LOGIC & SCROLLING
-            tkState.bgX_sky -= (tkState.speed * 0.005 * SPEED_MOD);
+            tkState.bgX_sky -= (tkState.speed * 0.006 * SPEED_MOD);
             tkState.bgX_city -= (tkState.speed * 0.03 * SPEED_MOD);
             tkState.bgX_runway -= (tkState.speed * 0.18 * SPEED_MOD);
             document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 0px`;

@@ -128,7 +128,7 @@
             background-size: auto 150vh; 
             z-index: 14; 
             height: 120%; 
-            top: -100%; 
+            top: -30%; 
             opacity: 0.8; 
         }
 
@@ -383,7 +383,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v3.4 - Flight Recorder Added</div>
+        <div id="tk-version">v3.4 - Hitbox Adjusted</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -590,7 +590,7 @@
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
             weather: "day", zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false, canRestart: true, 
             hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false,
-            events: [], // Stores flight events for the minimap
+            events: [], 
             hasFogScenario: false,
             hasEngineFailureScenario: false, engineFailure: false,
             hasOvertakerScenario: false, overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
@@ -755,7 +755,7 @@
             setTimeout(() => { 
                 showEndScreen(Math.floor(tkState.score), false); 
                 tkState.canRestart = true; 
-            }, 2500); // Show end screen 2.5 seconds after crash
+            }, 2500); 
         }
 
         function startFlight() {
@@ -1006,7 +1006,7 @@
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && tkState.speed > 145 && tkState.altitude > 0);
-            let isTooHigh = (tkState.altitude > 1500 && tkState.phase >= 1 && tkState.phase <= 4);
+            let isTooHigh = (tkState.altitude > 720 && tkState.phase >= 1 && tkState.phase <= 4);
             
             tkState.stallFactor = isStalling ? Math.min(1.0, tkState.stallFactor + 0.015) : Math.max(0.0, tkState.stallFactor - 0.05);
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
@@ -1091,8 +1091,17 @@
             if (tkState.overtakerActive) {
                 tkState.overtakerX += (0.6 * SPEED_MOD); let gp = document.getElementById('tk-overtaker-plane');
                 gp.style.left = tkState.overtakerX + '%'; gp.style.transform = `translateY(${-(tkState.overtakerAltitude - tkState.cameraY)}px)`;
-                const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); const gr = gp.getBoundingClientRect();
-                if (!(pr.right-12 < gr.left+12 || pr.left+12 > gr.right-12 || pr.bottom-12 < gr.top+12 || pr.top+12 > gr.bottom-12)) return triggerCrash("MID-AIR CRASH!");
+                
+                // ADJUSTED BOUNDING BOX LOGIC FOR COLLISION FIX
+                const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
+                const gr = gp.getBoundingClientRect();
+                if (!( (pr.right - 12) < (gr.left + 15) || 
+                       (pr.left + 12) > (gr.right - 15) || 
+                       (pr.bottom - 12) < (gr.top + 25) || // 25px cutoff from the top 
+                       (pr.top + 12) > (gr.bottom - 10) )) {
+                    return triggerCrash("MID-AIR CRASH!");
+                }
+                
                 if (tkState.overtakerX > 150) { tkState.overtakerActive = false; gp.style.display = 'none'; }
             }
 
@@ -1155,8 +1164,16 @@
                         let el = document.getElementById('enemy-' + i);
                         el.style.left = e.x + '%';
                         el.style.transform = `translateY(${-(e.alt - tkState.cameraY)}px)`;
+                        
+                        // ADJUSTED BOUNDING BOX LOGIC FOR COLLISION FIX
                         const er = el.getBoundingClientRect();
-                        if (!(pr.right-12 < er.left+12 || pr.left+12 > er.right-12 || pr.bottom-12 < er.top+12 || pr.top+12 > er.bottom-12)) collision = true;
+                        if (!( (pr.right - 12) < (er.left + 15) || 
+                               (pr.left + 12) > (er.right - 15) || 
+                               (pr.bottom - 12) < (er.top + 25) || // 25px cutoff from the top
+                               (pr.top + 12) > (er.bottom - 10) )) {
+                            collision = true;
+                        }
+                        
                         if (e.x < -30) { e.active = false; el.style.display = 'none'; }
                     }
                 });

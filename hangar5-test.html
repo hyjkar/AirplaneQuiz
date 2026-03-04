@@ -123,6 +123,14 @@
             height: 120%; 
             top: -10%;
         }
+
+        #tk-fg-sky { 
+            background-size: auto 150vh; /* Scaled up to feel closer */
+            z-index: 14; /* Positioned above the plane (z-index 10) */
+            height: 120%; 
+            top: -15%;
+            opacity: 0; /* Hidden initially */
+        }
         
         #tk-sun {
             display: none; 
@@ -183,7 +191,7 @@
         .snow-weather .fog-layer { display: block; }
         
         .night-weather { background-color: #0b1021 !important; }
-        .night-weather #tk-bg-sky, .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain {
+        .night-weather #tk-bg-sky, .night-weather #tk-fg-sky, .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain {
             filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2);
         }
         .night-weather #tk-plane-img, .night-weather .tk-enemy img, .night-weather #tk-overtaker-plane img { 
@@ -191,7 +199,7 @@
         }
 
         .sunrise-weather { background-color: #ff9e7a !important; }
-        .sunrise-weather #tk-bg-sky, .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain {
+        .sunrise-weather #tk-bg-sky, .sunrise-weather #tk-fg-sky, .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain {
             filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8);
         }
         .sunrise-weather #tk-plane-img, .sunrise-weather .tk-enemy img, .sunrise-weather #tk-overtaker-plane img { 
@@ -199,7 +207,7 @@
         }
 
         .snow-weather { background-color: #b8c6d9 !important; }
-        .snow-weather #tk-bg-sky, .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain {
+        .snow-weather #tk-bg-sky, .snow-weather #tk-fg-sky, .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain {
             filter: grayscale(0.7) brightness(1.4) contrast(0.6);
         }
         .snow-weather .fog-layer.layer-front {
@@ -400,6 +408,8 @@
                     <div id="hud-alt" class="hud-text"><span class="hud-label">ALT</span><span id="hud-alt-val" class="hud-val">0m</span></div>
                 </div>
             </div>
+
+            <div id="tk-fg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             
             <div id="enemy-0" class="tk-enemy"><img src="a22.png"></div>
             <div id="enemy-1" class="tk-enemy"><img src="a22.png"></div>
@@ -563,7 +573,7 @@
         let tkState = {
             active: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, 
-            currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_city: 0, bgX_runway: 0, 
+            currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
             weather: "day", zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false, canRestart: true, 
             hudPitch: 0, hudPitchVelocity: 0,
@@ -695,7 +705,7 @@
             let weather = 'day';
             let vp = document.getElementById('takeoff-viewport');
             vp.classList.remove('night-weather', 'sunrise-weather', 'snow-weather');
-            vp.style.backgroundColor = ''; // <--- FIX: clears the inline color from the previous crash
+            vp.style.backgroundColor = ''; 
             
             if (rand > 0.75) { weather = 'night'; vp.classList.add('night-weather'); } 
             else if (rand > 0.5) { weather = 'snow'; vp.classList.add('snow-weather'); } 
@@ -704,7 +714,7 @@
             tkState = {
                 active: true, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, altitude: 0, cameraY: 0, score: 0, 
                 pressing: false, frameId: null, lastFrameTime: performance.now(), 
-                currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260, 
+                currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260, 
                 dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: 0.75, autoPilot: false, weather: weather, canRestart: false,
                 hudPitch: 0, hudPitchVelocity: 0, 
                 hasEngineFailureScenario: Math.random() > 0.5, engineFailure: false,
@@ -902,6 +912,7 @@
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && tkState.speed > 145 && tkState.altitude > 0);
+            let isTooHigh = (tkState.altitude > 720 && tkState.phase >= 1 && tkState.phase <= 4);
             
             tkState.stallFactor = isStalling ? Math.min(1.0, tkState.stallFactor + 0.015) : Math.max(0.0, tkState.stallFactor - 0.05);
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
@@ -911,6 +922,8 @@
                 document.getElementById('tk-alert-overlay').className = 'flashing'; setDialogue("<span class='alert-text'>STALL WARNING!</span>", 500); if(tkState.autoPilot) toggleAutoPilot();
             } else if (isTooFast) {
                 document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 500);
+            } else if (isTooHigh) {
+                document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>DESCEND! LOW VISIBILITY!</span>", 500); if(tkState.autoPilot) toggleAutoPilot();
             } else if (tkState.phase !== 3 && tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>") {
                 document.getElementById('tk-alert-overlay').className = '';
             }
@@ -1071,9 +1084,12 @@
 
             // CAMERA LOGIC & SCROLLING
             tkState.bgX_sky -= (tkState.speed * 0.006 * SPEED_MOD);
+            tkState.bgX_fgSky -= (tkState.speed * 0.012 * SPEED_MOD); // Faster parallax scroll
             tkState.bgX_city -= (tkState.speed * 0.03 * SPEED_MOD);
             tkState.bgX_runway -= (tkState.speed * 0.18 * SPEED_MOD);
+            
             document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 10%`;
+            document.getElementById('tk-fg-sky').style.backgroundPosition = `${tkState.bgX_fgSky}px 20%`;
             document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`;
             document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
 
@@ -1082,9 +1098,14 @@
             if (isLandingApproach) baseTargetCam -= 20; 
             tkState.cameraY += (baseTargetCam - tkState.cameraY) * 0.15;
 
+            // Visibility fade for foreground clouds based on altitude
+            let fgSkyOpacity = Math.max(0, Math.min(1, (tkState.altitude - 650) / 100));
+            document.getElementById('tk-fg-sky').style.opacity = fgSkyOpacity;
+
             document.getElementById('tk-runway').style.transform = `translateY(${tkState.cameraY}px)`;
             document.getElementById('tk-bg-city').style.transform = `translateY(${tkState.cameraY * 0.7}px)`;
             document.getElementById('tk-bg-sky').style.transform = `translateY(${tkState.cameraY * 0.2}px)`;
+            document.getElementById('tk-fg-sky').style.transform = `translateY(${tkState.cameraY * 0.3}px)`;
             document.getElementById('tk-mountain').style.transform = `translateY(${tkState.cameraY}px)`;
             document.getElementById('tk-sun').style.transform = `translateY(${tkState.cameraY * 0.2}px)`;
 

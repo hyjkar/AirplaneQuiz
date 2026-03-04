@@ -335,7 +335,7 @@
 
             loadWind: async function() {
                 try {
-                    const response = await fetch('hangar5-music.wav');
+                    const response = await fetch('hangar5-music.mp3');
                     const arrayBuffer = await response.arrayBuffer();
                     this.windBuffer = await this.ctx.decodeAudioData(arrayBuffer);
                     if (this.shouldPlayWind && this.windNodes.length === 0) {

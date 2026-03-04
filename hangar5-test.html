@@ -124,28 +124,25 @@
             top: -10%;
         }
 
-        /* Standard Foreground Clouds (Always Visible, Moved Up) */
         #tk-fg-sky { 
             background-size: auto 150vh; 
             z-index: 14; 
             height: 120%; 
-            top: -100%; 
+            top: -30%; 
             opacity: 0.8; 
         }
 
-        /* New Threat: Thick Fog */
         #tk-threat-fog {
             display: none;
             background-size: auto 200vh;
-            z-index: 15; /* Sits completely in front of everything */
+            z-index: 15; 
             height: 150%;
             top: -10%;
             opacity: 0.95;
-            filter: blur(3px) brightness(1.1); /* Blurry and slightly blown out */
+            filter: blur(3px) brightness(1.1);
         }
         .fog-scenario #tk-threat-fog { display: block; }
         
-        /* Turn planes into silhouettes when fog is active */
         .fog-scenario #tk-plane-img,
         .fog-scenario .tk-enemy img,
         .fog-scenario #tk-overtaker-plane img {
@@ -215,22 +212,15 @@
         .night-weather #tk-bg-sky, .night-weather #tk-fg-sky, .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain {
             filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2);
         }
-        /* Dynamic Fog matching weather */
         .night-weather #tk-threat-fog { filter: brightness(0.3) sepia(0.5) hue-rotate(180deg) saturate(1.2) blur(3px); }
-        
-        .night-weather #tk-plane-img, .night-weather .tk-enemy img, .night-weather #tk-overtaker-plane img { 
-            filter: brightness(0.55); 
-        }
+        .night-weather #tk-plane-img, .night-weather .tk-enemy img, .night-weather #tk-overtaker-plane img { filter: brightness(0.55); }
 
         .sunrise-weather { background-color: #ff9e7a !important; }
         .sunrise-weather #tk-bg-sky, .sunrise-weather #tk-fg-sky, .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain {
             filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8);
         }
         .sunrise-weather #tk-threat-fog { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.9) blur(3px); }
-        
-        .sunrise-weather #tk-plane-img, .sunrise-weather .tk-enemy img, .sunrise-weather #tk-overtaker-plane img { 
-            filter: sepia(0.3) saturate(1.2) brightness(0.9); 
-        }
+        .sunrise-weather #tk-plane-img, .sunrise-weather .tk-enemy img, .sunrise-weather #tk-overtaker-plane img { filter: sepia(0.3) saturate(1.2) brightness(0.9); }
 
         .snow-weather { background-color: #b8c6d9 !important; }
         .snow-weather #tk-bg-sky, .snow-weather #tk-fg-sky, .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain {
@@ -238,39 +228,17 @@
         }
         .snow-weather #tk-threat-fog { filter: grayscale(0.7) brightness(1.4) blur(3px); }
         
-        .snow-weather .fog-layer.layer-front {
-            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, transparent 65%);
-        }
-        .snow-weather .fog-layer.layer-back {
-            background: radial-gradient(circle at 50% 50%, rgba(240, 245, 250, 0.8) 0%, transparent 70%);
-        }
+        .snow-weather .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, transparent 65%); }
+        .snow-weather .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(240, 245, 250, 0.8) 0%, transparent 70%); }
         
-        .fog-layer.layer-back {
-            background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%);
-            background-size: 300% 200%; animation: fogPulse 15s ease-in-out infinite alternate; z-index: 8; 
-        }
-        .fog-layer.layer-front {
-            background: radial-gradient(ellipse at center, rgba(200, 210, 220, 0.95) 0%, transparent 40%);
-            background-size: 200% 100%; animation: fogSweep 7s linear infinite; z-index: 15; 
-        }
+        .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%); background-size: 300% 200%; animation: fogPulse 15s ease-in-out infinite alternate; z-index: 8; }
+        .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(200, 210, 220, 0.95) 0%, transparent 40%); background-size: 200% 100%; animation: fogSweep 7s linear infinite; z-index: 15; }
         
-        .rain-layer.layer-1 {
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='250'><rect x='20' y='20' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>");
-            animation: rainAnim1 0.4s linear infinite; z-index: 11;
-        }
-        .rain-layer.layer-2 {
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect x='50' y='50' width='3' height='25' fill='rgba(255,255,255,0.6)'/><rect x='250' y='200' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>");
-            animation: rainAnim2 0.3s linear infinite; z-index: 16;
-        }
+        .rain-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='250'><rect x='20' y='20' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
+        .rain-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect x='50' y='50' width='3' height='25' fill='rgba(255,255,255,0.6)'/><rect x='250' y='200' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
 
-        .snow-layer.layer-1 {
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><circle cx='20' cy='20' r='3' fill='rgba(255,255,255,0.8)'/><circle cx='100' cy='80' r='2' fill='rgba(255,255,255,0.6)'/><circle cx='150' cy='150' r='4' fill='rgba(255,255,255,0.9)'/><circle cx='50' cy='180' r='2' fill='rgba(255,255,255,0.5)'/></svg>");
-            animation: snowAnim1 2.5s linear infinite; z-index: 11;
-        }
-        .snow-layer.layer-2 {
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><circle cx='50' cy='50' r='5' fill='rgba(255,255,255,0.9)'/><circle cx='200' cy='150' r='6' fill='rgba(255,255,255,0.8)'/><circle cx='250' cy='280' r='4' fill='rgba(255,255,255,0.7)'/></svg>");
-            animation: snowAnim2 3.5s linear infinite; z-index: 16;
-        }
+        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><circle cx='20' cy='20' r='3' fill='rgba(255,255,255,0.8)'/><circle cx='100' cy='80' r='2' fill='rgba(255,255,255,0.6)'/><circle cx='150' cy='150' r='4' fill='rgba(255,255,255,0.9)'/><circle cx='50' cy='180' r='2' fill='rgba(255,255,255,0.5)'/></svg>"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
+        .snow-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><circle cx='50' cy='50' r='5' fill='rgba(255,255,255,0.9)'/><circle cx='200' cy='150' r='6' fill='rgba(255,255,255,0.8)'/><circle cx='250' cy='280' r='4' fill='rgba(255,255,255,0.7)'/></svg>"); animation: snowAnim2 3.5s linear infinite; z-index: 16; }
         
         @keyframes fogSweep { 0% { background-position: 200% 50%; } 100% { background-position: -100% 50%; } }
         @keyframes fogPulse { 0% { opacity: 0.2; transform: scale(1); } 100% { opacity: 0.6; transform: scale(1.2); } }
@@ -366,32 +334,47 @@
         #tk-end-screen.visible { opacity: 1; pointer-events: auto; }
         .end-panel { 
             background: #111; border: 2px solid var(--brand-gold); border-radius: 15px; 
-            padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
+            padding: 30px 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
             transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            width: 90%; max-width: 500px;
         }
         #tk-end-screen.visible .end-panel { transform: scale(1); }
         .end-title { font-size: 2rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; }
-        .end-subtitle { font-size: 1rem; color: #aaa; margin-bottom: 20px; }
-        .end-score { font-size: 3.5rem; color: var(--gauge-green); margin-bottom: 25px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
-        .reward-icons { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; height: 60px; }
-        .reward-icon { width: 60px; height: 60px; fill: #333; transform: scale(0); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), fill 0.3s; }
+        .end-subtitle { font-size: 1rem; color: #aaa; margin-bottom: 15px; }
+        .end-score { font-size: 3rem; color: var(--gauge-green); margin-bottom: 15px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
+        
+        /* Minimap Progress Bar */
+        .completion-wrapper { margin-bottom: 25px; width: 100%; }
+        .completion-text { font-size: 1.1rem; color: #fff; margin-bottom: 15px; font-weight: bold; letter-spacing: 1px;}
+        #end-completion-val { color: var(--fo-blue); }
+        #tk-minimap { width: 100%; height: 12px; background: #222; border-radius: 6px; position: relative; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); }
+        #tk-minimap-progress { height: 100%; background: var(--fo-blue); border-radius: 6px; width: 0%; transition: width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.5s; }
+        .minimap-marker { position: absolute; top: -14px; font-size: 18px; transform: translateX(-50%); z-index: 10; cursor: help; text-shadow: 0 2px 4px rgba(0,0,0,0.8); transition: transform 0.2s;}
+        .minimap-marker:hover { transform: translateX(-50%) scale(1.3); }
+        .minimap-tooltip { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); color: #fff; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; white-space: nowrap; pointer-events: none; border: 1px solid #555; margin-bottom: 4px; z-index: 20;}
+        .minimap-marker:hover .minimap-tooltip { display: block; }
+        .minimap-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -4px; border-width: 4px; border-style: solid; border-color: #555 transparent transparent transparent; }
+
+        .reward-icons { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; height: 50px; }
+        .reward-icon { width: 50px; height: 50px; fill: #333; transform: scale(0); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), fill 0.3s; }
         .reward-icon.pop { transform: scale(1); }
         .reward-icon.golden { fill: var(--brand-gold); filter: drop-shadow(0 0 12px var(--brand-gold)); }
         .play-again-btn { 
-            background: var(--brand-gold); color: #000; border: none; padding: 15px 30px; 
-            font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; 
+            background: var(--brand-gold); color: #000; border: none; padding: 12px 25px; 
+            font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; 
         }
         .play-again-btn:active { transform: scale(0.95); filter: brightness(0.8); }
 
         /* Responsive Fix for Landscape Mobile Phones */
         @media screen and (max-height: 450px) {
-            .end-panel { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 15px; width: 95%; }
-            .end-title { width: 100%; margin-bottom: 0; font-size: 1.5rem; }
+            .end-panel { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 15px; width: 95%; max-width: 600px;}
+            .end-title { width: 100%; margin-bottom: 0; font-size: 1.3rem; }
             .end-subtitle { display: none; }
-            .end-score { font-size: 2rem; margin: 0; }
-            .reward-icons { height: 40px; margin: 0; align-items: center; }
-            .reward-icon { width: 40px; height: 40px; }
-            .play-again-btn { padding: 10px 20px; font-size: 1rem; }
+            .end-score { font-size: 1.8rem; margin: 0; width: 30%; text-align: center;}
+            .completion-wrapper { width: 60%; margin: 0; display: flex; flex-direction: column; justify-content: center; }
+            .completion-text { font-size: 0.9rem; margin-bottom: 10px; text-align: left;}
+            .reward-icons { display: none; }
+            .play-again-btn { padding: 10px 20px; font-size: 1rem; width: 100%; max-width: 200px; margin-top: 10px;}
         }
     </style>
 </head>
@@ -400,7 +383,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v3.3 - Fog Threat Added</div>
+        <div id="tk-version">v3.4 - Flight Recorder Added</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -474,9 +457,18 @@
 
         <div id="tk-end-screen">
             <div class="end-panel">
-                <div class="end-title">MISSION ACCOMPLISHED</div>
-                <div class="end-subtitle">SAFE EVACUATION COMPLETED</div>
+                <div class="end-title" id="end-title-text">MISSION ACCOMPLISHED</div>
+                <div class="end-subtitle" id="end-sub-text">SAFE EVACUATION COMPLETED</div>
                 <div class="end-score" id="end-score-val">0</div>
+                
+                <div class="completion-wrapper">
+                    <div class="completion-text">FLIGHT PROGRESS: <span id="end-completion-val">0%</span></div>
+                    <div id="tk-minimap">
+                        <div id="tk-minimap-progress"></div>
+                        <div id="tk-minimap-markers"></div>
+                    </div>
+                </div>
+
                 <div class="reward-icons">
                     <svg viewBox="0 0 24 24" class="reward-icon"><path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg>
                     <svg viewBox="0 0 24 24" class="reward-icon"><path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg>
@@ -489,14 +481,12 @@
 
     <script>
         let SPEED_MOD = 0.75; 
-        
         let playerPlaneSkin = 'my-plane.png';
         let playerNoGearSkin = 'my-plane-nolandinggear.png';
 
         // --- SIMPLE HTML5 MP3 PLAYER & BASIC SFX ---
         const sfx = {
             ctx: null, alarmInterval: null, isAlarming: false,
-            
             bgMusic: new Audio('hangar5-music.mp3'),
 
             init: function() {
@@ -509,7 +499,6 @@
                     silentGain.connect(this.ctx.destination);
                     silentOsc.start(0);
                     silentOsc.stop(this.ctx.currentTime + 0.1);
-                    
                     this.bgMusic.loop = true;
                     this.bgMusic.volume = 0.4;
                 }
@@ -535,7 +524,6 @@
                     this.isAlarming = false; clearInterval(this.alarmInterval);
                 }
             },
-            
             playExplosion: function() {
                 if(!this.ctx) return;
                 try {
@@ -548,7 +536,6 @@
                     osc.start(); osc.stop(this.ctx.currentTime + 1.5);
                 } catch(e) {}
             },
-            
             playSpark: function() {
                 if(!this.ctx || Math.random() > 0.4) return; 
                 try {
@@ -560,7 +547,6 @@
                     osc.start(); osc.stop(this.ctx.currentTime + 0.1);
                 } catch(e) {}
             },
-            
             playDing: function(pitchMult = 1) {
                 if(!this.ctx) return;
                 try {
@@ -572,14 +558,12 @@
                     osc.start(); osc.stop(this.ctx.currentTime + 0.5);
                 } catch(e) {}
             },
-            
             stopAll: function() {
                 this.playAlarm(false);
                 try { this.bgMusic.pause(); } catch(e) {}
             }
         };
 
-        // --- BROWSER AUDIO CLEANUP ---
         document.addEventListener("visibilitychange", function() {
             if (document.hidden) {
                 sfx.stopAll();
@@ -591,7 +575,6 @@
                 }
             }
         });
-        
         window.addEventListener("pagehide", function() {
             sfx.stopAll();
             if (sfx.ctx) sfx.ctx.close();
@@ -606,8 +589,8 @@
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
             weather: "day", zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false, canRestart: true, 
-            hudPitch: 0, hudPitchVelocity: 0,
-            hasLiftedOff: false,
+            hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false,
+            events: [], // Stores flight events for the minimap
             hasFogScenario: false,
             hasEngineFailureScenario: false, engineFailure: false,
             hasOvertakerScenario: false, overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
@@ -618,7 +601,6 @@
 
         const CRUISE_ALT = 600; 
 
-        // Display prompt initially
         setDialogue("<span class='capt-text'>TAP / SPACE TO START</span>", 999999);
         document.getElementById('dialogue-bubble').style.opacity = 1;
         document.getElementById('dialogue-bubble').innerHTML = tkState.dialogueText;
@@ -644,7 +626,6 @@
             }
         }
 
-        // --- CONTROLS ---
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
             sfx.init(); 
@@ -670,11 +651,60 @@
             if (e.code === 'Space' || e.key === ' ') { e.preventDefault(); tkState.pressing = false; }
         });
 
+        // --- PROGRESS AND EVENT LOGGING ---
+        function getCompletionPercentage() {
+            let pct = 0;
+            if (tkState.phase === 0) pct = Math.min(10, (tkState.speed / 150) * 10);
+            else if (tkState.phase === 1) pct = 10 + Math.min(20, (tkState.altitude / CRUISE_ALT) * 20);
+            else if (tkState.phase === 2) pct = 30 + Math.min(20, (tkState.phaseTimer / 8000) * 20);
+            else if (tkState.phase === 3) pct = 50 + Math.min(20, (tkState.phaseTimer / 12000) * 20);
+            else if (tkState.phase === 4) pct = 70 + Math.min(10, (tkState.phaseTimer / 5000) * 10);
+            else if (tkState.phase === 5) pct = 80 + Math.max(0, Math.min(15, ((CRUISE_ALT - tkState.altitude) / CRUISE_ALT) * 15));
+            else if (tkState.phase === 6) pct = 95 + Math.min(5, ((150 - tkState.speed) / 150) * 5);
+            return Math.max(0, Math.min(100, pct));
+        }
+
+        function logEvent(name, icon) {
+            tkState.events.push({ name: name, icon: icon, percent: getCompletionPercentage() });
+        }
+
         // --- END SCREEN LOGIC ---
-        function showEndScreen(finalScore) {
+        function showEndScreen(finalScore, isSuccess) {
             let es = document.getElementById('tk-end-screen');
+            let title = document.getElementById('end-title-text');
+            let sub = document.getElementById('end-sub-text');
+            let scoreEl = document.getElementById('end-score-val');
+            
+            if (isSuccess) {
+                title.textContent = "MISSION ACCOMPLISHED";
+                title.style.color = "#fff";
+                sub.textContent = "SAFE EVACUATION COMPLETED";
+                scoreEl.style.color = "var(--gauge-green)";
+                scoreEl.style.textShadow = "0 0 15px rgba(46, 204, 113, 0.5)";
+            } else {
+                title.textContent = "MISSION FAILED";
+                title.style.color = "var(--brand-red)";
+                sub.textContent = "FLIGHT RECORDER RECOVERED";
+                scoreEl.style.color = "var(--brand-red)";
+                scoreEl.style.textShadow = "0 0 15px rgba(215, 25, 32, 0.5)";
+            }
+
             es.style.display = 'flex';
             setTimeout(() => { es.classList.add('visible'); }, 50);
+
+            // Populate Minimap
+            let finalPct = isSuccess ? 100 : getCompletionPercentage();
+            let markersHtml = '';
+            tkState.events.forEach(ev => {
+                markersHtml += `<div class="minimap-marker" style="left: ${ev.percent}%">${ev.icon}<div class="minimap-tooltip">${ev.name}</div></div>`;
+            });
+            document.getElementById('tk-minimap-markers').innerHTML = markersHtml;
+
+            setTimeout(() => {
+                document.getElementById('tk-minimap-progress').style.width = finalPct + '%';
+                document.getElementById('tk-minimap-progress').style.backgroundColor = isSuccess ? 'var(--gauge-green)' : 'var(--brand-red)';
+                document.getElementById('end-completion-val').style.color = isSuccess ? 'var(--gauge-green)' : 'var(--brand-red)';
+            }, 300);
 
             let icons = document.querySelectorAll('.reward-icon');
             icons.forEach(i => { i.classList.remove('pop', 'golden'); i.style.fill = '#333'; i.style.filter = 'none'; });
@@ -683,14 +713,19 @@
             if (finalScore > 2000) targetPlanes = 2; 
             if (finalScore > 3500) targetPlanes = 3; 
 
-            let scoreEl = document.getElementById('end-score-val');
             let cur = 0; let step = Math.max(1, Math.ceil(finalScore / 40));
-            
+            let curPct = 0; let pctStep = Math.max(1, finalPct / 40);
+            let pctEl = document.getElementById('end-completion-val');
+
             clearInterval(endScreenAnimInterval);
             endScreenAnimInterval = setInterval(() => {
                 cur += step;
-                if(cur >= finalScore) { cur = finalScore; clearInterval(endScreenAnimInterval); popGoldenPlanes(targetPlanes); }
+                if(cur >= finalScore) { cur = finalScore; clearInterval(endScreenAnimInterval); if(isSuccess) popGoldenPlanes(targetPlanes); }
                 scoreEl.textContent = cur;
+                
+                curPct += pctStep;
+                if(curPct >= finalPct) curPct = finalPct;
+                pctEl.textContent = Math.floor(curPct) + '%';
             }, 20);
         }
 
@@ -714,8 +749,13 @@
             triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
             document.getElementById('plane-container').style.display = 'none';
             tkState.active = false;
+            logEvent(`CRASH: ${reasonText}`, '❌');
             setDialogue(`<span class='alert-text'>${reasonText}</span>`, 4500);
-            setTimeout(() => { setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999); tkState.canRestart = true; }, 4500);
+            
+            setTimeout(() => { 
+                showEndScreen(Math.floor(tkState.score), false); 
+                tkState.canRestart = true; 
+            }, 2500); // Show end screen 2.5 seconds after crash
         }
 
         function startFlight() {
@@ -727,6 +767,12 @@
             
             let es = document.getElementById('tk-end-screen');
             es.classList.remove('visible'); setTimeout(() => { es.style.display = 'none'; }, 300); 
+
+            // Reset Minimap UI
+            document.getElementById('tk-minimap-progress').style.width = '0%';
+            document.getElementById('tk-minimap-markers').innerHTML = '';
+            document.getElementById('end-completion-val').textContent = '0%';
+            document.getElementById('end-completion-val').style.color = 'var(--fo-blue)';
 
             const apBtn = document.getElementById('ap-btn');
             apBtn.style.background = '#333'; apBtn.style.borderColor = '#aaa'; apBtn.style.color = '#aaa'; apBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
@@ -750,7 +796,8 @@
                 dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: 0.75, autoPilot: false, weather: weather, canRestart: false,
                 hudPitch: 0, hudPitchVelocity: 0, 
                 hasLiftedOff: false,
-                hasFogScenario: Math.random() < 0.25, // 25% Chance for Heavy Fog
+                events: [],
+                hasFogScenario: Math.random() < 0.25,
                 hasEngineFailureScenario: Math.random() > 0.5, engineFailure: false,
                 hasOvertakerScenario: Math.random() > 0.5, overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
                 hasBirdScenario: Math.random() < 0.25, birdActive: false, birdX: 150, birdAlt: 0,
@@ -763,7 +810,6 @@
             };
             SPEED_MOD = 0.75; 
             
-            // Toggle fog scenario visuals
             if (tkState.hasFogScenario) {
                 vp.classList.add('fog-scenario');
                 setDialogue("<span class='alert-text'>HEAVY FOG AHEAD!</span>", 4000);
@@ -773,7 +819,6 @@
             }
 
             document.getElementById('prompt-container').style.display = 'none';
-
             document.getElementById('plane-container').style.display = 'block';
             document.querySelectorAll('.tk-enemy').forEach(el => el.style.display = 'none');
             document.getElementById('tk-overtaker-plane').style.display = 'none';
@@ -928,7 +973,14 @@
                 tkState.speed = Math.max((tkState.phase === 0 ? 0 : 85), Math.min(240, tkState.speed + accel));
             } else {
                 tkState.speed = Math.max(0, tkState.speed - (1.3 * SPEED_MOD));
-                if (tkState.speed <= 0) { tkState.active = false; setDialogue("<span class='success-text'>SAFE! EVACUATE!</span>", 5000); sfx.stopAll(); showEndScreen(Math.floor(tkState.score)); return; }
+                if (tkState.speed <= 0) { 
+                    tkState.active = false; 
+                    logEvent("SAFE LANDING", '🏁');
+                    setDialogue("<span class='success-text'>SAFE! EVACUATE!</span>", 5000); 
+                    sfx.stopAll(); 
+                    setTimeout(() => { showEndScreen(Math.floor(tkState.score), true); tkState.canRestart = true; }, 1500); 
+                    return; 
+                }
             }
 
             let spdHue = 0;
@@ -954,7 +1006,7 @@
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && tkState.speed > 145 && tkState.altitude > 0);
-            let isTooHigh = (tkState.altitude > 1500 && tkState.phase >= 1 && tkState.phase <= 4);
+            let isTooHigh = (tkState.altitude > 720 && tkState.phase >= 1 && tkState.phase <= 4);
             
             tkState.stallFactor = isStalling ? Math.min(1.0, tkState.stallFactor + 0.015) : Math.max(0.0, tkState.stallFactor - 0.05);
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
@@ -999,12 +1051,7 @@
 
             // FATAL IMPACT CHECKS WITH REASONS
             if (tkState.altitude <= 0 && tkState.hasLiftedOff) {
-                
-                // If they hit the ground before the landing phase (Phases 1 through 4)
-                if (tkState.phase < 5) {
-                    return triggerCrash("CRASHED INTO TERRAIN!");
-                } 
-                // If they hit the ground during the landing phase (Phase 5)
+                if (tkState.phase < 5) return triggerCrash("CRASHED INTO TERRAIN!");
                 else if (tkState.phase === 5) {
                     let badAngle = (isStalling || tkState.pitch < -5 || tkState.pitch > 15);
                     let hotLanding = (tkState.speed > 160);
@@ -1024,6 +1071,7 @@
             // Random Gear Break (Climb)
             if (tkState.phase === 1 && tkState.altitude >= tkState.gearBreakAlt && !tkState.gearBroken) {
                 tkState.gearBroken = true; sfx.playExplosion(); setDialogue("<span class='alert-text'>GEAR SNAP!</span>", 3000);
+                logEvent("GEAR SNAP", "⚙️");
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
             }
             if (tkState.gearBroken && document.getElementById('tk-plane-img').src.indexOf('nolandinggear') === -1) { document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png'; }
@@ -1037,6 +1085,7 @@
             // Overtaker Scenario (Climb/Level)
             if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && !tkState.overtakerActive && tkState.altitude > 200 && tkState.overtakerX === -30 && Math.random() < 0.005) {
                 tkState.overtakerActive = true; tkState.overtakerAltitude = tkState.altitude;
+                logEvent("TRAFFIC BEHIND", "⚠️");
                 setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 3000); document.getElementById('tk-overtaker-plane').style.display = 'block';
             }
             if (tkState.overtakerActive) {
@@ -1050,11 +1099,12 @@
             // Bird Flock Scenario (Climb/Level)
             if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 250 && tkState.phase < 4 && tkState.birdX === 150 && Math.random() < 0.005) {
                 tkState.birdActive = true; tkState.birdAlt = tkState.altitude + (Math.random() * 60 - 30);
+                logEvent("BIRD FLOCK", "🦅");
                 document.getElementById('tk-bird-flock').style.display = 'block';
                 setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 2000);
             }
             if (tkState.birdActive) {
-                tkState.birdX -= (1.1 * SPEED_MOD); // 50% Slower than v3.2
+                tkState.birdX -= (1.1 * SPEED_MOD); 
                 let bEl = document.getElementById('tk-bird-flock');
                 bEl.style.left = tkState.birdX + '%'; bEl.style.transform = `translateY(${-(tkState.birdAlt - tkState.cameraY)}px)`;
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); const br = bEl.getBoundingClientRect();
@@ -1064,7 +1114,9 @@
 
             // Engine Failure 
             if (tkState.phase === 2 && tkState.phaseTimer > 3000 && tkState.hasEngineFailureScenario && !tkState.engineFailure) {
-                tkState.engineFailure = true; setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 4000); sfx.playExplosion();
+                tkState.engineFailure = true; 
+                logEvent("ENGINE FAILURE", "🔥");
+                setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 4000); sfx.playExplosion();
                 document.getElementById('tk-alert-overlay').className = 'flashing'; setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800);
             }
 
@@ -1072,6 +1124,7 @@
             if (tkState.phase === 2 && tkState.phaseTimer > 8000) {
                 tkState.phase = 3; tkState.phaseTimer = 0;
                 tkState.currTargetMin = -24; tkState.currTargetMax = -12;
+                logEvent("TRAFFIC SWARM", "✈️");
                 setDialogue("<span class='alert-text'>TRAFFIC SWARM! DIVE!</span>", 4000);
                 document.getElementById('tk-alert-overlay').className = 'flashing';
                 if(tkState.autoPilot) toggleAutoPilot();
@@ -1080,7 +1133,7 @@
             // Phase 3: The Swarm
             if (tkState.phase === 3) {
                 let maxEnemies = Math.min(5, Math.floor(1 + (tkState.phaseTimer / 12000) * 4));
-                if (tkState.phaseTimer > 12000) maxEnemies = 0; // Stop spawning after 12s
+                if (tkState.phaseTimer > 12000) maxEnemies = 0; 
                 
                 let activeCount = tkState.enemies.filter(e => e.active).length;
                 if (activeCount < maxEnemies && Math.random() < 0.04) {
@@ -1089,7 +1142,7 @@
                         let e = tkState.enemies[slotIdx];
                         e.active = true; e.x = 150;
                         e.alt = tkState.altitude + (Math.random() * 160 - 80); 
-                        e.spd = (0.96 + Math.random() * 0.72) * SPEED_MOD; // 20% Slower than v3.2
+                        e.spd = (0.96 + Math.random() * 0.72) * SPEED_MOD; 
                         document.getElementById('enemy-' + slotIdx).style.display = 'block';
                     }
                 }
@@ -1123,7 +1176,9 @@
                 tkState.phase = 5; tkState.phaseTimer = 0;
                 tkState.currTargetMin = -8; tkState.currTargetMax = -2; 
                 if (!tkState.gearBroken) {
-                    tkState.gearBroken = true; sfx.playExplosion(); setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 4000);
+                    tkState.gearBroken = true; sfx.playExplosion(); 
+                    logEvent("GEAR LOST", "⚙️");
+                    setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 4000);
                     const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
                 } else {
                     setDialogue("<span class='alert-text'>DESCEND FOR BELLY LANDING!</span>", 4000);
@@ -1139,7 +1194,7 @@
 
             // CAMERA LOGIC & SCROLLING
             tkState.bgX_sky -= (tkState.speed * 0.006 * SPEED_MOD);
-            tkState.bgX_fgSky -= (tkState.speed * 0.012 * SPEED_MOD); // Faster parallax scroll
+            tkState.bgX_fgSky -= (tkState.speed * 0.012 * SPEED_MOD); 
             tkState.bgX_city -= (tkState.speed * 0.03 * SPEED_MOD);
             tkState.bgX_runway -= (tkState.speed * 0.18 * SPEED_MOD);
             
@@ -1149,7 +1204,7 @@
             document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
 
             if (tkState.hasFogScenario) {
-                tkState.bgX_threatFog -= (tkState.speed * 0.025 * SPEED_MOD); // Fog moves very fast
+                tkState.bgX_threatFog -= (tkState.speed * 0.025 * SPEED_MOD);
                 document.getElementById('tk-threat-fog').style.backgroundPosition = `${tkState.bgX_threatFog}px 50%`;
             }
 
@@ -1157,6 +1212,9 @@
             let baseTargetCam = Math.max(0, tkState.altitude - maxVisualAltitude);
             if (isLandingApproach) baseTargetCam -= 20; 
             tkState.cameraY += (baseTargetCam - tkState.cameraY) * 0.15;
+
+            let fgSkyOpacity = Math.max(0, Math.min(1, (tkState.altitude - 650) / 100));
+            document.getElementById('tk-fg-sky').style.opacity = fgSkyOpacity;
 
             document.getElementById('tk-runway').style.transform = `translateY(${tkState.cameraY}px)`;
             document.getElementById('tk-bg-city').style.transform = `translateY(${tkState.cameraY * 0.7}px)`;

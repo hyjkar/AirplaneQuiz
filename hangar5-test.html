@@ -592,7 +592,7 @@
 <body>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v2.2 - Final Clean Physics</div>
+        <div id="tk-version">v2.3 - Eased Stall Physics</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -831,7 +831,8 @@
             hudPitch: 0, 
             hudPitchVelocity: 0,
             hasEngineFailureScenario: false, 
-            engineFailure: false
+            engineFailure: false,
+            stallFactor: 0 // Used for non-linear gravity pull
         };
 
         const CRUISE_ALT = 300; 
@@ -905,6 +906,7 @@
             }
         });
 
+        // --- END SCREEN LOGIC ---
         function showEndScreen(finalScore) {
             let es = document.getElementById('tk-end-screen');
             es.style.display = 'flex';
@@ -1040,7 +1042,8 @@
                 hudPitch: 0, 
                 hudPitchVelocity: 0,
                 hasEngineFailureScenario: Math.random() > 0.5,
-                engineFailure: false
+                engineFailure: false,
+                stallFactor: 0
             };
             SPEED_MOD = 0.75; 
             
@@ -1372,6 +1375,7 @@
                 if (tkState.pressing && tkState.speed >= 85) tkState.pitchVelocity += (0.11 * SPEED_MOD);
                 else if (tkState.speed >= 85) tkState.pitchVelocity -= (0.08 * SPEED_MOD);
                 
+                // Apply wobble from engine failure
                 if (tkState.engineFailure && tkState.phase < 6) {
                     tkState.pitchVelocity += (Math.random() - 0.5) * 0.8 * SPEED_MOD;
                 }
@@ -1387,10 +1391,23 @@
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && tkState.speed > 145 && tkState.altitude > 0);
+            
+            // NON-LINEAR STALL EASING
+            if (isStalling) {
+                tkState.stallFactor = Math.min(1.0, tkState.stallFactor + 0.015);
+            } else {
+                tkState.stallFactor = Math.max(0.0, tkState.stallFactor - 0.05);
+            }
+            
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
             
+            // Apply exponential parabolic drop curve during a stall
+            if (tkState.stallFactor > 0) {
+                let easeInDrop = -15 * Math.pow(tkState.stallFactor, 2) * SPEED_MOD;
+                targetVSpeed = (targetVSpeed * (1 - tkState.stallFactor)) + easeInDrop;
+            }
+            
             if (isStalling) { 
-                targetVSpeed = -12 * SPEED_MOD; 
                 document.getElementById('tk-alert-overlay').className = 'flashing';
                 setDialogue("<span class='alert-text'>STALL WARNING!</span>", 500);
                 if(tkState.autoPilot) toggleAutoPilot();
@@ -1410,10 +1427,13 @@
             // 3. HUD UPDATES
             document.getElementById('hud-alt-val').textContent = Math.floor(tkState.altitude) + 'm';
             document.getElementById('hud-pitch-val').innerHTML = Math.floor(tkState.pitch) + '&deg;';
+            
             let center = (tkState.currTargetMin + tkState.currTargetMax) / 2;
             let error = Math.abs(tkState.pitch - center);
             let p_hue = inHUDZone ? 120 : Math.max(0, 120 - error * 9);
+            
             if (isStalling) p_hue = 0;
+            
             let dynColor = `hsl(${p_hue}, 85%, 55%)`;
             hudRing.style.borderColor = dynColor;
             document.getElementById('hud-pitch').style.color = dynColor;
@@ -1441,53 +1461,23 @@
             scoreValEl.textContent = Math.floor(tkState.score);
 
             // FATAL IMPACT CHECKS
-            if (tkState.altitude <= 0 && tkState.phase > 0 && tkState.phase < 6) {
+            if (tkState.altitude <= 0 && tkState.phase >= 2 && tkState.phase < 6) {
                 if (isStalling || tkState.pitch < -5 || tkState.pitch > 15) {
-                    sfx.stopAll();
-                    const r = document.getElementById('tk-plane-img').getBoundingClientRect();
-                    triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
-                    document.getElementById('plane-container').style.display = 'none';
-                    tkState.active = false;
-                    setDialogue("<span class='alert-text'>FATAL ANGLE!</span>", 4500);
-                    setTimeout(() => { 
-                        setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999); 
-                        tkState.canRestart = true; 
-                    }, 4500);
-                    return;
-                }
-                if (tkState.speed > 160 && tkState.phase === 5) {
-                    sfx.stopAll();
-                    const r = document.getElementById('tk-plane-img').getBoundingClientRect();
-                    triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
-                    document.getElementById('plane-container').style.display = 'none';
-                    tkState.active = false;
-                    setDialogue("<span class='alert-text'>TOO FAST!</span>", 4500);
-                    setTimeout(() => { 
-                        setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999); 
-                        tkState.canRestart = true; 
-                    }, 4500);
-                    return;
+                    return triggerCrash("FATAL ANGLE!");
                 }
             }
+            if (tkState.speed > 160 && tkState.phase === 5 && tkState.altitude <= 0) {
+                return triggerCrash("TOO FAST!");
+            }
 
-            // 4. PHASE LOGIC
+            // --- PHASE PROGRESSION & EVENTS ---
             if (tkState.phase < 2) {
                 tkState.takeoffDist -= ((tkState.speed / 1600) * SPEED_MOD);
                 if (tkState.takeoffDist < 25 && tkState.altitude < 60) {
                     const mtn = document.getElementById('tk-mountain');
                     mtn.style.display = 'block'; mtn.style.left = (tkState.takeoffDist * 4) + '%';
                     if (tkState.takeoffDist <= 0) {
-                         sfx.stopAll();
-                         const r = document.getElementById('tk-plane-img').getBoundingClientRect();
-                         triggerEpicCollision(r.left+r.width/2, r.top+r.height/2);
-                         document.getElementById('plane-container').style.display='none';
-                         tkState.active=false; 
-                         setDialogue("<span class='alert-text'>MOUNTAIN IMPACT!</span>", 4500);
-                         setTimeout(()=> { 
-                            setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999); 
-                            tkState.canRestart = true; 
-                         }, 4500);
-                         return;
+                         return triggerCrash("MOUNTAIN IMPACT!");
                     }
                 }
             } else if (tkState.phase >= 5) {
@@ -1497,17 +1487,7 @@
                 mtn.style.left = tkState.landingDist + '%';
                 
                 if (tkState.landingDist <= 35 && tkState.speed > 0) {
-                     sfx.stopAll();
-                     const r = document.getElementById('tk-plane-img').getBoundingClientRect();
-                     triggerEpicCollision(r.left+r.width/2, r.top+r.height/2);
-                     document.getElementById('plane-container').style.display='none';
-                     tkState.active=false; 
-                     setDialogue("<span class='alert-text'>MOUNTAIN IMPACT!</span>", 4500);
-                     setTimeout(()=> { 
-                        setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999); 
-                        tkState.canRestart = true; 
-                     }, 4500);
-                     return;
+                     return triggerCrash("MOUNTAIN IMPACT!");
                 }
             } else {
                 document.getElementById('tk-mountain').style.display = 'none';
@@ -1548,16 +1528,7 @@
                 const er = document.getElementById('tk-enemy-plane').getBoundingClientRect();
                 const margin = 12;
                 if (!(pr.right-margin < er.left+margin || pr.left+margin > er.right-margin || pr.bottom-margin < er.top+margin || pr.top+margin > er.bottom-margin)) {
-                     sfx.stopAll();
-                     triggerEpicCollision(pr.left+pr.width/2, pr.top+pr.height/2);
-                     document.getElementById('plane-container').style.display='none';
-                     tkState.active=false; 
-                     setDialogue("<span class='alert-text'>MID-AIR CRASH!</span>", 4500);
-                     setTimeout(()=> { 
-                        setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999); 
-                        tkState.canRestart = true; 
-                     }, 4500);
-                     return;
+                     return triggerCrash("MID-AIR CRASH!");
                 }
                 if (tkState.enemyX < -30) {
                     tkState.phase = 4; 
@@ -1611,7 +1582,6 @@
             let planeY = -(tkState.altitude - tkState.cameraY);
             document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeY}px)`;
             
-            // HUD & Plane separated rotations
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
             document.getElementById('plane-hud').style.transform = `translate(-50%, -50%) rotate(${-tkState.hudPitch}deg)`;
 

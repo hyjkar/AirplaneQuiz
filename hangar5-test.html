@@ -371,7 +371,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v3.2 - Swarm Speed Adjusted</div>
+        <div id="tk-version">v3.3 - Adjusted Swarm & Bird Speeds</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -987,7 +987,8 @@
                 setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 2000);
             }
             if (tkState.birdActive) {
-                tkState.birdX -= (2.2 * SPEED_MOD); let bEl = document.getElementById('tk-bird-flock');
+                tkState.birdX -= (1.1 * SPEED_MOD); // 50% Slower than v3.2
+                let bEl = document.getElementById('tk-bird-flock');
                 bEl.style.left = tkState.birdX + '%'; bEl.style.transform = `translateY(${-(tkState.birdAlt - tkState.cameraY)}px)`;
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); const br = bEl.getBoundingClientRect();
                 if (!(pr.right-10 < br.left+10 || pr.left+10 > br.right-10 || pr.bottom-10 < br.top+10 || pr.top+10 > br.bottom-10)) return triggerCrash("BIRD STRIKE!");
@@ -1021,7 +1022,7 @@
                         let e = tkState.enemies[slotIdx];
                         e.active = true; e.x = 150;
                         e.alt = tkState.altitude + (Math.random() * 160 - 80); 
-                        e.spd = (1.2 + Math.random() * 0.9) * SPEED_MOD; // 25% Slower than v3.1
+                        e.spd = (0.96 + Math.random() * 0.72) * SPEED_MOD; // 20% Slower than v3.2
                         document.getElementById('enemy-' + slotIdx).style.display = 'block';
                     }
                 }

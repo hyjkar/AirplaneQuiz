@@ -125,11 +125,11 @@
         }
 
         #tk-fg-sky { 
-            background-size: auto 150vh; /* Scaled up to feel closer */
-            z-index: 14; /* Positioned above the plane (z-index 10) */
+            background-size: auto 150vh; 
+            z-index: 14; 
             height: 120%; 
             top: -15%;
-            opacity: 0; /* Hidden initially */
+            opacity: 0; 
         }
         
         #tk-sun {
@@ -577,6 +577,7 @@
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
             weather: "day", zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false, canRestart: true, 
             hudPitch: 0, hudPitchVelocity: 0,
+            hasLiftedOff: false, // New property to track if we've left the ground
             hasEngineFailureScenario: false, engineFailure: false,
             hasOvertakerScenario: false, overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
             hasBirdScenario: false, birdActive: false, birdX: 150, birdAlt: 0,
@@ -717,6 +718,7 @@
                 currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260, 
                 dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: 0.75, autoPilot: false, weather: weather, canRestart: false,
                 hudPitch: 0, hudPitchVelocity: 0, 
+                hasLiftedOff: false, // Reset liftoff flag on restart
                 hasEngineFailureScenario: Math.random() > 0.5, engineFailure: false,
                 hasOvertakerScenario: Math.random() > 0.5, overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
                 hasBirdScenario: Math.random() < 0.25, birdActive: false, birdX: 150, birdAlt: 0,
@@ -932,6 +934,11 @@
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
             if (tkState.phase !== 6) tkState.altitude = Math.max(0, tkState.altitude + tkState.vSpeed);
 
+            // Flag that the plane has officially left the runway
+            if (tkState.altitude > 0 && !tkState.hasLiftedOff) {
+                tkState.hasLiftedOff = true;
+            }
+
             // HUD UPDATES
             document.getElementById('hud-alt-val').textContent = Math.floor(tkState.altitude) + 'm';
             document.getElementById('hud-pitch-val').innerHTML = Math.floor(tkState.pitch) + '&deg;';
@@ -951,13 +958,21 @@
             scoreValEl.textContent = Math.floor(tkState.score);
 
             // FATAL IMPACT CHECKS WITH REASONS
-            if (tkState.altitude <= 0 && tkState.phase >= 2 && tkState.phase < 6) {
-                let badAngle = (isStalling || tkState.pitch < -5 || tkState.pitch > 15);
-                let hotLanding = (tkState.speed > 160 && tkState.phase === 5);
+            if (tkState.altitude <= 0 && tkState.hasLiftedOff) {
                 
-                if (badAngle && hotLanding) return triggerCrash("TOO FAST & BAD ANGLE!");
-                if (badAngle) return triggerCrash("FATAL ANGLE!");
-                if (hotLanding) return triggerCrash("TOO FAST!");
+                // If they hit the ground before the landing phase (Phases 1 through 4)
+                if (tkState.phase < 5) {
+                    return triggerCrash("CRASHED INTO TERRAIN!");
+                } 
+                // If they hit the ground during the landing phase (Phase 5)
+                else if (tkState.phase === 5) {
+                    let badAngle = (isStalling || tkState.pitch < -5 || tkState.pitch > 15);
+                    let hotLanding = (tkState.speed > 160);
+                    
+                    if (badAngle && hotLanding) return triggerCrash("TOO FAST & BAD ANGLE!");
+                    if (badAngle) return triggerCrash("FATAL ANGLE!");
+                    if (hotLanding) return triggerCrash("TOO FAST!");
+                }
             }
 
             // TIME-BASED PHASE LOGIC

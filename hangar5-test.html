@@ -592,7 +592,7 @@
 <body>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v2.3 - Eased Stall Physics</div>
+        <div id="tk-version">v2.4 - Smoother Engine Failure</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -832,7 +832,7 @@
             hudPitchVelocity: 0,
             hasEngineFailureScenario: false, 
             engineFailure: false,
-            stallFactor: 0 // Used for non-linear gravity pull
+            stallFactor: 0 
         };
 
         const CRUISE_ALT = 300; 
@@ -1375,9 +1375,9 @@
                 if (tkState.pressing && tkState.speed >= 85) tkState.pitchVelocity += (0.11 * SPEED_MOD);
                 else if (tkState.speed >= 85) tkState.pitchVelocity -= (0.08 * SPEED_MOD);
                 
-                // Apply wobble from engine failure
+                // Apply wobble from engine failure (Magnitude reduced to 0.35)
                 if (tkState.engineFailure && tkState.phase < 6) {
-                    tkState.pitchVelocity += (Math.random() - 0.5) * 0.8 * SPEED_MOD;
+                    tkState.pitchVelocity += (Math.random() - 0.5) * 0.35 * SPEED_MOD;
                 }
 
                 tkState.pitchVelocity *= 0.88;
@@ -1582,6 +1582,7 @@
             let planeY = -(tkState.altitude - tkState.cameraY);
             document.getElementById('plane-container').style.transform = `translateX(-50%) translateY(${planeY}px)`;
             
+            // HUD & Plane separated rotations
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
             document.getElementById('plane-hud').style.transform = `translate(-50%, -50%) rotate(${-tkState.hudPitch}deg)`;
 

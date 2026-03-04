@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - v1.6 Stable Edition</title>
+    <title>Hangar 5 - v1.7 Stable Flight</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -77,7 +77,6 @@
         /* --- WEATHER STATES --- */
         .weather-layer { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
         
-        /* Night weather ONLY uses back fog, NO front fog */
         .night-weather .rain-layer, .night-weather .fog-layer.layer-back { display: block; }
         .snow-weather .snow-layer, .snow-weather .fog-layer { display: block; }
         
@@ -153,13 +152,11 @@
         .pf-3 { width: 100px; height: 100px; border: 4px solid rgba(255, 100, 50, 0.1); background: transparent; }
         .pf-4 { width: 15px; height: 15px; background: rgba(255, 255, 255, 0.4); }
 
-        /* Decoupled Plane & HUD */
+        /* Plane & Mini HUD Decoupled */
         #plane-container { position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; pointer-events: none; width: 150px; height: 50px; }
-        
         #plane-rotate-group { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; z-index: 12; }
         #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; transition: filter 0.5s;}
         
-        /* HUD Gyro Ring - Separated for Spring Physics */
         #plane-hud {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 140px; height: 140px; border-radius: 50%;
@@ -197,7 +194,7 @@
         @keyframes pulseRed { from { color: var(--brand-red); } to { color: #ff5555; } }
 
         /* UI Overlays */
-        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: none; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; }
+        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; }
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
         #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold);}
         
@@ -205,26 +202,13 @@
         #ap-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #aaa; font-size: 0.9rem; cursor: pointer; padding: 0 12px; height: 40px; font-family: 'Share Tech Mono', monospace; font-weight: bold; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: auto; }
         #ap-btn:active { transform: scale(0.95); }
 
-        #prompt-container { position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: none; justify-content: center; }
+        #prompt-container { position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: flex; justify-content: center; }
+        #tk-touch-prompt { background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px; padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase; }
         
         #tk-enemy-plane { position: absolute; left: 150%; bottom: 65px; width: 162px; height: 56px; z-index: 9; pointer-events: none; display: none; transition: filter 0.5s; }
         #tk-mountain { position: absolute; bottom: 65px; left: 100%; width: 220px; height: 120px; z-index: 2; display: none; pointer-events: none; transition: filter 0.5s; }
         .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; }
         .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; }
-
-        /* Start/Select Screen */
-        #tk-start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.3s ease; }
-        .start-panel { background: #111; border: 2px solid #555; border-radius: 15px; padding: 30px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-        .start-title { font-size: 1.5rem; color: #fff; margin-bottom: 25px; text-shadow: 2px 2px 4px #000; }
-        .plane-options { display: flex; gap: 20px; justify-content: center; }
-        .plane-card { 
-            background: #222; border: 2px solid transparent; border-radius: 10px; padding: 20px; cursor: pointer; 
-            transition: transform 0.2s, border 0.2s, background 0.2s; display: flex; flex-direction: column; align-items: center; gap: 15px; width: 140px;
-        }
-        .plane-card:hover { transform: scale(1.05); background: #2a2a2a; border-color: var(--brand-gold); }
-        .plane-card img { width: 100px; height: 40px; object-fit: contain; }
-        .plane-card div { font-size: 0.9rem; font-weight: bold; color: #aaa; }
-        .plane-card:hover div { color: var(--brand-gold); }
 
         /* End Screen UI */
         #tk-end-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
@@ -245,24 +229,7 @@
 <body>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v1.6</div>
-
-        <div id="tk-start-screen">
-            <div class="start-panel">
-                <div class="start-title">SELECT AIRCRAFT</div>
-                <div class="plane-options">
-                    <div class="plane-card" onclick="selectPlane('my-plane.png')">
-                        <img src="my-plane.png" alt="Standard" onerror="this.style.backgroundColor='#fff';">
-                        <div>STANDARD</div>
-                    </div>
-                    <div class="plane-card" onclick="selectPlane('my-plane-golden.png')">
-                        <img src="my-plane-golden.png" alt="VIP Gold" onerror="this.style.backgroundColor='#ffd700';">
-                        <div>VIP GOLD</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        <div id="tk-version">v1.7</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -273,7 +240,9 @@
             <div id="tk-score-display">SCORE: <span id="score-val">0</span></div>
         </div>
         
-        <div id="prompt-container"></div>
+        <div id="prompt-container">
+            <div id="tk-touch-prompt">TAP OR SPACE TO START</div>
+        </div>
         
         <div id="camera-rig">
             <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky1.png');"></div>
@@ -333,16 +302,11 @@
     <script>
         let SPEED_MOD = 0.75; 
         
-        let playerPlaneSkin = 'my-plane.png';
-        let playerNoGearSkin = 'my-plane-nolandinggear.png';
-        let enemyPlaneSkin = 'my-plane-golden.png';
-        let planeSelected = false;
-
-        // --- SIMPLIFIED AUDIO SYNTHESIZER & MP3 PLAYER ---
+        // --- SIMPLIFIED HTML5 MP3 PLAYER ---
         const sfx = {
             ctx: null, engineNode: null, engineGain: null, alarmInterval: null, isAlarming: false,
             
-            // Note: Make sure hangar5-music.mp3 is in the same folder as this file!
+            // Standard Audio object. Make sure hangar5-music.mp3 is in the same folder.
             bgMusic: new Audio('hangar5-music.mp3'), 
 
             init: function() {
@@ -362,45 +326,50 @@
                     this.startEngine();
                 }
                 if (this.ctx.state === 'suspended') this.ctx.resume();
-                
-                this.bgMusic.play().catch(e => console.log("Audio play blocked until interaction:", e));
+                this.bgMusic.play().catch(e => console.log("Audio play blocked by browser until tap"));
             },
             
             startEngine: function() {
-                this.engineNode = this.ctx.createOscillator();
-                this.engineNode.type = 'sawtooth';
-                this.engineGain = this.ctx.createGain();
-                this.engineGain.gain.value = 0;
-                let filter = this.ctx.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.value = 300; 
-                this.engineNode.connect(filter);
-                filter.connect(this.engineGain);
-                this.engineGain.connect(this.ctx.destination);
-                this.engineNode.start();
+                try {
+                    this.engineNode = this.ctx.createOscillator();
+                    this.engineNode.type = 'sawtooth';
+                    this.engineGain = this.ctx.createGain();
+                    this.engineGain.gain.value = 0;
+                    let filter = this.ctx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 300; 
+                    this.engineNode.connect(filter);
+                    filter.connect(this.engineGain);
+                    this.engineGain.connect(this.ctx.destination);
+                    this.engineNode.start();
+                } catch(e) {}
             },
             updateEngine: function(speed) {
-                if(!this.engineNode || !this.ctx) return;
-                let freq = 50 + (speed * 0.5); 
-                let vol = speed > 0 ? 0.15 + (speed / 800) : 0; 
-                this.engineNode.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.1);
-                this.engineGain.gain.setTargetAtTime(vol, this.ctx.currentTime, 0.1);
+                if(!this.engineNode || !this.ctx || this.ctx.state !== 'running') return;
+                try {
+                    let freq = 50 + (speed * 0.5); 
+                    let vol = speed > 0 ? 0.15 + (speed / 800) : 0; 
+                    this.engineNode.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.1);
+                    this.engineGain.gain.setTargetAtTime(vol, this.ctx.currentTime, 0.1);
+                } catch(e) {}
             },
             playAlarm: function(active) {
-                if(!this.ctx) return;
+                if(!this.ctx || this.ctx.state !== 'running') return;
                 if(active && !this.isAlarming) {
                     this.isAlarming = true;
                     this.alarmInterval = setInterval(() => {
-                        let osc = this.ctx.createOscillator();
-                        let gain = this.ctx.createGain();
-                        osc.type = 'square';
-                        osc.frequency.value = 900; 
-                        gain.gain.setValueAtTime(0.15, this.ctx.currentTime); 
-                        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
-                        osc.connect(gain);
-                        gain.connect(this.ctx.destination);
-                        osc.start();
-                        osc.stop(this.ctx.currentTime + 0.2);
+                        try {
+                            let osc = this.ctx.createOscillator();
+                            let gain = this.ctx.createGain();
+                            osc.type = 'square';
+                            osc.frequency.value = 900; 
+                            gain.gain.setValueAtTime(0.15, this.ctx.currentTime); 
+                            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+                            osc.connect(gain);
+                            gain.connect(this.ctx.destination);
+                            osc.start();
+                            osc.stop(this.ctx.currentTime + 0.2);
+                        } catch(e) {}
                     }, 300);
                 } else if (!active && this.isAlarming) {
                     this.isAlarming = false;
@@ -408,49 +377,55 @@
                 }
             },
             playExplosion: function() {
-                if(!this.ctx) return;
-                let osc = this.ctx.createOscillator();
-                let oscGain = this.ctx.createGain();
-                osc.type = 'square'; 
-                osc.frequency.setValueAtTime(80, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
-                oscGain.gain.setValueAtTime(0.8, this.ctx.currentTime); 
-                oscGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
-                osc.connect(oscGain);
-                oscGain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 1.5);
+                if(!this.ctx || this.ctx.state !== 'running') return;
+                try {
+                    let osc = this.ctx.createOscillator();
+                    let oscGain = this.ctx.createGain();
+                    osc.type = 'square'; 
+                    osc.frequency.setValueAtTime(80, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
+                    oscGain.gain.setValueAtTime(0.8, this.ctx.currentTime); 
+                    oscGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
+                    osc.connect(oscGain);
+                    oscGain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 1.5);
+                } catch(e) {}
             },
             playSpark: function() {
-                if(!this.ctx || Math.random() > 0.4) return; 
-                let osc = this.ctx.createOscillator();
-                let gain = this.ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(2000 + Math.random()*2000, this.ctx.currentTime);
-                gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.1);
+                if(!this.ctx || this.ctx.state !== 'running' || Math.random() > 0.4) return; 
+                try {
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(2000 + Math.random()*2000, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.1);
+                } catch(e) {}
             },
             playDing: function(pitchMult = 1) {
-                if(!this.ctx) return;
-                let osc = this.ctx.createOscillator();
-                let gain = this.ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800 * pitchMult, this.ctx.currentTime);
-                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.5);
+                if(!this.ctx || this.ctx.state !== 'running') return;
+                try {
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800 * pitchMult, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.5);
+                } catch(e) {}
             },
             stopAll: function() {
                 this.updateEngine(0);
                 this.playAlarm(false);
-                this.bgMusic.pause();
+                try { this.bgMusic.pause(); } catch(e) {}
             }
         };
 
@@ -484,52 +459,9 @@
             canRestart: true, hudPitch: 0, hudPitchVelocity: 0
         };
 
-        // --- BUBBLE DIALOGUE SYSTEM ---
         function setDialogue(text, timeMs) {
             tkState.dialogueText = text;
             tkState.dialogueTimeLeft = timeMs;
-        }
-
-        // --- UNIFIED CRASH LOGIC ---
-        function triggerCrash(reasonText) {
-            sfx.stopAll();
-            const r = document.getElementById('tk-plane-img').getBoundingClientRect();
-            triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
-            document.getElementById('plane-container').style.display = 'none';
-            tkState.active = false;
-            
-            setDialogue(`<span class='alert-text'>${reasonText}</span>`, 4500);
-            
-            setTimeout(() => { 
-                setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999); 
-                tkState.canRestart = true; 
-            }, 4500);
-        }
-
-        function selectPlane(planeType) {
-            let startScreen = document.getElementById('tk-start-screen');
-            startScreen.style.opacity = 0;
-            
-            setTimeout(() => {
-                startScreen.style.display = 'none';
-                document.getElementById('tk-hud-top').style.display = 'flex';
-                
-                if (planeType === 'my-plane-golden.png') {
-                    playerPlaneSkin = 'my-plane-golden.png';
-                    playerNoGearSkin = 'my-plane-golden.png'; 
-                    enemyPlaneSkin = 'my-plane.png'; 
-                } else {
-                    playerPlaneSkin = 'my-plane.png';
-                    playerNoGearSkin = 'my-plane-nolandinggear.png';
-                    enemyPlaneSkin = 'my-plane-golden.png';
-                }
-                
-                document.getElementById('tk-plane-img').src = playerPlaneSkin;
-                document.getElementById('tk-enemy-img').src = enemyPlaneSkin;
-                planeSelected = true;
-
-                setDialogue("<span class='capt-text'>TAP/SPACE TO START</span>", 999999); 
-            }, 300);
         }
 
         function toggleAutoPilot(e) {
@@ -554,8 +486,9 @@
             }
         }
 
+        // --- CONTROLS ---
         window.addEventListener('pointerdown', (e) => {
-            if (e.target.tagName === 'BUTTON' || e.target.closest('.plane-card') || !planeSelected) return;
+            if (e.target.tagName === 'BUTTON') return;
             sfx.init(); 
             if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') startFlight();
             tkState.pressing = true;
@@ -564,7 +497,6 @@
         window.addEventListener('touchend', () => tkState.pressing = false);
 
         window.addEventListener('keydown', (e) => {
-            if (!planeSelected) return;
             if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault(); 
                 if (e.repeat) return; 
@@ -634,6 +566,21 @@
             }
         }
 
+        function triggerCrash(reasonText) {
+            sfx.stopAll();
+            const r = document.getElementById('tk-plane-img').getBoundingClientRect();
+            triggerEpicCollision(r.left + r.width/2, r.top + r.height/2);
+            document.getElementById('plane-container').style.display = 'none';
+            tkState.active = false;
+            
+            setDialogue(`<span class='alert-text'>${reasonText}</span>`, 4500);
+            
+            setTimeout(() => { 
+                setDialogue("<span class='capt-text'>TAP / SPACE TO RESTART</span>", 99999); 
+                tkState.canRestart = true; 
+            }, 4500);
+        }
+
         function startFlight() {
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
             
@@ -652,7 +599,7 @@
             apBtn.style.color = '#aaa';
             apBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
 
-            document.getElementById('tk-plane-img').src = playerPlaneSkin;
+            document.getElementById('tk-plane-img').src = 'my-plane.png';
             
             let rand = Math.random();
             let weather = 'day';
@@ -681,6 +628,7 @@
             };
             SPEED_MOD = 0.75; 
             
+            document.getElementById('prompt-container').style.display = 'none';
             setDialogue("<span class='capt-text'>FULL POWER!</span>", 3000);
 
             document.getElementById('plane-container').style.display = 'block';
@@ -917,6 +865,7 @@
             document.getElementById('hud-spd-val').textContent = Math.floor(tkState.speed);
 
             if (tkState.phase === 0 && tkState.speed < 150) {
+                // FIXED: Runway takeoff lock
                 tkState.pitch = 0;
                 tkState.pitchVelocity = 0;
             } else if (tkState.phase === 6) {
@@ -938,7 +887,6 @@
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
-            
             if (isStalling) { 
                 targetVSpeed = -12 * SPEED_MOD; 
                 document.getElementById('tk-alert-overlay').className = 'flashing';
@@ -976,8 +924,8 @@
             }
             scoreValEl.textContent = Math.floor(tkState.score);
 
-            // --- FATAL IMPACT CHECKS (UNIFIED) ---
-            if (tkState.altitude <= 0 && tkState.phase > 1 && tkState.phase < 6) {
+            // --- FATAL IMPACT CHECKS (UNIFIED & FIXED) ---
+            if (tkState.altitude <= 0 && tkState.phase >= 2 && tkState.phase < 6) {
                 if (isStalling || tkState.pitch < -5 || tkState.pitch > 15) {
                     return triggerCrash("FATAL ANGLE!");
                 }
@@ -1056,7 +1004,7 @@
                 
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
                 triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
-                document.getElementById('tk-plane-img').src = playerNoGearSkin;
+                document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png';
             }
             
             if (tkState.phase === 5 && tkState.altitude <= 0) {

@@ -150,20 +150,6 @@
             filter: brightness(0) !important;
             transition: filter 0.5s;
         }
-        
-        /* Illuminated Windows for Fog Silhouette */
-        .passenger-windows { 
-            display: none; position: absolute; top: 48%; left: 30%; right: 20%; 
-            height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; 
-        }
-        .fog-scenario .passenger-windows { display: flex; }
-        .window-dot { 
-            width: 4px; height: 4px; background: #fffde7; 
-            box-shadow: 0 0 6px #fbc02d, 0 0 10px #f57f17; 
-            border-radius: 1px; animation: flicker 2s infinite alternate; 
-        }
-        .tk-enemy .passenger-windows { left: 20%; right: 30%; top: 48%; }
-        @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
         #tk-sun {
             display: none; 
@@ -410,7 +396,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v3.8 - Fog Windows & Flashing Fix</div>
+        <div id="tk-version">v3.8 - Fullscreen & Minimap</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -441,9 +427,6 @@
                 <div id="landing-guide"><div class="guide-label">-5&deg; TO 15&deg;</div></div>
                 <div id="plane-rotate-group">
                     <img id="tk-plane-img" src="my-plane.png" onerror="this.style.backgroundColor='blue';">
-                    <div class="passenger-windows">
-                        <div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div>
-                    </div>
                 </div>
                 <div id="plane-hud">
                     <div id="hud-spd" class="hud-text"><span class="hud-label">SPD</span><span id="hud-spd-val" class="hud-val">0</span></div>
@@ -456,31 +439,13 @@
             
             <div id="tk-threat-fog" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             
-            <div id="enemy-0" class="tk-enemy">
-                <img src="a22.png">
-                <div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div>
-            </div>
-            <div id="enemy-1" class="tk-enemy">
-                <img src="a22.png">
-                <div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div>
-            </div>
-            <div id="enemy-2" class="tk-enemy">
-                <img src="a22.png">
-                <div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div>
-            </div>
-            <div id="enemy-3" class="tk-enemy">
-                <img src="a22.png">
-                <div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div>
-            </div>
-            <div id="enemy-4" class="tk-enemy">
-                <img src="a22.png">
-                <div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div>
-            </div>
+            <div id="enemy-0" class="tk-enemy"><img src="a22.png"></div>
+            <div id="enemy-1" class="tk-enemy"><img src="a22.png"></div>
+            <div id="enemy-2" class="tk-enemy"><img src="a22.png"></div>
+            <div id="enemy-3" class="tk-enemy"><img src="a22.png"></div>
+            <div id="enemy-4" class="tk-enemy"><img src="a22.png"></div>
             
-            <div id="tk-overtaker-plane">
-                <img src="a22.png">
-                <div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div>
-            </div>
+            <div id="tk-overtaker-plane"><img src="a22.png"></div>
             
             <div id="tk-bird-flock">
                 <div class="bird" style="top:0; left:10px;"></div>
@@ -537,13 +502,13 @@
         // --- PWA INSTALLATION LOGIC ---
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); 
-            deferredPrompt = e; 
-            document.getElementById('install-btn').style.display = 'block'; 
+            e.preventDefault(); // Prevent standard mini-infobar
+            deferredPrompt = e; // Stash event for later
+            document.getElementById('install-btn').style.display = 'block'; // Show install button
         });
 
         function installApp(e) {
-            e.stopPropagation(); 
+            e.stopPropagation(); // Prevents tapping from starting the game
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choiceResult) => {
@@ -562,7 +527,7 @@
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 let elem = document.documentElement;
                 if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => {}); }
-                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } // Safari Support
             } else {
                 if (document.exitFullscreen) { document.exitFullscreen(); }
                 else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
@@ -695,26 +660,11 @@
             tkState.dialogueTimeLeft = timeMs;
         }
 
-        function toggleAutoPilot(e) {
-            if (e) { e.preventDefault(); e.stopPropagation(); }
-            if (!tkState.active || tkState.phase === 0 || tkState.phase >= 6) return; 
-
-            tkState.autoPilot = !tkState.autoPilot;
-            const btn = document.getElementById('ap-btn');
-            
-            if (tkState.autoPilot) {
-                btn.style.background = 'var(--gauge-green)'; btn.style.borderColor = '#fff'; btn.style.color = '#000';
-                btn.style.boxShadow = '0 0 15px var(--gauge-green)'; sfx.playDing(1.5); 
-            } else {
-                btn.style.background = '#333'; btn.style.borderColor = '#aaa'; btn.style.color = '#aaa';
-                btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)'; sfx.playDing(0.8);
-            }
-        }
-
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
             sfx.init(); 
             
+            // Auto Fullscreen on first interaction if not already active
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 try {
                     let elem = document.documentElement;
@@ -853,6 +803,22 @@
                 showEndScreen(Math.floor(tkState.score), false); 
                 tkState.canRestart = true; 
             }, 2500); 
+        }
+
+        function toggleAutoPilot(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (!tkState.active || tkState.phase === 0 || tkState.phase >= 6) return; 
+
+            tkState.autoPilot = !tkState.autoPilot;
+            const btn = document.getElementById('ap-btn');
+            
+            if (tkState.autoPilot) {
+                btn.style.background = 'var(--gauge-green)'; btn.style.borderColor = '#fff'; btn.style.color = '#000';
+                btn.style.boxShadow = '0 0 15px var(--gauge-green)'; sfx.playDing(1.5); 
+            } else {
+                btn.style.background = '#333'; btn.style.borderColor = '#aaa'; btn.style.color = '#aaa';
+                btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)'; sfx.playDing(0.8);
+            }
         }
 
         function startFlight(e) {
@@ -1024,7 +990,7 @@
             tkState.phaseTimer += delta;
 
             const hudRing = document.getElementById('plane-hud');
-            sfx.playAlarm(tkState.pitch >= 24.2 && tkState.altitude > 10);
+            sfx.playAlarm((tkState.pitch >= 24.2 && tkState.altitude > 10) || tkState.phase === 3);
 
             let isLandingApproach = (tkState.phase === 5 && tkState.altitude <= 70 && tkState.altitude > 0);
             let targetSpeedMod = isLandingApproach ? 0.25 : 0.75; 
@@ -1115,7 +1081,7 @@
                 document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 500);
             } else if (isTooHigh) {
                 document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>DESCEND! LOW VISIBILITY!</span>", 500); if(tkState.autoPilot) toggleAutoPilot();
-            } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!</span>") {
+            } else if (tkState.phase !== 3 && tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!</span>") {
                 document.getElementById('tk-alert-overlay').className = '';
             }
 
@@ -1152,6 +1118,7 @@
                 else if (tkState.phase === 5) {
                     let badAngle = (isStalling || tkState.pitch < -5 || tkState.pitch > 15);
                     let hotLanding = (tkState.speed > 160);
+                    
                     if (badAngle && hotLanding) return triggerCrash("TOO FAST & BAD ANGLE!");
                     if (badAngle) return triggerCrash("FATAL ANGLE!");
                     if (hotLanding) return triggerCrash("TOO FAST!");

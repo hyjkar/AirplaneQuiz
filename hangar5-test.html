@@ -695,6 +695,8 @@
             let weather = 'day';
             let vp = document.getElementById('takeoff-viewport');
             vp.classList.remove('night-weather', 'sunrise-weather', 'snow-weather');
+            vp.style.backgroundColor = ''; // <--- FIX: clears the inline color from the previous crash
+            
             if (rand > 0.75) { weather = 'night'; vp.classList.add('night-weather'); } 
             else if (rand > 0.5) { weather = 'snow'; vp.classList.add('snow-weather'); } 
             else if (rand > 0.25) { weather = 'sunrise'; vp.classList.add('sunrise-weather'); }

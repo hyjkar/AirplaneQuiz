@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hangar 5 - Escaping the Swarm</title>
+    <title>Hangar 5 - v3.4 Cloud Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -117,10 +117,10 @@
             transition: filter 0.5s, background-color 0.5s;
         }
 
-        /* NATIVE RESOLUTION BACKGROUNDS */
+        /* EXACT BACKGROUND FIXES */
         #tk-bg-sky { 
-            background-size: auto; 
-            background-repeat: repeat; 
+            background-size: 1024px auto; /* Native aspect ratio, 1024px width */
+            background-repeat: repeat;    /* Tiles properly over the 400% height */
             z-index: 0; 
             height: 400%; 
             background-color: #87CEEB; 
@@ -129,9 +129,8 @@
         
         #tk-bg-city { 
             height: 100%; 
-            background-size: auto; 
+            background-size: 1024px 100%; /* Restored to original fine scale */
             background-position: bottom left; 
-            background-repeat: repeat-x;
             z-index: 1; 
             top: 0; 
         }
@@ -187,7 +186,8 @@
         .snow-weather .fog-layer { display: block; }
         
         .night-weather { background-color: #0b1021 !important; }
-        .night-weather #tk-bg-sky, .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain {
+        .night-weather #tk-bg-sky { background-color: #0b1021 !important; background-image: none !important; }
+        .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain {
             filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2);
         }
         .night-weather #tk-plane-img, .night-weather .tk-enemy img, .night-weather #tk-overtaker-plane img { 
@@ -195,7 +195,11 @@
         }
 
         .sunrise-weather { background-color: #ff9e7a !important; }
-        .sunrise-weather #tk-bg-sky, .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain {
+        .sunrise-weather #tk-bg-sky { 
+            background-color: #ff9e7a !important; 
+            background-image: linear-gradient(to bottom, #2b5876 0%, #ff9e7a 60%, #ffe259 100%) !important; 
+        }
+        .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain {
             filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8);
         }
         .sunrise-weather #tk-plane-img, .sunrise-weather .tk-enemy img, .sunrise-weather #tk-overtaker-plane img { 
@@ -203,7 +207,8 @@
         }
 
         .snow-weather { background-color: #b8c6d9 !important; }
-        .snow-weather #tk-bg-sky, .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain {
+        .snow-weather #tk-bg-sky { background-color: #b8c6d9 !important; background-image: none !important; }
+        .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain {
             filter: grayscale(0.7) brightness(1.4) contrast(0.6);
         }
         .snow-weather .fog-layer.layer-front {
@@ -368,7 +373,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v3.4 - Native Resolution Backgrounds</div>
+        <div id="tk-version">v3.4 - Slower Swarm & Cloud Fix</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">

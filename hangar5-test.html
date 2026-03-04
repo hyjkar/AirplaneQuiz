@@ -59,7 +59,7 @@
             height: 100%; 
             position: relative; 
             overflow: hidden; 
-            background-color: #4a9ae9; 
+            background-color: #87CEEB; /* Updated to seamless sky blue */
             cursor: pointer; 
             transition: background-color 0.5s;
         }
@@ -132,7 +132,7 @@
             width: 60px; 
             height: 60px; 
             background: #fff;
-            border-radius: 50%;
+            border-radius: 50%; /* Perfect circle */
             box-shadow: 0 0 0 10px rgba(255, 240, 150, 0.8), 0 0 0 25px rgba(255, 200, 100, 0.4), 0 0 0 45px rgba(255, 100, 50, 0.2);
             z-index: 0; 
         }
@@ -796,7 +796,7 @@
             vp.style.backgroundColor = "#ffffff";
             setTimeout(() => { 
                 if (tkState.weather === 'night') vp.style.backgroundColor = "#0b1021"; else if (tkState.weather === 'sunrise') vp.style.backgroundColor = "#ff9e7a";
-                else if (tkState.weather === 'snow') vp.style.backgroundColor = "#b8c6d9"; else vp.style.backgroundColor = "#4a9ae9";
+                else if (tkState.weather === 'snow') vp.style.backgroundColor = "#b8c6d9"; else vp.style.backgroundColor = "#87CEEB";
             }, 150);
             let shakeAmount = 35;
             function applyShake() {
@@ -936,11 +936,15 @@
             } else { scoreValEl.style.color = '#fff'; }
             scoreValEl.textContent = Math.floor(tkState.score);
 
-            // FATAL IMPACT CHECKS
+            // FATAL IMPACT CHECKS WITH REASONS
             if (tkState.altitude <= 0 && tkState.phase >= 2 && tkState.phase < 6) {
-                if (isStalling || tkState.pitch < -5 || tkState.pitch > 15) return triggerCrash("FATAL ANGLE!");
+                let badAngle = (isStalling || tkState.pitch < -5 || tkState.pitch > 15);
+                let hotLanding = (tkState.speed > 160 && tkState.phase === 5);
+                
+                if (badAngle && hotLanding) return triggerCrash("TOO FAST & BAD ANGLE!");
+                if (badAngle) return triggerCrash("FATAL ANGLE!");
+                if (hotLanding) return triggerCrash("TOO FAST!");
             }
-            if (tkState.speed > 160 && tkState.phase === 5 && tkState.altitude <= 0) return triggerCrash("TOO FAST!");
 
             // TIME-BASED PHASE LOGIC
             if (tkState.phase === 0 && tkState.speed >= 150) { 

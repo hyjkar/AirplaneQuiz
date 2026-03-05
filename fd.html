@@ -24,17 +24,19 @@
             width: 100%; height: 100%; position: relative; overflow: hidden; 
             background-color: #87CEEB; cursor: pointer; transition: background-color 0.5s;
             touch-action: none; 
+            perspective: 1000px;
         }
         
         #tk-alert-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 99998; transition: background 0.2s;
+            transform: translateZ(9000px);
         }
 
         .flashing { animation: redAlert 0.3s infinite alternate; }
         @keyframes redAlert { from { background: rgba(215, 25, 32, 0); } to { background: rgba(215, 25, 32, 0.35); } }
 
-        #tk-version { position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: bold; z-index: 99999; pointer-events: none; }
+        #tk-version { position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: bold; z-index: 99999; pointer-events: none; transform: translateZ(9999px); }
 
         #camera-rig { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: 30% 80%; will-change: transform; z-index: 1; }
 
@@ -139,7 +141,7 @@
         .alert-text { color: var(--brand-red); font-weight: bold; animation: pulseRed 0.8s infinite alternate; }
         .success-text { color: var(--gauge-green); font-weight: bold; }
 
-        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; pointer-events: none; }
+        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; pointer-events: none; transform: translateZ(9999px); }
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
         #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold); transition: all 0.2s;}
         
@@ -148,13 +150,13 @@
         #nvg-btn { font-size: 0.8rem; font-family: 'Share Tech Mono'; font-weight: bold; background: rgba(46, 204, 113, 0.2); border-color: var(--gauge-green); color: var(--gauge-green); display: none;}
         #reset-btn:active, #pause-btn:active, #fs-btn:active, #nvg-btn:active { transform: scale(0.95); }
 
-        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); }
+        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); transform: translateZ(9999px); }
         
-        #prompt-container { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 99999; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #prompt-container { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateZ(9999px); z-index: 99999; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #tk-touch-prompt { background: var(--brand-red); border: 2px solid #fff; border-radius: 8px; padding: 15px 30px; text-align: center; color: #fff; font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(215,25,32,0.6); width: auto; text-transform: uppercase; cursor: pointer; pointer-events: auto; transition: transform 0.1s;}
         #tk-touch-prompt:active { transform: scale(0.95); }
 
-        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 99999; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s; }
+        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 99999; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s; transform: translateZ(9999px); }
         #tk-eject-btn:active { transform: scale(0.92); }
 
         /* Traffic Planes */
@@ -185,8 +187,8 @@
         .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .cargo-package { position: absolute; z-index: 15; width: 20px; height: 20px; background: #cfa86e; border: 2px solid #fff; left: 0; top: 0; will-change: transform; }
-        .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
-        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 0); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 0); opacity: 0; } }
+        .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; transform: translateZ(9999px); }
+        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 9999px); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 9999px); opacity: 0; } }
 
         /* OVERLAYS FORCED TO TOP */
         #tk-flight-plan-overlay, #tk-end-screen, #leaderboard-overlay { 
@@ -194,6 +196,7 @@
             background: rgba(0,0,0,0.85); z-index: 99999; display: none; 
             flex-direction: column; align-items: center; justify-content: center; 
             opacity: 0; transition: opacity 0.3s ease; pointer-events: none; 
+            transform: translateZ(9999px); 
         }
         
         #tk-flight-plan-overlay.visible, #tk-end-screen.visible, #leaderboard-overlay.visible { opacity: 1; pointer-events: auto; }
@@ -273,7 +276,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v8.5 - Final Build (Freeze Fix & 3D Math cleanup)</div>
+        <div id="tk-version">v8.5 - Physics Tweaks & Crash Fixes Applied</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -339,9 +342,9 @@
             <div id="overtaker-1" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
             <div id="overtaker-2" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
 
-            <div id="rear-warning-0" class="rear-warning">⚠️ TRAFFIC: 2s</div>
-            <div id="rear-warning-1" class="rear-warning">⚠️ TRAFFIC: 2s</div>
-            <div id="rear-warning-2" class="rear-warning">⚠️ TRAFFIC: 2s</div>
+            <div id="rear-warning-0" class="rear-warning">⚠️ TRAFFIC: 1.5s</div>
+            <div id="rear-warning-1" class="rear-warning">⚠️ TRAFFIC: 1.5s</div>
+            <div id="rear-warning-2" class="rear-warning">⚠️ TRAFFIC: 1.5s</div>
             
             <div id="tk-bird-flock">
                 <div class="bird" style="top:0; left:10px;"></div><div class="bird" style="top:10px; left:0;"></div><div class="bird" style="top:15px; left:20px;"></div><div class="bird" style="top:5px; left:30px;"></div><div class="bird" style="top:25px; left:15px;"></div>
@@ -495,13 +498,14 @@
     </div>
 
     <script>
-const CRUISE_SPEED = 0.3; // Change this one value to adjust global speed!
-const LANDING_SPEED = 0.25;  // Slow-mo speed
-let SPEED_MOD = CRUISE_SPEED; 
-let playerPlaneSkin = 'my-plane.png';
-const CRUISE_ALT = 450;
+        const CRUISE_SPEED = 0.5625; // Universal Top Speed 
+        const LANDING_SPEED = 0.25;  // Universal Slow-Mo Speed
+        let SPEED_MOD = CRUISE_SPEED; 
+        
+        let playerPlaneSkin = 'my-plane.png';
+        const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V20 - Clean State) ---
+        // --- PROFILE PERSISTENCE (V21) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -513,7 +517,7 @@ const CRUISE_ALT = 450;
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v20');
+                let p = localStorage.getItem('h5_profile_v21');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -525,7 +529,7 @@ const CRUISE_ALT = 450;
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v20', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v21', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -614,7 +618,7 @@ const CRUISE_ALT = 450;
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, 
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
-            weather: "day", zoom: 1.0, targetZoom: 1.0, speedMod: 0.5625, autoPilot: false, canRestart: true, 
+            weather: "day", zoom: 1.0, targetZoom: 1.0, speedMod: CRUISE_SPEED, autoPilot: false, canRestart: true, 
             hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [], enemies: [], overtakers: [], activeCargo: [],
             
             stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0,
@@ -832,7 +836,6 @@ const CRUISE_ALT = 450;
             if (e.code === 'Space' || e.key === ' ') { e.preventDefault(); tkState.pressing = false; }
         });
 
-        // --- PROGRESS AND EVENT LOGGING ---
         function getCompletionPercentage() {
             let pct = 0;
             if (tkState.phase === 0) pct = Math.min(10, (tkState.speed / 150) * 10);
@@ -894,22 +897,8 @@ const CRUISE_ALT = 450;
             }, 300);
         }
 
-        // MASSIVE SPECTACLE CONDITION SCORING
-        function getConditionScore() {
-            let condScore = 0;
-            condScore += playerProfile.upgrades.gear * 10000;
-            condScore += playerProfile.upgrades.engine * 10000;
-            condScore += playerProfile.upgrades.gyro * 10000;
-            condScore += playerProfile.upgrades.ap * 10000;
-            if(playerProfile.upgrades.bird) condScore += 25000;
-            if(playerProfile.upgrades.windShield) condScore += 25000;
-            if(playerProfile.upgrades.nvg) condScore += 10000;
-            return condScore;
-        }
-
         function showLeaderboard() {
-            let finalScore = getConditionScore();
-            
+            // Maximum possible upgrades (4 mechanics * 3 levels) + (3 defenses * 1 level) = 15 total integrity points
             let maxPoints = 15; 
             let currentPoints = playerProfile.upgrades.gear + playerProfile.upgrades.engine + playerProfile.upgrades.gyro + playerProfile.upgrades.ap;
             if (playerProfile.upgrades.bird) currentPoints += 1;
@@ -1178,6 +1167,7 @@ const CRUISE_ALT = 450;
         function generateFlightPlanContext() {
             let rand = Math.random();
             tkState.weather = rand > 0.75 ? 'night' : (rand > 0.5 ? 'snow' : (rand > 0.25 ? 'sunrise' : 'day'));
+            
             tkState.trafficLevel = Math.floor(Math.random() * 3); 
 
             tkState.baseWindRisk = 10;
@@ -1237,7 +1227,7 @@ const CRUISE_ALT = 450;
                 active: false, isPaused: false, inFlightPlan: true, nvgActive: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, altitude: 0, cameraY: 0, score: 0, 
                 pressing: false, frameId: null, lastFrameTime: 0, 
                 currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260, 
-                dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: 0.5625, autoPilot: false, weather: "day", canRestart: false,
+                dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: CRUISE_SPEED, autoPilot: false, weather: "day", canRestart: false,
                 hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [],
                 
                 gearRisk: 0, engineRisk: 0, windRisk: 0, gyroRisk: 0, apRisk: 0, trafficLevel: 0,
@@ -1531,7 +1521,7 @@ const CRUISE_ALT = 450;
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && displaySpeed > 145 && tkState.altitude > 0);
-            let isTooHigh = (tkState.altitude > 1000 && tkState.phase >= 1 && tkState.phase <= 4); 
+            let isTooHigh = (tkState.altitude > 1500 && tkState.phase >= 1 && tkState.phase <= 4); 
             sfx.playAlarm(isStalling);
             
             if (isStalling && !tkState.wasStalling) { tkState.stallsCount++; } tkState.wasStalling = isStalling;
@@ -1539,20 +1529,9 @@ const CRUISE_ALT = 450;
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
             if (tkState.stallFactor > 0) targetVSpeed = (targetVSpeed * (1 - tkState.stallFactor)) + (-15 * Math.pow(tkState.stallFactor, 2) * SPEED_MOD);
             
-            // ALTITUDE POINT DRAIN
-            if (isTooHigh) {
-                tkState.score -= 2 * SPEED_MOD;
-                if (tkState.score < 0) tkState.score = 0;
-                if (Math.random() < 0.3) {
-                    const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
-                    showFloat(pr.left + pr.width/2 + (Math.random()*40-20), pr.top, "-10 PTS", "var(--brand-red)");
-                    sfx.playDing(0.4);
-                }
-            }
-
             if (isStalling) { document.getElementById('tk-alert-overlay').className = 'flashing'; setDialogue("<span class='alert-text'>STALL WARNING!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
             } else if (isTooFast) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 1500);
-            } else if (isTooHigh) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0 || tkState.dialogueText.includes("VISIBILITY")) setDialogue("<span class='alert-text'>TOO HIGH! LOSING POINTS!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
+            } else if (isTooHigh) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>DESCEND! LOW VISIBILITY!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
             } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>" && tkState.dialogueText !== "<span class='alert-text'>WIND SHEAR!</span>" && tkState.dialogueText !== "<span class='alert-text'>GYROSCOPE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT OFFLINE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>" && tkState.dialogueText !== "<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>" && !tkState.dialogueText.includes("DROP NOW!")) { document.getElementById('tk-alert-overlay').className = ''; }
 
             tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.12;
@@ -1578,30 +1557,10 @@ const CRUISE_ALT = 450;
             let dynColor = `hsl(${p_hue}, 85%, 55%)`; hudRing.style.borderColor = dynColor; document.getElementById('hud-pitch').style.color = dynColor;
             
             const scoreValEl = document.getElementById('score-val');
-            const altHud = document.getElementById('hud-alt');
-            const scoreHud = document.getElementById('tk-score-display');
-
-            if (isTooHigh) {
-                altHud.style.color = 'var(--brand-red)';
-                scoreHud.style.color = 'var(--brand-red)';
-                scoreHud.style.borderColor = 'var(--brand-red)';
-                scoreHud.style.boxShadow = '0 0 10px var(--brand-red)';
-            } else {
-                altHud.style.color = '#fff';
-                scoreHud.style.color = 'var(--brand-gold)';
-                scoreHud.style.borderColor = 'var(--brand-gold)';
-                scoreHud.style.boxShadow = 'none';
-            }
-
             if (inHUDZone && tkState.phase > 0 && tkState.phase < 6) {
-                if (!isTooHigh) {
-                    tkState.score += tkState.autoPilot ? 10 : 4; 
-                    if (Math.random() > 0.4) { const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); spawnScoreParticle(pr.left + pr.width / 2, pr.top + pr.height / 2, tkState.pitch); }
-                }
-                if (!isTooHigh) scoreValEl.style.color = tkState.autoPilot ? '#cfa86e' : '#fff';
-            } else { 
-                if (!isTooHigh) scoreValEl.style.color = '#fff'; 
-            }
+                tkState.score += tkState.autoPilot ? 10 : 4; scoreValEl.style.color = tkState.autoPilot ? '#cfa86e' : '#fff';
+                if (Math.random() > 0.4) { const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); spawnScoreParticle(pr.left + pr.width / 2, pr.top + pr.height / 2, tkState.pitch); }
+            } else { scoreValEl.style.color = '#fff'; }
             scoreValEl.textContent = Math.floor(tkState.score);
 
             if (tkState.altitude <= 0 && tkState.hasLiftedOff) {
@@ -1695,7 +1654,7 @@ const CRUISE_ALT = 450;
                 }
             }
 
-            // Overtaker (Fixed to PX + Red Warning Delay)
+            // Overtaker (Fixed to PX + Red Warning Delay + Safe Spawning)
             let trySpawnOvertaker = false;
             if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && Math.random() < 0.005) { trySpawnOvertaker = true; }
             if (tkState.trafficLevel === 2 && tkState.phase === 3 && Math.random() < 0.015) { trySpawnOvertaker = true; } 
@@ -1703,16 +1662,26 @@ const CRUISE_ALT = 450;
             if (trySpawnOvertaker) {
                 let slot = tkState.overtakers.findIndex(o => !o.active && !o.warning);
                 if (slot !== -1) {
-                    let o = tkState.overtakers[slot];
-                    o.warning = true; 
-                    o.warningTimer = 1500; // 1.5-second visual warning delay before spawning
-                    o.alt = tkState.altitude + (Math.random() * 100 - 50); 
-                    if (tkState.phase === 3) {
-                        o.spd = (2 + Math.random() * 3) * SPEED_MOD; // Creep up slowly during extreme mode
-                    } else {
-                        o.spd = (15 + Math.random() * 5) * SPEED_MOD; 
+                    let proposedAlt; let valid = false; let attempts = 0;
+                    while(!valid && attempts < 15) {
+                        proposedAlt = tkState.altitude + (Math.random() * 300 - 150);
+                        valid = true;
+                        tkState.overtakers.forEach(o => { if ((o.active || o.warning) && Math.abs(o.alt - proposedAlt) < 58) valid = false; });
+                        tkState.enemies.forEach(e => { if (e.active && Math.abs(e.alt - proposedAlt) < 58) valid = false; });
+                        attempts++;
                     }
-                    logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 4000); 
+                    if (valid) {
+                        let o = tkState.overtakers[slot];
+                        o.warning = true; 
+                        o.warningTimer = 1500;
+                        o.alt = proposedAlt; 
+                        if (tkState.phase === 3) {
+                            o.spd = (1.6 + Math.random() * 2.4) * SPEED_MOD; // 20% slower
+                        } else {
+                            o.spd = (12 + Math.random() * 4) * SPEED_MOD; // 20% slower
+                        }
+                        logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 4000); 
+                    }
                 }
             }
 
@@ -1797,22 +1766,33 @@ const CRUISE_ALT = 450;
                 if (activeCount < maxEnemies && Math.random() < spawnChance) { 
                     let slotIdx = tkState.enemies.findIndex(e => !e.active); 
                     if (slotIdx !== -1) { 
-                        let e = tkState.enemies[slotIdx]; e.active = true; 
-                        e.x = window.innerWidth + 200; e.alt = tkState.altitude + (Math.random() * 160 - 80); 
-                        e.spd = (15 + Math.random() * 15) * SPEED_MOD; // Fast pixel movement!
-                        document.getElementById('enemy-' + slotIdx).style.display = 'block'; 
+                        let proposedAlt; let valid = false; let attempts = 0;
+                        while(!valid && attempts < 15) {
+                            proposedAlt = tkState.altitude + (Math.random() * 500 - 250); 
+                            valid = true;
+                            tkState.overtakers.forEach(o => { if ((o.active || o.warning) && Math.abs(o.alt - proposedAlt) < 58) valid = false; });
+                            tkState.enemies.forEach(e => { if (e.active && Math.abs(e.alt - proposedAlt) < 58) valid = false; });
+                            attempts++;
+                        }
+                        if (valid) {
+                            let e = tkState.enemies[slotIdx]; e.active = true; 
+                            e.x = window.innerWidth + 200 + (Math.random() * 150); 
+                            e.alt = proposedAlt; 
+                            e.spd = (12 + Math.random() * 12) * SPEED_MOD; // 20% slower
+                            document.getElementById('enemy-' + slotIdx).style.display = 'block'; 
+                        }
                     } 
                 }
 
-                let collision = false; const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
+                let swarmCollision = false; const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
                 tkState.enemies.forEach((e, i) => {
                     if (e.active) {
                         e.x -= e.spd; let el = document.getElementById('enemy-' + i); el.style.transform = `translate3d(${e.x}px, ${-(e.alt - tkState.cameraY)}px, 0)`;
-                        const er = el.getBoundingClientRect(); if (!( (pr.right - 12) < (er.left + 15) || (pr.left + 12) > (er.right - 15) || (pr.bottom - 12) < (er.top + 25) || (pr.top + 25) > (er.bottom - 10) )) { collision = true; }
+                        const er = el.getBoundingClientRect(); if (!( (pr.right - 12) < (er.left + 15) || (pr.left + 12) > (er.right - 15) || (pr.bottom - 12) < (er.top + 25) || (pr.top + 25) > (er.bottom - 10) )) { swarmCollision = true; }
                         if (e.x < -300) { e.active = false; el.style.display = 'none'; }
                     }
                 });
-                if (collision) return triggerCrash("MID-AIR CRASH!");
+                if (swarmCollision) return triggerCrash("MID-AIR CRASH!");
                 if (tkState.phaseTimer > 12000 && activeCount === 0) { tkState.phase = 4; tkState.phaseTimer = 0; tkState.currTargetMin = -3; tkState.currTargetMax = 3; setDialogue("<span class='success-text'>CLEAR! LEVEL OFF</span>", 4000); document.getElementById('tk-alert-overlay').className = ''; }
             }
 

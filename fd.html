@@ -266,7 +266,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v5.0 - Plane Tap AP & Shorter Climb</div>
+        <div id="tk-version">v4.3 - Landing Bonus</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -393,9 +393,10 @@
                         <div style="margin-bottom: 5px;">STALLS: <span id="end-stalls" style="color: var(--brand-red); font-weight:bold;">0</span></div>
                         <div>SMOOTH FLIGHT: <span id="end-comfort" style="color: var(--fo-blue); font-weight:bold;">100%</span></div>
                     </div>
-                    <div style="text-align:right;">
+                    <div style="text-align:right; position: relative;">
                         <div style="font-size: 0.8rem; color: #888; margin-bottom:2px;">CUSTOMER SATISFACTION</div>
-                        <strong id="end-satisfaction" style="font-size:1.4rem; color: var(--gauge-green);">100%</strong>
+                        <strong id="end-satisfaction" style="font-size:1.4rem; color: var(--gauge-green);">0%</strong>
+                        <div id="end-sat-bonus" style="position: absolute; right: 0; bottom: -15px; font-size: 0.7rem; color: var(--brand-gold); opacity: 0; transition: opacity 0.5s, transform 0.5s; transform: translateY(-5px); font-weight: bold; white-space: nowrap;">+20% BUTTER LANDING!</div>
                     </div>
                 </div>
 
@@ -568,8 +569,8 @@
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
             if (tkState.inFlightPlan) return; 
-            sfx.init(); 
             
+            sfx.init(); 
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 try {
                     let elem = document.documentElement;
@@ -591,6 +592,7 @@
                 e.preventDefault(); 
                 if (e.repeat) return; 
                 if (tkState.inFlightPlan) return;
+
                 sfx.init(); 
                 if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                     try { document.documentElement.requestFullscreen().catch(e=>{}); } catch(e) {}
@@ -651,21 +653,34 @@
 
             // Calculate Satisfaction
             let comfortLoss = tkState.totalFlightTime > 0 ? (tkState.extremePitchTime / tkState.totalFlightTime) * 100 : 0;
-            let satisfaction = 100 - Math.floor(comfortLoss) - (tkState.stallsCount * 15);
-            if (!isSuccess) satisfaction = 0;
-            satisfaction = Math.max(0, Math.min(100, satisfaction));
+            let baseSatisfaction = 100 - Math.floor(comfortLoss) - (tkState.stallsCount * 15);
+            if (!isSuccess) baseSatisfaction = 0;
+            baseSatisfaction = Math.max(0, Math.min(100, baseSatisfaction));
+
+            let landingSatBonus = 0;
+            let landingScoreBonus = 0;
+            
+            if (isSuccess) {
+                let finalPitchAbs = Math.abs(tkState.pitch);
+                if (finalPitchAbs <= 6) {
+                    let multiplier = (6 - finalPitchAbs) / 6;
+                    landingSatBonus = Math.floor(multiplier * 25);
+                    landingScoreBonus = Math.floor(multiplier * 1000);
+                }
+            }
+
+            let finalSatisfaction = Math.min(100, baseSatisfaction + landingSatBonus);
+            let stallPenalty = tkState.stallsCount * 100;
+            let totalScore = Math.max(0, finalScore - stallPenalty + landingScoreBonus);
 
             stallEl.textContent = tkState.stallsCount;
             comfortEl.textContent = Math.floor(100 - comfortLoss) + '%';
-            satEl.textContent = satisfaction + '%';
+            satEl.textContent = '0%';
+            satEl.style.color = "var(--brand-red)";
             
-            if(satisfaction >= 80) satEl.style.color = "var(--gauge-green)";
-            else if (satisfaction >= 40) satEl.style.color = "var(--gauge-orange)";
-            else satEl.style.color = "var(--brand-red)";
-
-            // Final score penalty
-            let stallPenalty = tkState.stallsCount * 100;
-            let totalScore = Math.max(0, finalScore - stallPenalty);
+            let bonusEl = document.getElementById('end-sat-bonus');
+            bonusEl.style.opacity = 0;
+            bonusEl.style.transform = 'translateY(-5px)';
 
             es.style.display = 'flex';
             setTimeout(() => { es.classList.add('visible'); }, 50);
@@ -693,20 +708,66 @@
             if (totalScore > 2000) targetPlanes = 2; 
             if (totalScore > 3500) targetPlanes = 3; 
 
-            let cur = 0; let step = Math.max(1, Math.ceil(totalScore / 40));
+            let curScore = 0; let scoreStep = Math.max(1, Math.ceil(totalScore / 40));
             let curPct = 0; let pctStep = Math.max(1, finalPct / 40);
+            let curSat = 0; let satStep = Math.max(1, Math.ceil(baseSatisfaction / 30));
+            
             let pctEl = document.getElementById('end-completion-val');
+            let phase2Sat = false;
+            let phase2Score = false;
 
             clearInterval(endScreenAnimInterval);
             endScreenAnimInterval = setInterval(() => {
-                cur += step;
-                if(cur >= totalScore) { cur = totalScore; clearInterval(endScreenAnimInterval); if(isSuccess) popGoldenPlanes(targetPlanes); }
-                scoreEl.textContent = cur;
-                
-                curPct += pctStep;
-                if(curPct >= finalPct) curPct = finalPct;
-                pctEl.textContent = Math.floor(curPct) + '%';
-            }, 20);
+                // Percent
+                if(curPct < finalPct) {
+                    curPct += pctStep;
+                    if(curPct >= finalPct) curPct = finalPct;
+                    pctEl.textContent = Math.floor(curPct) + '%';
+                }
+
+                // Score
+                let targetScore = phase2Score ? totalScore : Math.max(0, finalScore - stallPenalty);
+                if(curScore < targetScore) {
+                    curScore += scoreStep;
+                    if(curScore >= targetScore) curScore = targetScore;
+                    scoreEl.textContent = Math.floor(curScore);
+                }
+
+                // Satisfaction
+                if (!phase2Sat) {
+                    if (curSat < baseSatisfaction) {
+                        curSat += satStep;
+                        if (curSat >= baseSatisfaction) curSat = baseSatisfaction;
+                    } else if (curSat === baseSatisfaction) {
+                        if (landingSatBonus > 0 && isSuccess) {
+                            phase2Sat = true; phase2Score = true;
+                            let landingText = Math.abs(tkState.pitch) <= 1 ? "BUTTER LANDING!" : "SMOOTH LANDING!";
+                            bonusEl.textContent = `+${landingSatBonus}% ${landingText}`;
+                            bonusEl.style.opacity = 1;
+                            bonusEl.style.transform = 'translateY(5px)';
+                            sfx.playDing(1.2);
+                            satStep = 1; 
+                        } else {
+                            phase2Sat = true; 
+                        }
+                    }
+                } else {
+                    if (curSat < finalSatisfaction) {
+                        curSat += satStep;
+                        if (curSat >= finalSatisfaction) curSat = finalSatisfaction;
+                    }
+                }
+
+                satEl.textContent = Math.floor(curSat) + '%';
+                if(Math.floor(curSat) >= 80) satEl.style.color = "var(--gauge-green)";
+                else if (Math.floor(curSat) >= 40) satEl.style.color = "var(--gauge-orange)";
+                else satEl.style.color = "var(--brand-red)";
+
+                if (curScore >= totalScore && curPct >= finalPct && curSat >= finalSatisfaction && phase2Sat) {
+                    clearInterval(endScreenAnimInterval);
+                    if(isSuccess) popGoldenPlanes(targetPlanes);
+                }
+            }, 30);
         }
 
         function popGoldenPlanes(count) {
@@ -995,7 +1056,7 @@
                 if (tkState.speed <= 0) { 
                     tkState.active = false; 
                     logEvent("SAFE LANDING", "🏁", "LANDED", "var(--gauge-green)");
-                    setDialogue("<span class='success-text'>SAFE! EVACUATE!</span>", 6000); 
+                    setDialogue("<span class='success-text'>SAFE! EVACUATE!</span>", 5000); 
                     sfx.stopAll(); 
                     setTimeout(() => { showEndScreen(Math.floor(tkState.score), true); tkState.canRestart = true; }, 1500); 
                     return; 
@@ -1025,7 +1086,7 @@
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && tkState.speed > 145 && tkState.altitude > 0);
-            let isTooHigh = (tkState.altitude > 800 && tkState.phase >= 1 && tkState.phase <= 4);
+            let isTooHigh = (tkState.altitude > 1500 && tkState.phase >= 1 && tkState.phase <= 4);
             
             sfx.playAlarm(isStalling);
             

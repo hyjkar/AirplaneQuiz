@@ -99,7 +99,7 @@
         
         .rain-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNTAnIGhlaWdodD0nMjUwJz48cmVjdCB4PScyMCcgeT0nMjAnIHdpZHRoPScyJyBoZWlnaHQ9JzE1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuNCknLz48L3N2Zz4="); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
         .rain-layer.layer-2 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJz48cmVjdCB4PSc1MCcgeT0nNTAnIHdpZHRoPSczJyBoZWlnaHQ9JzI1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuNiknLz48cmVjdCB4PScyNTAnIHk9JzIwMCcgd2lkdGg9JzInIGhlaWdodD0nMTUnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC40KScvPjwvc3ZnPg=="); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
-        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nMjAwJz48Y2lyY2xlIGN4PScyMCcgY3k9JzIwJyByPSczJyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOCknLz48Y2lyY2xlIGN4PScxMDAnIGN5PSc4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjYpJy8+PGNpcmNsZSBjeD0nMTUwJyBjeT0nMTUwJyByPSc0JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PSc1MCcgY3k9JzE4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjUpJy8+PC9zdmc+"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
+        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nMjAwJz48Y2lyY2xlIGN4PScyMCcgY3k9JzIwJyByPSczJyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOCknLz48Y2lyY2xlIGN4PScxMDAnIGN5PSc4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLj六pJy8+PGNpcmNsZSBjeD0nMTUwJyBjeT0nMTUwJyByPSc0JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PSc1MCcgY3k9JzE4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjUpJy8+PC9zdmc+"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
         .snow-layer.layer-2 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMDAnIGhlaWdodD0nMzAwJz48Y2lyY2xlIGN4PSc1MCcgY3k9JzUwJyByPSc1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PScyMDAnIGN5PScxNTAnIHI9JzYnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC44KScvPjxjaXJjbGUgY3g9JzI1MCcgY3k9JzI4MCcgcj0nNCcgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjcpJy8+PC9zdmc+"); animation: snowAnim2 3.5s linear infinite; z-index: 16; }
         
         @keyframes fogSweep { 0% { background-position: 200% 50%; } 100% { background-position: -100% 50%; } }
@@ -261,7 +261,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v7.7 - Integrated Single File & Crash Logic</div>
+        <div id="tk-version">v7.8 - Complete Layout & Physics Overhaul</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -485,7 +485,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V13) ---
+        // --- PROFILE PERSISTENCE (V14) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -496,7 +496,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v13');
+                let p = localStorage.getItem('h5_profile_v14');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -507,7 +507,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v13', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v14', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -629,7 +629,7 @@
                 else { btn.textContent = `REPAIR (1K)`; btn.disabled = playerProfile.points < 1000; }
             });
             
-            // Defenses
+            // Bird shield
             let bBtn = document.getElementById('btn-upg-bird');
             if(playerProfile.upgrades.bird) {
                 document.getElementById('stat-bird').textContent = "ACTIVE";
@@ -641,6 +641,7 @@
                 bBtn.textContent = "BUY (1K)"; bBtn.disabled = playerProfile.points < 1000;
             }
 
+            // Wind shield
             let wBtn = document.getElementById('btn-upg-windshield');
             if(playerProfile.upgrades.windShield) {
                 document.getElementById('stat-windshield').textContent = "ACTIVE";
@@ -652,6 +653,7 @@
                 wBtn.textContent = "BUY (1K)"; wBtn.disabled = playerProfile.points < 1000;
             }
 
+            // NVG
             let nBtn = document.getElementById('btn-upg-nvg');
             if(playerProfile.upgrades.nvg) {
                 document.getElementById('stat-nvg').textContent = "ACTIVE";
@@ -787,18 +789,29 @@
         window.addEventListener('touchend', () => tkState.pressing = false);
 
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyP' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') { togglePause(); }
-            if (e.code === 'KeyD' || e.key === 'd' || e.key === 'D' || e.code === 'ShiftLeft') { ejectCargo(); }
-            if (e.code === 'KeyN' || e.key === 'n' || e.key === 'N') { toggleNVG(); }
+            if (e.code === 'KeyP' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+                togglePause();
+            }
+            if (e.code === 'KeyD' || e.key === 'd' || e.key === 'D' || e.code === 'ShiftLeft') {
+                ejectCargo();
+            }
+            if (e.code === 'KeyN' || e.key === 'n' || e.key === 'N') {
+                toggleNVG();
+            }
             if (e.code === 'KeyR' || e.key === 'r' || e.key === 'R') {
-                if (tkState.active || document.getElementById('tk-end-screen').classList.contains('visible')) { hardReset(); }
+                if (tkState.active || document.getElementById('tk-end-screen').classList.contains('visible')) {
+                    hardReset();
+                }
             }
             if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault(); 
                 if (e.repeat) return; 
+                
                 if (document.activeElement) document.activeElement.blur();
+
                 if (tkState.active && !tkState.isPaused && !tkState.inFlightPlan && document.getElementById('tk-end-screen').style.display !== 'flex') {
-                    sfx.init(); tkState.pressing = true;
+                    sfx.init(); 
+                    tkState.pressing = true;
                 }
             }
             if (e.code === 'Enter' || e.key === 'Enter') {
@@ -811,6 +824,7 @@
             if (e.code === 'Space' || e.key === ' ') { e.preventDefault(); tkState.pressing = false; }
         });
 
+        // --- PROGRESS AND EVENT LOGGING ---
         function getCompletionPercentage() {
             let pct = 0;
             if (tkState.phase === 0) pct = Math.min(10, (tkState.speed / 150) * 10);
@@ -827,6 +841,7 @@
             tkState.events.push({ name: name, icon: icon, shortName: shortName, color: color || 'var(--fo-blue)', percent: getCompletionPercentage() });
         }
 
+        // --- CARGO MECHANICS ---
         function ejectCargo(e) {
             if(e) { e.preventDefault(); e.stopPropagation(); }
             if (document.activeElement) document.activeElement.blur();
@@ -853,6 +868,7 @@
             setTimeout(() => el.remove(), 1000); 
         }
 
+        // --- LEVEL ADVANCEMENT & LEADERBOARD ---
         function handleLevelAdvance(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             if (document.activeElement) document.activeElement.blur();
@@ -860,10 +876,15 @@
             document.getElementById('tk-end-screen').classList.remove('visible');
             setTimeout(() => { 
                 document.getElementById('tk-end-screen').style.display = 'none'; 
-                playerProfile.currentLevel++; saveProfile();
+                
+                playerProfile.currentLevel++;
+                saveProfile();
 
-                if (playerProfile.currentLevel > 5) showLeaderboard();
-                else openFlightPlan();
+                if (playerProfile.currentLevel > 5) {
+                    showLeaderboard();
+                } else {
+                    openFlightPlan();
+                }
             }, 300);
         }
 
@@ -1095,6 +1116,23 @@
             }, 30);
         }
 
+        function popGoldenPlanes(count) {
+            let icons = document.querySelectorAll('.reward-icon');
+            if(!icons || icons.length === 0) return;
+            for(let i=0; i<3; i++) {
+                let t = setTimeout(() => {
+                    if(icons[i]) {
+                        icons[i].classList.add('pop');
+                        if(i < count) {
+                            icons[i].classList.add('golden'); sfx.playDing(1 + (i * 0.2)); 
+                            confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 }, zIndex: 200 });
+                        } else { sfx.playDing(0.6); }
+                    }
+                }, i * 500);
+                endScreenTimeouts.push(t);
+            }
+        }
+
         function triggerCrash(reasonText) {
             sfx.stopAll();
             const r = document.getElementById('tk-plane-img').getBoundingClientRect();
@@ -1277,7 +1315,6 @@
                     setDialogue("<span class='capt-text'>FULL POWER!<br><span style='font-size:0.65rem; color:var(--aux-blue);'>TAP PLANE FOR AUTOPILOT</span></span>", 5000);
                 }
 
-                // FIX FOR FREEZE BUG: Explicitly reset to 0
                 tkState.lastFrameTime = 0; 
                 sfx.bgMusic.play().catch(e=>e);
                 tkState.frameId = requestAnimationFrame(gameLoop);
@@ -1420,13 +1457,12 @@
                 document.getElementById('tk-wind-pocket').style.display = 'block';
             }
             if (tkState.windPocketSpawned) {
-                tkState.windPocketX -= (displaySpeed * 0.18 * SPEED_MOD * 0.4); // Greatly reduced speed for visibility
+                tkState.windPocketX -= (displaySpeed * 0.18 * SPEED_MOD * 0.4); 
                 document.getElementById('tk-wind-pocket').style.transform = `translate3d(${tkState.windPocketX}px, ${-(300 - tkState.cameraY)}px, 0)`;
 
                 let planeRect = document.getElementById('tk-plane-img').getBoundingClientRect();
                 let windRect = document.getElementById('tk-wind-pocket').getBoundingClientRect();
                 
-                // Proper 2D bounding box collision (Allows Y-axis dodging)
                 let hit = !(planeRect.right < windRect.left + 20 || 
                             planeRect.left > windRect.right - 20 || 
                             planeRect.bottom < windRect.top + 20 || 

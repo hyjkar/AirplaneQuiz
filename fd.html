@@ -33,7 +33,6 @@
             align-items: center; justify-content: center;
             font-size: 1.5rem; font-weight: bold; text-align: center; padding: 20px;
         }
-
         @media screen and (orientation: portrait) { #orientation-lock { display: flex; } }
 
         #takeoff-viewport {
@@ -60,7 +59,7 @@
         #tk-fg-sky { background-size: auto 150vh; z-index: 14; height: 120%; top: -100%; opacity: 0.8; }
         #tk-threat-fog { display: none; background-size: auto 200vh; z-index: 15; height: 150%; top: -10%; opacity: 0.95; filter: blur(3px) brightness(1.1); }
         .fog-scenario #tk-threat-fog { display: block; }
-        .fog-scenario #tk-plane-img, .fog-scenario .tk-enemy img, .fog-scenario #tk-overtaker-plane img { filter: brightness(0) !important; transition: filter 0.5s; }
+        .fog-scenario #tk-plane-img, .fog-scenario .tk-enemy, .fog-scenario #tk-overtaker-plane { filter: brightness(0) !important; transition: filter 0.5s; }
         
         .passenger-windows { display: none; position: absolute; top: 62%; left: 35%; right: 25%; height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; }
         .fog-scenario .passenger-windows { display: flex; }
@@ -75,8 +74,13 @@
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3; transition: filter 0.5s; will-change: transform; }
         #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x; will-change: background-position; }
 
-        /* CARGO DROP ZONE */
-        #tk-drop-zone { position: absolute; bottom: 0; left: 0; height: 25px; width: 400px; background: rgba(215, 25, 32, 0.7); border: 3px solid #ff3333; border-bottom: none; z-index: 5; display: none; will-change: transform; box-shadow: 0 0 20px rgba(215, 25, 32, 0.5); }
+        /* CARGO DROP ZONE - MASSIVE RED BLOCK */
+        #tk-drop-zone { 
+            position: absolute; bottom: 0; left: 0; height: 40px; width: 400px; 
+            background: rgba(215, 25, 32, 0.7); border: 4px solid #ff3333; border-bottom: none; 
+            z-index: 4; display: none; will-change: transform; box-shadow: 0 0 30px rgba(215, 25, 32, 0.6); 
+            text-align: center; color: #fff; font-weight: bold; line-height: 32px; font-size: 1.2rem; text-shadow: 1px 1px 2px #000;
+        }
 
         /* --- WEATHER STATES --- */
         .weather-layer { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
@@ -86,12 +90,12 @@
         .night-weather { background-color: #0b1021 !important; }
         .night-weather #tk-bg-sky, .night-weather #tk-fg-sky, .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain { filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2); }
         .night-weather #tk-threat-fog { filter: brightness(0.3) sepia(0.5) hue-rotate(180deg) saturate(1.2) blur(3px); }
-        .night-weather #tk-plane-img, .night-weather .tk-enemy img, .night-weather #tk-overtaker-plane img { filter: brightness(0.55); }
+        .night-weather #tk-plane-img, .night-weather .tk-enemy, .night-weather #tk-overtaker-plane { filter: brightness(0.55); }
 
         .sunrise-weather { background-color: #ff9e7a !important; }
         .sunrise-weather #tk-bg-sky, .sunrise-weather #tk-fg-sky, .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8); }
         .sunrise-weather #tk-threat-fog { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.9) blur(3px); }
-        .sunrise-weather #tk-plane-img, .sunrise-weather .tk-enemy img, .sunrise-weather #tk-overtaker-plane img { filter: sepia(0.3) saturate(1.2) brightness(0.9); }
+        .sunrise-weather #tk-plane-img, .sunrise-weather .tk-enemy, .sunrise-weather #tk-overtaker-plane { filter: sepia(0.3) saturate(1.2) brightness(0.9); }
 
         .snow-weather { background-color: #b8c6d9 !important; }
         .snow-weather #tk-bg-sky, .snow-weather #tk-fg-sky, .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain { filter: grayscale(0.7) brightness(1.4) contrast(0.6); }
@@ -123,7 +127,7 @@
         .pf-4 { width: 15px; height: 15px; background: rgba(255, 255, 255, 0.4); }
 
         #plane-container { position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; pointer-events: auto; cursor: pointer; width: 150px; height: 50px; will-change: transform; }
-        #plane-rotate-group { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; z-index: 12; will-change: transform; }
+        #plane-rotate-group { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; z-index: 12; will-change: transform; background: rgba(85,85,85,0.01); border-radius: 20px;}
         #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; transition: filter 0.5s; pointer-events: none;}
         
         #ap-indicator { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: var(--gauge-green); color: #000; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-weight: bold; display: none; z-index: 15; box-shadow: 0 0 10px var(--gauge-green); pointer-events: none; }
@@ -163,17 +167,16 @@
         #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 50; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s;}
         #tk-eject-btn:active { transform: scale(0.92); }
         
-        /* Traffic Planes - Now positioned strictly with Left */
-        .tk-enemy, #tk-overtaker-plane { position: absolute; bottom: 65px; left: 0; width: 162px; height: 56px; z-index: 9; display: none; will-change: transform; pointer-events: none;}
+        /* Traffic Planes (Fixed Visibility) */
+        .tk-enemy, #tk-overtaker-plane { position: absolute; bottom: 65px; width: 162px; height: 56px; background-color: rgba(85,85,85,0.01); border-radius: 20px; z-index: 9; display: none; left: 0; will-change: transform; pointer-events: none;}
         .tk-enemy img { width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1); }
         #tk-overtaker-plane img { width: 100%; height: 100%; object-fit: contain; } 
         
         #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform; pointer-events: none;}
         
-        #tk-bird-flock { position: absolute; bottom: 65px; left: 0; width: 40px; height: 30px; z-index: 9; display: none; pointer-events: none; will-change: transform; }
+        #tk-bird-flock { position: absolute; bottom: 65px; width: 40px; left: 0; height: 30px; z-index: 9; display: none; pointer-events: none; will-change: transform; }
         .bird { position: absolute; width: 4px; height: 4px; background: #111; border-radius: 50%; box-shadow: 12px 6px #111, -8px 10px #111, 16px 14px #111, 6px -4px #111; animation: flap 0.3s infinite alternate; }
 
-        /* Hardware Accelerated Particles */
         .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; left: 0; top: 0; will-change: transform, opacity; }
         .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
@@ -192,7 +195,7 @@
         .upg-icon svg { width: 20px; height: 20px; fill: #fff; }
         .upg-info { flex-grow: 1; margin: 0 12px; text-align: left; }
         .upg-title { font-size: 0.8rem; color: #ccc; }
-        .upg-stat { font-size: 0.95rem; font-weight: bold; text-transform: uppercase; }
+        .upg-stat { font-size: 0.95rem; font-weight: bold; text-transform: uppercase; transition: color 0.3s; }
         .upg-btn { background: transparent; color: var(--gauge-green); border: 1px solid var(--gauge-green); border-radius: 6px; padding: 6px 10px; font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: transform 0.1s;}
         .upg-btn:active { transform: scale(0.9); }
         .upg-btn:disabled { border-color: #555; color: #555; cursor: not-allowed; transform: none;}
@@ -203,9 +206,9 @@
         .reroll-btn { background: #333; border: 1px solid var(--brand-gold); color: var(--brand-gold); border-radius: 6px; padding: 4px 8px; font-size: 0.7rem; font-family: 'Share Tech Mono', monospace; font-weight: bold; cursor: pointer; transition: all 0.2s;}
         .reroll-btn:active { transform: scale(0.95); }
 
-        /* END SCREEN & MODALS */
-        #tk-end-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
-        #tk-end-screen.visible { opacity: 1; pointer-events: auto; }
+        /* END SCREEN / LEADERBOARD */
+        #tk-end-screen, #leaderboard-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
+        #tk-end-screen.visible, #leaderboard-overlay.visible { opacity: 1; pointer-events: auto; }
         
         .end-panel { 
             background: var(--panel-bg); border: 2px solid var(--brand-gold); border-radius: 15px; 
@@ -216,7 +219,7 @@
         .end-panel::-webkit-scrollbar { width: 5px; }
         .end-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 5px; }
         .end-panel.visible { transform: scale(1); }
-        #tk-end-screen.visible .end-panel { transform: scale(1); }
+        
         .end-title { font-size: 1.8rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; text-transform: uppercase;}
         .end-subtitle { font-size: 0.9rem; color: #aaa; margin-bottom: 10px; text-transform: uppercase;}
         .end-score { font-size: 2.5rem; color: var(--gauge-green); margin-bottom: 10px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
@@ -238,6 +241,12 @@
         .minimap-tooltip { display: none; position: absolute; bottom: 45px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); color: #fff; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; white-space: nowrap; pointer-events: none; border: 1px solid #555; z-index: 20; }
         .minimap-marker:hover .minimap-tooltip { display: block; }
         .minimap-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -4px; border-width: 4px; border-style: solid; border-color: #555 transparent transparent transparent; }
+
+        /* Leaderboard table */
+        #lb-table { width: 100%; text-align: left; margin: 15px 0; font-size: 0.9rem; border-collapse: collapse; }
+        #lb-table th { padding: 5px; border-bottom: 1px solid #555; color: var(--brand-gold); }
+        #lb-table td { padding: 5px; border-bottom: 1px solid #333; }
+        .lb-input { width: 100%; padding: 8px; font-family: 'Share Tech Mono', monospace; font-size: 1rem; text-align: center; border-radius: 6px; border: none; margin-bottom: 15px; }
 
         @media screen and (max-height: 450px) {
             .end-panel { padding: 15px; width: 95%; max-width: 600px;}
@@ -265,7 +274,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v5.3 - Stability Update & Drop Zone Fix</div>
+        <div id="tk-version">v5.3 - 5 Level Campaign & Physics Fixes</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -313,12 +322,12 @@
             <div id="tk-fg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             <div id="tk-threat-fog" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             
-            <div id="enemy-0" class="tk-enemy"><img src="a22.png"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-1" class="tk-enemy"><img src="a22.png"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-2" class="tk-enemy"><img src="a22.png"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-3" class="tk-enemy"><img src="a22.png"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-4" class="tk-enemy"><img src="a22.png"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="tk-overtaker-plane"><img src="a22.png"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-0" class="tk-enemy"><img src="a22.png" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#555'"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-1" class="tk-enemy"><img src="a22.png" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#555'"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-2" class="tk-enemy"><img src="a22.png" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#555'"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-3" class="tk-enemy"><img src="a22.png" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#555'"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-4" class="tk-enemy"><img src="a22.png" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#555'"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="tk-overtaker-plane"><img src="a22.png" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#555'"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
             
             <div id="tk-bird-flock">
                 <div class="bird" style="top:0; left:10px;"></div><div class="bird" style="top:10px; left:0;"></div><div class="bird" style="top:15px; left:20px;"></div><div class="bird" style="top:5px; left:30px;"></div><div class="bird" style="top:25px; left:15px;"></div>
@@ -326,9 +335,10 @@
 
             <div id="tk-runway">
                 <div id="tk-runway-stripes"></div>
-                <div id="tk-drop-zone"></div>
-            </div>
+                </div>
             
+            <div id="tk-drop-zone"><div style="color:#fff; font-weight:bold; line-height:25px; font-family:'Share Tech Mono';">DROP TARGET</div></div>
+
             <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M42,35 L50,20 L58,35 Z" fill="#fff"/></svg></div>
             <div class="weather-layer fog-layer layer-front"></div><div class="weather-layer rain-layer layer-2"></div><div class="weather-layer snow-layer layer-2"></div>
         </div>
@@ -343,6 +353,7 @@
         <div id="tk-flight-plan-overlay">
             <div class="end-panel visible" style="pointer-events: auto;">
                 <div class="end-title">FLIGHT PLAN</div>
+                <div class="end-subtitle" id="fp-sector-title">SECTOR 1 OF 5</div>
                 
                 <div style="display:flex; justify-content:space-between; align-items:center; font-family:'Share Tech Mono'; margin-top: 5px;">
                     <span style="color:#ccc; font-size:0.9rem;">AVAILABLE FUNDS:</span> <strong id="fp-total-points" style="color:var(--brand-gold); font-size:1.4rem;">0</strong>
@@ -436,9 +447,40 @@
                     </div>
                 </div>
 
-                <button class="play-again-btn" onclick="hardReset(event)" style="width: 100%;">CONTINUE TO BASE</button>
+                <button class="play-again-btn" id="btn-next-action" onclick="handleLevelAdvance(event)" style="width: 100%;">CONTINUE</button>
             </div>
         </div>
+
+        <div id="leaderboard-overlay">
+            <div class="end-panel visible" style="pointer-events: auto;">
+                <div class="end-title" style="color: var(--brand-gold);">CAMPAIGN COMPLETE</div>
+                <div class="end-subtitle">ALL 5 SECTORS CLEARED</div>
+                
+                <div style="margin: 15px 0; font-size: 1rem; color: #ccc; font-family: 'Share Tech Mono', monospace; text-align: left;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                        <span>BASE SCORE:</span> <strong id="lb-base-score">0</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                        <span>PLANE CONDITION BONUS:</span> <strong id="lb-cond-score" style="color:var(--gauge-green);">+0</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid #555; font-size: 1.2rem;">
+                        <span>FINAL SCORE:</span> <strong id="lb-final-score" style="color:var(--brand-gold);">0</strong>
+                    </div>
+                </div>
+
+                <input type="text" id="pilot-name-input" class="lb-input" placeholder="ENTER CALLSIGN" maxlength="12" autocomplete="off">
+                <button class="play-again-btn" style="width: 100%; margin-bottom: 15px;" onclick="submitScore(event)">SUBMIT SCORE</button>
+
+                <div style="text-align: center; color: var(--brand-gold); margin-bottom: 5px; font-weight: bold;">TOP PILOTS</div>
+                <table id="lb-table">
+                    <thead><tr><th>RANK</th><th>PILOT</th><th style="text-align:right;">SCORE</th></tr></thead>
+                    <tbody id="lb-table-body"></tbody>
+                </table>
+                
+                <button class="outline-btn" style="color: #fff; border-color: #fff; margin-top: 15px;" onclick="startNewCampaign(event)">NEW CAMPAIGN</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -446,24 +488,26 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE ---
+        // --- PROFILE PERSISTENCE (V3) ---
         let playerProfile = { 
-            points: 10000, // Giving some starting points for testing
+            currentLevel: 1,
+            points: 1000, 
             upgrades: { gear: 2, engine: 2, radar: 2, gyro: 2, ap: 2, bird: false } 
         };
         const workMap = { 3: 100, 2: 50, 1: 25, 0: 0 };
         const failMap = { 3: 0, 2: 50, 1: 75, 0: 100 };
         
         function loadProfile() {
-            let p = localStorage.getItem('h5_profile_v4');
+            let p = localStorage.getItem('h5_profile_v5');
             if(p) {
                 let parsed = JSON.parse(p);
                 if(parsed.upgrades && typeof parsed.upgrades === 'object') playerProfile = parsed;
+                if(playerProfile.currentLevel === undefined) playerProfile.currentLevel = 1;
             }
         }
         
         function saveProfile() {
-            localStorage.setItem('h5_profile_v4', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v5', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -712,13 +756,9 @@
 
         // --- INPUT HANDLING ---
         window.addEventListener('pointerdown', (e) => {
-            if (e.target.tagName === 'BUTTON' || e.target.id === 'tk-touch-prompt' || e.target.closest('button')) return;
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
             if (tkState.inFlightPlan || tkState.isPaused) return; 
             sfx.init(); 
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                try { let elem = document.documentElement; if (elem.requestFullscreen) elem.requestFullscreen().catch(e=>{}); } catch(e) {}
-            }
-            if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') { startFlight(); }
             tkState.pressing = true;
         });
         window.addEventListener('pointerup', () => tkState.pressing = false);
@@ -731,34 +771,17 @@
             if (e.code === 'KeyD' || e.key === 'd' || e.key === 'D' || e.code === 'ShiftLeft') {
                 ejectCargo();
             }
+            if (e.code === 'KeyR' || e.key === 'r' || e.key === 'R') {
+                hardReset();
+            }
             if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault(); 
                 if (e.repeat) return; 
+                if (document.activeElement) document.activeElement.blur();
+                if (tkState.inFlightPlan || tkState.isPaused || !tkState.active) return;
                 
-                if (document.activeElement) document.activeElement.blur();
-
-                if (document.getElementById('tk-end-screen').classList.contains('visible')) {
-                    hardReset(); return;
-                }
-                if (document.getElementById('prompt-container').style.display !== 'none') {
-                    openFlightPlan(); return;
-                }
-                if (tkState.inFlightPlan) {
-                    authorizeFlight(); return;
-                }
-
-                if (tkState.active && !tkState.isPaused) {
-                    sfx.init(); 
-                    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                        try { document.documentElement.requestFullscreen().catch(e=>{}); } catch(e) {}
-                    }
-                    tkState.pressing = true;
-                }
-            }
-            if (e.code === 'Enter' || e.key === 'Enter') {
-                e.preventDefault(); if (e.repeat) return; 
-                if (document.activeElement) document.activeElement.blur();
-                toggleAutoPilot(e);
+                sfx.init(); 
+                tkState.pressing = true;
             }
         });
         window.addEventListener('keyup', (e) => {
@@ -809,6 +832,106 @@
             setTimeout(() => el.remove(), 1000); 
         }
 
+        // --- LEVEL ADVANCEMENT & LEADERBOARD ---
+        function handleLevelAdvance(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (document.activeElement) document.activeElement.blur();
+            
+            document.getElementById('tk-end-screen').classList.remove('visible');
+            setTimeout(() => { 
+                document.getElementById('tk-end-screen').style.display = 'none'; 
+                
+                playerProfile.currentLevel++;
+                saveProfile();
+
+                if (playerProfile.currentLevel > 5) {
+                    showLeaderboard();
+                } else {
+                    openFlightPlan();
+                }
+            }, 300);
+        }
+
+        function getConditionScore() {
+            let condScore = 0;
+            condScore += playerProfile.upgrades.gear * 1000;
+            condScore += playerProfile.upgrades.engine * 1000;
+            condScore += playerProfile.upgrades.radar * 1000;
+            condScore += playerProfile.upgrades.gyro * 1000;
+            condScore += playerProfile.upgrades.ap * 1000;
+            if(playerProfile.upgrades.bird) condScore += 3000;
+            return condScore;
+        }
+
+        function showLeaderboard() {
+            let condScore = getConditionScore();
+            let finalScore = playerProfile.points + condScore;
+
+            document.getElementById('lb-base-score').textContent = playerProfile.points;
+            document.getElementById('lb-cond-score').textContent = "+" + condScore;
+            document.getElementById('lb-final-score').textContent = finalScore;
+
+            renderLeaderboardTable();
+
+            document.getElementById('leaderboard-overlay').style.display = 'flex';
+            setTimeout(() => { document.getElementById('leaderboard-overlay').classList.add('visible'); }, 50);
+        }
+
+        function submitScore(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (document.activeElement) document.activeElement.blur();
+            
+            let nameInput = document.getElementById('pilot-name-input').value.trim();
+            if (!nameInput) nameInput = "UNKNOWN";
+
+            let finalScore = playerProfile.points + getConditionScore();
+            
+            let lb = localStorage.getItem('h5_leaderboard');
+            let lbArr = lb ? JSON.parse(lb) : [];
+            lbArr.push({ name: nameInput.substring(0, 12).toUpperCase(), score: finalScore });
+            lbArr.sort((a, b) => b.score - a.score);
+            lbArr = lbArr.slice(0, 5); // Keep top 5
+            
+            localStorage.setItem('h5_leaderboard', JSON.stringify(lbArr));
+            
+            document.getElementById('pilot-name-input').value = "";
+            renderLeaderboardTable();
+            sfx.playDing(2.0);
+        }
+
+        function renderLeaderboardTable() {
+            let lb = localStorage.getItem('h5_leaderboard');
+            let lbArr = lb ? JSON.parse(lb) : [];
+            let tbody = document.getElementById('lb-table-body');
+            tbody.innerHTML = "";
+            if (lbArr.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; color:#777;'>NO DATA FOUND</td></tr>";
+                return;
+            }
+            lbArr.forEach((entry, i) => {
+                let row = document.createElement('tr');
+                let color = i === 0 ? "var(--brand-gold)" : (i === 1 ? "#ccc" : (i === 2 ? "#cd7f32" : "#888"));
+                row.innerHTML = `<td style="color:${color}; font-weight:bold;">#${i+1}</td><td>${entry.name}</td><td style="text-align:right; font-weight:bold; color:var(--gauge-green);">${entry.score}</td>`;
+                tbody.appendChild(row);
+            });
+        }
+
+        function startNewCampaign(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (document.activeElement) document.activeElement.blur();
+            
+            playerProfile = { 
+                currentLevel: 1,
+                points: 1000, 
+                upgrades: { gear: 2, engine: 2, radar: 2, gyro: 2, ap: 2, bird: false } 
+            };
+            saveProfile();
+            
+            document.getElementById('leaderboard-overlay').classList.remove('visible');
+            setTimeout(() => { document.getElementById('leaderboard-overlay').style.display = 'none'; openFlightPlan(); }, 300);
+        }
+
+
         // --- END SCREEN LOGIC ---
         function showEndScreen(finalScore, isSuccess) {
             let es = document.getElementById('tk-end-screen');
@@ -818,15 +941,22 @@
             let comfortEl = document.getElementById('end-comfort');
             let stallEl = document.getElementById('end-stalls');
             let satEl = document.getElementById('end-satisfaction');
+            let nextBtn = document.getElementById('btn-next-action');
             
             if (isSuccess) {
                 title.textContent = "MISSION ACCOMPLISHED"; title.style.color = "#fff";
                 sub.textContent = "SAFE EVACUATION COMPLETED";
                 scoreEl.style.color = "var(--gauge-green)"; scoreEl.style.textShadow = "0 0 15px rgba(46, 204, 113, 0.5)";
+                nextBtn.textContent = playerProfile.currentLevel >= 5 ? "FINISH CAMPAIGN" : "PROCEED TO SECTOR " + (playerProfile.currentLevel + 1);
+                nextBtn.style.background = "var(--gauge-green)";
+                nextBtn.onclick = handleLevelAdvance;
             } else {
                 title.textContent = "MISSION FAILED"; title.style.color = "var(--brand-red)";
                 sub.textContent = "FLIGHT RECORDER RECOVERED";
                 scoreEl.style.color = "var(--brand-red)"; scoreEl.style.textShadow = "0 0 15px rgba(215, 25, 32, 0.5)";
+                nextBtn.textContent = "RETRY SECTOR " + playerProfile.currentLevel;
+                nextBtn.style.background = "var(--brand-gold)";
+                nextBtn.onclick = hardReset;
             }
 
             let comfortLoss = tkState.totalFlightTime > 0 ? (tkState.extremePitchTime / tkState.totalFlightTime) * 100 : 0;
@@ -848,7 +978,9 @@
             let stallPenalty = tkState.stallsCount * 100;
             let totalScore = Math.max(0, finalScore - stallPenalty + landingScoreBonus);
             
-            playerProfile.points += totalScore; saveProfile();
+            if(isSuccess) {
+                playerProfile.points += totalScore; saveProfile();
+            }
 
             stallEl.textContent = tkState.stallsCount;
             comfortEl.textContent = Math.floor(100 - comfortLoss) + '%';
@@ -1008,6 +1140,8 @@
             if(tkState.hasCargoMission) tkState.cargoCount = Math.floor(Math.random() * 3) + 1;
 
             if (tkState.hasFogScenario) vp.classList.add('fog-scenario');
+
+            document.getElementById('fp-sector-title').textContent = "SECTOR " + playerProfile.currentLevel + " OF 5";
 
             document.getElementById('tk-eject-btn').style.display = 'none';
             document.getElementById('tk-drop-zone').style.display = 'none';
@@ -1318,7 +1452,7 @@
             if (tkState.gearBroken && document.getElementById('tk-plane-img').src.indexOf('nolandinggear') === -1) { document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png'; }
             if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { tkState.phase = 2; tkState.phaseTimer = 0; tkState.currTargetMin = -3; tkState.currTargetMax = 3; setDialogue("<span class='capt-text'>LEVEL OFF</span>", 4000); }
 
-            // CARGO MISSION LOGIC
+            // CARGO MISSION LOGIC (Fixed using direct pixel values)
             if (tkState.hasCargoMission) {
                 if (!tkState.cargoPrompted && tkState.phase >= 2 && tkState.phase <= 4 && tkState.phaseTimer > 1000) {
                     tkState.cargoPrompted = true;
@@ -1418,7 +1552,7 @@
                     if (e.active) {
                         e.x -= e.spd; let el = document.getElementById('enemy-' + i); el.style.transform = `translate3d(${e.x}px, ${-(e.alt - tkState.cameraY)}px, 0)`;
                         const er = el.getBoundingClientRect(); if (!( (pr.right - 12) < (er.left + 15) || (pr.left + 12) > (er.right - 15) || (pr.bottom - 12) < (er.top + 25) || (pr.top + 25) > (er.bottom - 10) )) { collision = true; }
-                        if (e.x < -200) { e.active = false; el.style.display = 'none'; }
+                        if (e.x < -300) { e.active = false; el.style.display = 'none'; }
                     }
                 });
                 if (collision) return triggerCrash("MID-AIR CRASH!");

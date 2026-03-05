@@ -77,7 +77,6 @@
         .fog-scenario .tk-enemy img,
         .fog-scenario #tk-overtaker-plane img { filter: brightness(0) !important; transition: filter 0.5s; }
         
-        /* Illuminated Windows for Fog Silhouette */
         .passenger-windows { 
             display: none; position: absolute; top: 62%; left: 35%; right: 25%; 
             height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; 
@@ -97,6 +96,9 @@
         #tk-bg-city { height: 100%; background-size: auto 100%; background-position: bottom left; z-index: 2; top: 0; }
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3; transition: filter 0.5s; will-change: transform; }
         #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x; will-change: background-position; }
+
+        /* CARGO DROP ZONE */
+        #tk-drop-zone { position: absolute; bottom: 0; height: 10px; width: 200px; background: rgba(46,204,113,0.5); border: 2px dashed #2ecc71; border-bottom: none; z-index: 5; display: none; will-change: transform; }
 
         /* --- WEATHER STATES --- */
         .weather-layer { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
@@ -143,20 +145,11 @@
         .pf-3 { width: 100px; height: 100px; border: 4px solid rgba(255, 100, 50, 0.1); background: transparent; }
         .pf-4 { width: 15px; height: 15px; background: rgba(255, 255, 255, 0.4); }
 
-        /* PLANE CONTAINER IS NOW TAPABLE */
-        #plane-container { 
-            position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; 
-            pointer-events: auto; cursor: pointer; width: 150px; height: 50px; will-change: transform; 
-        }
+        #plane-container { position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; pointer-events: auto; cursor: pointer; width: 150px; height: 50px; will-change: transform; }
         #plane-rotate-group { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; z-index: 12; will-change: transform; }
         #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; transition: filter 0.5s; pointer-events: none;}
         
-        #ap-indicator {
-            position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
-            background: var(--gauge-green); color: #000; font-size: 0.7rem; padding: 2px 8px;
-            border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-weight: bold;
-            display: none; z-index: 15; box-shadow: 0 0 10px var(--gauge-green); pointer-events: none;
-        }
+        #ap-indicator { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: var(--gauge-green); color: #000; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-weight: bold; display: none; z-index: 15; box-shadow: 0 0 10px var(--gauge-green); pointer-events: none; }
 
         #plane-hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; border-radius: 50%; border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11; will-change: transform; pointer-events: none;}
         .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; pointer-events: none;}
@@ -180,35 +173,19 @@
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
         #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold);}
         
-        #reset-btn { background: rgba(215, 25, 32, 0.9); border: 2px solid #fff; border-radius: 8px; color: #fff; font-size: 1rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; pointer-events: auto;}
+        #reset-btn, #pause-btn, #fs-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #fff; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: auto; }
+        #reset-btn { background: rgba(215, 25, 32, 0.9); border-color: #fff; }
+        #reset-btn:active, #pause-btn:active, #fs-btn:active { transform: scale(0.95); }
+
+        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 40; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); }
         
-        #pause-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #fff; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: auto; }
-        #pause-btn:active { transform: scale(0.95); }
-
-        #fs-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #aaa; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: auto; }
-        #fs-btn:active { transform: scale(0.95); }
-
-        #pause-overlay {
-            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); z-index: 40; flex-direction: column; 
-            align-items: center; justify-content: center; color: #fff; 
-            font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000;
-            pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px);
-        }
-
         #prompt-container { position: absolute; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        
-        /* BIG START BUTTON */
-        #tk-touch-prompt { 
-            background: var(--brand-red); border: 2px solid #fff; border-radius: 8px; 
-            padding: 15px 30px; text-align: center; color: #fff; font-size: 1.5rem; 
-            font-weight: bold; box-shadow: 0 4px 15px rgba(215,25,32,0.6); width: auto; 
-            text-transform: uppercase; margin-bottom: 10px; cursor: pointer; pointer-events: auto;
-        }
+        #tk-touch-prompt { background: var(--brand-red); border: 2px solid #fff; border-radius: 8px; padding: 15px 30px; text-align: center; color: #fff; font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(215,25,32,0.6); width: auto; text-transform: uppercase; margin-bottom: 10px; cursor: pointer; pointer-events: auto; transition: transform 0.1s;}
         #tk-touch-prompt:active { transform: scale(0.95); }
-        
-        #install-btn { background: var(--fo-blue); border: 2px solid #fff; border-radius: 6px; padding: 8px 16px; color: #fff; font-size: 0.9rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); font-family: 'Share Tech Mono', monospace; display: none; pointer-events: auto; }
 
+        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 50; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s;}
+        #tk-eject-btn:active { transform: scale(0.92); }
+        
         /* Traffic Planes */
         .tk-enemy, #tk-overtaker-plane { position: absolute; bottom: 65px; width: 162px; height: 56px; z-index: 9; display: none; left: 0; will-change: transform; pointer-events: none;}
         .tk-enemy img { width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1); }
@@ -224,10 +201,19 @@
         .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
+        .cargo-package { position: absolute; z-index: 15; width: 20px; height: 20px; background: #cfa86e; border: 2px solid #fff; left: 0; top: 0; will-change: transform; }
+        .float-text { position: absolute; z-index: 150; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
+        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 0); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 0); opacity: 0; } }
 
         /* FLIGHT PLAN OVERLAY */
         #tk-flight-plan-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;}
         #tk-flight-plan-overlay.visible { opacity: 1; pointer-events: auto; }
+        
+        .fp-details { text-align:left; margin: 15px 0; font-size: 0.9rem; color: #ccc; font-family: 'Share Tech Mono', monospace; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #333; }
+        .fp-details div { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .outline-btn { background: transparent; border: 2px solid #ccc; border-radius: 6px; padding: 10px; font-family: 'Share Tech Mono', monospace; font-weight: bold; cursor: pointer; transition: all 0.2s; width: 100%; font-size: 0.85rem;}
+        .outline-btn:active { transform: scale(0.95); }
+        .outline-btn:disabled { opacity: 0.5; cursor: not-allowed; border-color: #555 !important; color: #555 !important; }
 
         /* END SCREEN & MODALS */
         #tk-end-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
@@ -237,18 +223,17 @@
             background: #111; border: 2px solid var(--brand-gold); border-radius: 15px; 
             padding: 30px 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
             transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; touch-action: auto; -webkit-overflow-scrolling: touch; pointer-events: auto;
+            width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; touch-action: auto; -webkit-overflow-scrolling: touch; pointer-events: auto;
         }
         .end-panel::-webkit-scrollbar { width: 5px; }
         .end-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 5px; }
-        
         .end-panel.visible { transform: scale(1); }
         #tk-end-screen.visible .end-panel { transform: scale(1); }
         .end-title { font-size: 2rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; text-transform: uppercase;}
         .end-subtitle { font-size: 1rem; color: #aaa; margin-bottom: 15px; text-transform: uppercase;}
         .end-score { font-size: 3rem; color: var(--gauge-green); margin-bottom: 15px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
         
-        .play-again-btn { background: var(--brand-gold); color: #000; border: none; padding: 12px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; }
+        .play-again-btn { background: var(--brand-gold); color: #000; border: none; padding: 15px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; }
         .play-again-btn:active { transform: scale(0.95); filter: brightness(0.8); }
 
         /* Minimap Progress Bar */
@@ -261,7 +246,6 @@
         .minimap-marker { position: absolute; top: -6px; transform: translateX(-50%); z-index: 10; cursor: help; transition: transform 0.2s; display: flex; flex-direction: column; align-items: center; }
         .minimap-icon-box { width: 24px; height: 24px; background: #111; border: 2px solid var(--fo-blue); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         .minimap-label { margin-top: 6px; font-size: 0.65rem; white-space: nowrap; text-shadow: 1px 1px 2px #000; font-family: 'Share Tech Mono', monospace; font-weight: bold; }
-        
         .minimap-marker:hover { transform: translateX(-50%) scale(1.3); z-index: 20; }
         .minimap-tooltip { display: none; position: absolute; bottom: 45px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); color: #fff; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; white-space: nowrap; pointer-events: none; border: 1px solid #555; z-index: 20; }
         .minimap-marker:hover .minimap-tooltip { display: block; }
@@ -274,9 +258,10 @@
             .end-score { font-size: 1.8rem; margin: 0 0 10px 0; }
             .completion-wrapper { margin-bottom: 25px; }
             .completion-text { font-size: 0.9rem; margin-bottom: 10px;}
-            .fp-details { margin: 10px 0 !important; padding: 10px !important; font-size: 0.95rem !important;}
-            .fp-details div { margin-bottom: 6px !important; }
+            .fp-details { margin: 10px 0 !important; padding: 10px !important; font-size: 0.8rem !important;}
+            .fp-details div { margin-bottom: 4px !important; }
             .stats-grid { font-size: 0.85rem !important; margin-bottom: 15px !important; }
+            #tk-eject-btn { width: 60px; height: 60px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -285,7 +270,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v4.6 - Risk Mechanics & Pause Config</div>
+        <div id="tk-version">v4.7 - Full Simulation Systems</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -299,10 +284,11 @@
         </div>
         
         <div id="prompt-container">
-            <div id="tk-touch-prompt" onclick="startFlight(event)">START GAME</div>
-            <button id="install-btn" onclick="installApp(event)">INSTALL APP</button>
+            <div id="tk-touch-prompt" onclick="openFlightPlan(event)">START GAME</div>
         </div>
         
+        <button id="tk-eject-btn" onclick="ejectCargo(event)">DROP<br><span id="cargo-count">3</span></button>
+
         <div id="camera-rig">
             <div id="tk-sun"></div>
             <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
@@ -332,80 +318,50 @@
             <div id="tk-fg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             <div id="tk-threat-fog" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             
-            <div id="enemy-0" class="tk-enemy">
-                <img src="a22.png">
-                <div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div>
-            </div>
-            <div id="enemy-1" class="tk-enemy">
-                <img src="a22.png">
-                <div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div>
-            </div>
-            <div id="enemy-2" class="tk-enemy">
-                <img src="a22.png">
-                <div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div>
-            </div>
-            <div id="enemy-3" class="tk-enemy">
-                <img src="a22.png">
-                <div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div>
-            </div>
-            <div id="enemy-4" class="tk-enemy">
-                <img src="a22.png">
-                <div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div>
-            </div>
-            
-            <div id="tk-overtaker-plane">
-                <img src="a22.png">
-                <div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div>
-            </div>
+            <div id="enemy-0" class="tk-enemy"><img src="a22.png"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-1" class="tk-enemy"><img src="a22.png"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-2" class="tk-enemy"><img src="a22.png"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-3" class="tk-enemy"><img src="a22.png"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-4" class="tk-enemy"><img src="a22.png"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="tk-overtaker-plane"><img src="a22.png"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
             
             <div id="tk-bird-flock">
-                <div class="bird" style="top:0; left:10px;"></div>
-                <div class="bird" style="top:10px; left:0;"></div>
-                <div class="bird" style="top:15px; left:20px;"></div>
-                <div class="bird" style="top:5px; left:30px;"></div>
-                <div class="bird" style="top:25px; left:15px;"></div>
+                <div class="bird" style="top:0; left:10px;"></div><div class="bird" style="top:10px; left:0;"></div><div class="bird" style="top:15px; left:20px;"></div><div class="bird" style="top:5px; left:30px;"></div><div class="bird" style="top:25px; left:15px;"></div>
             </div>
 
-            <div id="tk-runway"><div id="tk-runway-stripes"></div></div>
-            <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M42,35 L50,20 L58,35 Z" fill="#fff"/></svg></div>
+            <div id="tk-runway">
+                <div id="tk-runway-stripes"></div>
+                <div id="tk-drop-zone"></div>
+            </div>
             
-            <div class="weather-layer fog-layer layer-front"></div>
-            <div class="weather-layer rain-layer layer-2"></div>
-            <div class="weather-layer snow-layer layer-2"></div>
-        </div>
-
-        <div id="tk-flare-container">
-            <div id="pf1" class="pf pf-1"></div>
-            <div id="pf2" class="pf pf-2"></div>
-            <div id="pf3" class="pf pf-3"></div>
-            <div id="pf4" class="pf pf-4"></div>
+            <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M42,35 L50,20 L58,35 Z" fill="#fff"/></svg></div>
+            <div class="weather-layer fog-layer layer-front"></div><div class="weather-layer rain-layer layer-2"></div><div class="weather-layer snow-layer layer-2"></div>
         </div>
 
         <div id="tk-flight-plan-overlay">
-            <div class="end-panel visible">
+            <div class="end-panel visible" style="pointer-events: auto;">
                 <div class="end-title">FLIGHT PLAN</div>
                 <div class="end-subtitle">PRE-FLIGHT BRIEFING</div>
-                <div class="fp-details" style="text-align:left; margin: 25px 0; font-size: 1.1rem; color: #ccc; font-family: 'Share Tech Mono', monospace; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #333;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                        <span>SOULS ON BOARD:</span> <strong id="fp-pax" style="color:#fff;">0</strong>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                        <span>CONDITIONS:</span> <strong id="fp-weather" style="color:var(--fo-blue);">CLEAR</strong>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                        <span>WIND SHEAR RISK:</span> <strong id="fp-wind-risk" style="color:var(--brand-gold);">0%</strong>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                        <span>GYRO STABILITY:</span> <strong id="fp-gyro-risk" style="color:var(--brand-gold);">100%</strong>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                        <span>GEAR FATIGUE:</span> <strong id="fp-gear-risk" style="color:var(--brand-gold);">0%</strong>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>ENGINE STABILITY:</span> <strong id="fp-eng-risk" style="color:var(--brand-gold);">0%</strong>
-                    </div>
+                
+                <div class="fp-details">
+                    <div><span>SOULS ON BOARD:</span> <strong id="fp-pax" style="color:#fff;">0</strong></div>
+                    <div><span>CONDITIONS:</span> <strong id="fp-weather" style="color:var(--fo-blue);">CLEAR</strong></div>
+                    <div><span>CARGO OPS:</span> <strong id="fp-cargo" style="color:var(--gauge-green);">NONE</strong></div>
+                    <div><span>WIND SHEAR RISK:</span> <strong id="fp-wind-risk" style="color:var(--brand-gold);">0%</strong></div>
+                    <div><span>GYRO FAILURE:</span> <strong id="fp-gyro-risk" style="color:var(--brand-gold);">0%</strong></div>
+                    <div><span>GEAR FATIGUE:</span> <strong id="fp-gear-risk" style="color:var(--brand-gold);">0%</strong></div>
+                    <div><span>ENGINE STABILITY:</span> <strong id="fp-eng-risk" style="color:var(--brand-gold);">0%</strong></div>
                 </div>
-                <button class="play-again-btn" style="background: var(--gauge-green); color: #000; width: 100%;" onclick="authorizeFlight(event)">AUTHORIZE TAKEOFF</button>
+
+                <div style="margin: 15px 0; display:flex; flex-direction:column; gap:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-family:'Share Tech Mono';">
+                        <span style="color:#ccc;">AVAILABLE FUNDS:</span> <strong id="fp-total-points" style="color:var(--brand-gold); font-size:1.2rem;">0</strong>
+                    </div>
+                    <button id="btn-upg-maint" class="outline-btn" style="border-color:var(--gauge-green); color:var(--gauge-green);" onclick="buyMaintenance(event)">UPGRADE MAINT [LVL 0/3] (1000)</button>
+                    <button id="btn-upg-bird" class="outline-btn" style="border-color:var(--fo-blue); color:var(--fo-blue);" onclick="buyBirdShield(event)">BIRD SHIELDS [OFF] (3000)</button>
+                </div>
+
+                <button class="play-again-btn" style="background: var(--brand-red); color: #fff; width: 100%;" onclick="authorizeFlight(event)">AUTHORIZE TAKEOFF</button>
             </div>
         </div>
 
@@ -415,7 +371,7 @@
                 <div class="end-subtitle" id="end-sub-text">SAFE EVACUATION COMPLETED</div>
                 <div class="end-score" id="end-score-val">0</div>
                 
-                <div class="stats-grid" style="display:flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 25px; color: #ccc; text-align: left; font-family: 'Share Tech Mono', monospace; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid #333;">
+                <div class="stats-grid">
                     <div>
                         <div style="margin-bottom: 5px;">STALLS: <span id="end-stalls" style="color: var(--brand-red); font-weight:bold;">0</span></div>
                         <div>SMOOTH FLIGHT: <span id="end-comfort" style="color: var(--fo-blue); font-weight:bold;">100%</span></div>
@@ -435,7 +391,7 @@
                     </div>
                 </div>
 
-                <button class="play-again-btn" onclick="hardReset(event)" style="width: 100%;">PLAY AGAIN</button>
+                <button class="play-again-btn" onclick="hardReset(event)" style="width: 100%;">CONTINUE TO BASE</button>
             </div>
         </div>
     </div>
@@ -443,50 +399,26 @@
     <script>
         let SPEED_MOD = 0.75; 
         let playerPlaneSkin = 'my-plane.png';
-        let playerNoGearSkin = 'my-plane-nolandinggear.png';
         const CRUISE_ALT = 450; 
 
-        // --- PWA INSTALLATION LOGIC ---
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); 
-            deferredPrompt = e; 
-            document.getElementById('install-btn').style.display = 'block'; 
-        });
-
-        function installApp(e) {
-            e.stopPropagation(); 
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    deferredPrompt = null;
-                    document.getElementById('install-btn').style.display = 'none';
-                });
-            }
+        // --- PROFILE PERSISTENCE ---
+        let playerProfile = { points: 0, upgrades: 0, birdShield: false };
+        function loadProfile() {
+            let p = localStorage.getItem('h5_profile');
+            if(p) playerProfile = JSON.parse(p);
         }
-
-        // --- FULLSCREEN LOGIC ---
-        function toggleFullscreen(e) {
-            if (e) { e.preventDefault(); e.stopPropagation(); }
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                let elem = document.documentElement;
-                if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => {}); }
-                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
-            } else {
-                if (document.exitFullscreen) { document.exitFullscreen(); }
-                else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-            }
+        function saveProfile() {
+            localStorage.setItem('h5_profile', JSON.stringify(playerProfile));
         }
+        loadProfile();
 
         // --- AUDIO ENGINE ---
         const sfx = {
-            ctx: null, alarmInterval: null, isAlarming: false,
-            bgMusic: new Audio('hangar5-music.mp3'),
+            ctx: null, alarmInterval: null, isAlarming: false, bgMusic: new Audio('hangar5-music.mp3'),
             init: function() {
                 if (!this.ctx) {
                     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    let silentOsc = this.ctx.createOscillator();
-                    let silentGain = this.ctx.createGain();
+                    let silentOsc = this.ctx.createOscillator(); let silentGain = this.ctx.createGain();
                     silentGain.gain.value = 0; silentOsc.connect(silentGain); silentGain.connect(this.ctx.destination);
                     silentOsc.start(0); silentOsc.stop(this.ctx.currentTime + 0.1);
                     this.bgMusic.loop = true; this.bgMusic.volume = 0.4;
@@ -545,21 +477,7 @@
             stopAll: function() { this.playAlarm(false); try { this.bgMusic.pause(); } catch(e) {} }
         };
 
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden) { 
-                sfx.stopAll(); 
-                if (sfx.ctx && sfx.ctx.state === 'running') sfx.ctx.suspend(); 
-            } 
-            else { 
-                if (tkState.active && !tkState.isPaused && sfx.ctx && sfx.ctx.state === 'suspended') { 
-                    sfx.ctx.resume(); sfx.bgMusic.play().catch(e=>e); 
-                } 
-            }
-        });
-        window.addEventListener("pagehide", () => { sfx.stopAll(); if (sfx.ctx) sfx.ctx.close(); });
-
-        let endScreenAnimInterval = null;
-        let endScreenTimeouts = [];
+        let endScreenAnimInterval = null; let endScreenTimeouts = [];
 
         let tkState = {
             active: false, isPaused: false, inFlightPlan: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
@@ -567,112 +485,103 @@
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
             weather: "day", zoom: 1.0, targetZoom: 1.0, speedMod: 0.75, autoPilot: false, canRestart: true, 
-            hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false,
-            events: [], hasFogScenario: false, hasEngineFailureScenario: false, engineFailure: false,
-            hasOvertakerScenario: false, overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
-            hasBirdScenario: false, birdActive: false, birdX: 150, birdAlt: 0,
-            gearBroken: false, gearBreakAlt: 99999, stallFactor: 0, enemies: [],
+            hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [], enemies: [], activeCargo: [],
+            
+            // Stats
+            stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0,
+            
+            // Random Risks generated per flight
             passengers: 0, gearRisk: 0, engRisk: 0, windRisk: 0, gyroRisk: 0,
-            hasWindPocket: false, windPocketTriggered: false, windPocketTimer: 0,
-            hasGyroFailure: false, gyroFailed: false,
-            stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0
+            hasFogScenario: false, hasOvertakerScenario: false, hasBirdScenario: false, hasCargoMission: false,
+            
+            // Execution state
+            engineFailure: false, gearBroken: false, gearBreakAlt: 99999, stallFactor: 0,
+            overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
+            birdActive: false, birdX: 150, birdAlt: 0,
+            windPocketTriggered: false, windPocketTimer: 0, gyroFailed: false,
+            dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0
         };
 
-        setDialogue("<span class='capt-text'>STANDBY...</span>", 999999);
+        function updateFlightPlanUI() {
+            document.getElementById('fp-total-points').textContent = playerProfile.points;
+            
+            let mBtn = document.getElementById('btn-upg-maint');
+            mBtn.textContent = `UPGRADE MAINT [LVL ${playerProfile.upgrades}/3] (1000 PTS)`;
+            if(playerProfile.upgrades >= 3) { mBtn.disabled = true; mBtn.textContent = "MAINTENANCE MAXED"; }
+            else { mBtn.disabled = false; }
+            
+            let bBtn = document.getElementById('btn-upg-bird');
+            bBtn.textContent = playerProfile.birdShield ? `BIRD SHIELDS [ACTIVE]` : `BUY BIRD SHIELDS (3000 PTS)`;
+            if(playerProfile.birdShield) { bBtn.disabled = true; }
+            else { bBtn.disabled = false; }
+
+            // Recalculate Risks
+            let riskMult = 1 - (playerProfile.upgrades * 0.33);
+            let dGear = Math.floor(tkState.baseGearRisk * riskMult);
+            let dEng = Math.floor(tkState.baseEngRisk * riskMult);
+            
+            let gRiskEl = document.getElementById('fp-gear-risk'); gRiskEl.textContent = dGear + "%";
+            gRiskEl.style.color = dGear > 30 ? "var(--brand-red)" : (dGear > 0 ? "var(--brand-gold)" : "var(--gauge-green)");
+            
+            let eRiskEl = document.getElementById('fp-eng-risk'); eRiskEl.textContent = dEng + "%";
+            eRiskEl.style.color = dEng > 20 ? "var(--brand-red)" : (dEng > 0 ? "var(--brand-gold)" : "var(--gauge-green)");
+
+            tkState.gearRisk = dGear;
+            tkState.engRisk = dEng;
+        }
+
+        function buyMaintenance(e) {
+            if(e) e.stopPropagation();
+            if(playerProfile.points >= 1000 && playerProfile.upgrades < 3) {
+                playerProfile.points -= 1000; playerProfile.upgrades++;
+                sfx.playDing(1.5); saveProfile(); updateFlightPlanUI();
+            } else { sfx.playExplosion(); }
+        }
+
+        function buyBirdShield(e) {
+            if(e) e.stopPropagation();
+            if(playerProfile.points >= 3000 && !playerProfile.birdShield) {
+                playerProfile.points -= 3000; playerProfile.birdShield = true;
+                sfx.playDing(1.5); saveProfile(); updateFlightPlanUI();
+            } else { sfx.playExplosion(); }
+        }
 
         function setDialogue(text, timeMs) {
-            tkState.dialogueText = text;
-            tkState.dialogueTimeLeft = timeMs;
+            tkState.dialogueText = text; tkState.dialogueTimeLeft = timeMs;
         }
 
         function toggleAutoPilot(e) {
             if (!tkState.active || tkState.isPaused || tkState.phase === 0 || tkState.phase >= 6) return; 
             if (e) { e.preventDefault(); e.stopPropagation(); }
-
             tkState.autoPilot = !tkState.autoPilot;
             const apInd = document.getElementById('ap-indicator');
-            
-            if (tkState.autoPilot) {
-                apInd.style.display = 'block';
-                sfx.playDing(1.5); 
-            } else {
-                apInd.style.display = 'none';
-                sfx.playDing(0.8);
-            }
+            if (tkState.autoPilot) { apInd.style.display = 'block'; sfx.playDing(1.5); } 
+            else { apInd.style.display = 'none'; sfx.playDing(0.8); }
         }
 
-        // --- PAUSE LOGIC ---
         function togglePause(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             if (!tkState.active && !tkState.isPaused) return; 
-            
             tkState.isPaused = !tkState.isPaused;
             const pauseOverlay = document.getElementById('pause-overlay');
             const pauseBtn = document.getElementById('pause-btn');
-
-            if (tkState.isPaused) {
-                pauseOverlay.style.display = 'flex';
-                pauseBtn.textContent = '▶️';
-                sfx.bgMusic.pause();
-                sfx.playAlarm(false);
-            } else {
-                pauseOverlay.style.display = 'none';
-                pauseBtn.textContent = '⏸️';
-                sfx.bgMusic.play().catch(e=>e);
-                tkState.lastFrameTime = performance.now(); 
-            }
+            if (tkState.isPaused) { pauseOverlay.style.display = 'flex'; pauseBtn.textContent = '▶️'; sfx.bgMusic.pause(); sfx.playAlarm(false); } 
+            else { pauseOverlay.style.display = 'none'; pauseBtn.textContent = '⏸️'; sfx.bgMusic.play().catch(e=>e); tkState.lastFrameTime = performance.now(); }
         }
 
         // --- INPUT HANDLING ---
         window.addEventListener('pointerdown', (e) => {
-            if (e.target.tagName === 'BUTTON') return;
-            if (tkState.inFlightPlan) return; 
-            if (tkState.isPaused) return; 
-            
+            if (e.target.tagName === 'BUTTON' || e.target.id === 'tk-touch-prompt') return;
+            if (tkState.inFlightPlan || tkState.isPaused) return; 
             sfx.init(); 
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                try {
-                    let elem = document.documentElement;
-                    if (elem.requestFullscreen) elem.requestFullscreen().catch(e=>{});
-                    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-                } catch(e) {}
+                try { let elem = document.documentElement; if (elem.requestFullscreen) elem.requestFullscreen().catch(e=>{}); } catch(e) {}
             }
-
-            if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') {
-                startFlight(e);
-            }
+            if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') { startFlight(); }
             tkState.pressing = true;
         });
         window.addEventListener('pointerup', () => tkState.pressing = false);
         window.addEventListener('touchend', () => tkState.pressing = false);
-
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyP' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
-                togglePause();
-            }
-            if (e.code === 'Space' || e.key === ' ') {
-                e.preventDefault(); 
-                if (e.repeat) return; 
-                if (tkState.inFlightPlan) return;
-                if (tkState.isPaused) return; 
-
-                sfx.init(); 
-                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                    try { document.documentElement.requestFullscreen().catch(e=>{}); } catch(e) {}
-                }
-                
-                if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') {
-                    startFlight(e);
-                }
-                tkState.pressing = true;
-            }
-            if (e.code === 'Enter' || e.key === 'Enter') {
-                e.preventDefault(); if (e.repeat) return; toggleAutoPilot(e);
-            }
-        });
-        window.addEventListener('keyup', (e) => {
-            if (e.code === 'Space' || e.key === ' ') { e.preventDefault(); tkState.pressing = false; }
-        });
 
         // --- PROGRESS AND EVENT LOGGING ---
         function getCompletionPercentage() {
@@ -688,10 +597,33 @@
         }
 
         function logEvent(name, icon, shortName, color) {
-            tkState.events.push({ 
-                name: name, icon: icon, shortName: shortName, 
-                color: color || 'var(--fo-blue)', percent: getCompletionPercentage() 
-            });
+            tkState.events.push({ name: name, icon: icon, shortName: shortName, color: color || 'var(--fo-blue)', percent: getCompletionPercentage() });
+        }
+
+        // --- CARGO MECHANICS ---
+        function ejectCargo(e) {
+            if(e) { e.preventDefault(); e.stopPropagation(); }
+            if(tkState.cargoCount <= 0 || tkState.isPaused || !tkState.active) return;
+            
+            tkState.cargoCount--;
+            document.getElementById('cargo-count').textContent = tkState.cargoCount;
+            if(tkState.cargoCount <= 0) document.getElementById('tk-eject-btn').style.opacity = 0.5;
+            
+            let p = document.createElement('div'); p.className = 'cargo-package';
+            const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
+            p.dataset.x = pr.left + pr.width/2; p.dataset.y = pr.bottom; p.dataset.vy = 0;
+            p.style.transform = `translate3d(${p.dataset.x}px, ${p.dataset.y}px, 0)`;
+            document.getElementById('takeoff-viewport').appendChild(p);
+            tkState.activeCargo.push(p);
+            sfx.playDing(0.5);
+        }
+
+        function showFloat(x, y, text, color) { 
+            let el = document.createElement('div'); el.className = 'float-text'; 
+            el.textContent = text; el.style.color = color;
+            el.style.transform = `translate3d(${x - 20}px, ${y}px, 0)`; 
+            document.getElementById('takeoff-viewport').appendChild(el); 
+            setTimeout(() => el.remove(), 1000); 
         }
 
         // --- END SCREEN LOGIC ---
@@ -714,15 +646,12 @@
                 scoreEl.style.color = "var(--brand-red)"; scoreEl.style.textShadow = "0 0 15px rgba(215, 25, 32, 0.5)";
             }
 
-            // Calculate Satisfaction
             let comfortLoss = tkState.totalFlightTime > 0 ? (tkState.extremePitchTime / tkState.totalFlightTime) * 100 : 0;
             let baseSatisfaction = 100 - Math.floor(comfortLoss) - (tkState.stallsCount * 15);
             if (!isSuccess) baseSatisfaction = 0;
             baseSatisfaction = Math.max(0, Math.min(100, baseSatisfaction));
 
-            let landingSatBonus = 0;
-            let landingScoreBonus = 0;
-            
+            let landingSatBonus = 0; let landingScoreBonus = 0;
             if (isSuccess) {
                 let finalPitchAbs = Math.abs(tkState.pitch);
                 if (finalPitchAbs <= 6) {
@@ -735,47 +664,34 @@
             let finalSatisfaction = Math.min(100, baseSatisfaction + landingSatBonus);
             let stallPenalty = tkState.stallsCount * 100;
             let totalScore = Math.max(0, finalScore - stallPenalty + landingScoreBonus);
+            
+            playerProfile.points += totalScore; saveProfile();
 
             stallEl.textContent = tkState.stallsCount;
             comfortEl.textContent = Math.floor(100 - comfortLoss) + '%';
-            satEl.textContent = '0%';
-            satEl.style.color = "var(--brand-red)";
+            satEl.textContent = '0%'; satEl.style.color = "var(--brand-red)";
             
             let bonusEl = document.getElementById('end-sat-bonus');
-            bonusEl.style.opacity = 0;
-            bonusEl.style.transform = 'translateY(-5px)';
+            bonusEl.style.opacity = 0; bonusEl.style.transform = 'translateY(-5px)';
 
-            es.style.display = 'flex';
-            setTimeout(() => { es.classList.add('visible'); }, 50);
+            es.style.display = 'flex'; setTimeout(() => { es.classList.add('visible'); }, 50);
 
-            // Prevent Minimap Icon Overlap (10% minimum gap)
             let MIN_GAP = 10; 
             let displayEvents = tkState.events.map(ev => ({...ev})).sort((a, b) => a.percent - b.percent);
-
             for (let i = 1; i < displayEvents.length; i++) {
-                if (displayEvents[i].percent - displayEvents[i-1].percent < MIN_GAP) {
-                    displayEvents[i].percent = displayEvents[i-1].percent + MIN_GAP;
-                }
+                if (displayEvents[i].percent - displayEvents[i-1].percent < MIN_GAP) { displayEvents[i].percent = displayEvents[i-1].percent + MIN_GAP; }
             }
             if (displayEvents.length > 0 && displayEvents[displayEvents.length - 1].percent > 100) {
                 displayEvents[displayEvents.length - 1].percent = 100;
                 for (let i = displayEvents.length - 2; i >= 0; i--) {
-                    if (displayEvents[i+1].percent - displayEvents[i].percent < MIN_GAP) {
-                        displayEvents[i].percent = displayEvents[i+1].percent - MIN_GAP;
-                    }
+                    if (displayEvents[i+1].percent - displayEvents[i].percent < MIN_GAP) { displayEvents[i].percent = displayEvents[i+1].percent - MIN_GAP; }
                 }
             }
 
-            // Populate Minimap
             let finalPct = isSuccess ? 100 : getCompletionPercentage();
             let markersHtml = '';
             displayEvents.forEach(ev => {
-                markersHtml += `
-                <div class="minimap-marker" style="left: ${ev.percent}%">
-                    <div class="minimap-icon-box" style="border-color: ${ev.color}">${ev.icon}</div>
-                    <div class="minimap-label" style="color: ${ev.color}">${ev.shortName}</div>
-                    <div class="minimap-tooltip">${ev.name}</div>
-                </div>`;
+                markersHtml += `<div class="minimap-marker" style="left: ${ev.percent}%"><div class="minimap-icon-box" style="border-color: ${ev.color}">${ev.icon}</div><div class="minimap-label" style="color: ${ev.color}">${ev.shortName}</div><div class="minimap-tooltip">${ev.name}</div></div>`;
             });
             document.getElementById('tk-minimap-markers').innerHTML = markersHtml;
 
@@ -785,87 +701,39 @@
                 document.getElementById('end-completion-val').style.color = isSuccess ? 'var(--gauge-green)' : 'var(--brand-red)';
             }, 300);
             
-            let targetPlanes = 1; 
-            if (totalScore > 2000) targetPlanes = 2; 
-            if (totalScore > 3500) targetPlanes = 3; 
-
             let curScore = 0; let scoreStep = Math.max(1, Math.ceil(totalScore / 40));
             let curPct = 0; let pctStep = Math.max(1, finalPct / 40);
             let curSat = 0; let satStep = Math.max(1, Math.ceil(baseSatisfaction / 30));
-            
             let pctEl = document.getElementById('end-completion-val');
-            let phase2Sat = false;
-            let phase2Score = false;
+            let phase2Sat = false; let phase2Score = false;
 
             clearInterval(endScreenAnimInterval);
             endScreenAnimInterval = setInterval(() => {
-                // Percent
-                if(curPct < finalPct) {
-                    curPct += pctStep;
-                    if(curPct >= finalPct) curPct = finalPct;
-                    pctEl.textContent = Math.floor(curPct) + '%';
-                }
-
-                // Score
+                if(curPct < finalPct) { curPct += pctStep; if(curPct >= finalPct) curPct = finalPct; pctEl.textContent = Math.floor(curPct) + '%'; }
                 let targetScore = phase2Score ? totalScore : Math.max(0, finalScore - stallPenalty);
-                if(curScore < targetScore) {
-                    curScore += scoreStep;
-                    if(curScore >= targetScore) curScore = targetScore;
-                    scoreEl.textContent = Math.floor(curScore);
-                }
+                if(curScore < targetScore) { curScore += scoreStep; if(curScore >= targetScore) curScore = targetScore; scoreEl.textContent = Math.floor(curScore); }
 
-                // Satisfaction
                 if (!phase2Sat) {
-                    if (curSat < baseSatisfaction) {
-                        curSat += satStep;
-                        if (curSat >= baseSatisfaction) curSat = baseSatisfaction;
-                    } else if (curSat === baseSatisfaction) {
+                    if (curSat < baseSatisfaction) { curSat += satStep; if (curSat >= baseSatisfaction) curSat = baseSatisfaction; } 
+                    else if (curSat === baseSatisfaction) {
                         if (landingSatBonus > 0 && isSuccess) {
                             phase2Sat = true; phase2Score = true;
                             let landingText = Math.abs(tkState.pitch) <= 1 ? "BUTTER LANDING!" : "SMOOTH LANDING!";
                             bonusEl.textContent = `+${landingSatBonus}% ${landingText}`;
-                            bonusEl.style.opacity = 1;
-                            bonusEl.style.transform = 'translateY(5px)';
-                            sfx.playDing(1.2);
-                            satStep = 1; 
-                        } else {
-                            phase2Sat = true; 
-                        }
+                            bonusEl.style.opacity = 1; bonusEl.style.transform = 'translateY(5px)';
+                            sfx.playDing(1.2); satStep = 1; 
+                        } else { phase2Sat = true; }
                     }
-                } else {
-                    if (curSat < finalSatisfaction) {
-                        curSat += satStep;
-                        if (curSat >= finalSatisfaction) curSat = finalSatisfaction;
-                    }
-                }
+                } else { if (curSat < finalSatisfaction) { curSat += satStep; if (curSat >= finalSatisfaction) curSat = finalSatisfaction; } }
 
                 satEl.textContent = Math.floor(curSat) + '%';
-                if(Math.floor(curSat) >= 80) satEl.style.color = "var(--gauge-green)";
-                else if (Math.floor(curSat) >= 40) satEl.style.color = "var(--gauge-orange)";
-                else satEl.style.color = "var(--brand-red)";
+                if(Math.floor(curSat) >= 80) satEl.style.color = "var(--gauge-green)"; else if (Math.floor(curSat) >= 40) satEl.style.color = "var(--gauge-orange)"; else satEl.style.color = "var(--brand-red)";
 
                 if (curScore >= totalScore && curPct >= finalPct && curSat >= finalSatisfaction && phase2Sat) {
                     clearInterval(endScreenAnimInterval);
-                    if(isSuccess) popGoldenPlanes(targetPlanes);
+                    if(isSuccess) popGoldenPlanes(totalScore > 3500 ? 3 : totalScore > 2000 ? 2 : 1);
                 }
             }, 30);
-        }
-
-        function popGoldenPlanes(count) {
-            let icons = document.querySelectorAll('.reward-icon');
-            if(!icons || icons.length === 0) return;
-            for(let i=0; i<3; i++) {
-                let t = setTimeout(() => {
-                    if(icons[i]) {
-                        icons[i].classList.add('pop');
-                        if(i < count) {
-                            icons[i].classList.add('golden'); sfx.playDing(1 + (i * 0.2)); 
-                            confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 }, zIndex: 200 });
-                        } else { sfx.playDing(0.6); }
-                    }
-                }, i * 500);
-                endScreenTimeouts.push(t);
-            }
         }
 
         function triggerCrash(reasonText) {
@@ -877,42 +745,26 @@
             logEvent(`CRASH: ${reasonText}`, "❌", "CRASH", "var(--brand-red)");
             setDialogue(`<span class='alert-text'>${reasonText}</span>`, 4500);
             
-            setTimeout(() => { 
-                showEndScreen(Math.floor(tkState.score), false); 
-                tkState.canRestart = true; 
-            }, 2500); 
+            // Apply Penalty
+            playerProfile.points = Math.max(0, playerProfile.points - 500);
+            if (playerProfile.upgrades > 0) { playerProfile.upgrades--; } 
+            else if (playerProfile.birdShield) { playerProfile.birdShield = false; }
+            saveProfile();
+
+            setTimeout(() => { showEndScreen(Math.floor(tkState.score), false); tkState.canRestart = true; }, 2500); 
         }
 
         function hardReset(e) {
             if (e) e.stopPropagation();
             document.getElementById('tk-end-screen').classList.remove('visible'); 
-            setTimeout(() => { document.getElementById('tk-end-screen').style.display = 'none'; }, 300);
-            startFlight();
+            setTimeout(() => { document.getElementById('tk-end-screen').style.display = 'none'; startFlight(); }, 300);
         }
 
-        function startFlight(e) {
+        function openFlightPlan(e) {
             if (e) e.stopPropagation();
-            if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
+            sfx.init();
             
-            clearInterval(endScreenAnimInterval);
-            endScreenTimeouts.forEach(t => clearTimeout(t)); endScreenTimeouts = [];
-            document.querySelectorAll('.pixel-particle, .spark-particle, .smoke-particle, .score-particle').forEach(p => p.remove());
-            
-            let es = document.getElementById('tk-end-screen');
-            es.classList.remove('visible'); setTimeout(() => { es.style.display = 'none'; }, 300); 
-
-            document.getElementById('tk-minimap-progress').style.width = '0%';
-            document.getElementById('tk-minimap-markers').innerHTML = '';
-            document.getElementById('end-completion-val').textContent = '0%';
-            document.getElementById('end-completion-val').style.color = 'var(--fo-blue)';
-
-            const apInd = document.getElementById('ap-indicator');
-            if (apInd) apInd.style.display = 'none';
-            
-            document.getElementById('pause-btn').textContent = '⏸️';
-            document.getElementById('pause-overlay').style.display = 'none';
-
-            document.getElementById('tk-plane-img').src = playerPlaneSkin;
+            document.getElementById('tk-touch-prompt').style.display = 'none';
             
             let rand = Math.random();
             let weather = 'day';
@@ -931,36 +783,25 @@
                 dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: 0.75, autoPilot: false, weather: weather, canRestart: false,
                 hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [],
                 passengers: Math.floor(Math.random() * 80) + 40,
-                gearRisk: Math.floor(Math.random() * 40) + 10, 
-                engRisk: Math.floor(Math.random() * 30) + 5,
+                baseGearRisk: Math.floor(Math.random() * 40) + 10, 
+                baseEngRisk: Math.floor(Math.random() * 30) + 5,
                 windRisk: Math.floor(Math.random() * 40) + 10,
                 gyroRisk: Math.floor(Math.random() * 15) + 5,
-                hasWindPocket: false, windPocketTriggered: false, windPocketTimer: 0,
-                hasGyroFailure: false, gyroFailed: false,
-                stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0,
                 hasFogScenario: Math.random() < 0.25,
                 hasOvertakerScenario: Math.random() > 0.5, overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
                 hasBirdScenario: Math.random() < 0.25, birdActive: false, birdX: 150, birdAlt: 0,
-                gearBroken: false, gearBreakAlt: 99999, stallFactor: 0,
-                enemies: [
-                    {active: false, x: 150, alt: 0, spd: 0}, {active: false, x: 150, alt: 0, spd: 0},
-                    {active: false, x: 150, alt: 0, spd: 0}, {active: false, x: 150, alt: 0, spd: 0}, {active: false, x: 150, alt: 0, spd: 0}
-                ]
+                hasCargoMission: Math.random() < 0.25, dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0,
+                gearBroken: false, gearBreakAlt: 99999, stallFactor: 0, enemies: [], activeCargo: [],
+                stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0
             };
-            SPEED_MOD = 0.75; 
+            
+            if(tkState.hasCargoMission) tkState.cargoCount = Math.floor(Math.random() * 3) + 1;
 
-            // Calculate actual failures based on the risk
-            tkState.hasGearFailure = Math.random() * 100 < tkState.gearRisk;
-            if (tkState.hasGearFailure) tkState.gearBreakAlt = Math.random() * (CRUISE_ALT - 200) + 100;
-            
-            tkState.engineFailure = false;
-            tkState.hasEngineFailureScenario = Math.random() * 100 < tkState.engRisk;
-            tkState.hasWindPocket = Math.random() * 100 < tkState.windRisk;
-            tkState.hasGyroFailure = Math.random() * 100 < tkState.gyroRisk;
-            
             if (tkState.hasFogScenario) vp.classList.add('fog-scenario');
 
-            document.getElementById('prompt-container').style.display = 'none';
+            document.getElementById('tk-eject-btn').style.display = 'none';
+            document.getElementById('tk-drop-zone').style.display = 'none';
+            document.getElementById('tk-plane-img').src = playerPlaneSkin;
             document.getElementById('plane-container').style.display = 'block';
             document.querySelectorAll('.tk-enemy').forEach(el => el.style.display = 'none');
             document.getElementById('tk-overtaker-plane').style.display = 'none';
@@ -986,25 +827,43 @@
             else if (weather === 'night') { wText = "NIGHT OPS"; wColor = "#8e44ad"; }
             document.getElementById('fp-weather').textContent = wText; document.getElementById('fp-weather').style.color = wColor;
             
+            let cText = "NONE"; let cColor = "var(--gauge-green)";
+            if (tkState.hasCargoMission) { cText = `${tkState.cargoCount} PKG TO DROP ZONE`; cColor = "var(--brand-gold)"; }
+            document.getElementById('fp-cargo').textContent = cText; document.getElementById('fp-cargo').style.color = cColor;
+
             let wRiskEl = document.getElementById('fp-wind-risk'); wRiskEl.textContent = tkState.windRisk + "%";
             wRiskEl.style.color = tkState.windRisk > 25 ? "var(--brand-red)" : "var(--brand-gold)";
 
             let gStabEl = document.getElementById('fp-gyro-risk'); gStabEl.textContent = (100 - tkState.gyroRisk) + "%";
             gStabEl.style.color = tkState.gyroRisk > 15 ? "var(--brand-red)" : "var(--gauge-green)";
 
-            let gRiskEl = document.getElementById('fp-gear-risk'); gRiskEl.textContent = tkState.gearRisk + "%";
-            gRiskEl.style.color = tkState.gearRisk > 30 ? "var(--brand-red)" : "var(--brand-gold)";
-            
-            let eRiskEl = document.getElementById('fp-eng-risk'); eRiskEl.textContent = tkState.engRisk + "%";
-            eRiskEl.style.color = tkState.engRisk > 20 ? "var(--brand-red)" : "var(--brand-gold)";
+            updateFlightPlanUI();
 
             const fpOverlay = document.getElementById('tk-flight-plan-overlay');
             fpOverlay.style.display = 'flex';
             setTimeout(() => fpOverlay.classList.add('visible'), 50);
         }
 
+        function startFlight() {
+            document.getElementById('tk-touch-prompt').style.display = 'block';
+        }
+
         function authorizeFlight(e) {
             if (e) e.stopPropagation();
+            
+            tkState.hasGearFailure = Math.random() * 100 < tkState.gearRisk;
+            if (tkState.hasGearFailure) tkState.gearBreakAlt = Math.random() * (CRUISE_ALT - 200) + 100;
+            tkState.engineFailure = false;
+            tkState.hasEngineFailureScenario = Math.random() * 100 < tkState.engRisk;
+            tkState.hasWindPocket = Math.random() * 100 < tkState.windRisk;
+            tkState.hasGyroFailure = Math.random() * 100 < tkState.gyroRisk;
+
+            if (tkState.hasCargoMission) {
+                document.getElementById('tk-eject-btn').style.display = 'block';
+                document.getElementById('tk-eject-btn').style.opacity = 1;
+                document.getElementById('cargo-count').textContent = tkState.cargoCount;
+            }
+
             document.getElementById('tk-flight-plan-overlay').classList.remove('visible');
             setTimeout(() => {
                 document.getElementById('tk-flight-plan-overlay').style.display = 'none';
@@ -1020,68 +879,6 @@
                 tkState.lastFrameTime = performance.now();
                 tkState.frameId = requestAnimationFrame(gameLoop);
             }, 300);
-        }
-
-        // --- HARDWARE ACCELERATED PARTICLES ---
-        function spawnSmoke(x, y) {
-            let p = document.createElement('div'); p.className = 'smoke-particle';
-            let gray = Math.floor(Math.random() * 80) + 20; p.style.backgroundColor = `rgba(${gray}, ${gray}, ${gray}, 0.8)`;
-            let size = Math.random() * 8 + 4; p.style.width = size + 'px'; p.style.height = size + 'px'; 
-            let curX = x, curY = y; p.style.transform = `translate3d(${curX}px, ${curY}px, 0) scale(1)`;
-            document.getElementById('camera-rig').appendChild(p);
-            
-            let speedFactor = Math.max(1, tkState.speed / 100);
-            let vx = -(Math.random() * 6 + 4) * SPEED_MOD * speedFactor; let vy = (Math.random() * 2 - 1) * SPEED_MOD;
-            let age = 0; let maxAge = Math.random() * 40 + 20; let currentScale = 1;
-            
-            function move() {
-                if (tkState.isPaused) { requestAnimationFrame(move); return; }
-                age++; vx *= 0.98; vy -= 0.1; currentScale += 0.05; curX += vx; curY += vy;
-                p.style.transform = `translate3d(${curX}px, ${curY}px, 0) scale(${currentScale})`; p.style.opacity = 0.8 * (1 - (age / maxAge));
-                if(age < maxAge) requestAnimationFrame(move); else p.remove();
-            } move();
-        }
-
-        function spawnScoreParticle(cx, cy, pitch) {
-            let p = document.createElement('div'); p.className = 'score-particle';
-            p.style.backgroundColor = '#cfa86e'; p.style.boxShadow = `0 0 8px #cfa86e`; 
-            let rad = -pitch * (Math.PI / 180); let curX = cx + Math.cos(rad) * -65; let curY = cy + Math.sin(rad) * -65;
-            p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`; document.getElementById('camera-rig').appendChild(p);
-            
-            let speedFactor = Math.max(1, tkState.speed / 100); let vx = -(Math.random() * 4 + 4) * SPEED_MOD * speedFactor; let vy = (Math.random() * 2 - 1) * SPEED_MOD;
-            let age = 0; let maxAge = Math.random() * 20 + 15;
-            
-            function move() {
-                if (tkState.isPaused) { requestAnimationFrame(move); return; }
-                age++; vx *= 0.95; vy -= 0.1; curX += vx; curY += vy;
-                p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`; p.style.opacity = 1 - (age / maxAge);
-                if(age < maxAge) requestAnimationFrame(move); else p.remove();
-            } move();
-        }
-
-        function triggerGearExplosion(x, y) {
-            sfx.playExplosion(); const colors = ['#fff', '#ffaa00', '#d71920', '#333', '#111'];
-            for(let i=0; i<25; i++) {
-                let p = document.createElement('div'); p.className = 'pixel-particle'; p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
-                let size = (Math.random()*5 + 2); p.style.width = size + 'px'; p.style.height = size + 'px'; 
-                let curX = x, curY = y; p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`; document.getElementById('camera-rig').appendChild(p);
-                let a = Math.random() * Math.PI * 2; let v = (Math.random() * 12 + 2) * 0.75; let vx = Math.cos(a)*v - 5; let vy = Math.sin(a)*v + 2; let age = 0;
-                function move() { 
-                    if (tkState.isPaused) { requestAnimationFrame(move); return; }
-                    age++; vx *= 0.92; vy += (0.4 * 0.75); curX += vx; curY += vy; p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`; if(age < 45) requestAnimationFrame(move); else p.remove(); 
-                } move();
-            }
-        }
-
-        function spawnSpark(x, y, isMidAir) {
-            sfx.playSpark(); let p = document.createElement('div'); p.className = 'spark-particle'; p.style.backgroundColor = Math.random() > 0.4 ? '#ffaa00' : '#ff3300';
-            if (isMidAir) { p.style.width = '5px'; p.style.height = '5px'; }
-            let curX = x, curY = y; p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`; document.getElementById('camera-rig').appendChild(p);
-            let speedFactor = isMidAir ? 1 : (tkState.speed / 100); let vx = isMidAir ? -(Math.random() * 5 + 2) * SPEED_MOD : -(Math.random() * 14 + 5) * SPEED_MOD * speedFactor; let vy = isMidAir ? (Math.random() * 4 + 2) * SPEED_MOD : -(Math.random() * 3) * SPEED_MOD * speedFactor; let age = 0;
-            function move() { 
-                if (tkState.isPaused) { requestAnimationFrame(move); return; }
-                age++; vx *= 0.95; vy += (0.5 * SPEED_MOD); curX += vx; curY += vy; p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`; p.style.opacity = 1 - (age / (isMidAir ? 30 : 15)); if(age < (isMidAir ? 30 : 15)) requestAnimationFrame(move); else p.remove(); 
-            } move();
         }
 
         function triggerEpicCollision(x, y) {
@@ -1107,36 +904,22 @@
 
         function gameLoop(timestamp) {
             if (!tkState.active && !tkState.isPaused) return;
-            
-            if (tkState.isPaused) {
-                tkState.lastFrameTime = timestamp; // Keep time moving so no sudden jump
-                tkState.frameId = requestAnimationFrame(gameLoop);
-                return;
-            }
-
-            // STRICT 60 FPS LOCK (16.66ms per frame)
+            if (tkState.isPaused) { tkState.lastFrameTime = timestamp; tkState.frameId = requestAnimationFrame(gameLoop); return; }
             if (tkState.lastFrameTime === 0) tkState.lastFrameTime = timestamp;
             let delta = timestamp - tkState.lastFrameTime;
             if (delta < 16.66) { tkState.frameId = requestAnimationFrame(gameLoop); return; }
             tkState.lastFrameTime = timestamp - (delta % 16.66);
-
             tkState.phaseTimer += delta;
 
             const hudRing = document.getElementById('plane-hud');
-
             let isLandingApproach = (tkState.phase === 5 && tkState.altitude <= 70 && tkState.altitude > 0);
-            let targetSpeedMod = isLandingApproach ? 0.25 : 0.75; 
-            let targetZoom = isLandingApproach ? 1.8 : 1.0;
-
-            tkState.speedMod += (targetSpeedMod - tkState.speedMod) * 0.1;
-            tkState.zoom += (targetZoom - tkState.zoom) * 0.05;
-            SPEED_MOD = tkState.speedMod; 
-            document.getElementById('camera-rig').style.transform = `scale(${tkState.zoom})`;
+            let targetSpeedMod = isLandingApproach ? 0.25 : 0.75; let targetZoom = isLandingApproach ? 1.8 : 1.0;
+            tkState.speedMod += (targetSpeedMod - tkState.speedMod) * 0.1; tkState.zoom += (targetZoom - tkState.zoom) * 0.05;
+            SPEED_MOD = tkState.speedMod; document.getElementById('camera-rig').style.transform = `scale(${tkState.zoom})`;
 
             let guide = document.getElementById('landing-guide');
             if (isLandingApproach) {
-                guide.style.opacity = 1;
-                let isSafe = (tkState.pitch >= -5 && tkState.pitch <= 15);
+                guide.style.opacity = 1; let isSafe = (tkState.pitch >= -5 && tkState.pitch <= 15);
                 let guideColor = isSafe ? '#2ecc71' : '#d71920';
                 guide.style.borderLeftColor = guideColor; guide.style.borderRightColor = guideColor; guide.querySelector('.guide-label').style.color = guideColor;
             } else { guide.style.opacity = 0; }
@@ -1145,135 +928,79 @@
                 const sun = document.getElementById('tk-sun'); const flareCont = document.getElementById('tk-flare-container'); const sunRect = sun.getBoundingClientRect();
                 let sx = sunRect.left + sunRect.width / 2; let sy = sunRect.top + sunRect.height / 2;
                 let cx = window.innerWidth / 2; let cy = window.innerHeight / 2; let dx = cx - sx; let dy = cy - sy;
-                document.getElementById('pf1').style.transform = `translate3d(${sx + dx * 1.4}px, ${sy + dy * 1.4}px, 0)`;
-                document.getElementById('pf2').style.transform = `translate3d(${sx + dx * 0.6}px, ${sy + dy * 0.6}px, 0)`;
-                document.getElementById('pf3').style.transform = `translate3d(${sx + dx * 1.8}px, ${sy + dy * 1.8}px, 0)`;
-                document.getElementById('pf4').style.transform = `translate3d(${sx + dx * 2.2}px, ${sy + dy * 2.2}px, 0)`;
-                flareCont.style.opacity = Math.max(0, Math.min(1, (window.innerHeight - 100 - sy) / 100));
+                document.getElementById('pf1').style.transform = `translate3d(${sx + dx * 1.4}px, ${sy + dy * 1.4}px, 0)`; document.getElementById('pf2').style.transform = `translate3d(${sx + dx * 0.6}px, ${sy + dy * 0.6}px, 0)`; document.getElementById('pf3').style.transform = `translate3d(${sx + dx * 1.8}px, ${sy + dy * 1.8}px, 0)`; document.getElementById('pf4').style.transform = `translate3d(${sx + dx * 2.2}px, ${sy + dy * 2.2}px, 0)`; flareCont.style.opacity = Math.max(0, Math.min(1, (window.innerHeight - 100 - sy) / 100));
             }
 
             const bubble = document.getElementById('dialogue-bubble');
-            if (tkState.dialogueTimeLeft > 0) {
-                tkState.dialogueTimeLeft -= delta; bubble.innerHTML = tkState.dialogueText; bubble.style.opacity = 1;
-            } else { bubble.style.opacity = 0; }
+            if (tkState.dialogueTimeLeft > 0) { tkState.dialogueTimeLeft -= delta; bubble.innerHTML = tkState.dialogueText; bubble.style.opacity = 1; } else { bubble.style.opacity = 0; }
 
-            // SPEED ENGINE WITH WIND POCKET LOGIC
+            // SPEED ENGINE WITH WIND POCKET
             let inHUDZone = (tkState.pitch >= tkState.currTargetMin && tkState.pitch <= tkState.currTargetMax);
-            
             if (tkState.phase < 6) {
-                let accel = (tkState.phase === 5) ? -1.6 : (tkState.phase === 0 ? 0.8 : 1.5); 
-                accel *= SPEED_MOD;
+                let accel = (tkState.phase === 5) ? -1.6 : (tkState.phase === 0 ? 0.8 : 1.5); accel *= SPEED_MOD;
                 if (!inHUDZone && tkState.phase > 0) accel *= 0.3;
-                if (tkState.pitch > 0) accel -= (tkState.pitch * 0.04 * SPEED_MOD);
-                if (tkState.pitch < 0) accel += (Math.abs(tkState.pitch) * 0.03 * SPEED_MOD);
+                if (tkState.pitch > 0) accel -= (tkState.pitch * 0.04 * SPEED_MOD); if (tkState.pitch < 0) accel += (Math.abs(tkState.pitch) * 0.03 * SPEED_MOD);
                 tkState.speed = Math.max((tkState.phase === 0 ? 0 : 85), Math.min(240, tkState.speed + accel));
             } else {
                 tkState.speed = Math.max(0, tkState.speed - (1.3 * SPEED_MOD));
-                if (tkState.speed <= 0) { 
-                    tkState.active = false; 
-                    logEvent("SAFE LANDING", "🏁", "LANDED", "var(--gauge-green)");
-                    setDialogue("<span class='success-text'>SAFE! EVACUATE!</span>", 5000); 
-                    sfx.stopAll(); 
-                    setTimeout(() => { showEndScreen(Math.floor(tkState.score), true); tkState.canRestart = true; }, 1500); 
-                    return; 
-                }
+                if (tkState.speed <= 0) { tkState.active = false; logEvent("SAFE LANDING", "🏁", "LANDED", "var(--gauge-green)"); setDialogue("<span class='success-text'>SAFE! EVACUATE!</span>", 5000); sfx.stopAll(); setTimeout(() => { showEndScreen(Math.floor(tkState.score), true); tkState.canRestart = true; }, 1500); return; }
             }
 
             let displaySpeed = tkState.speed;
-            
-            // WIND POCKET TRIGGER
             if (tkState.hasWindPocket && !tkState.windPocketTriggered && tkState.phase >= 2 && Math.random() < 0.002) {
-                tkState.windPocketTriggered = true;
-                tkState.windPocketTimer = 2000; // Lasts exactly 2 seconds
-                logEvent("WIND SHEAR", "💨", "WIND", "var(--gauge-orange)");
-                setDialogue("<span class='alert-text'>WIND SHEAR!</span>", 2000);
+                tkState.windPocketTriggered = true; tkState.windPocketTimer = 2000; 
+                logEvent("WIND SHEAR", "💨", "WIND", "var(--gauge-orange)"); setDialogue("<span class='alert-text'>WIND SHEAR!</span>", 2000);
             }
-            
-            // WIND POCKET EXECUTION (Smooth Sine Curve Drop)
             if (tkState.windPocketTimer > 0) {
-                tkState.windPocketTimer -= delta;
-                if (tkState.windPocketTimer < 0) tkState.windPocketTimer = 0;
-                
-                let progress = tkState.windPocketTimer / 2000; 
-                let speedDrop = Math.sin(progress * Math.PI) * 90; // Drops speed by up to 90 units smoothly
-                displaySpeed = Math.max(0, displaySpeed - speedDrop);
+                tkState.windPocketTimer -= delta; if (tkState.windPocketTimer < 0) tkState.windPocketTimer = 0;
+                let progress = tkState.windPocketTimer / 2000; let speedDrop = Math.sin(progress * Math.PI) * 90; displaySpeed = Math.max(0, displaySpeed - speedDrop);
             }
 
             let spdHue = 0;
-            if (tkState.phase < 2) spdHue = (displaySpeed >= 150) ? 120 : 0;
-            else if (tkState.phase === 5) spdHue = (displaySpeed <= 160) ? 120 : 0; 
-            else spdHue = (displaySpeed > 130) ? 120 : 0;
-            document.getElementById('hud-spd').style.color = `hsl(${spdHue}, 85%, 55%)`;
-            document.getElementById('hud-spd-val').textContent = Math.floor(displaySpeed);
+            if (tkState.phase < 2) spdHue = (displaySpeed >= 150) ? 120 : 0; else if (tkState.phase === 5) spdHue = (displaySpeed <= 160) ? 120 : 0; else spdHue = (displaySpeed > 130) ? 120 : 0;
+            document.getElementById('hud-spd').style.color = `hsl(${spdHue}, 85%, 55%)`; document.getElementById('hud-spd-val').textContent = Math.floor(displaySpeed);
 
             // PITCH & PHYSICS
             if (tkState.phase === 0 && displaySpeed < 150) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
             else if (tkState.phase === 6) { tkState.pitch += (0 - tkState.pitch) * 0.1; tkState.pitchVelocity = 0; } 
             else if (tkState.autoPilot) { tkState.pitchVelocity *= 0.5; tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch + tkState.pitchVelocity)); } 
             else {
-                if (tkState.pressing && displaySpeed >= 85) tkState.pitchVelocity += (0.11 * SPEED_MOD);
-                else if (displaySpeed >= 85) tkState.pitchVelocity -= (0.08 * SPEED_MOD);
+                if (tkState.pressing && displaySpeed >= 85) tkState.pitchVelocity += (0.11 * SPEED_MOD); else if (displaySpeed >= 85) tkState.pitchVelocity -= (0.08 * SPEED_MOD);
                 if (tkState.engineFailure && tkState.phase < 6) { tkState.pitchVelocity += (Math.random() - 0.5) * 0.35 * SPEED_MOD; }
                 tkState.pitchVelocity *= 0.88; tkState.pitch = Math.max(-25, Math.min(25, tkState.pitch + tkState.pitchVelocity));
             }
 
-            tkState.hudPitchVelocity += (tkState.pitch - tkState.hudPitch) * 0.1; 
-            tkState.hudPitchVelocity *= 0.8; tkState.hudPitch += tkState.hudPitchVelocity;
+            tkState.hudPitchVelocity += (tkState.pitch - tkState.hudPitch) * 0.1; tkState.hudPitchVelocity *= 0.8; tkState.hudPitch += tkState.hudPitchVelocity;
             
-            // GYROSCOPE FAILURE TRIGGER
+            // GYROSCOPE FAILURE
             if (tkState.hasGyroFailure && !tkState.gyroFailed && tkState.phase >= 1 && Math.random() < 0.001) {
-                tkState.gyroFailed = true;
-                logEvent("GYRO FAILURE", "🧭", "GYRO", "var(--brand-red)");
-                setDialogue("<span class='alert-text'>GYROSCOPE FAILURE!</span>", 4000);
+                tkState.gyroFailed = true; logEvent("GYRO FAILURE", "🧭", "GYRO", "var(--brand-red)"); setDialogue("<span class='alert-text'>GYROSCOPE FAILURE!</span>", 4000);
             }
-            
-            // GYROSCOPE EXECUTION
             let displayPitch = tkState.hudPitch;
-            if (tkState.gyroFailed) {
-                // Wildly fluctuate between -25 and +25 degrees off the real pitch
-                displayPitch += Math.sin(timestamp / 200) * 25 + Math.cos(timestamp / 300) * 10;
-            }
+            if (tkState.gyroFailed) { displayPitch += Math.sin(timestamp / 200) * 25 + Math.cos(timestamp / 300) * 10; }
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && displaySpeed > 145 && tkState.altitude > 0);
             let isTooHigh = (tkState.altitude > 1500 && tkState.phase >= 1 && tkState.phase <= 4);
-            
             sfx.playAlarm(isStalling);
             
-            // LOGIC FOR CUSTOMER SATISFACTION (STALLS)
-            if (isStalling && !tkState.wasStalling) { tkState.stallsCount++; }
-            tkState.wasStalling = isStalling;
-
+            if (isStalling && !tkState.wasStalling) { tkState.stallsCount++; } tkState.wasStalling = isStalling;
             tkState.stallFactor = isStalling ? Math.min(1.0, tkState.stallFactor + 0.015) : Math.max(0.0, tkState.stallFactor - 0.05);
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
             if (tkState.stallFactor > 0) targetVSpeed = (targetVSpeed * (1 - tkState.stallFactor)) + (-15 * Math.pow(tkState.stallFactor, 2) * SPEED_MOD);
             
-            if (isStalling) { 
-                document.getElementById('tk-alert-overlay').className = 'flashing'; setDialogue("<span class='alert-text'>STALL WARNING!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
-            } else if (isTooFast) {
-                document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 1500);
-            } else if (isTooHigh) {
-                document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>DESCEND! LOW VISIBILITY!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
-            } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>" && tkState.dialogueText !== "<span class='alert-text'>WIND SHEAR!</span>" && tkState.dialogueText !== "<span class='alert-text'>GYROSCOPE FAILURE!</span>") {
-                document.getElementById('tk-alert-overlay').className = '';
-            }
+            if (isStalling) { document.getElementById('tk-alert-overlay').className = 'flashing'; setDialogue("<span class='alert-text'>STALL WARNING!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
+            } else if (isTooFast) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 1500);
+            } else if (isTooHigh) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>DESCEND! LOW VISIBILITY!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
+            } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>" && tkState.dialogueText !== "<span class='alert-text'>WIND SHEAR!</span>" && tkState.dialogueText !== "<span class='alert-text'>GYROSCOPE FAILURE!</span>") { document.getElementById('tk-alert-overlay').className = ''; }
 
             tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.12;
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
             if (tkState.phase !== 6) tkState.altitude = Math.max(0, tkState.altitude + tkState.vSpeed);
 
-            if (tkState.altitude > 0 && !tkState.hasLiftedOff) {
-                tkState.hasLiftedOff = true;
-                logEvent("LIFTOFF", "🛫", "LIFTOFF", "var(--gauge-green)");
-            }
+            if (tkState.altitude > 0 && !tkState.hasLiftedOff) { tkState.hasLiftedOff = true; logEvent("LIFTOFF", "🛫", "LIFTOFF", "var(--gauge-green)"); }
+            if (tkState.hasLiftedOff && tkState.phase < 5) { tkState.totalFlightTime += delta; if (Math.abs(tkState.pitch) > 8) { tkState.extremePitchTime += delta; } }
 
-            // LOGIC FOR CUSTOMER SATISFACTION (PITCH COMFORT)
-            if (tkState.hasLiftedOff && tkState.phase < 5) {
-                tkState.totalFlightTime += delta;
-                if (Math.abs(tkState.pitch) > 8) { tkState.extremePitchTime += delta; }
-            }
-
-            // HUD UPDATES (Uses corrupted displayPitch if gyro fails)
             document.getElementById('hud-alt-val').textContent = Math.floor(tkState.altitude) + 'm';
             document.getElementById('hud-pitch-val').innerHTML = Math.floor(displayPitch) + '&deg;';
             let center = (tkState.currTargetMin + tkState.currTargetMax) / 2; let error = Math.abs(displayPitch - center);
@@ -1284,234 +1011,144 @@
             const scoreValEl = document.getElementById('score-val');
             if (inHUDZone && tkState.phase > 0 && tkState.phase < 6) {
                 tkState.score += tkState.autoPilot ? 10 : 4; scoreValEl.style.color = tkState.autoPilot ? '#cfa86e' : '#fff';
-                if (Math.random() > 0.4) {
-                    const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
-                    spawnScoreParticle(pr.left + pr.width / 2, pr.top + pr.height / 2, tkState.pitch);
-                }
+                if (Math.random() > 0.4) { const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); spawnScoreParticle(pr.left + pr.width / 2, pr.top + pr.height / 2, tkState.pitch); }
             } else { scoreValEl.style.color = '#fff'; }
             scoreValEl.textContent = Math.floor(tkState.score);
 
-            // FATAL IMPACT CHECKS WITH REASONS
             if (tkState.altitude <= 0 && tkState.hasLiftedOff) {
                 if (tkState.phase < 5) return triggerCrash("CRASHED INTO TERRAIN!");
                 else if (tkState.phase === 5) {
-                    let badAngle = (isStalling || tkState.pitch < -5 || tkState.pitch > 15);
-                    let hotLanding = (displaySpeed > 160);
-                    
+                    let badAngle = (isStalling || tkState.pitch < -5 || tkState.pitch > 15); let hotLanding = (displaySpeed > 160);
                     if (badAngle && hotLanding) return triggerCrash("TOO FAST & BAD ANGLE!");
                     if (badAngle) return triggerCrash("FATAL ANGLE!");
                     if (hotLanding) return triggerCrash("TOO FAST!");
                 }
             }
 
-            // TIME-BASED PHASE LOGIC
-            if (tkState.phase === 0 && displaySpeed >= 150) { 
-                tkState.phase = 1; tkState.phaseTimer = 0;
-                setDialogue("<span class='capt-text'>V1! KEEP 15 DEGREES</span>", 99999); 
-            }
-            
-            // Random Gear Break (Climb)
+            // PHASE LOGIC
+            if (tkState.phase === 0 && displaySpeed >= 150) { tkState.phase = 1; tkState.phaseTimer = 0; setDialogue("<span class='capt-text'>V1! KEEP 15 DEGREES</span>", 99999); }
             if (tkState.phase === 1 && tkState.altitude >= tkState.gearBreakAlt && !tkState.gearBroken) {
-                tkState.gearBroken = true; sfx.playExplosion(); setDialogue("<span class='alert-text'>GEAR SNAP!</span>", 4000);
-                logEvent("GEAR SNAP", "⚙️", "GEAR DMG", "var(--brand-gold)");
+                tkState.gearBroken = true; sfx.playExplosion(); setDialogue("<span class='alert-text'>GEAR SNAP!</span>", 4000); logEvent("GEAR SNAP", "⚙️", "GEAR DMG", "var(--brand-gold)");
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
             }
             if (tkState.gearBroken && document.getElementById('tk-plane-img').src.indexOf('nolandinggear') === -1) { document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png'; }
+            if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { tkState.phase = 2; tkState.phaseTimer = 0; tkState.currTargetMin = -3; tkState.currTargetMax = 3; setDialogue("<span class='capt-text'>LEVEL OFF</span>", 4000); }
 
-            if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { 
-                tkState.phase = 2; tkState.phaseTimer = 0;
-                tkState.currTargetMin = -3; tkState.currTargetMax = 3; 
-                setDialogue("<span class='capt-text'>LEVEL OFF</span>", 4000); 
+            // CARGO MISSION LOGIC
+            if (tkState.hasCargoMission && !tkState.dropZoneSpawned && tkState.phase === 2 && tkState.phaseTimer > 3000) {
+                tkState.dropZoneSpawned = true; tkState.dropZoneX = window.innerWidth + 1000;
+                document.getElementById('tk-drop-zone').style.display = 'block';
+            }
+            if (tkState.dropZoneSpawned) {
+                tkState.dropZoneX -= (displaySpeed * 0.18 * SPEED_MOD);
+                document.getElementById('tk-drop-zone').style.transform = `translate3d(${tkState.dropZoneX}px, 0, 0)`;
             }
 
-            // Overtaker Scenario (Climb/Level)
+            for (let i = tkState.activeCargo.length - 1; i >= 0; i--) {
+                let pkg = tkState.activeCargo[i];
+                let x = parseFloat(pkg.dataset.x); let y = parseFloat(pkg.dataset.y); let vy = parseFloat(pkg.dataset.vy);
+                x -= (displaySpeed * 0.18 * SPEED_MOD) * 0.5; vy += 0.4; y += vy;
+                pkg.dataset.x = x; pkg.dataset.y = y; pkg.dataset.vy = vy;
+                pkg.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+                
+                if (y > window.innerHeight - 80 + tkState.cameraY) {
+                    let dz = document.getElementById('tk-drop-zone').getBoundingClientRect();
+                    let pkgRect = pkg.getBoundingClientRect();
+                    let hit = (pkgRect.right > dz.left && pkgRect.left < dz.right);
+                    if (hit) {
+                        tkState.score += 500; logEvent("CARGO DELIVERED", "📦", "DELIVERY", "var(--gauge-green)"); showFloat(x, y - 40, "+500 PTS", "var(--gauge-green)"); sfx.playDing(2.0);
+                    } else {
+                        tkState.score -= 200; logEvent("CARGO MISSED", "❌", "MISSED", "var(--brand-red)"); showFloat(x, y - 40, "-200 PTS", "var(--brand-red)"); sfx.playExplosion();
+                    }
+                    pkg.remove(); tkState.activeCargo.splice(i, 1);
+                }
+            }
+
+            // Overtaker
             if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && !tkState.overtakerActive && tkState.altitude > 200 && tkState.overtakerX === -30 && Math.random() < 0.005) {
-                tkState.overtakerActive = true; tkState.overtakerAltitude = tkState.altitude;
-                logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)");
-                setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 4000); document.getElementById('tk-overtaker-plane').style.display = 'block';
+                tkState.overtakerActive = true; tkState.overtakerAltitude = tkState.altitude; logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 4000); document.getElementById('tk-overtaker-plane').style.display = 'block';
             }
             if (tkState.overtakerActive) {
-                tkState.overtakerX += (0.6 * SPEED_MOD); let gp = document.getElementById('tk-overtaker-plane');
-                gp.style.transform = `translate3d(${tkState.overtakerX}vw, ${-(tkState.overtakerAltitude - tkState.cameraY)}px, 0)`;
-                
-                const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
-                const gr = gp.getBoundingClientRect();
-                if (!( (pr.right - 12) < (gr.left + 15) || 
-                       (pr.left + 12) > (gr.right - 15) || 
-                       (pr.bottom - 12) < (gr.top + 25) || 
-                       (pr.top + 25) > (gr.bottom - 10) )) {
-                    return triggerCrash("MID-AIR CRASH!");
-                }
-                
+                tkState.overtakerX += (0.6 * SPEED_MOD); let gp = document.getElementById('tk-overtaker-plane'); gp.style.transform = `translate3d(${tkState.overtakerX}vw, ${-(tkState.overtakerAltitude - tkState.cameraY)}px, 0)`;
+                const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); const gr = gp.getBoundingClientRect();
+                if (!( (pr.right - 12) < (gr.left + 15) || (pr.left + 12) > (gr.right - 15) || (pr.bottom - 12) < (gr.top + 25) || (pr.top + 25) > (gr.bottom - 10) )) { return triggerCrash("MID-AIR CRASH!"); }
                 if (tkState.overtakerX > 150) { tkState.overtakerActive = false; gp.style.display = 'none'; }
             }
 
-            // Bird Flock Scenario (Climb/Level)
+            // Birds
             if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 250 && tkState.phase < 4 && tkState.birdX === 150 && Math.random() < 0.005) {
-                tkState.birdActive = true; tkState.birdAlt = tkState.altitude + (Math.random() * 60 - 30);
-                logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)");
-                document.getElementById('tk-bird-flock').style.display = 'block';
-                setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 3000);
+                tkState.birdActive = true; tkState.birdAlt = tkState.altitude + (Math.random() * 60 - 30); logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)"); document.getElementById('tk-bird-flock').style.display = 'block'; setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 3000);
             }
             if (tkState.birdActive) {
-                tkState.birdX -= (1.1 * SPEED_MOD); 
-                let bEl = document.getElementById('tk-bird-flock');
-                bEl.style.transform = `translate3d(${tkState.birdX}vw, ${-(tkState.birdAlt - tkState.cameraY)}px, 0)`;
-                
-                const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
-                const br = bEl.getBoundingClientRect();
-                if (!( (pr.right - 10) < (br.left + 10) || 
-                       (pr.left + 10) > (br.right - 10) || 
-                       (pr.bottom - 10) < (br.top + 10) || 
-                       (pr.top + 25) > (br.bottom - 10) )) { 
-                    return triggerCrash("BIRD STRIKE!");
+                tkState.birdX -= (1.1 * SPEED_MOD); let bEl = document.getElementById('tk-bird-flock'); bEl.style.transform = `translate3d(${tkState.birdX}vw, ${-(tkState.birdAlt - tkState.cameraY)}px, 0)`;
+                const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); const br = bEl.getBoundingClientRect();
+                if (!( (pr.right - 10) < (br.left + 10) || (pr.left + 10) > (br.right - 10) || (pr.bottom - 10) < (br.top + 10) || (pr.top + 25) > (br.bottom - 10) )) { 
+                    if (playerProfile.birdShield && !tkState.engineFailure) {
+                        tkState.birdActive = false; document.getElementById('tk-bird-flock').style.display = 'none';
+                        tkState.engineFailure = true;
+                        logEvent("BIRD SHIELD TRIGGERED", "🛡️", "SHIELD", "var(--fo-blue)");
+                        setDialogue("<span class='alert-text'>BIRD STRIKE! ENGINES DAMAGED!</span>", 4000);
+                        sfx.playExplosion(); document.getElementById('tk-alert-overlay').className = 'flashing'; setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800);
+                    } else {
+                        return triggerCrash("BIRD STRIKE!");
+                    }
                 }
                 if (tkState.birdX < -20) { tkState.birdActive = false; bEl.style.display = 'none'; }
             }
 
-            // Engine Failure 
+            // Random Engine Fail
             if (tkState.phase === 2 && tkState.phaseTimer > 3000 && tkState.hasEngineFailureScenario && !tkState.engineFailure) {
-                tkState.engineFailure = true; 
-                logEvent("ENGINE FAILURE", "🔥", "ENGINE", "var(--brand-red)");
-                setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 5000); sfx.playExplosion();
-                document.getElementById('tk-alert-overlay').className = 'flashing'; 
-                setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800);
+                tkState.engineFailure = true; logEvent("ENGINE FAILURE", "🔥", "ENGINE", "var(--brand-red)"); setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 5000); sfx.playExplosion(); document.getElementById('tk-alert-overlay').className = 'flashing'; setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800);
             }
 
-            // Swarm Traffic Phase Trigger
+            // Swarm
             if (tkState.phase === 2 && tkState.phaseTimer > 8000) {
-                tkState.phase = 3; tkState.phaseTimer = 0;
-                tkState.currTargetMin = -24; tkState.currTargetMax = -12;
-                logEvent("TRAFFIC SWARM", "✈️", "SWARM", "var(--brand-red)");
-                setDialogue("<span class='alert-text'>TRAFFIC SWARM! DIVE!</span>", 5000);
-                document.getElementById('tk-alert-overlay').className = 'flashing';
-                setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800); 
-                if(tkState.autoPilot) toggleAutoPilot();
+                tkState.phase = 3; tkState.phaseTimer = 0; tkState.currTargetMin = -24; tkState.currTargetMax = -12; logEvent("TRAFFIC SWARM", "✈️", "SWARM", "var(--brand-red)"); setDialogue("<span class='alert-text'>TRAFFIC SWARM! DIVE!</span>", 5000); document.getElementById('tk-alert-overlay').className = 'flashing'; setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800); if(tkState.autoPilot) toggleAutoPilot();
             }
-
-            // Phase 3: The Swarm
             if (tkState.phase === 3) {
-                let maxEnemies = Math.min(5, Math.floor(1 + (tkState.phaseTimer / 12000) * 4));
-                if (tkState.phaseTimer > 12000) maxEnemies = 0; 
-                
+                let maxEnemies = Math.min(5, Math.floor(1 + (tkState.phaseTimer / 12000) * 4)); if (tkState.phaseTimer > 12000) maxEnemies = 0; 
                 let activeCount = tkState.enemies.filter(e => e.active).length;
-                if (activeCount < maxEnemies && Math.random() < 0.04) {
-                    let slotIdx = tkState.enemies.findIndex(e => !e.active);
-                    if (slotIdx !== -1) {
-                        let e = tkState.enemies[slotIdx];
-                        e.active = true; e.x = 150;
-                        e.alt = tkState.altitude + (Math.random() * 160 - 80); 
-                        e.spd = (0.96 + Math.random() * 0.72) * SPEED_MOD; 
-                        document.getElementById('enemy-' + slotIdx).style.display = 'block';
-                    }
-                }
-
-                let collision = false;
-                const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
+                if (activeCount < maxEnemies && Math.random() < 0.04) { let slotIdx = tkState.enemies.findIndex(e => !e.active); if (slotIdx !== -1) { let e = tkState.enemies[slotIdx]; e.active = true; e.x = 150; e.alt = tkState.altitude + (Math.random() * 160 - 80); e.spd = (0.96 + Math.random() * 0.72) * SPEED_MOD; document.getElementById('enemy-' + slotIdx).style.display = 'block'; } }
+                let collision = false; const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
                 tkState.enemies.forEach((e, i) => {
                     if (e.active) {
-                        e.x -= e.spd;
-                        let el = document.getElementById('enemy-' + i);
-                        el.style.transform = `translate3d(${e.x}vw, ${-(e.alt - tkState.cameraY)}px, 0)`;
-                        
-                        const er = el.getBoundingClientRect();
-                        if (!( (pr.right - 12) < (er.left + 15) || 
-                               (pr.left + 12) > (er.right - 15) || 
-                               (pr.bottom - 12) < (er.top + 25) || 
-                               (pr.top + 25) > (er.bottom - 10) )) {
-                            collision = true;
-                        }
-                        
+                        e.x -= e.spd; let el = document.getElementById('enemy-' + i); el.style.transform = `translate3d(${e.x}vw, ${-(e.alt - tkState.cameraY)}px, 0)`;
+                        const er = el.getBoundingClientRect(); if (!( (pr.right - 12) < (er.left + 15) || (pr.left + 12) > (er.right - 15) || (pr.bottom - 12) < (er.top + 25) || (pr.top + 25) > (er.bottom - 10) )) { collision = true; }
                         if (e.x < -30) { e.active = false; el.style.display = 'none'; }
                     }
                 });
-
                 if (collision) return triggerCrash("MID-AIR CRASH!");
-
-                if (tkState.phaseTimer > 12000 && activeCount === 0) {
-                    tkState.phase = 4; tkState.phaseTimer = 0;
-                    tkState.currTargetMin = -3; tkState.currTargetMax = 3;
-                    setDialogue("<span class='success-text'>CLEAR! LEVEL OFF</span>", 4000);
-                    document.getElementById('tk-alert-overlay').className = '';
-                }
+                if (tkState.phaseTimer > 12000 && activeCount === 0) { tkState.phase = 4; tkState.phaseTimer = 0; tkState.currTargetMin = -3; tkState.currTargetMax = 3; setDialogue("<span class='success-text'>CLEAR! LEVEL OFF</span>", 4000); document.getElementById('tk-alert-overlay').className = ''; }
             }
 
-            // Descent & Guaranteed Gear Break
+            // Descent
             if (tkState.phase === 4 && tkState.phaseTimer > 5000) { 
-                tkState.phase = 5; tkState.phaseTimer = 0;
-                tkState.currTargetMin = -8; tkState.currTargetMax = -2; 
-                if (!tkState.gearBroken) {
-                    tkState.gearBroken = true; sfx.playExplosion(); 
-                    logEvent("GEAR LOST", "🛬", "NO GEAR", "var(--brand-red)");
-                    setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 5000);
-                    const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
-                } else {
-                    setDialogue("<span class='alert-text'>DESCEND FOR BELLY LANDING!</span>", 5000);
-                }
+                tkState.phase = 5; tkState.phaseTimer = 0; tkState.currTargetMin = -8; tkState.currTargetMax = -2; 
+                if (!tkState.gearBroken) { tkState.gearBroken = true; sfx.playExplosion(); logEvent("GEAR LOST", "🛬", "NO GEAR", "var(--brand-red)"); setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 5000); const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10); } else { setDialogue("<span class='alert-text'>DESCEND FOR BELLY LANDING!</span>", 5000); }
                 if(tkState.autoPilot) toggleAutoPilot();
             }
+            if (tkState.phase === 5 && tkState.altitude <= 0) { tkState.phase = 6; tkState.altitude = 0; tkState.vSpeed = 0; setDialogue("<span class='alert-text'>BRAKES ON!</span>", 4000); if(tkState.autoPilot) toggleAutoPilot(); }
+
+            // Camera Parallax Apply
+            tkState.bgX_sky -= (displaySpeed * 0.006 * SPEED_MOD); tkState.bgX_fgSky -= (displaySpeed * 0.012 * SPEED_MOD); tkState.bgX_city -= (displaySpeed * 0.03 * SPEED_MOD); tkState.bgX_runway -= (displaySpeed * 0.18 * SPEED_MOD);
+            document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 10%`; document.getElementById('tk-fg-sky').style.backgroundPosition = `${tkState.bgX_fgSky}px 20%`; document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`; document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
+            if (tkState.hasFogScenario) { tkState.bgX_threatFog -= (displaySpeed * 0.025 * SPEED_MOD); document.getElementById('tk-threat-fog').style.backgroundPosition = `${tkState.bgX_threatFog}px 50%`; }
+
+            let maxVisualAltitude = Math.min(60, window.innerHeight * 0.15); let baseTargetCam = Math.max(0, tkState.altitude - maxVisualAltitude); if (isLandingApproach) baseTargetCam -= 20; tkState.cameraY += (baseTargetCam - tkState.cameraY) * 0.15;
+            document.getElementById('tk-fg-sky').style.opacity = Math.max(0, Math.min(1, (tkState.altitude - 450) / 100));
+
+            document.getElementById('tk-runway').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; document.getElementById('tk-bg-city').style.transform = `translate3d(0, ${tkState.cameraY * 0.7}px, 0)`; document.getElementById('tk-bg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`; document.getElementById('tk-fg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.3}px, 0)`; document.getElementById('tk-mountain').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; document.getElementById('tk-sun').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`;
+            if (tkState.hasFogScenario) { document.getElementById('tk-threat-fog').style.transform = `translate3d(0, ${tkState.cameraY * 0.45}px, 0)`; }
             
-            if (tkState.phase === 5 && tkState.altitude <= 0) {
-                 tkState.phase = 6; tkState.altitude = 0; tkState.vSpeed = 0; 
-                 setDialogue("<span class='alert-text'>BRAKES ON!</span>", 4000);
-                 if(tkState.autoPilot) toggleAutoPilot();
-            }
-
-            // CAMERA LOGIC & SCROLLING
-            tkState.bgX_sky -= (displaySpeed * 0.006 * SPEED_MOD);
-            tkState.bgX_fgSky -= (displaySpeed * 0.012 * SPEED_MOD); 
-            tkState.bgX_city -= (displaySpeed * 0.03 * SPEED_MOD);
-            tkState.bgX_runway -= (displaySpeed * 0.18 * SPEED_MOD);
-            
-            document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 10%`;
-            document.getElementById('tk-fg-sky').style.backgroundPosition = `${tkState.bgX_fgSky}px 20%`;
-            document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`;
-            document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
-
-            if (tkState.hasFogScenario) {
-                tkState.bgX_threatFog -= (displaySpeed * 0.025 * SPEED_MOD);
-                document.getElementById('tk-threat-fog').style.backgroundPosition = `${tkState.bgX_threatFog}px 50%`;
-            }
-
-            let maxVisualAltitude = Math.min(60, window.innerHeight * 0.15);
-            let baseTargetCam = Math.max(0, tkState.altitude - maxVisualAltitude);
-            if (isLandingApproach) baseTargetCam -= 20; 
-            tkState.cameraY += (baseTargetCam - tkState.cameraY) * 0.15;
-
-            let fgSkyOpacity = Math.max(0, Math.min(1, (tkState.altitude - 450) / 100));
-            document.getElementById('tk-fg-sky').style.opacity = fgSkyOpacity;
-
-            // Apply Hardware Accelerated Transforms
-            document.getElementById('tk-runway').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`;
-            document.getElementById('tk-bg-city').style.transform = `translate3d(0, ${tkState.cameraY * 0.7}px, 0)`;
-            document.getElementById('tk-bg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`;
-            document.getElementById('tk-fg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.3}px, 0)`;
-            document.getElementById('tk-mountain').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`;
-            document.getElementById('tk-sun').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`;
-
-            if (tkState.hasFogScenario) {
-                document.getElementById('tk-threat-fog').style.transform = `translate3d(0, ${tkState.cameraY * 0.45}px, 0)`;
-            }
-
             let planeY = -(tkState.altitude - tkState.cameraY);
             document.getElementById('plane-container').style.transform = `translate3d(-50%, ${planeY}px, 0)`;
-            
-            // HUD gets the corrupted displayPitch, plane gets real pitch
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
             document.getElementById('plane-hud').style.transform = `translate3d(-50%, -50%, 0) rotate(${-displayPitch}deg)`;
 
-            // EFFECTS
             const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
             if (tkState.phase === 5 && Math.random() > 0.4) spawnSpark(pr.left + pr.width/2 - 10, pr.bottom - 15, true);
-            if (tkState.phase === 6 && tkState.speed > 0) {
-                let sparkCount = Math.floor(tkState.speed / 40); 
-                for(let i=0; i<sparkCount; i++) spawnSpark(pr.left + pr.width/2 + (Math.random()*40 - 20), pr.bottom - 5, false);
-                if (Math.random() > 0.3) spawnSpark(pr.left + pr.width/2 + (Math.random()*30), pr.bottom - 5, false);
-            }
-            if (tkState.engineFailure && tkState.phase > 0 && tkState.phase < 6 && Math.random() > 0.3) {
-                let cx = pr.left + pr.width / 2; let cy = pr.top + pr.height / 2; let rad = -tkState.pitch * (Math.PI / 180);
-                spawnSmoke(cx + Math.cos(rad) * (pr.width / 2 - 10), cy + Math.sin(rad) * (pr.width / 2 - 10));
-            }
+            if (tkState.phase === 6 && displaySpeed > 0) { let sparkCount = Math.floor(displaySpeed / 40); for(let i=0; i<sparkCount; i++) spawnSpark(pr.left + pr.width/2 + (Math.random()*40 - 20), pr.bottom - 5, false); if (Math.random() > 0.3) spawnSpark(pr.left + pr.width/2 + (Math.random()*30), pr.bottom - 5, false); }
+            if (tkState.engineFailure && tkState.phase > 0 && tkState.phase < 6 && Math.random() > 0.3) { let cx = pr.left + pr.width / 2; let cy = pr.top + pr.height / 2; let rad = -tkState.pitch * (Math.PI / 180); spawnSmoke(cx + Math.cos(rad) * (pr.width / 2 - 10), cy + Math.sin(rad) * (pr.width / 2 - 10)); }
 
             tkState.frameId = requestAnimationFrame(gameLoop);
         }

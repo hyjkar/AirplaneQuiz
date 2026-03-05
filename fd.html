@@ -41,12 +41,93 @@
         .nvg-mode #tk-plane-img, .nvg-mode .tk-enemy img, .nvg-mode .tk-overtaker img { filter: brightness(1.5) drop-shadow(0 0 5px #0f0); }
         .nvg-mode #tk-drop-zone { border-color: #2ecc71 !important; background: rgba(46,204,113,0.3) !important; box-shadow: 0 0 40px rgba(46,204,113,0.5), inset 0 0 30px rgba(46,204,113,0.5) !important; }
 
+        .passenger-windows { display: none; position: absolute; top: 62%; left: 35%; right: 25%; height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; }
+        .fog-scenario .passenger-windows { display: flex; }
+        .window-dot { width: 4px; height: 4px; background: #fffde7; box-shadow: 0 0 6px #fbc02d, 0 0 10px #f57f17; border-radius: 1px; animation: flicker 2s infinite alternate; }
+        .tk-enemy .passenger-windows, .tk-overtaker .passenger-windows { left: 25%; right: 35%; top: 62%; }
+        @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+        #tk-sun { display: none; position: absolute; right: 15%; bottom: 35%; width: 60px; height: 60px; background: #fff; box-shadow: 0 0 0 10px rgba(255, 240, 150, 0.8), 0 0 0 25px rgba(255, 200, 100, 0.4), 0 0 0 45px rgba(255, 100, 50, 0.2); z-index: 0; will-change: transform; }
+        .sunrise-weather #tk-sun { display: block; }
+
+        #tk-bg-city { height: 100%; background-size: auto 100%; background-position: bottom left; z-index: 2; top: 0; }
+        #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3; transition: filter 0.5s; will-change: transform; }
+        #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x; will-change: background-position; }
+
+        /* CARGO DROP ZONE */
         #tk-drop-zone { position: absolute; bottom: 0; left: 0; height: 150px; width: 800px; background: rgba(215, 25, 32, 0.4); border: 4px dashed #ff3333; border-bottom: none; z-index: 4; display: none; will-change: transform; box-shadow: 0 0 40px rgba(215, 25, 32, 0.6), inset 0 0 30px rgba(215, 25, 32, 0.5); text-align: center; color: #fff; font-weight: bold; line-height: 150px; font-size: 2.5rem; text-shadow: 2px 2px 4px #000; }
+
+        /* PIXELATED WIND POCKET */
+        #tk-wind-pocket { position: absolute; bottom: 100px; left: 0; width: 300px; height: 150px; z-index: 14; display: none; will-change: transform; pointer-events: none; }
+
+        /* --- WEATHER STATES --- */
+        .weather-layer { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
+        .night-weather .rain-layer, .night-weather .fog-layer.layer-back { display: block; }
+        .snow-weather .snow-layer, .snow-weather .fog-layer { display: block; }
+        
+        .night-weather { background-color: #0b1021 !important; }
+        .night-weather #tk-bg-sky, .night-weather #tk-fg-sky, .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain { filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2); }
+        .night-weather #tk-threat-fog { filter: brightness(0.3) sepia(0.5) hue-rotate(180deg) saturate(1.2) blur(3px); }
+        .night-weather #tk-plane-img, .night-weather .tk-enemy img, .night-weather .tk-overtaker img { filter: brightness(0.55); }
+
+        .sunrise-weather { background-color: #ff9e7a !important; }
+        .sunrise-weather #tk-bg-sky, .sunrise-weather #tk-fg-sky, .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8); }
+        .sunrise-weather #tk-threat-fog { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.9) blur(3px); }
+        .sunrise-weather #tk-plane-img, .sunrise-weather .tk-enemy img, .sunrise-weather .tk-overtaker img { filter: sepia(0.3) saturate(1.2) brightness(0.9); }
+
+        .snow-weather { background-color: #b8c6d9 !important; }
+        .snow-weather #tk-bg-sky, .snow-weather #tk-fg-sky, .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain { filter: grayscale(0.7) brightness(1.4) contrast(0.6); }
+        .snow-weather #tk-threat-fog { filter: grayscale(0.7) brightness(1.4) blur(3px); }
+        
+        .snow-weather .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, transparent 65%); }
+        .snow-weather .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(240, 245, 250, 0.8) 0%, transparent 70%); }
+        .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%); background-size: 300% 200%; animation: fogPulse 15s ease-in-out infinite alternate; z-index: 8; }
+        .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(200, 210, 220, 0.95) 0%, transparent 40%); background-size: 200% 100%; animation: fogSweep 7s linear infinite; z-index: 15; }
+        
+        .rain-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='250'><rect x='20' y='20' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
+        .rain-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect x='50' y='50' width='3' height='25' fill='rgba(255,255,255,0.6)'/><rect x='250' y='200' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
+        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><circle cx='20' cy='20' r='3' fill='rgba(255,255,255,0.8)'/><circle cx='100' cy='80' r='2' fill='rgba(255,255,255,0.6)'/><circle cx='150' cy='150' r='4' fill='rgba(255,255,255,0.9)'/><circle cx='50' cy='180' r='2' fill='rgba(255,255,255,0.5)'/></svg>"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
+        .snow-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><circle cx='50' cy='50' r='5' fill='rgba(255,255,255,0.9)'/><circle cx='200' cy='150' r='6' fill='rgba(255,255,255,0.8)'/><circle cx='250' cy='280' r='4' fill='rgba(255,255,255,0.7)'/></svg>"); animation: snowAnim2 3.5s linear infinite; z-index: 16; }
+        
+        @keyframes fogSweep { 0% { background-position: 200% 50%; } 100% { background-position: -100% 50%; } }
+        @keyframes fogPulse { 0% { opacity: 0.2; transform: scale(1); } 100% { opacity: 0.6; transform: scale(1.2); } }
+        @keyframes rainAnim1 { from { background-position: 0 0; } to { background-position: -60px 250px; } }
+        @keyframes rainAnim2 { from { background-position: 0 0; } to { background-position: -90px 400px; } }
+        @keyframes snowAnim1 { from { background-position: 0 -200px; } to { background-position: -100px 200px; } }
+        @keyframes snowAnim2 { from { background-position: 0 -300px; } to { background-position: -150px 300px; } }
+
+        #tk-flare-container { display: none; position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25; overflow: hidden; transition: opacity 0.2s; }
+        .sunrise-weather #tk-flare-container { display: block; }
+        .pf { position: absolute; background: rgba(255, 200, 100, 0.2); transform: translate(-50%, -50%); }
+        .pf-1 { width: 60px; height: 60px; background: rgba(255, 150, 50, 0.15); border: 2px solid rgba(255,200,100,0.3); }
+        .pf-2 { width: 30px; height: 30px; background: rgba(150, 255, 150, 0.2); }
+        .pf-3 { width: 100px; height: 100px; border: 4px solid rgba(255, 100, 50, 0.1); background: transparent; }
+        .pf-4 { width: 15px; height: 15px; background: rgba(255, 255, 255, 0.4); }
 
         #plane-container { position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; pointer-events: auto; cursor: pointer; width: 150px; height: 50px; will-change: transform; }
         #plane-rotate-group { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; z-index: 12; will-change: transform; }
         #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; transition: filter 0.5s; pointer-events: none;}
         
+        #ap-indicator { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: var(--gauge-green); color: #000; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-weight: bold; display: none; z-index: 15; box-shadow: 0 0 10px var(--gauge-green); pointer-events: none; }
+
+        #plane-hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; border-radius: 50%; border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11; will-change: transform; pointer-events: none;}
+        .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; pointer-events: none;}
+        .hud-label { font-size: 0.5rem; opacity: 0.8; display: block; }
+        .hud-val { font-size: 1rem; display: block; }
+        #hud-spd { left: -5px; top: 50%; transform: translate(-100%, -50%); }
+        #hud-pitch { right: -5px; top: 50%; transform: translate(100%, -50%); }
+        #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); }
+
+        #landing-guide { position: absolute; top: 25px; left: 75px; transform: translate(-50%, -50%); width: 220px; height: 80px; border: 2px solid transparent; border-left: 4px solid var(--gauge-green); border-right: 4px solid var(--gauge-green); border-radius: 15px; display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; z-index: 5; pointer-events: none;}
+        .guide-label { position: absolute; bottom: -20px; text-align: center; color: var(--gauge-green); font-weight: bold; font-size: 0.8rem; text-shadow: 1px 1px 2px #000; }
+
+        #dialogue-bubble { position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20; font-weight: bold; text-transform: uppercase; pointer-events: none;}
+        #dialogue-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent; }
+        
+        .capt-text { color: #111; font-weight: bold; }
+        .alert-text { color: var(--brand-red); font-weight: bold; animation: pulseRed 0.8s infinite alternate; }
+        .success-text { color: var(--gauge-green); font-weight: bold; }
+
         #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; }
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
         #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold);}
@@ -69,20 +150,32 @@
         .tk-enemy img, .tk-overtaker img { width: 100%; height: 100%; object-fit: contain; }
         .tk-enemy img { transform: scaleX(-1); }
 
+        #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform; pointer-events: none;}
+        #tk-bird-flock { position: absolute; bottom: 65px; left: 0; width: 40px; height: 30px; z-index: 10; display: none; pointer-events: none; will-change: transform; }
+        .bird { position: absolute; width: 4px; height: 4px; background: #111; border-radius: 50%; box-shadow: 12px 6px #111, -8px 10px #111, 16px 14px #111, 6px -4px #111; animation: flap 0.3s infinite alternate; }
+
+        .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; left: 0; top: 0; will-change: transform, opacity; }
+        .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
+        .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
+        .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
+        .cargo-package { position: absolute; z-index: 15; width: 20px; height: 20px; background: #cfa86e; border: 2px solid #fff; left: 0; top: 0; will-change: transform; }
+        .float-text { position: absolute; z-index: 150; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
+        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 0); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 0); opacity: 0; } }
+
         /* FLIGHT PLAN OVERLAY (GRID UI) */
         #tk-flight-plan-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;}
         #tk-flight-plan-overlay.visible { opacity: 1; pointer-events: auto; }
 
-        .end-panel { background: var(--panel-bg); border: 2px solid var(--brand-gold); border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 95%; max-width: 650px; max-height: 95vh; overflow-y: auto; touch-action: auto; pointer-events: auto; }
+        .end-panel { background: var(--panel-bg); border: 2px solid var(--brand-gold); border-radius: 15px; padding: 15px 20px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 95%; max-width: 650px; max-height: 95vh; overflow-y: auto; touch-action: auto; pointer-events: auto; }
         .end-panel::-webkit-scrollbar { width: 5px; }
         .end-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 5px; }
         .end-panel.visible { transform: scale(1); }
 
-        .upgrade-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
-        .upg-item { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.6); border: 1px solid #444; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: bold;}
+        .upgrade-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 10px; }
+        .upg-item { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.6); border: 1px solid #444; padding: 6px 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold;}
         .upg-item span.lbl { color: #ccc; flex: 1; text-align: left; font-size: 0.75rem;}
         .upg-stat { width: 45px; text-align: right; margin-right: 10px; font-size: 0.9rem;}
-        .upg-btn { background: transparent; color: var(--gauge-green); border: 1px solid var(--gauge-green); border-radius: 6px; padding: 6px; font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: transform 0.1s;}
+        .upg-btn { background: transparent; color: var(--gauge-green); border: 1px solid var(--gauge-green); border-radius: 6px; padding: 4px 6px; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; font-weight: bold; cursor: pointer; transition: transform 0.1s;}
         .upg-btn:active { transform: scale(0.9); }
         .upg-btn:disabled { border-color: #555; color: #555; cursor: not-allowed; transform: none;}
 
@@ -97,64 +190,43 @@
         .play-again-btn { background: var(--brand-gold); color: #000; border: none; padding: 12px 20px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; }
         .play-again-btn:active { transform: scale(0.95); filter: brightness(0.8); }
 
-        /* Other Essentials */
-        .passenger-windows { display: none; position: absolute; top: 62%; left: 35%; right: 25%; height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; }
-        .window-dot { width: 4px; height: 4px; background: #fffde7; box-shadow: 0 0 6px #fbc02d, 0 0 10px #f57f17; border-radius: 1px; animation: flicker 2s infinite alternate; }
-        #tk-wind-pocket { position: absolute; bottom: 100px; left: 0; width: 300px; height: 150px; z-index: 14; display: none; will-change: transform; pointer-events: none; }
-        #ap-indicator { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: var(--gauge-green); color: #000; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-weight: bold; display: none; z-index: 15; box-shadow: 0 0 10px var(--gauge-green); pointer-events: none; }
-        #plane-hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; border-radius: 50%; border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11; will-change: transform; pointer-events: none;}
-        .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; pointer-events: none;}
-        .hud-label { font-size: 0.5rem; opacity: 0.8; display: block; }
-        .hud-val { font-size: 1rem; display: block; }
-        #hud-spd { left: -5px; top: 50%; transform: translate(-100%, -50%); }
-        #hud-pitch { right: -5px; top: 50%; transform: translate(100%, -50%); }
-        #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); }
-        #landing-guide { position: absolute; top: 25px; left: 75px; transform: translate(-50%, -50%); width: 220px; height: 80px; border: 2px solid transparent; border-left: 4px solid var(--gauge-green); border-right: 4px solid var(--gauge-green); border-radius: 15px; display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; z-index: 5; pointer-events: none;}
-        .guide-label { position: absolute; bottom: -20px; text-align: center; color: var(--gauge-green); font-weight: bold; font-size: 0.8rem; text-shadow: 1px 1px 2px #000; }
-        #dialogue-bubble { position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20; font-weight: bold; text-transform: uppercase; pointer-events: none;}
-        #dialogue-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent; }
-        .capt-text { color: #111; font-weight: bold; }
-        .alert-text { color: var(--brand-red); font-weight: bold; animation: pulseRed 0.8s infinite alternate; }
-        .success-text { color: var(--gauge-green); font-weight: bold; }
-        #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform; pointer-events: none;}
-        #tk-bird-flock { position: absolute; bottom: 65px; left: 0; width: 40px; height: 30px; z-index: 10; display: none; pointer-events: none; will-change: transform; }
-        .bird { position: absolute; width: 4px; height: 4px; background: #111; border-radius: 50%; box-shadow: 12px 6px #111, -8px 10px #111, 16px 14px #111, 6px -4px #111; animation: flap 0.3s infinite alternate; }
-        .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; left: 0; top: 0; will-change: transform, opacity; }
-        .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
-        .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
-        .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
-        .cargo-package { position: absolute; z-index: 15; width: 20px; height: 20px; background: #cfa86e; border: 2px solid #fff; left: 0; top: 0; will-change: transform; }
-        .float-text { position: absolute; z-index: 150; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
-        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 0); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 0); opacity: 0; } }
-
         /* Minimap Progress Bar */
         .completion-wrapper { margin-bottom: 25px; width: 100%; display: flex; flex-direction: column; align-items: center; }
         .completion-text { font-size: 1rem; color: #fff; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; text-align: center; width: 100%; }
+        #end-completion-val { color: var(--fo-blue); }
         #tk-minimap { width: 90%; height: 12px; background: #222; border-radius: 6px; position: relative; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); margin: 0 auto; }
         #tk-minimap-progress { height: 100%; background: var(--fo-blue); border-radius: 6px; width: 0%; transition: width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.5s; }
         .minimap-marker { position: absolute; top: -6px; transform: translateX(-50%); z-index: 10; cursor: help; transition: transform 0.2s; display: flex; flex-direction: column; align-items: center; }
         .minimap-icon-box { width: 24px; height: 24px; background: #111; border: 2px solid var(--fo-blue); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         .minimap-label { margin-top: 6px; font-size: 0.65rem; white-space: nowrap; text-shadow: 1px 1px 2px #000; font-family: 'Share Tech Mono', monospace; font-weight: bold; }
-        
+        .minimap-marker:hover { transform: translateX(-50%) scale(1.3); z-index: 20; }
+        .minimap-tooltip { display: none; position: absolute; bottom: 45px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); color: #fff; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; white-space: nowrap; pointer-events: none; border: 1px solid #555; z-index: 20; }
+        .minimap-marker:hover .minimap-tooltip { display: block; }
+        .minimap-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -4px; border-width: 4px; border-style: solid; border-color: #555 transparent transparent transparent; }
+
         /* Leaderboard table */
-        #tk-end-screen, #leaderboard-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
-        #tk-end-screen.visible, #leaderboard-overlay.visible { opacity: 1; pointer-events: auto; }
         #lb-table { width: 100%; text-align: left; margin: 15px 0; font-size: 0.9rem; border-collapse: collapse; }
         #lb-table th { padding: 5px; border-bottom: 1px solid #555; color: var(--brand-gold); }
         #lb-table td { padding: 5px; border-bottom: 1px solid #333; }
         .lb-input { width: 100%; padding: 8px; font-family: 'Share Tech Mono', monospace; font-size: 1rem; text-align: center; border-radius: 6px; border: none; margin-bottom: 15px; }
 
-        /* Weather Base Layers */
-        .weather-layer { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
-        .night-weather .rain-layer, .night-weather .fog-layer.layer-back { display: block; }
-        .snow-weather .snow-layer, .snow-weather .fog-layer { display: block; }
-        .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%); background-size: 300% 200%; animation: fogPulse 15s ease-in-out infinite alternate; z-index: 8; }
-        .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(200, 210, 220, 0.95) 0%, transparent 40%); background-size: 200% 100%; animation: fogSweep 7s linear infinite; z-index: 15; }
-        .rain-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='250'><rect x='20' y='20' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
-        .rain-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect x='50' y='50' width='3' height='25' fill='rgba(255,255,255,0.6)'/><rect x='250' y='200' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
-        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><circle cx='20' cy='20' r='3' fill='rgba(255,255,255,0.8)'/><circle cx='100' cy='80' r='2' fill='rgba(255,255,255,0.6)'/><circle cx='150' cy='150' r='4' fill='rgba(255,255,255,0.9)'/><circle cx='50' cy='180' r='2' fill='rgba(255,255,255,0.5)'/></svg>"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
-        .snow-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><circle cx='50' cy='50' r='5' fill='rgba(255,255,255,0.9)'/><circle cx='200' cy='150' r='6' fill='rgba(255,255,255,0.8)'/><circle cx='250' cy='280' r='4' fill='rgba(255,255,255,0.7)'/></svg>"); animation: snowAnim2 3.5s linear infinite; z-index: 16; }
-
+        @media screen and (max-height: 450px) {
+            .end-panel { padding: 10px 15px; width: 95%; max-width: 600px;}
+            .end-title { font-size: 1.2rem; }
+            .end-subtitle { display: none; }
+            .end-score { font-size: 1.5rem; margin: 0 0 10px 0; }
+            .completion-wrapper { margin-bottom: 15px; }
+            .completion-text { font-size: 0.8rem; margin-bottom: 5px;}
+            .stats-grid { font-size: 0.8rem !important; margin-bottom: 10px !important; }
+            #tk-eject-btn { width: 60px; height: 60px; font-size: 0.8rem; }
+            .upgrade-list { margin-top: 5px; gap: 4px; }
+            .upg-item { padding: 4px 6px; }
+            .upg-stat { font-size: 0.8rem; }
+            .upg-btn { padding: 4px 6px; font-size: 0.7rem; }
+            .fp-header-info { font-size: 0.8rem; margin-bottom: 2px;}
+            .fp-header-info strong { font-size: 0.9rem; }
+            .play-again-btn { padding: 8px 15px; font-size: 0.9rem;}
+        }
     </style>
 </head>
 <body>
@@ -162,7 +234,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v6.2 - Campaign Mode & Grid Layout</div>
+        <div id="tk-version">v7.0 - Campaign & Extreme Traffic</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -260,7 +332,7 @@
                     <span style="color:#ccc; font-size:0.9rem;">AVAILABLE FUNDS:</span> <strong id="fp-total-points" style="color:var(--brand-gold); font-size:1.4rem;">0</strong>
                 </div>
 
-                <div class="fp-header-info" style="margin-top: 15px;">
+                <div class="fp-header-info" style="margin-top: 10px;">
                     <div>WEATHER: <strong id="fp-weather" style="color:var(--fo-blue);">CLEAR</strong></div>
                     <div>TRAFFIC: <strong id="fp-traffic">NORMAL</strong></div>
                 </div>
@@ -351,6 +423,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
+        // --- PROFILE PERSISTENCE (V11) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -374,6 +447,7 @@
         }
         loadProfile();
 
+        // --- AUDIO ENGINE ---
         const sfx = {
             ctx: null, alarmInterval: null, isAlarming: false, bgMusic: new Audio('hangar5-music.mp3'),
             init: function() {
@@ -517,11 +591,11 @@
             // NVG
             let nBtn = document.getElementById('btn-upg-nvg');
             if(playerProfile.upgrades.nvg) {
-                document.getElementById('stat-nvg').textContent = "ON";
+                document.getElementById('stat-nvg').textContent = "ACTIVE";
                 document.getElementById('stat-nvg').style.color = "var(--gauge-green)";
                 nBtn.textContent = "MAX"; nBtn.disabled = true;
             } else {
-                document.getElementById('stat-nvg').textContent = "OFF";
+                document.getElementById('stat-nvg').textContent = "OFFLINE";
                 document.getElementById('stat-nvg').style.color = "var(--brand-red)";
                 nBtn.textContent = "2K"; nBtn.disabled = playerProfile.points < 2000;
             }
@@ -620,6 +694,18 @@
                 vp.classList.remove('nvg-mode');
                 btn.style.background = 'rgba(46, 204, 113, 0.2)'; btn.style.color = 'var(--gauge-green)';
                 sfx.playDing(0.8);
+            }
+        }
+
+        function toggleFullscreen(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                let elem = document.documentElement;
+                if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => {}); }
+                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); }
+                else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
             }
         }
 
@@ -983,13 +1069,6 @@
             saveProfile();
 
             setTimeout(() => { showEndScreen(Math.floor(tkState.score), false); tkState.canRestart = true; }, 2500); 
-        }
-
-        function hardReset(e) {
-            if (e) { e.preventDefault(); e.stopPropagation(); }
-            if (document.activeElement) document.activeElement.blur();
-            document.getElementById('tk-end-screen').classList.remove('visible'); 
-            setTimeout(() => { document.getElementById('tk-end-screen').style.display = 'none'; openFlightPlan(); }, 300);
         }
 
         function generateFlightPlanContext() {
@@ -1477,13 +1556,18 @@
             // Overtaker (Fixed to PX)
             let trySpawnOvertaker = false;
             if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && Math.random() < 0.005) { trySpawnOvertaker = true; }
-            if (tkState.trafficLevel === 2 && tkState.phase === 3 && Math.random() < 0.01) { trySpawnOvertaker = true; }
+            if (tkState.trafficLevel === 2 && tkState.phase === 3 && Math.random() < 0.015) { trySpawnOvertaker = true; } // Extreme traffic overtakers during swarm
 
             if (trySpawnOvertaker) {
                 let slot = tkState.overtakers.findIndex(o => !o.active);
                 if (slot !== -1) {
                     let o = tkState.overtakers[slot];
-                    o.active = true; o.x = -200; o.alt = tkState.altitude + (Math.random() * 100 - 50); o.spd = (15 + Math.random() * 5) * SPEED_MOD; 
+                    o.active = true; o.x = -200; o.alt = tkState.altitude + (Math.random() * 100 - 50); 
+                    if (tkState.phase === 3) {
+                        o.spd = (2 + Math.random() * 3) * SPEED_MOD; // Creep up slowly during extreme mode
+                    } else {
+                        o.spd = (15 + Math.random() * 5) * SPEED_MOD; 
+                    }
                     document.getElementById('overtaker-' + slot).style.display = 'block';
                     logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 4000); 
                 }

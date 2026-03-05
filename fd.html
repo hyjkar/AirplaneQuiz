@@ -758,6 +758,45 @@
             }
         }
 
+function toggleFullscreen(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    
+    // Target the entire document (or you can target document.getElementById('takeoff-viewport'))
+    let elem = document.documentElement; 
+
+    // Check if we are currently in fullscreen mode using cross-browser properties
+    let isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+
+    if (!isFullscreen) {
+        // Enter Fullscreen
+        if (elem.requestFullscreen) { 
+            elem.requestFullscreen().catch(err => { 
+                alert("Fullscreen blocked by browser. If on an iPhone, iOS Safari does not support this feature natively."); 
+            }); 
+        }
+        else if (elem.webkitRequestFullscreen) { /* Safari / Older Chrome */
+            elem.webkitRequestFullscreen(); 
+        } 
+        else if (elem.msRequestFullscreen) { /* IE11 / Older Edge */
+            elem.msRequestFullscreen(); 
+        }
+        else { 
+            alert("Fullscreen API is not supported on this specific browser/device (e.g., iPhone Safari)."); 
+        }
+    } else {
+        // Exit Fullscreen
+        if (document.exitFullscreen) { 
+            document.exitFullscreen(); 
+        }
+        else if (document.webkitExitFullscreen) { /* Safari / Older Chrome */
+            document.webkitExitFullscreen(); 
+        }
+        else if (document.msExitFullscreen) { /* IE11 / Older Edge */
+            document.msExitFullscreen(); 
+        }
+    }
+}
+        
         function togglePause(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             if (document.activeElement) document.activeElement.blur();

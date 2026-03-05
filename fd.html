@@ -10,46 +10,33 @@
 
     <style>
         :root {
-            --brand-red: #d71920;
-            --gauge-green: #2ecc71;
-            --gauge-orange: #f39c12;
-            --brand-gold: #cfa86e;
-            --fo-blue: #3498db;
-            --panel-bg: #111;
+            --brand-red: #d71920; --gauge-green: #2ecc71; --gauge-orange: #f39c12;
+            --brand-gold: #cfa86e; --fo-blue: #3498db; --panel-bg: #111;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; outline: none; }
-        
-        body, html {
-            background-color: #000; color: #fff;
-            font-family: 'Share Tech Mono', monospace;
-            width: 100%; height: 100%; overflow: hidden; 
-            user-select: none; 
-        }
+        body, html { background-color: #000; color: #fff; font-family: 'Share Tech Mono', monospace; width: 100%; height: 100%; overflow: hidden; user-select: none; }
 
-        #orientation-lock {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; color: #fff; z-index: 999999;
-            align-items: center; justify-content: center;
-            font-size: 1.5rem; font-weight: bold; text-align: center; padding: 20px;
-        }
+        #orientation-lock { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; z-index: 999999; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; text-align: center; padding: 20px; }
         @media screen and (orientation: portrait) { #orientation-lock { display: flex; } }
 
         #takeoff-viewport {
             width: 100%; height: 100%; position: relative; overflow: hidden; 
             background-color: #87CEEB; cursor: pointer; transition: background-color 0.5s;
             touch-action: none; 
+            perspective: 1000px;
         }
         
         #tk-alert-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 99998; transition: background 0.2s;
+            transform: translateZ(9000px);
         }
 
         .flashing { animation: redAlert 0.3s infinite alternate; }
         @keyframes redAlert { from { background: rgba(215, 25, 32, 0); } to { background: rgba(215, 25, 32, 0.35); } }
 
-        #tk-version { position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: bold; z-index: 99999; pointer-events: none; }
+        #tk-version { position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: bold; z-index: 99999; pointer-events: none; transform: translateZ(9999px); }
 
         #camera-rig { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: 30% 80%; will-change: transform; z-index: 1; }
 
@@ -59,7 +46,7 @@
         #tk-fg-sky { background-size: auto 150vh; z-index: 14; height: 120%; top: -100%; opacity: 0.8; }
         #tk-threat-fog { display: none; background-size: auto 200vh; z-index: 15; height: 150%; top: -10%; opacity: 0.95; filter: blur(3px) brightness(1.1); }
         .fog-scenario #tk-threat-fog { display: block; }
-        .fog-scenario #tk-plane-img, .fog-scenario .tk-enemy img, .fog-scenario #tk-overtaker-plane img { filter: brightness(0) !important; transition: filter 0.5s; }
+        .fog-scenario #tk-plane-img, .fog-scenario .tk-enemy img, .fog-scenario .tk-overtaker img { filter: brightness(0) !important; transition: filter 0.5s; }
         
         /* NVG MODE FILTER */
         .nvg-mode { background-color: #001a00 !important; }
@@ -136,13 +123,13 @@
         
         #ap-indicator { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: var(--gauge-green); color: #000; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-weight: bold; display: none; z-index: 15; box-shadow: 0 0 10px var(--gauge-green); pointer-events: none; }
 
-        #plane-hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; border-radius: 50%; border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11; will-change: transform; pointer-events: none;}
-        .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; pointer-events: none;}
+        #plane-hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; border-radius: 50%; border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11; will-change: transform; pointer-events: none; transition: border-color 0.2s;}
+        .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; pointer-events: none; transition: color 0.2s;}
         .hud-label { font-size: 0.5rem; opacity: 0.8; display: block; }
         .hud-val { font-size: 1rem; display: block; }
         #hud-spd { left: -5px; top: 50%; transform: translate(-100%, -50%); }
         #hud-pitch { right: -5px; top: 50%; transform: translate(100%, -50%); }
-        #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); }
+        #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); transition: color 0.2s;}
 
         #landing-guide { position: absolute; top: 25px; left: 75px; transform: translate(-50%, -50%); width: 220px; height: 80px; border: 2px solid transparent; border-left: 4px solid var(--gauge-green); border-right: 4px solid var(--gauge-green); border-radius: 15px; display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; z-index: 5; pointer-events: none;}
         .guide-label { position: absolute; bottom: -20px; text-align: center; color: var(--gauge-green); font-weight: bold; font-size: 0.8rem; text-shadow: 1px 1px 2px #000; }
@@ -154,24 +141,24 @@
         .alert-text { color: var(--brand-red); font-weight: bold; animation: pulseRed 0.8s infinite alternate; }
         .success-text { color: var(--gauge-green); font-weight: bold; }
 
-        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; pointer-events: none; }
+        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; pointer-events: none; transform: translateZ(9999px); }
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
-        #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold);}
+        #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold); transition: all 0.2s;}
         
-        #reset-btn, #pause-btn, #fs-btn, #nvg-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #fff; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: auto;}
+        #reset-btn, #pause-btn, #fs-btn, #nvg-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #fff; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; pointer-events: auto; transition: transform 0.1s;}
         #reset-btn { background: rgba(215, 25, 32, 0.9); border-color: #fff; font-size: 1rem; }
         #nvg-btn { font-size: 0.8rem; font-family: 'Share Tech Mono'; font-weight: bold; background: rgba(46, 204, 113, 0.2); border-color: var(--gauge-green); color: var(--gauge-green); display: none;}
         #reset-btn:active, #pause-btn:active, #fs-btn:active, #nvg-btn:active { transform: scale(0.95); }
 
-        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); }
+        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); transform: translateZ(9999px); }
         
-        #prompt-container { position: absolute; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 99999; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #tk-touch-prompt { background: var(--brand-red); border: 2px solid #fff; border-radius: 8px; padding: 15px 30px; text-align: center; color: #fff; font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(215,25,32,0.6); width: auto; text-transform: uppercase; margin-bottom: 10px; cursor: pointer; pointer-events: auto; transition: transform 0.1s;}
+        #prompt-container { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateZ(9999px); z-index: 99999; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #tk-touch-prompt { background: var(--brand-red); border: 2px solid #fff; border-radius: 8px; padding: 15px 30px; text-align: center; color: #fff; font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(215,25,32,0.6); width: auto; text-transform: uppercase; cursor: pointer; pointer-events: auto; transition: transform 0.1s;}
         #tk-touch-prompt:active { transform: scale(0.95); }
 
-        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 99999; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s;}
+        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 99999; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s; transform: translateZ(9999px); }
         #tk-eject-btn:active { transform: scale(0.92); }
-        
+
         /* Traffic Planes */
         .tk-enemy, .tk-overtaker { position: absolute; bottom: 65px; left: 0; width: 162px; height: 56px; z-index: 10; display: none; will-change: transform; pointer-events: none;}
         .tk-enemy img, .tk-overtaker img { width: 100%; height: 100%; object-fit: contain; }
@@ -190,9 +177,8 @@
             pointer-events: none; white-space: nowrap;
         }
         @keyframes pulseWarning { from { transform: scale(1); opacity: 1; } to { transform: scale(1.05); opacity: 0.8; } }
-        
+
         #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform; pointer-events: none;}
-        
         #tk-bird-flock { position: absolute; bottom: 65px; left: 0; width: 40px; height: 30px; z-index: 10; display: none; pointer-events: none; will-change: transform; }
         .bird { position: absolute; width: 4px; height: 4px; background: #111; border-radius: 50%; box-shadow: 12px 6px #111, -8px 10px #111, 16px 14px #111, 6px -4px #111; animation: flap 0.3s infinite alternate; }
 
@@ -201,50 +187,48 @@
         .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .cargo-package { position: absolute; z-index: 15; width: 20px; height: 20px; background: #cfa86e; border: 2px solid #fff; left: 0; top: 0; will-change: transform; }
-        .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
-        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 0); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 0); opacity: 0; } }
+        .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; transform: translateZ(9999px); }
+        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 9999px); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 9999px); opacity: 0; } }
 
-        /* FLIGHT PLAN OVERLAY */
-        #tk-flight-plan-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;}
-        #tk-flight-plan-overlay.visible { opacity: 1; pointer-events: auto; }
+        /* OVERLAYS FORCED TO TOP */
+        #tk-flight-plan-overlay, #tk-end-screen, #leaderboard-overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); z-index: 99999; display: none; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            opacity: 0; transition: opacity 0.3s ease; pointer-events: none; 
+            transform: translateZ(9999px); 
+        }
         
-        .upgrade-list { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-        .upg-item { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.5); border: 1px solid #333; padding: 10px; border-radius: 8px; }
-        .upg-icon { width: 32px; height: 32px; background: #222; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px solid #444; flex-shrink: 0;}
-        .upg-icon svg { width: 20px; height: 20px; fill: #fff; }
-        .upg-info { flex-grow: 1; margin: 0 12px; text-align: left; }
-        .upg-title { font-size: 0.8rem; color: #ccc; }
-        .upg-stat { font-size: 0.95rem; font-weight: bold; text-transform: uppercase; transition: color 0.3s; }
-        .upg-btn { background: transparent; color: var(--gauge-green); border: 1px solid var(--gauge-green); border-radius: 6px; padding: 6px 10px; font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: transform 0.1s;}
+        #tk-flight-plan-overlay.visible, #tk-end-screen.visible, #leaderboard-overlay.visible { opacity: 1; pointer-events: auto; }
+
+        .end-panel { background: var(--panel-bg); border: 2px solid var(--brand-gold); border-radius: 15px; padding: 15px 20px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 95%; max-width: 650px; max-height: 95vh; overflow-y: auto; touch-action: auto; pointer-events: auto; }
+        .end-panel::-webkit-scrollbar { width: 5px; }
+        .end-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 5px; }
+        .end-panel.visible { transform: scale(1); }
+
+        /* Restored Vertical UI with Icons */
+        .upgrade-list { width: 100%; display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+        .upg-item { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.5); border: 1px solid #333; padding: 4px 8px; border-radius: 8px; }
+        .upg-icon { width: 24px; height: 24px; background: #222; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px solid #444; flex-shrink: 0;}
+        .upg-icon svg { width: 14px; height: 14px; fill: #fff; }
+        .upg-info { flex-grow: 1; margin: 0 10px; text-align: left; }
+        .upg-title { font-size: 0.75rem; color: #ccc; }
+        .upg-stat { font-size: 0.85rem; font-weight: bold; text-transform: uppercase; transition: color 0.3s; }
+        .upg-btn { background: transparent; color: var(--gauge-green); border: 1px solid var(--gauge-green); border-radius: 6px; padding: 4px 8px; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; font-weight: bold; cursor: pointer; transition: transform 0.1s;}
         .upg-btn:active { transform: scale(0.9); }
         .upg-btn:disabled { border-color: #555; color: #555; cursor: not-allowed; transform: none;}
 
-        .fp-header-info { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.9rem; margin-bottom: 5px; color: #aaa;}
-        .fp-header-info strong { color: #fff; font-size: 1.1rem; }
+        .fp-header-info { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.85rem; margin-bottom: 5px; color: #aaa;}
+        .fp-header-info strong { color: #fff; font-size: 1.05rem; }
         
         .reroll-btn { background: transparent; border: none; color: var(--brand-gold); cursor: pointer; transition: transform 0.1s; display: flex; align-items: center; justify-content: center; padding: 5px;}
         .reroll-btn:active { transform: scale(0.85); }
         .reroll-btn svg { width: 18px; height: 18px; stroke: currentColor; }
 
-        /* END SCREEN / LEADERBOARD */
-        #tk-end-screen, #leaderboard-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
-        #tk-end-screen.visible, #leaderboard-overlay.visible { opacity: 1; pointer-events: auto; }
-        
-        .end-panel { 
-            background: var(--panel-bg); border: 2px solid var(--brand-gold); border-radius: 15px; 
-            padding: 25px 35px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
-            transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            width: 90%; max-width: 500px; max-height: 95vh; overflow-y: auto; touch-action: auto; -webkit-overflow-scrolling: touch; pointer-events: auto;
-        }
-        .end-panel::-webkit-scrollbar { width: 5px; }
-        .end-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 5px; }
-        .end-panel.visible { transform: scale(1); }
-        
-        .end-title { font-size: 1.8rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; text-transform: uppercase;}
-        .end-subtitle { font-size: 0.9rem; color: #aaa; margin-bottom: 10px; text-transform: uppercase;}
-        .end-score { font-size: 2.5rem; color: var(--gauge-green); margin-bottom: 10px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
-        
-        .play-again-btn { background: var(--brand-gold); color: #000; border: none; padding: 12px 20px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; }
+        .end-title { font-size: 1.6rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; text-transform: uppercase;}
+        .end-subtitle { font-size: 0.8rem; color: #aaa; margin-bottom: 10px; text-transform: uppercase;}
+        .end-score { font-size: 2.2rem; color: var(--gauge-green); margin-bottom: 10px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
+        .play-again-btn { background: var(--brand-gold); color: #000; border: none; padding: 12px 20px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; width: 100%;}
         .play-again-btn:active { transform: scale(0.95); filter: brightness(0.8); }
 
         /* Minimap Progress Bar */
@@ -269,29 +253,28 @@
         .lb-input { width: 100%; padding: 8px; font-family: 'Share Tech Mono', monospace; font-size: 1rem; text-align: center; border-radius: 6px; border: none; margin-bottom: 15px; }
 
         @media screen and (max-height: 450px) {
-            .end-panel { padding: 15px; width: 95%; max-width: 600px;}
-            .end-title { font-size: 1.3rem; }
+            .end-panel { padding: 10px 15px; width: 95%; max-width: 600px;}
+            .end-title { font-size: 1.2rem; }
             .end-subtitle { display: none; }
-            .end-score { font-size: 1.8rem; margin: 0 0 10px 0; }
-            .completion-wrapper { margin-bottom: 20px; }
-            .completion-text { font-size: 0.9rem; margin-bottom: 10px;}
-            .stats-grid { font-size: 0.85rem !important; margin-bottom: 15px !important; }
+            .end-score { font-size: 1.5rem; margin: 0 0 10px 0; }
+            .completion-wrapper { margin-bottom: 15px; }
+            .completion-text { font-size: 0.8rem; margin-bottom: 5px;}
+            .stats-grid { font-size: 0.8rem !important; margin-bottom: 10px !important; }
             #tk-eject-btn { width: 60px; height: 60px; font-size: 0.8rem; }
             .upgrade-list { margin-top: 5px; gap: 4px; }
-            .upg-item { padding: 6px; }
-            .upg-icon { width: 24px; height: 24px; }
-            .upg-icon svg { width: 14px; height: 14px; }
-            .upg-title { font-size: 0.7rem; }
+            .upg-item { padding: 4px 6px; }
             .upg-stat { font-size: 0.8rem; }
             .upg-btn { padding: 4px 6px; font-size: 0.7rem; }
             .fp-header-info { font-size: 0.8rem; margin-bottom: 2px;}
+            .fp-header-info strong { font-size: 0.9rem; }
+            .play-again-btn { padding: 8px 15px; font-size: 0.9rem;}
         }
     </style>
 </head>
 <body>
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
     <div id="takeoff-viewport">
-        <div id="tk-version">v8.4 - Freeze Fixed & True Dodgeable Windshear</div>
+        <div id="tk-version">v8.5 - Final Standalone Build</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -340,27 +323,27 @@
             <div id="tk-fg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             <div id="tk-threat-fog" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             
-            <div id="enemy-0" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-1" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-2" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-3" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-4" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-5" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-6" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-7" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-8" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-9" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-10" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-11" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-0" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-1" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-2" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-3" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-4" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-5" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-6" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-7" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-8" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-9" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-10" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-11" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
             
-            <div id="overtaker-0" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="overtaker-1" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="overtaker-2" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            
+            <div id="overtaker-0" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="overtaker-1" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="overtaker-2" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+
             <div id="rear-warning-0" class="rear-warning">⚠️ TRAFFIC: 2s</div>
             <div id="rear-warning-1" class="rear-warning">⚠️ TRAFFIC: 2s</div>
             <div id="rear-warning-2" class="rear-warning">⚠️ TRAFFIC: 2s</div>
-
+            
             <div id="tk-bird-flock">
                 <div class="bird" style="top:0; left:10px;"></div><div class="bird" style="top:10px; left:0;"></div><div class="bird" style="top:15px; left:20px;"></div><div class="bird" style="top:5px; left:30px;"></div><div class="bird" style="top:25px; left:15px;"></div>
             </div>
@@ -378,7 +361,6 @@
             </div>
             
             <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M42,35 L50,20 L58,35 Z" fill="#fff"/></svg></div>
-            <div class="weather-layer fog-layer layer-front"></div><div class="weather-layer rain-layer layer-2"></div><div class="weather-layer snow-layer layer-2"></div>
         </div>
 
         <div id="tk-flare-container">
@@ -627,7 +609,7 @@
         let endScreenAnimInterval = null; let endScreenTimeouts = [];
 
         let tkState = {
-            active: false, isPaused: false, inFlightPlan: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
+            active: false, isPaused: false, inFlightPlan: false, nvgActive: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, 
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
@@ -665,6 +647,7 @@
                 else { btn.textContent = `REPAIR (1K)`; btn.disabled = playerProfile.points < 1000; }
             });
             
+            // Bird shield
             let bBtn = document.getElementById('btn-upg-bird');
             if(playerProfile.upgrades.bird) {
                 document.getElementById('stat-bird').textContent = "ACTIVE";
@@ -676,6 +659,7 @@
                 bBtn.textContent = "BUY (1K)"; bBtn.disabled = playerProfile.points < 1000;
             }
 
+            // Wind shield
             let wBtn = document.getElementById('btn-upg-windshield');
             if(playerProfile.upgrades.windShield) {
                 document.getElementById('stat-windshield').textContent = "ACTIVE";
@@ -687,6 +671,7 @@
                 wBtn.textContent = "BUY (1K)"; wBtn.disabled = playerProfile.points < 1000;
             }
 
+            // NVG
             let nBtn = document.getElementById('btn-upg-nvg');
             if(playerProfile.upgrades.nvg) {
                 document.getElementById('stat-nvg').textContent = "ACTIVE";
@@ -907,22 +892,7 @@
             }, 300);
         }
 
-        // MASSIVE SPECTACLE CONDITION SCORING
-        function getConditionScore() {
-            let condScore = 0;
-            condScore += playerProfile.upgrades.gear * 10000;
-            condScore += playerProfile.upgrades.engine * 10000;
-            condScore += playerProfile.upgrades.gyro * 10000;
-            condScore += playerProfile.upgrades.ap * 10000;
-            if(playerProfile.upgrades.bird) condScore += 25000;
-            if(playerProfile.upgrades.windShield) condScore += 25000;
-            if(playerProfile.upgrades.nvg) condScore += 10000;
-            return condScore;
-        }
-
         function showLeaderboard() {
-            let finalScore = getConditionScore();
-            
             let maxPoints = 15; 
             let currentPoints = playerProfile.upgrades.gear + playerProfile.upgrades.engine + playerProfile.upgrades.gyro + playerProfile.upgrades.ap;
             if (playerProfile.upgrades.bird) currentPoints += 1;
@@ -933,12 +903,12 @@
             tkState.finalCampaignScore = finalIntegrity; 
 
             document.getElementById('stat-funds').textContent = playerProfile.points;
-            let secs = Math.floor(playerProfile.campaignStats.flightTime / 1000);
+            let secs = Math.floor((playerProfile.campaignStats.flightTime || 0) / 1000);
             let mins = Math.floor(secs / 60);
             let remSecs = secs % 60;
             document.getElementById('stat-time').textContent = `${mins}m ${remSecs}s`;
-            document.getElementById('stat-cargo').textContent = `${playerProfile.campaignStats.cargoHits} / ${playerProfile.campaignStats.cargoHits + playerProfile.campaignStats.cargoMisses}`;
-            document.getElementById('stat-stalls').textContent = `${playerProfile.campaignStats.stalls} / ${playerProfile.campaignStats.crashes}`;
+            document.getElementById('stat-cargo').textContent = `${playerProfile.campaignStats.cargoHits || 0} / ${(playerProfile.campaignStats.cargoHits || 0) + (playerProfile.campaignStats.cargoMisses || 0)}`;
+            document.getElementById('stat-stalls').textContent = `${playerProfile.campaignStats.stalls || 0} / ${playerProfile.campaignStats.crashes || 0}`;
 
             renderLeaderboardTable();
 
@@ -1345,7 +1315,6 @@
                     setDialogue("<span class='capt-text'>FULL POWER!<br><span style='font-size:0.65rem; color:var(--aux-blue);'>TAP PLANE FOR AUTOPILOT</span></span>", 5000);
                 }
 
-                // FIX FOR FREEZE BUG: Explicitly reset to 0
                 tkState.lastFrameTime = 0; 
                 sfx.bgMusic.play().catch(e=>e);
                 tkState.frameId = requestAnimationFrame(gameLoop);
@@ -1712,7 +1681,7 @@
             // Overtaker (Fixed to PX + Red Warning Delay)
             let trySpawnOvertaker = false;
             if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && Math.random() < 0.005) { trySpawnOvertaker = true; }
-            if (tkState.trafficLevel === 2 && tkState.phase === 3 && Math.random() < 0.002) { trySpawnOvertaker = true; } 
+            if (tkState.trafficLevel === 2 && tkState.phase === 3 && Math.random() < 0.015) { trySpawnOvertaker = true; } 
 
             if (trySpawnOvertaker) {
                 let slot = tkState.overtakers.findIndex(o => !o.active && !o.warning);

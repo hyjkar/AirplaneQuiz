@@ -495,9 +495,11 @@
     </div>
 
     <script>
-        let SPEED_MOD = 0.5625; 
-        let playerPlaneSkin = 'my-plane.png';
-        const CRUISE_ALT = 450; 
+const CRUISE_SPEED = 0.5625; // Change this one value to adjust global speed!
+const LANDING_SPEED = 0.25;  // Slow-mo speed
+let SPEED_MOD = CRUISE_SPEED; 
+let playerPlaneSkin = 'my-plane.png';
+const CRUISE_ALT = 450;
 
         // --- PROFILE PERSISTENCE (V20 - Clean State) ---
         let playerProfile = { 
@@ -1429,7 +1431,7 @@
 
             const hudRing = document.getElementById('plane-hud');
             let isLandingApproach = (tkState.phase === 5 && tkState.altitude <= 70 && tkState.altitude > 0);
-            let targetSpeedMod = isLandingApproach ? 0.25 : 0.5625; let targetZoom = isLandingApproach ? 1.8 : 1.0;
+            let targetSpeedMod = isLandingApproach ? LANDING_SPEED : CRUISE_SPEED; let targetZoom = isLandingApproach ? 1.8 : 1.0;
             tkState.speedMod += (targetSpeedMod - tkState.speedMod) * 0.1; tkState.zoom += (targetZoom - tkState.zoom) * 0.05;
             SPEED_MOD = tkState.speedMod; document.getElementById('camera-rig').style.transform = `scale(${tkState.zoom})`;
 

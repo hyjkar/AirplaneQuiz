@@ -75,20 +75,24 @@
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3; transition: filter 0.5s; will-change: transform; }
         #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x; will-change: background-position; }
 
-        /* CARGO DROP ZONE - MASSIVE RED BLOCK */
-        #tk-drop-zone { position: absolute; bottom: 0; height: 25px; width: 400px; background: rgba(215, 25, 32, 0.7); border: 3px solid #ff3333; border-bottom: none; z-index: 5; display: none; will-change: transform; box-shadow: 0 0 20px rgba(215, 25, 32, 0.5); }
+        /* CARGO DROP ZONE */
+        #tk-drop-zone { position: absolute; bottom: 0; left: 0; height: 25px; width: 400px; background: rgba(215, 25, 32, 0.7); border: 3px solid #ff3333; border-bottom: none; z-index: 5; display: none; will-change: transform; box-shadow: 0 0 20px rgba(215, 25, 32, 0.5); }
 
+        /* --- WEATHER STATES --- */
         .weather-layer { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
         .night-weather .rain-layer, .night-weather .fog-layer.layer-back { display: block; }
         .snow-weather .snow-layer, .snow-weather .fog-layer { display: block; }
+        
         .night-weather { background-color: #0b1021 !important; }
         .night-weather #tk-bg-sky, .night-weather #tk-fg-sky, .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain { filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2); }
         .night-weather #tk-threat-fog { filter: brightness(0.3) sepia(0.5) hue-rotate(180deg) saturate(1.2) blur(3px); }
         .night-weather #tk-plane-img, .night-weather .tk-enemy img, .night-weather #tk-overtaker-plane img { filter: brightness(0.55); }
+
         .sunrise-weather { background-color: #ff9e7a !important; }
         .sunrise-weather #tk-bg-sky, .sunrise-weather #tk-fg-sky, .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8); }
         .sunrise-weather #tk-threat-fog { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.9) blur(3px); }
         .sunrise-weather #tk-plane-img, .sunrise-weather .tk-enemy img, .sunrise-weather #tk-overtaker-plane img { filter: sepia(0.3) saturate(1.2) brightness(0.9); }
+
         .snow-weather { background-color: #b8c6d9 !important; }
         .snow-weather #tk-bg-sky, .snow-weather #tk-fg-sky, .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain { filter: grayscale(0.7) brightness(1.4) contrast(0.6); }
         .snow-weather #tk-threat-fog { filter: grayscale(0.7) brightness(1.4) blur(3px); }
@@ -97,6 +101,7 @@
         .snow-weather .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(240, 245, 250, 0.8) 0%, transparent 70%); }
         .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%); background-size: 300% 200%; animation: fogPulse 15s ease-in-out infinite alternate; z-index: 8; }
         .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(200, 210, 220, 0.95) 0%, transparent 40%); background-size: 200% 100%; animation: fogSweep 7s linear infinite; z-index: 15; }
+        
         .rain-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='250'><rect x='20' y='20' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
         .rain-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect x='50' y='50' width='3' height='25' fill='rgba(255,255,255,0.6)'/><rect x='250' y='200' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
         .snow-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><circle cx='20' cy='20' r='3' fill='rgba(255,255,255,0.8)'/><circle cx='100' cy='80' r='2' fill='rgba(255,255,255,0.6)'/><circle cx='150' cy='150' r='4' fill='rgba(255,255,255,0.9)'/><circle cx='50' cy='180' r='2' fill='rgba(255,255,255,0.5)'/></svg>"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
@@ -158,14 +163,14 @@
         #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 50; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s;}
         #tk-eject-btn:active { transform: scale(0.92); }
         
-        /* Traffic Planes */
-        .tk-enemy, #tk-overtaker-plane { position: absolute; bottom: 65px; width: 162px; height: 56px; z-index: 9; display: none; left: 0; will-change: transform; pointer-events: none;}
+        /* Traffic Planes - Now positioned strictly with Left */
+        .tk-enemy, #tk-overtaker-plane { position: absolute; bottom: 65px; left: 0; width: 162px; height: 56px; z-index: 9; display: none; will-change: transform; pointer-events: none;}
         .tk-enemy img { width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1); }
         #tk-overtaker-plane img { width: 100%; height: 100%; object-fit: contain; } 
         
         #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform; pointer-events: none;}
         
-        #tk-bird-flock { position: absolute; bottom: 65px; width: 40px; left: 0; height: 30px; z-index: 9; display: none; pointer-events: none; will-change: transform; }
+        #tk-bird-flock { position: absolute; bottom: 65px; left: 0; width: 40px; height: 30px; z-index: 9; display: none; pointer-events: none; will-change: transform; }
         .bird { position: absolute; width: 4px; height: 4px; background: #111; border-radius: 50%; box-shadow: 12px 6px #111, -8px 10px #111, 16px 14px #111, 6px -4px #111; animation: flap 0.3s infinite alternate; }
 
         /* Hardware Accelerated Particles */
@@ -177,7 +182,7 @@
         .float-text { position: absolute; z-index: 150; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
         @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 0); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 0); opacity: 0; } }
 
-        /* FLIGHT PLAN OVERLAY (Custom SVG UI) */
+        /* FLIGHT PLAN OVERLAY */
         #tk-flight-plan-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;}
         #tk-flight-plan-overlay.visible { opacity: 1; pointer-events: auto; }
         
@@ -192,8 +197,11 @@
         .upg-btn:active { transform: scale(0.9); }
         .upg-btn:disabled { border-color: #555; color: #555; cursor: not-allowed; transform: none;}
 
-        .fp-header-info { display: flex; justify-content: space-between; width: 100%; font-size: 0.9rem; margin-bottom: 5px; color: #aaa;}
+        .fp-header-info { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.9rem; margin-bottom: 5px; color: #aaa;}
         .fp-header-info strong { color: #fff; font-size: 1.1rem; }
+        
+        .reroll-btn { background: #333; border: 1px solid var(--brand-gold); color: var(--brand-gold); border-radius: 6px; padding: 4px 8px; font-size: 0.7rem; font-family: 'Share Tech Mono', monospace; font-weight: bold; cursor: pointer; transition: all 0.2s;}
+        .reroll-btn:active { transform: scale(0.95); }
 
         /* END SCREEN & MODALS */
         #tk-end-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
@@ -247,6 +255,8 @@
             .upg-title { font-size: 0.7rem; }
             .upg-stat { font-size: 0.8rem; }
             .upg-btn { padding: 4px 6px; font-size: 0.7rem; }
+            .fp-header-info { font-size: 0.8rem; margin-bottom: 2px;}
+            .fp-header-info strong { font-size: 0.95rem; }
         }
     </style>
 </head>
@@ -255,7 +265,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v5.2 - Workability Logic & SVG Components</div>
+        <div id="tk-version">v5.3 - Stability Update & Drop Zone Fix</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -323,6 +333,13 @@
             <div class="weather-layer fog-layer layer-front"></div><div class="weather-layer rain-layer layer-2"></div><div class="weather-layer snow-layer layer-2"></div>
         </div>
 
+        <div id="tk-flare-container">
+            <div id="pf1" class="pf pf-1"></div>
+            <div id="pf2" class="pf pf-2"></div>
+            <div id="pf3" class="pf pf-3"></div>
+            <div id="pf4" class="pf pf-4"></div>
+        </div>
+
         <div id="tk-flight-plan-overlay">
             <div class="end-panel visible" style="pointer-events: auto;">
                 <div class="end-title">FLIGHT PLAN</div>
@@ -335,6 +352,7 @@
                     <div>SOULS: <strong id="fp-pax">0</strong></div>
                     <div>WEATHER: <strong id="fp-weather" style="color:var(--fo-blue);">CLEAR</strong></div>
                     <div id="fp-cargo-text" style="display:none; color:var(--brand-gold); font-weight:bold;">CARGO DROP</div>
+                    <div><button class="reroll-btn" onclick="rerollFlightPlan(event)">REROLL (200)</button></div>
                 </div>
 
                 <div class="upgrade-list">
@@ -430,23 +448,22 @@
 
         // --- PROFILE PERSISTENCE ---
         let playerProfile = { 
-            points: 0, 
+            points: 10000, // Giving some starting points for testing
             upgrades: { gear: 2, engine: 2, radar: 2, gyro: 2, ap: 2, bird: false } 
         };
         const workMap = { 3: 100, 2: 50, 1: 25, 0: 0 };
         const failMap = { 3: 0, 2: 50, 1: 75, 0: 100 };
         
         function loadProfile() {
-            let p = localStorage.getItem('h5_profile_v3');
+            let p = localStorage.getItem('h5_profile_v4');
             if(p) {
                 let parsed = JSON.parse(p);
-                // Ensure legacy saves don't break new structure
                 if(parsed.upgrades && typeof parsed.upgrades === 'object') playerProfile = parsed;
             }
         }
         
         function saveProfile() {
-            localStorage.setItem('h5_profile_v3', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v4', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -515,6 +532,19 @@
             stopAll: function() { this.playAlarm(false); try { this.bgMusic.pause(); } catch(e) {} }
         };
 
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) { 
+                sfx.stopAll(); 
+                if (sfx.ctx && sfx.ctx.state === 'running') sfx.ctx.suspend(); 
+            } 
+            else { 
+                if (tkState.active && !tkState.isPaused && sfx.ctx && sfx.ctx.state === 'suspended') { 
+                    sfx.ctx.resume(); sfx.bgMusic.play().catch(e=>e); 
+                } 
+            }
+        });
+        window.addEventListener("pagehide", () => { sfx.stopAll(); if (sfx.ctx) sfx.ctx.close(); });
+
         let endScreenAnimInterval = null; let endScreenTimeouts = [];
 
         let tkState = {
@@ -534,8 +564,8 @@
             hasFogScenario: false, hasOvertakerScenario: false, hasBirdScenario: false, hasCargoMission: false,
             
             engineFailure: false, gearBroken: false, gearBreakAlt: 99999, stallFactor: 0,
-            overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
-            birdActive: false, birdX: 150, birdAlt: 0,
+            overtakerActive: false, overtakerX: -200, overtakerAltitude: 0,
+            birdActive: false, birdX: 2000, birdAlt: 0,
             windPocketTriggered: false, windPocketTimer: 0, gyroFailed: false,
             dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0, cargoPrompted: false, apState: 0 
         };
@@ -570,12 +600,62 @@
             }
         }
 
+        function rerollFlightPlan(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (document.activeElement) document.activeElement.blur();
+            
+            if (playerProfile.points >= 200) {
+                playerProfile.points -= 200;
+                saveProfile();
+                sfx.playDing(1.5);
+                
+                // Reroll Logic
+                let rand = Math.random();
+                tkState.weather = rand > 0.75 ? 'night' : (rand > 0.5 ? 'snow' : (rand > 0.25 ? 'sunrise' : 'day'));
+                
+                let vp = document.getElementById('takeoff-viewport');
+                vp.classList.remove('night-weather', 'sunrise-weather', 'snow-weather', 'fog-scenario');
+                vp.style.backgroundColor = ''; 
+                if (tkState.weather !== 'day') vp.classList.add(tkState.weather + '-weather');
+                
+                tkState.passengers = Math.floor(Math.random() * 80) + 40;
+                tkState.baseGearRisk = Math.floor(Math.random() * 40) + 10; 
+                tkState.baseEngineRisk = Math.floor(Math.random() * 30) + 5;
+                tkState.baseWindRisk = Math.floor(Math.random() * 40) + 10;
+                tkState.baseGyroRisk = Math.floor(Math.random() * 15) + 5;
+                tkState.baseApRisk = 50;
+                
+                tkState.hasFogScenario = Math.random() < 0.25;
+                if (tkState.hasFogScenario) vp.classList.add('fog-scenario');
+                
+                tkState.hasOvertakerScenario = Math.random() > 0.5;
+                tkState.hasBirdScenario = Math.random() < 0.25;
+                tkState.hasCargoMission = Math.random() < 0.25;
+                tkState.cargoCount = tkState.hasCargoMission ? Math.floor(Math.random() * 3) + 1 : 0;
+                
+                // Re-populate UI
+                document.getElementById('fp-pax').textContent = tkState.passengers;
+                let wText = "CLEAR"; let wColor = "var(--fo-blue)";
+                if (tkState.hasFogScenario) { wText = "HEAVY FOG"; wColor = "var(--brand-red)"; }
+                else if (tkState.weather === 'snow') { wText = "SNOWSTORM"; wColor = "#bdc3c7"; }
+                else if (tkState.weather === 'night') { wText = "NIGHT OPS"; wColor = "#8e44ad"; }
+                document.getElementById('fp-weather').textContent = wText; document.getElementById('fp-weather').style.color = wColor;
+                
+                let cEl = document.getElementById('fp-cargo-text');
+                if (tkState.hasCargoMission) { cEl.style.display = "block"; cEl.textContent = `${tkState.cargoCount} CARGO DROP`; }
+                else { cEl.style.display = "none"; }
+
+                updateFlightPlanUI();
+            } else {
+                sfx.playExplosion();
+            }
+        }
+
         function buyUpgrade(type, e) {
             if(e) { e.preventDefault(); e.stopPropagation(); }
             if (document.activeElement) document.activeElement.blur();
 
             let cost = type === 'bird' ? 3000 : 1000;
-            
             if (playerProfile.points >= cost) {
                 if (type === 'bird' && !playerProfile.upgrades.bird) {
                     playerProfile.points -= cost; playerProfile.upgrades.bird = true; sfx.playDing(1.5);
@@ -632,7 +712,7 @@
 
         // --- INPUT HANDLING ---
         window.addEventListener('pointerdown', (e) => {
-            if (e.target.tagName === 'BUTTON' || e.target.id === 'tk-touch-prompt') return;
+            if (e.target.tagName === 'BUTTON' || e.target.id === 'tk-touch-prompt' || e.target.closest('button')) return;
             if (tkState.inFlightPlan || tkState.isPaused) return; 
             sfx.init(); 
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
@@ -655,7 +735,6 @@
                 e.preventDefault(); 
                 if (e.repeat) return; 
                 
-                // CRITICAL FIX: Blur any focused button immediately so space doesn't click it!
                 if (document.activeElement) document.activeElement.blur();
 
                 if (document.getElementById('tk-end-screen').classList.contains('visible')) {
@@ -919,8 +998,8 @@
                 baseApRisk: 50,
                 gearRisk: 0, engineRisk: 0, windRisk: 0, gyroRisk: 0, apRisk: 0,
                 hasFogScenario: Math.random() < 0.25,
-                hasOvertakerScenario: Math.random() > 0.5, overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
-                hasBirdScenario: Math.random() < 0.25, birdActive: false, birdX: 150, birdAlt: 0,
+                hasOvertakerScenario: Math.random() > 0.5, overtakerActive: false, overtakerX: -200, overtakerAltitude: 0,
+                hasBirdScenario: Math.random() < 0.25, birdActive: false, birdX: window.innerWidth + 200, birdAlt: 0,
                 hasCargoMission: Math.random() < 0.25, dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0, cargoPrompted: false,
                 gearBroken: false, gearBreakAlt: 99999, stallFactor: 0, enemies: [], activeCargo: [],
                 stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0, apState: 0
@@ -1220,7 +1299,6 @@
             } else { scoreValEl.style.color = '#fff'; }
             scoreValEl.textContent = Math.floor(tkState.score);
 
-            // FATAL IMPACT CHECKS
             if (tkState.altitude <= 0 && tkState.hasLiftedOff) {
                 if (tkState.phase < 5) return triggerCrash("CRASHED INTO TERRAIN!");
                 else if (tkState.phase === 5) {
@@ -1245,7 +1323,8 @@
                 if (!tkState.cargoPrompted && tkState.phase >= 2 && tkState.phase <= 4 && tkState.phaseTimer > 1000) {
                     tkState.cargoPrompted = true;
                     setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>", 3000);
-                    tkState.dropZoneSpawned = true; tkState.dropZoneX = window.innerWidth + 2000;
+                    tkState.dropZoneSpawned = true; 
+                    tkState.dropZoneX = window.innerWidth + 2000;
                     document.getElementById('tk-drop-zone').style.display = 'block';
                 }
             }
@@ -1282,23 +1361,23 @@
                 }
             }
 
-            // Overtaker
-            if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && !tkState.overtakerActive && tkState.altitude > 200 && tkState.overtakerX === -30 && Math.random() < 0.005) {
+            // Overtaker (Fixed to PX)
+            if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && !tkState.overtakerActive && tkState.altitude > 200 && tkState.overtakerX === -200 && Math.random() < 0.005) {
                 tkState.overtakerActive = true; tkState.overtakerAltitude = tkState.altitude; logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 4000); document.getElementById('tk-overtaker-plane').style.display = 'block';
             }
             if (tkState.overtakerActive) {
-                tkState.overtakerX += (0.6 * SPEED_MOD * (window.innerWidth / 100)); let gp = document.getElementById('tk-overtaker-plane'); gp.style.transform = `translate3d(${tkState.overtakerX}px, ${-(tkState.overtakerAltitude - tkState.cameraY)}px, 0)`;
+                tkState.overtakerX += (1.5 * SPEED_MOD); let gp = document.getElementById('tk-overtaker-plane'); gp.style.transform = `translate3d(${tkState.overtakerX}px, ${-(tkState.overtakerAltitude - tkState.cameraY)}px, 0)`;
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); const gr = gp.getBoundingClientRect();
                 if (!( (pr.right - 12) < (gr.left + 15) || (pr.left + 12) > (gr.right - 15) || (pr.bottom - 12) < (gr.top + 25) || (pr.top + 25) > (gr.bottom - 10) )) { return triggerCrash("MID-AIR CRASH!"); }
                 if (tkState.overtakerX > window.innerWidth + 200) { tkState.overtakerActive = false; gp.style.display = 'none'; }
             }
 
-            // Birds
-            if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 250 && tkState.phase < 4 && tkState.birdX === 150 && Math.random() < 0.005) {
-                tkState.birdActive = true; tkState.birdAlt = tkState.altitude + (Math.random() * 60 - 30); tkState.birdX = window.innerWidth + 200; logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)"); document.getElementById('tk-bird-flock').style.display = 'block'; setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 3000);
+            // Birds (Fixed to PX)
+            if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 250 && tkState.phase < 4 && tkState.birdX > window.innerWidth && Math.random() < 0.005) {
+                tkState.birdActive = true; tkState.birdAlt = tkState.altitude + (Math.random() * 60 - 30); logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)"); document.getElementById('tk-bird-flock').style.display = 'block'; setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 3000);
             }
             if (tkState.birdActive) {
-                tkState.birdX -= (1.1 * SPEED_MOD * (window.innerWidth / 100)); let bEl = document.getElementById('tk-bird-flock'); bEl.style.transform = `translate3d(${tkState.birdX}px, ${-(tkState.birdAlt - tkState.cameraY)}px, 0)`;
+                tkState.birdX -= (4 * SPEED_MOD); let bEl = document.getElementById('tk-bird-flock'); bEl.style.transform = `translate3d(${tkState.birdX}px, ${-(tkState.birdAlt - tkState.cameraY)}px, 0)`;
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); const br = bEl.getBoundingClientRect();
                 if (!( (pr.right - 10) < (br.left + 10) || (pr.left + 10) > (br.right - 10) || (pr.bottom - 10) < (br.top + 10) || (pr.top + 25) > (br.bottom - 10) )) { 
                     if (playerProfile.upgrades.bird && !tkState.engineFailure) {
@@ -1311,7 +1390,7 @@
                         return triggerCrash("BIRD STRIKE!");
                     }
                 }
-                if (tkState.birdX < -200) { tkState.birdActive = false; bEl.style.display = 'none'; }
+                if (tkState.birdX < -100) { tkState.birdActive = false; bEl.style.display = 'none'; }
             }
 
             // Random Engine Fail
@@ -1319,7 +1398,7 @@
                 tkState.engineFailure = true; logEvent("ENGINE FAILURE", "🔥", "ENGINE", "var(--brand-red)"); setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 5000); sfx.playExplosion(); document.getElementById('tk-alert-overlay').className = 'flashing'; setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800);
             }
 
-            // Swarm Traffic Phase Trigger
+            // Swarm Traffic Phase Trigger (Fixed to PX)
             if (tkState.phase === 2 && tkState.phaseTimer > 8000) {
                 tkState.phase = 3; tkState.phaseTimer = 0;
                 tkState.currTargetMin = -24; tkState.currTargetMax = -12;
@@ -1333,13 +1412,13 @@
             if (tkState.phase === 3) {
                 let maxEnemies = Math.min(5, Math.floor(1 + (tkState.phaseTimer / 12000) * 4)); if (tkState.phaseTimer > 12000) maxEnemies = 0; 
                 let activeCount = tkState.enemies.filter(e => e.active).length;
-                if (activeCount < maxEnemies && Math.random() < 0.04) { let slotIdx = tkState.enemies.findIndex(e => !e.active); if (slotIdx !== -1) { let e = tkState.enemies[slotIdx]; e.active = true; e.x = window.innerWidth + 200; e.alt = tkState.altitude + (Math.random() * 160 - 80); e.spd = (0.96 + Math.random() * 0.72) * SPEED_MOD * (window.innerWidth / 100); document.getElementById('enemy-' + slotIdx).style.display = 'block'; } }
+                if (activeCount < maxEnemies && Math.random() < 0.04) { let slotIdx = tkState.enemies.findIndex(e => !e.active); if (slotIdx !== -1) { let e = tkState.enemies[slotIdx]; e.active = true; e.x = window.innerWidth + 200; e.alt = tkState.altitude + (Math.random() * 160 - 80); e.spd = (5 + Math.random() * 4) * SPEED_MOD; document.getElementById('enemy-' + slotIdx).style.display = 'block'; } }
                 let collision = false; const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
                 tkState.enemies.forEach((e, i) => {
                     if (e.active) {
                         e.x -= e.spd; let el = document.getElementById('enemy-' + i); el.style.transform = `translate3d(${e.x}px, ${-(e.alt - tkState.cameraY)}px, 0)`;
                         const er = el.getBoundingClientRect(); if (!( (pr.right - 12) < (er.left + 15) || (pr.left + 12) > (er.right - 15) || (pr.bottom - 12) < (er.top + 25) || (pr.top + 25) > (er.bottom - 10) )) { collision = true; }
-                        if (e.x < -300) { e.active = false; el.style.display = 'none'; }
+                        if (e.x < -200) { e.active = false; el.style.display = 'none'; }
                     }
                 });
                 if (collision) return triggerCrash("MID-AIR CRASH!");
@@ -1357,7 +1436,9 @@
                 }
                 if(tkState.autoPilot) toggleAutoPilot();
             }
-            if (tkState.phase === 5 && tkState.altitude <= 0) { tkState.phase = 6; tkState.altitude = 0; tkState.vSpeed = 0; setDialogue("<span class='alert-text'>BRAKES ON!</span>", 4000); if(tkState.autoPilot) toggleAutoPilot(); }
+            if (tkState.phase === 5 && tkState.altitude <= 0) {
+                 tkState.phase = 6; tkState.altitude = 0; tkState.vSpeed = 0; setDialogue("<span class='alert-text'>BRAKES ON!</span>", 4000); if(tkState.autoPilot) toggleAutoPilot(); 
+            }
 
             // Camera Parallax Apply
             tkState.bgX_sky -= (displaySpeed * 0.006 * SPEED_MOD); tkState.bgX_fgSky -= (displaySpeed * 0.012 * SPEED_MOD); tkState.bgX_city -= (displaySpeed * 0.03 * SPEED_MOD); tkState.bgX_runway -= (displaySpeed * 0.18 * SPEED_MOD);

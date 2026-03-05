@@ -209,11 +209,15 @@
         #tk-flight-plan-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;}
         #tk-flight-plan-overlay.visible { opacity: 1; pointer-events: auto; }
         
-        .fp-details { text-align:left; margin: 15px 0; font-size: 0.9rem; color: #ccc; font-family: 'Share Tech Mono', monospace; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #333; }
-        .fp-details div { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .outline-btn { background: transparent; border: 2px solid #ccc; border-radius: 6px; padding: 10px; font-family: 'Share Tech Mono', monospace; font-weight: bold; cursor: pointer; transition: all 0.2s; width: 100%; font-size: 0.85rem;}
-        .outline-btn:active { transform: scale(0.95); }
-        .outline-btn:disabled { opacity: 0.5; cursor: not-allowed; border-color: #555 !important; color: #555 !important; }
+        .fp-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.85rem; }
+        .fp-row span:first-child { width: 45%; }
+        .fp-row .val { width: 20%; text-align: right; font-weight: bold; }
+        .fp-row .btn-box { width: 35%; text-align: right; }
+        .upg-btn { background: var(--gauge-green); color: #000; border: none; border-radius: 4px; padding: 4px 8px; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; font-weight: bold; cursor: pointer; transition: transform 0.1s;}
+        .upg-btn:active { transform: scale(0.9); }
+        .upg-btn:disabled { background: #555; color: #888; cursor: not-allowed; transform: none;}
+
+        .fp-details { text-align:left; margin: 15px 0; color: #ccc; font-family: 'Share Tech Mono', monospace; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #333; width: 100%;}
 
         /* END SCREEN & MODALS */
         #tk-end-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
@@ -221,7 +225,7 @@
         
         .end-panel { 
             background: #111; border: 2px solid var(--brand-gold); border-radius: 15px; 
-            padding: 30px 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
+            padding: 25px 35px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
             transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; touch-action: auto; -webkit-overflow-scrolling: touch; pointer-events: auto;
         }
@@ -229,16 +233,16 @@
         .end-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 5px; }
         .end-panel.visible { transform: scale(1); }
         #tk-end-screen.visible .end-panel { transform: scale(1); }
-        .end-title { font-size: 2rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; text-transform: uppercase;}
-        .end-subtitle { font-size: 1rem; color: #aaa; margin-bottom: 15px; text-transform: uppercase;}
-        .end-score { font-size: 3rem; color: var(--gauge-green); margin-bottom: 15px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
+        .end-title { font-size: 1.8rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; text-transform: uppercase;}
+        .end-subtitle { font-size: 0.9rem; color: #aaa; margin-bottom: 10px; text-transform: uppercase;}
+        .end-score { font-size: 2.5rem; color: var(--gauge-green); margin-bottom: 10px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
         
-        .play-again-btn { background: var(--brand-gold); color: #000; border: none; padding: 15px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; }
+        .play-again-btn { background: var(--brand-gold); color: #000; border: none; padding: 12px 20px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; }
         .play-again-btn:active { transform: scale(0.95); filter: brightness(0.8); }
 
         /* Minimap Progress Bar */
-        .completion-wrapper { margin-bottom: 35px; width: 100%; display: flex; flex-direction: column; align-items: center; }
-        .completion-text { font-size: 1.1rem; color: #fff; margin-bottom: 15px; font-weight: bold; letter-spacing: 1px; text-align: center; width: 100%; }
+        .completion-wrapper { margin-bottom: 25px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .completion-text { font-size: 1rem; color: #fff; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; text-align: center; width: 100%; }
         #end-completion-val { color: var(--fo-blue); }
         #tk-minimap { width: 90%; height: 12px; background: #222; border-radius: 6px; position: relative; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); margin: 0 auto; }
         #tk-minimap-progress { height: 100%; background: var(--fo-blue); border-radius: 6px; width: 0%; transition: width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.5s; }
@@ -256,10 +260,10 @@
             .end-title { font-size: 1.3rem; }
             .end-subtitle { display: none; }
             .end-score { font-size: 1.8rem; margin: 0 0 10px 0; }
-            .completion-wrapper { margin-bottom: 25px; }
+            .completion-wrapper { margin-bottom: 20px; }
             .completion-text { font-size: 0.9rem; margin-bottom: 10px;}
             .fp-details { margin: 10px 0 !important; padding: 10px !important; font-size: 0.8rem !important;}
-            .fp-details div { margin-bottom: 4px !important; }
+            .fp-row { margin-bottom: 4px; }
             .stats-grid { font-size: 0.85rem !important; margin-bottom: 15px !important; }
             #tk-eject-btn { width: 60px; height: 60px; font-size: 0.8rem; }
         }
@@ -270,7 +274,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v4.8 - Autopilot Failure Mechanics</div>
+        <div id="tk-version">v4.9 - Full Upgrade Persistence System</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -338,28 +342,36 @@
             <div class="weather-layer fog-layer layer-front"></div><div class="weather-layer rain-layer layer-2"></div><div class="weather-layer snow-layer layer-2"></div>
         </div>
 
+        <div id="tk-flare-container">
+            <div id="pf1" class="pf pf-1"></div>
+            <div id="pf2" class="pf pf-2"></div>
+            <div id="pf3" class="pf pf-3"></div>
+            <div id="pf4" class="pf pf-4"></div>
+        </div>
+
         <div id="tk-flight-plan-overlay">
             <div class="end-panel visible" style="pointer-events: auto;">
                 <div class="end-title">FLIGHT PLAN</div>
-                <div class="end-subtitle">PRE-FLIGHT BRIEFING</div>
                 
-                <div class="fp-details">
-                    <div><span>SOULS ON BOARD:</span> <strong id="fp-pax" style="color:#fff;">0</strong></div>
-                    <div><span>CONDITIONS:</span> <strong id="fp-weather" style="color:var(--fo-blue);">CLEAR</strong></div>
-                    <div><span>CARGO OPS:</span> <strong id="fp-cargo" style="color:var(--gauge-green);">NONE</strong></div>
-                    <div><span>WIND SHEAR RISK:</span> <strong id="fp-wind-risk" style="color:var(--brand-gold);">0%</strong></div>
-                    <div><span>GYRO FAILURE:</span> <strong id="fp-gyro-risk" style="color:var(--brand-gold);">0%</strong></div>
-                    <div><span>GEAR FATIGUE:</span> <strong id="fp-gear-risk" style="color:var(--brand-gold);">0%</strong></div>
-                    <div><span>ENGINE STABILITY:</span> <strong id="fp-eng-risk" style="color:var(--brand-gold);">0%</strong></div>
-                    <div><span>AP FAILURE RISK:</span> <strong id="fp-ap-risk" style="color:var(--brand-gold);">50%</strong></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-family:'Share Tech Mono'; margin-top: 10px;">
+                    <span style="color:#ccc; font-size:0.9rem;">AVAILABLE FUNDS:</span> <strong id="fp-total-points" style="color:var(--brand-gold); font-size:1.4rem;">0</strong>
                 </div>
 
-                <div style="margin: 15px 0; display:flex; flex-direction:column; gap:10px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-family:'Share Tech Mono';">
-                        <span style="color:#ccc;">AVAILABLE FUNDS:</span> <strong id="fp-total-points" style="color:var(--brand-gold); font-size:1.2rem;">0</strong>
-                    </div>
-                    <button id="btn-upg-maint" class="outline-btn" style="border-color:var(--gauge-green); color:var(--gauge-green);" onclick="buyMaintenance(event)">UPGRADE MAINT [LVL 0/3] (1000)</button>
-                    <button id="btn-upg-bird" class="outline-btn" style="border-color:var(--fo-blue); color:var(--fo-blue);" onclick="buyBirdShield(event)">BIRD SHIELDS [OFF] (3000)</button>
+                <div class="fp-details">
+                    <div class="fp-row" style="color:#fff;"><span>SOULS ON BOARD:</span> <span class="val" id="fp-pax" style="color:#fff; text-align:left;">0</span><div class="btn-box"></div></div>
+                    <div class="fp-row"><span>CONDITIONS:</span> <span class="val" id="fp-weather" style="color:var(--fo-blue); text-align:left;">CLEAR</span><div class="btn-box"></div></div>
+                    <div class="fp-row"><span>CARGO OPS:</span> <span class="val" id="fp-cargo" style="color:var(--gauge-green); text-align:left; font-size:0.75rem;">NONE</span><div class="btn-box"></div></div>
+                    
+                    <hr style="border: 0; height: 1px; background: #333; margin: 10px 0;">
+                    
+                    <div class="fp-row"><span>GEAR FATIGUE:</span> <span class="val" id="fp-gear-risk">0%</span> <div class="btn-box"><button id="btn-upg-gear" class="upg-btn" onclick="buyUpgrade('gear', event)">+ 1000</button></div></div>
+                    <div class="fp-row"><span>ENGINE FAULT:</span> <span class="val" id="fp-engine-risk">0%</span> <div class="btn-box"><button id="btn-upg-engine" class="upg-btn" onclick="buyUpgrade('engine', event)">+ 1000</button></div></div>
+                    <div class="fp-row"><span>WIND SHEAR:</span> <span class="val" id="fp-wind-risk">0%</span> <div class="btn-box"><button id="btn-upg-wind" class="upg-btn" onclick="buyUpgrade('wind', event)">+ 1000</button></div></div>
+                    <div class="fp-row"><span>GYRO FAULT:</span> <span class="val" id="fp-gyro-risk">0%</span> <div class="btn-box"><button id="btn-upg-gyro" class="upg-btn" onclick="buyUpgrade('gyro', event)">+ 1000</button></div></div>
+                    <div class="fp-row"><span>AUTO-PILOT:</span> <span class="val" id="fp-ap-risk">0%</span> <div class="btn-box"><button id="btn-upg-ap" class="upg-btn" onclick="buyUpgrade('ap', event)">+ 1000</button></div></div>
+                    
+                    <hr style="border: 0; height: 1px; background: #333; margin: 10px 0;">
+                    <div class="fp-row"><span>BIRD SHIELD:</span> <span class="val" id="fp-bird-status" style="color:var(--brand-red);">OFF</span> <div class="btn-box"><button id="btn-upg-bird" class="upg-btn" onclick="buyUpgrade('bird', event)">+ 3000</button></div></div>
                 </div>
 
                 <button class="play-again-btn" style="background: var(--brand-red); color: #fff; width: 100%;" onclick="authorizeFlight(event)">AUTHORIZE TAKEOFF</button>
@@ -372,7 +384,7 @@
                 <div class="end-subtitle" id="end-sub-text">SAFE EVACUATION COMPLETED</div>
                 <div class="end-score" id="end-score-val">0</div>
                 
-                <div class="stats-grid">
+                <div class="stats-grid" style="display:flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 25px; color: #ccc; text-align: left; font-family: 'Share Tech Mono', monospace; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid #333;">
                     <div>
                         <div style="margin-bottom: 5px;">STALLS: <span id="end-stalls" style="color: var(--brand-red); font-weight:bold;">0</span></div>
                         <div>SMOOTH FLIGHT: <span id="end-comfort" style="color: var(--fo-blue); font-weight:bold;">100%</span></div>
@@ -402,14 +414,21 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE ---
-        let playerProfile = { points: 0, upgrades: 0, birdShield: false };
+        // --- PROFILE PERSISTENCE (V2) ---
+        let playerProfile = { 
+            points: 0, 
+            upgrades: { gear: 0, engine: 0, wind: 0, gyro: 0, ap: 0, bird: false } 
+        };
+        
         function loadProfile() {
-            let p = localStorage.getItem('h5_profile');
-            if(p) playerProfile = JSON.parse(p);
+            let p = localStorage.getItem('h5_profile_v2');
+            if(p) {
+                playerProfile = JSON.parse(p);
+            }
         }
+        
         function saveProfile() {
-            localStorage.setItem('h5_profile', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v2', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -490,62 +509,63 @@
             
             stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0,
             
-            passengers: 0, gearRisk: 0, engRisk: 0, windRisk: 0, gyroRisk: 0, apRisk: 50,
+            passengers: 0, 
+            baseGearRisk: 0, baseEngineRisk: 0, baseWindRisk: 0, baseGyroRisk: 0, baseApRisk: 0,
+            gearRisk: 0, engineRisk: 0, windRisk: 0, gyroRisk: 0, apRisk: 0,
+            
             hasFogScenario: false, hasOvertakerScenario: false, hasBirdScenario: false, hasCargoMission: false,
             
             engineFailure: false, gearBroken: false, gearBreakAlt: 99999, stallFactor: 0,
             overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
             birdActive: false, birdX: 150, birdAlt: 0,
             windPocketTriggered: false, windPocketTimer: 0, gyroFailed: false,
-            dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0,
-            apState: 0 
+            dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0, apState: 0 
         };
 
         function updateFlightPlanUI() {
             document.getElementById('fp-total-points').textContent = playerProfile.points;
             
-            let mBtn = document.getElementById('btn-upg-maint');
-            mBtn.textContent = `UPGRADE MAINT [LVL ${playerProfile.upgrades}/3] (1000 PTS)`;
-            if(playerProfile.upgrades >= 3) { mBtn.disabled = true; mBtn.textContent = "MAINTENANCE MAXED"; }
-            else { mBtn.disabled = false; }
+            let types = ['gear', 'engine', 'wind', 'gyro', 'ap'];
+            types.forEach(t => {
+                let lvl = playerProfile.upgrades[t];
+                let mult = 1 - (lvl * 0.333);
+                let baseR = tkState['base' + t.charAt(0).toUpperCase() + t.slice(1) + 'Risk'];
+                let effectiveR = Math.floor(baseR * mult);
+                tkState[t + 'Risk'] = effectiveR;
+                
+                let el = document.getElementById('fp-' + t + '-risk');
+                el.textContent = effectiveR + "%";
+                el.style.color = effectiveR > 25 ? "var(--brand-red)" : (effectiveR > 0 ? "var(--brand-gold)" : "var(--gauge-green)");
+                
+                let btn = document.getElementById('btn-upg-' + t);
+                if(lvl >= 3) { btn.textContent = "MAX"; btn.disabled = true; }
+                else { btn.textContent = `+ 1000`; btn.disabled = playerProfile.points < 1000; }
+            });
             
+            // Bird shield
             let bBtn = document.getElementById('btn-upg-bird');
-            bBtn.textContent = playerProfile.birdShield ? `BIRD SHIELDS [ACTIVE]` : `BUY BIRD SHIELDS (3000 PTS)`;
-            if(playerProfile.birdShield) { bBtn.disabled = true; }
-            else { bBtn.disabled = false; }
-
-            let riskMult = 1 - (playerProfile.upgrades * 0.33);
-            let dGear = Math.floor(tkState.baseGearRisk * riskMult);
-            let dEng = Math.floor(tkState.baseEngRisk * riskMult);
-            let dAp = Math.floor(50 * riskMult);
-            
-            let gRiskEl = document.getElementById('fp-gear-risk'); gRiskEl.textContent = dGear + "%";
-            gRiskEl.style.color = dGear > 30 ? "var(--brand-red)" : (dGear > 0 ? "var(--brand-gold)" : "var(--gauge-green)");
-            
-            let eRiskEl = document.getElementById('fp-eng-risk'); eRiskEl.textContent = dEng + "%";
-            eRiskEl.style.color = dEng > 20 ? "var(--brand-red)" : (dEng > 0 ? "var(--brand-gold)" : "var(--gauge-green)");
-
-            let apRiskEl = document.getElementById('fp-ap-risk'); apRiskEl.textContent = dAp + "%";
-            apRiskEl.style.color = dAp > 25 ? "var(--brand-red)" : (dAp > 0 ? "var(--brand-gold)" : "var(--gauge-green)");
-
-            tkState.gearRisk = dGear;
-            tkState.engRisk = dEng;
-            tkState.apRisk = dAp;
+            if(playerProfile.upgrades.bird) {
+                document.getElementById('fp-bird-status').textContent = "ACTIVE";
+                document.getElementById('fp-bird-status').style.color = "var(--gauge-green)";
+                bBtn.textContent = "MAX"; bBtn.disabled = true;
+            } else {
+                document.getElementById('fp-bird-status').textContent = "OFFLINE";
+                document.getElementById('fp-bird-status').style.color = "var(--brand-red)";
+                bBtn.textContent = "+ 3000"; bBtn.disabled = playerProfile.points < 3000;
+            }
         }
 
-        function buyMaintenance(e) {
+        function buyUpgrade(type, e) {
             if(e) e.stopPropagation();
-            if(playerProfile.points >= 1000 && playerProfile.upgrades < 3) {
-                playerProfile.points -= 1000; playerProfile.upgrades++;
-                sfx.playDing(1.5); saveProfile(); updateFlightPlanUI();
-            } else { sfx.playExplosion(); }
-        }
-
-        function buyBirdShield(e) {
-            if(e) e.stopPropagation();
-            if(playerProfile.points >= 3000 && !playerProfile.birdShield) {
-                playerProfile.points -= 3000; playerProfile.birdShield = true;
-                sfx.playDing(1.5); saveProfile(); updateFlightPlanUI();
+            let cost = type === 'bird' ? 3000 : 1000;
+            
+            if (playerProfile.points >= cost) {
+                if (type === 'bird' && !playerProfile.upgrades.bird) {
+                    playerProfile.points -= cost; playerProfile.upgrades.bird = true; sfx.playDing(1.5);
+                } else if (type !== 'bird' && playerProfile.upgrades[type] < 3) {
+                    playerProfile.points -= cost; playerProfile.upgrades[type]++; sfx.playDing(1.5);
+                } else { sfx.playExplosion(); return; }
+                saveProfile(); updateFlightPlanUI();
             } else { sfx.playExplosion(); }
         }
 
@@ -559,9 +579,7 @@
 
             if (!tkState.autoPilot) {
                 if (tkState.apState === 1) {
-                    sfx.playDing(0.5);
-                    setDialogue("<span class='alert-text'>AUTOPILOT OFFLINE!</span>", 2000);
-                    return;
+                    sfx.playDing(0.5); setDialogue("<span class='alert-text'>AUTOPILOT OFFLINE!</span>", 2000); return;
                 }
                 
                 tkState.autoPilot = true;
@@ -569,20 +587,15 @@
                 apInd.style.display = 'block';
                 
                 if (tkState.apState === 2) {
-                    apInd.style.background = 'var(--brand-red)';
-                    apInd.textContent = 'ERR';
-                    sfx.playDing(0.5);
-                    setDialogue("<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>", 3000);
+                    apInd.style.background = 'var(--brand-red)'; apInd.textContent = 'ERR';
+                    sfx.playDing(0.5); setDialogue("<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>", 3000);
                     logEvent("AP FAILURE", "⚠️", "AP ERR", "var(--brand-red)");
                 } else {
-                    apInd.style.background = 'var(--gauge-green)';
-                    apInd.textContent = 'AUTO';
-                    sfx.playDing(1.5); 
+                    apInd.style.background = 'var(--gauge-green)'; apInd.textContent = 'AUTO'; sfx.playDing(1.5); 
                 }
             } else {
                 tkState.autoPilot = false;
-                const apInd = document.getElementById('ap-indicator');
-                apInd.style.display = 'none';
+                document.getElementById('ap-indicator').style.display = 'none';
                 sfx.playDing(0.8);
             }
         }
@@ -792,8 +805,15 @@
             
             // Apply Penalty
             playerProfile.points = Math.max(0, playerProfile.points - 500);
-            if (playerProfile.upgrades > 0) { playerProfile.upgrades--; } 
-            else if (playerProfile.birdShield) { playerProfile.birdShield = false; }
+            
+            let upgKeys = ['gear', 'engine', 'wind', 'gyro', 'ap'];
+            let activeUpgrades = upgKeys.filter(k => playerProfile.upgrades[k] > 0);
+            if (activeUpgrades.length > 0) {
+                let toLose = activeUpgrades[Math.floor(Math.random() * activeUpgrades.length)];
+                playerProfile.upgrades[toLose]--;
+            } else if (playerProfile.upgrades.bird) {
+                playerProfile.upgrades.bird = false;
+            }
             saveProfile();
 
             setTimeout(() => { showEndScreen(Math.floor(tkState.score), false); tkState.canRestart = true; }, 2500); 
@@ -802,7 +822,7 @@
         function hardReset(e) {
             if (e) e.stopPropagation();
             document.getElementById('tk-end-screen').classList.remove('visible'); 
-            setTimeout(() => { document.getElementById('tk-end-screen').style.display = 'none'; startFlight(); }, 300);
+            setTimeout(() => { document.getElementById('tk-end-screen').style.display = 'none'; openFlightPlan(); }, 300);
         }
 
         function openFlightPlan(e) {
@@ -829,15 +849,17 @@
                 hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [],
                 passengers: Math.floor(Math.random() * 80) + 40,
                 baseGearRisk: Math.floor(Math.random() * 40) + 10, 
-                baseEngRisk: Math.floor(Math.random() * 30) + 5,
-                windRisk: Math.floor(Math.random() * 40) + 10,
-                gyroRisk: Math.floor(Math.random() * 15) + 5,
+                baseEngineRisk: Math.floor(Math.random() * 30) + 5,
+                baseWindRisk: Math.floor(Math.random() * 40) + 10,
+                baseGyroRisk: Math.floor(Math.random() * 15) + 5,
+                baseApRisk: 50,
+                gearRisk: 0, engineRisk: 0, windRisk: 0, gyroRisk: 0, apRisk: 0,
                 hasFogScenario: Math.random() < 0.25,
                 hasOvertakerScenario: Math.random() > 0.5, overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
                 hasBirdScenario: Math.random() < 0.25, birdActive: false, birdX: 150, birdAlt: 0,
                 hasCargoMission: Math.random() < 0.25, dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0,
                 gearBroken: false, gearBreakAlt: 99999, stallFactor: 0, enemies: [], activeCargo: [],
-                stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0
+                stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0, apState: 0
             };
             
             if(tkState.hasCargoMission) tkState.cargoCount = Math.floor(Math.random() * 3) + 1;
@@ -876,21 +898,11 @@
             if (tkState.hasCargoMission) { cText = `${tkState.cargoCount} PKG TO DROP ZONE`; cColor = "var(--brand-gold)"; }
             document.getElementById('fp-cargo').textContent = cText; document.getElementById('fp-cargo').style.color = cColor;
 
-            let wRiskEl = document.getElementById('fp-wind-risk'); wRiskEl.textContent = tkState.windRisk + "%";
-            wRiskEl.style.color = tkState.windRisk > 25 ? "var(--brand-red)" : "var(--brand-gold)";
-
-            let gStabEl = document.getElementById('fp-gyro-risk'); gStabEl.textContent = (100 - tkState.gyroRisk) + "%";
-            gStabEl.style.color = tkState.gyroRisk > 15 ? "var(--brand-red)" : "var(--gauge-green)";
-
             updateFlightPlanUI();
 
             const fpOverlay = document.getElementById('tk-flight-plan-overlay');
             fpOverlay.style.display = 'flex';
             setTimeout(() => fpOverlay.classList.add('visible'), 50);
-        }
-
-        function startFlight() {
-            document.getElementById('tk-touch-prompt').style.display = 'block';
         }
 
         function authorizeFlight(e) {
@@ -901,7 +913,7 @@
             tkState.hasGearFailure = Math.random() * 100 < tkState.gearRisk;
             if (tkState.hasGearFailure) tkState.gearBreakAlt = Math.random() * (CRUISE_ALT - 200) + 100;
             tkState.engineFailure = false;
-            tkState.hasEngineFailureScenario = Math.random() * 100 < tkState.engRisk;
+            tkState.hasEngineFailureScenario = Math.random() * 100 < tkState.engineRisk;
             tkState.hasWindPocket = Math.random() * 100 < tkState.windRisk;
             tkState.hasGyroFailure = Math.random() * 100 < tkState.gyroRisk;
 
@@ -923,9 +935,72 @@
                     setDialogue("<span class='capt-text'>FULL POWER!<br><span style='font-size:0.65rem; color:var(--aux-blue);'>TAP PLANE FOR AUTOPILOT</span></span>", 5000);
                 }
 
-                tkState.lastFrameTime = performance.now();
+                // FIX FOR FREEZE BUG: 
+                tkState.lastFrameTime = 0; 
                 tkState.frameId = requestAnimationFrame(gameLoop);
             }, 300);
+        }
+
+        // --- HARDWARE ACCELERATED PARTICLES ---
+        function spawnSmoke(x, y) {
+            let p = document.createElement('div'); p.className = 'smoke-particle';
+            let gray = Math.floor(Math.random() * 80) + 20; p.style.backgroundColor = `rgba(${gray}, ${gray}, ${gray}, 0.8)`;
+            let size = Math.random() * 8 + 4; p.style.width = size + 'px'; p.style.height = size + 'px'; 
+            let curX = x, curY = y; p.style.transform = `translate3d(${curX}px, ${curY}px, 0) scale(1)`;
+            document.getElementById('camera-rig').appendChild(p);
+            
+            let speedFactor = Math.max(1, tkState.speed / 100);
+            let vx = -(Math.random() * 6 + 4) * SPEED_MOD * speedFactor; let vy = (Math.random() * 2 - 1) * SPEED_MOD;
+            let age = 0; let maxAge = Math.random() * 40 + 20; let currentScale = 1;
+            
+            function move() {
+                if (tkState.isPaused) { requestAnimationFrame(move); return; }
+                age++; vx *= 0.98; vy -= 0.1; currentScale += 0.05; curX += vx; curY += vy;
+                p.style.transform = `translate3d(${curX}px, ${curY}px, 0) scale(${currentScale})`; p.style.opacity = 0.8 * (1 - (age / maxAge));
+                if(age < maxAge) requestAnimationFrame(move); else p.remove();
+            } move();
+        }
+
+        function spawnScoreParticle(cx, cy, pitch) {
+            let p = document.createElement('div'); p.className = 'score-particle';
+            p.style.backgroundColor = '#cfa86e'; p.style.boxShadow = `0 0 8px #cfa86e`; 
+            let rad = -pitch * (Math.PI / 180); let curX = cx + Math.cos(rad) * -65; let curY = cy + Math.sin(rad) * -65;
+            p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`; document.getElementById('camera-rig').appendChild(p);
+            
+            let speedFactor = Math.max(1, tkState.speed / 100); let vx = -(Math.random() * 4 + 4) * SPEED_MOD * speedFactor; let vy = (Math.random() * 2 - 1) * SPEED_MOD;
+            let age = 0; let maxAge = Math.random() * 20 + 15;
+            
+            function move() {
+                if (tkState.isPaused) { requestAnimationFrame(move); return; }
+                age++; vx *= 0.95; vy -= 0.1; curX += vx; curY += vy;
+                p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`; p.style.opacity = 1 - (age / maxAge);
+                if(age < maxAge) requestAnimationFrame(move); else p.remove();
+            } move();
+        }
+
+        function triggerGearExplosion(x, y) {
+            sfx.playExplosion(); const colors = ['#fff', '#ffaa00', '#d71920', '#333', '#111'];
+            for(let i=0; i<25; i++) {
+                let p = document.createElement('div'); p.className = 'pixel-particle'; p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+                let size = (Math.random()*5 + 2); p.style.width = size + 'px'; p.style.height = size + 'px'; 
+                let curX = x, curY = y; p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`; document.getElementById('camera-rig').appendChild(p);
+                let a = Math.random() * Math.PI * 2; let v = (Math.random() * 12 + 2) * 0.75; let vx = Math.cos(a)*v - 5; let vy = Math.sin(a)*v + 2; let age = 0;
+                function move() { 
+                    if (tkState.isPaused) { requestAnimationFrame(move); return; }
+                    age++; vx *= 0.92; vy += (0.4 * 0.75); curX += vx; curY += vy; p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`; if(age < 45) requestAnimationFrame(move); else p.remove(); 
+                } move();
+            }
+        }
+
+        function spawnSpark(x, y, isMidAir) {
+            sfx.playSpark(); let p = document.createElement('div'); p.className = 'spark-particle'; p.style.backgroundColor = Math.random() > 0.4 ? '#ffaa00' : '#ff3300';
+            if (isMidAir) { p.style.width = '5px'; p.style.height = '5px'; }
+            let curX = x, curY = y; p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`; document.getElementById('camera-rig').appendChild(p);
+            let speedFactor = isMidAir ? 1 : (tkState.speed / 100); let vx = isMidAir ? -(Math.random() * 5 + 2) * SPEED_MOD : -(Math.random() * 14 + 5) * SPEED_MOD * speedFactor; let vy = isMidAir ? (Math.random() * 4 + 2) * SPEED_MOD : -(Math.random() * 3) * SPEED_MOD * speedFactor; let age = 0;
+            function move() { 
+                if (tkState.isPaused) { requestAnimationFrame(move); return; }
+                age++; vx *= 0.95; vy += (0.5 * SPEED_MOD); curX += vx; curY += vy; p.style.transform = `translate3d(${curX}px, ${curY}px, 0)`; p.style.opacity = 1 - (age / (isMidAir ? 30 : 15)); if(age < (isMidAir ? 30 : 15)) requestAnimationFrame(move); else p.remove(); 
+            } move();
         }
 
         function triggerEpicCollision(x, y) {
@@ -1049,8 +1124,15 @@
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
             if (tkState.phase !== 6) tkState.altitude = Math.max(0, tkState.altitude + tkState.vSpeed);
 
-            if (tkState.altitude > 0 && !tkState.hasLiftedOff) { tkState.hasLiftedOff = true; logEvent("LIFTOFF", "🛫", "LIFTOFF", "var(--gauge-green)"); }
-            if (tkState.hasLiftedOff && tkState.phase < 5) { tkState.totalFlightTime += delta; if (Math.abs(tkState.pitch) > 8) { tkState.extremePitchTime += delta; } }
+            if (tkState.altitude > 0 && !tkState.hasLiftedOff) {
+                tkState.hasLiftedOff = true;
+                logEvent("LIFTOFF", "🛫", "LIFTOFF", "var(--gauge-green)");
+            }
+
+            if (tkState.hasLiftedOff && tkState.phase < 5) {
+                tkState.totalFlightTime += delta;
+                if (Math.abs(tkState.pitch) > 8) { tkState.extremePitchTime += delta; }
+            }
 
             document.getElementById('hud-alt-val').textContent = Math.floor(tkState.altitude) + 'm';
             document.getElementById('hud-pitch-val').innerHTML = Math.floor(displayPitch) + '&deg;';
@@ -1134,7 +1216,7 @@
                 tkState.birdX -= (1.1 * SPEED_MOD); let bEl = document.getElementById('tk-bird-flock'); bEl.style.transform = `translate3d(${tkState.birdX}vw, ${-(tkState.birdAlt - tkState.cameraY)}px, 0)`;
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); const br = bEl.getBoundingClientRect();
                 if (!( (pr.right - 10) < (br.left + 10) || (pr.left + 10) > (br.right - 10) || (pr.bottom - 10) < (br.top + 10) || (pr.top + 25) > (br.bottom - 10) )) { 
-                    if (playerProfile.birdShield && !tkState.engineFailure) {
+                    if (playerProfile.upgrades.bird && !tkState.engineFailure) {
                         tkState.birdActive = false; document.getElementById('tk-bird-flock').style.display = 'none';
                         tkState.engineFailure = true;
                         logEvent("BIRD SHIELD TRIGGERED", "🛡️", "SHIELD", "var(--fo-blue)");
@@ -1152,10 +1234,17 @@
                 tkState.engineFailure = true; logEvent("ENGINE FAILURE", "🔥", "ENGINE", "var(--brand-red)"); setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 5000); sfx.playExplosion(); document.getElementById('tk-alert-overlay').className = 'flashing'; setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800);
             }
 
-            // Swarm
+            // Swarm Traffic Phase Trigger
             if (tkState.phase === 2 && tkState.phaseTimer > 8000) {
-                tkState.phase = 3; tkState.phaseTimer = 0; tkState.currTargetMin = -24; tkState.currTargetMax = -12; logEvent("TRAFFIC SWARM", "✈️", "SWARM", "var(--brand-red)"); setDialogue("<span class='alert-text'>TRAFFIC SWARM! DIVE!</span>", 5000); document.getElementById('tk-alert-overlay').className = 'flashing'; setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800); if(tkState.autoPilot) toggleAutoPilot();
+                tkState.phase = 3; tkState.phaseTimer = 0;
+                tkState.currTargetMin = -24; tkState.currTargetMax = -12;
+                logEvent("TRAFFIC SWARM", "✈️", "SWARM", "var(--brand-red)");
+                setDialogue("<span class='alert-text'>TRAFFIC SWARM! DIVE!</span>", 5000);
+                document.getElementById('tk-alert-overlay').className = 'flashing';
+                setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800); 
+                if(tkState.autoPilot) toggleAutoPilot();
             }
+
             if (tkState.phase === 3) {
                 let maxEnemies = Math.min(5, Math.floor(1 + (tkState.phaseTimer / 12000) * 4)); if (tkState.phaseTimer > 12000) maxEnemies = 0; 
                 let activeCount = tkState.enemies.filter(e => e.active).length;
@@ -1196,6 +1285,7 @@
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
             document.getElementById('plane-hud').style.transform = `translate3d(-50%, -50%, 0) rotate(${-displayPitch}deg)`;
 
+            // EFFECTS
             const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
             if (tkState.phase === 5 && Math.random() > 0.4) spawnSpark(pr.left + pr.width/2 - 10, pr.bottom - 15, true);
             if (tkState.phase === 6 && displaySpeed > 0) { let sparkCount = Math.floor(displaySpeed / 40); for(let i=0; i<sparkCount; i++) spawnSpark(pr.left + pr.width/2 + (Math.random()*40 - 20), pr.bottom - 5, false); if (Math.random() > 0.3) spawnSpark(pr.left + pr.width/2 + (Math.random()*30), pr.bottom - 5, false); }

@@ -16,25 +16,37 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; outline: none; }
         body, html { background-color: #000; color: #fff; font-family: 'Share Tech Mono', monospace; width: 100%; height: 100%; overflow: hidden; user-select: none; }
 
-        #orientation-lock { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; z-index: 99999; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; text-align: center; padding: 20px; }
+        #orientation-lock { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; z-index: 999999; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; text-align: center; padding: 20px; }
         @media screen and (orientation: portrait) { #orientation-lock { display: flex; } }
 
-        #takeoff-viewport { width: 100%; height: 100%; position: relative; overflow: hidden; background-color: #87CEEB; cursor: pointer; transition: background-color 0.5s; touch-action: none; }
-        #tk-alert-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; transition: background 0.2s; }
+        #takeoff-viewport {
+            width: 100%; height: 100%; position: relative; overflow: hidden; 
+            background-color: #87CEEB; cursor: pointer; transition: background-color 0.5s;
+            touch-action: none; 
+            perspective: 1000px;
+        }
+        
+        #tk-alert-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 99998; transition: background 0.2s;
+            transform: translateZ(9000px);
+        }
 
         .flashing { animation: redAlert 0.3s infinite alternate; }
         @keyframes redAlert { from { background: rgba(215, 25, 32, 0); } to { background: rgba(215, 25, 32, 0.35); } }
 
-        #tk-version { position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: bold; z-index: 50; pointer-events: none; }
+        #tk-version { position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: bold; z-index: 99999; pointer-events: none; transform: translateZ(9999px); }
+
         #camera-rig { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: 30% 80%; will-change: transform; z-index: 1; }
+
         .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none; background-repeat: repeat-x; transition: filter 0.5s, background-color 0.5s; will-change: background-position, transform; }
 
         #tk-bg-sky { background-size: auto 100vh; z-index: 1; height: 120%; top: -10%; }
         #tk-fg-sky { background-size: auto 150vh; z-index: 14; height: 120%; top: -100%; opacity: 0.8; }
         #tk-threat-fog { display: none; background-size: auto 200vh; z-index: 15; height: 150%; top: -10%; opacity: 0.95; filter: blur(3px) brightness(1.1); }
         .fog-scenario #tk-threat-fog { display: block; }
-        .fog-scenario #tk-plane-img, .fog-scenario .tk-enemy img, .fog-scenario .tk-overtaker img { filter: brightness(0) !important; transition: filter 0.5s; }
-
+        .fog-scenario #tk-plane-img, .fog-scenario .tk-enemy img, .fog-scenario #tk-overtaker-plane img { filter: brightness(0) !important; transition: filter 0.5s; }
+        
         /* NVG MODE FILTER */
         .nvg-mode { background-color: #001a00 !important; }
         .nvg-mode #camera-rig { filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(1.2) contrast(1.5); }
@@ -242,7 +254,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v7.2 - Game Speed Tweaked, Overlay Z-Index & Height Drain Fixed</div>
+        <div id="tk-version">v7.3 - Crash Mechanics & Costs Fixed</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -355,8 +367,8 @@
                     <div class="upg-item"><span class="lbl">ENGINE</span><strong class="upg-stat" id="stat-engine">50%</strong><button class="upg-btn" id="btn-upg-engine" onclick="buyUpgrade('engine', event)">1K</button></div>
                     <div class="upg-item"><span class="lbl">GYRO</span><strong class="upg-stat" id="stat-gyro">50%</strong><button class="upg-btn" id="btn-upg-gyro" onclick="buyUpgrade('gyro', event)">1K</button></div>
                     <div class="upg-item"><span class="lbl">AUTO-P</span><strong class="upg-stat" id="stat-ap">50%</strong><button class="upg-btn" id="btn-upg-ap" onclick="buyUpgrade('ap', event)">1K</button></div>
-                    <div class="upg-item"><span class="lbl">BIRD SHIELD</span><strong class="upg-stat" id="stat-bird" style="color:var(--brand-red);">OFF</strong><button class="upg-btn" id="btn-upg-bird" onclick="buyUpgrade('bird', event)">3K</button></div>
-                    <div class="upg-item"><span class="lbl">WIND SHIELD</span><strong class="upg-stat" id="stat-windshield" style="color:var(--brand-red);">OFF</strong><button class="upg-btn" id="btn-upg-windshield" onclick="buyUpgrade('windshield', event)">3K</button></div>
+                    <div class="upg-item"><span class="lbl">BIRD SHIELD</span><strong class="upg-stat" id="stat-bird" style="color:var(--brand-red);">OFF</strong><button class="upg-btn" id="btn-upg-bird" onclick="buyUpgrade('bird', event)">1K</button></div>
+                    <div class="upg-item"><span class="lbl">WIND SHIELD</span><strong class="upg-stat" id="stat-windshield" style="color:var(--brand-red);">OFF</strong><button class="upg-btn" id="btn-upg-windshield" onclick="buyUpgrade('windshield', event)">1K</button></div>
                     <div class="upg-item" style="grid-column: span 2; justify-content: center; gap: 15px;"><span class="lbl" style="flex:none;">NIGHT VISION</span><strong class="upg-stat" id="stat-nvg" style="color:var(--brand-red); width:auto;">OFF</strong><button class="upg-btn" id="btn-upg-nvg" onclick="buyUpgrade('nvg', event)">2K</button></div>
                 </div>
 
@@ -431,6 +443,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
+        // --- PROFILE PERSISTENCE ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -454,6 +467,7 @@
         }
         loadProfile();
 
+        // --- AUDIO ENGINE ---
         const sfx = {
             ctx: null, alarmInterval: null, isAlarming: false, bgMusic: new Audio('hangar5-music.mp3'),
             init: function() {
@@ -579,7 +593,7 @@
             } else {
                 document.getElementById('stat-bird').textContent = "OFF";
                 document.getElementById('stat-bird').style.color = "var(--brand-red)";
-                bBtn.textContent = "3K"; bBtn.disabled = playerProfile.points < 3000;
+                bBtn.textContent = "1K"; bBtn.disabled = playerProfile.points < 1000;
             }
 
             // Wind shield
@@ -591,7 +605,7 @@
             } else {
                 document.getElementById('stat-windshield').textContent = "OFF";
                 document.getElementById('stat-windshield').style.color = "var(--brand-red)";
-                wBtn.textContent = "3K"; wBtn.disabled = playerProfile.points < 3000;
+                wBtn.textContent = "1K"; wBtn.disabled = playerProfile.points < 1000;
             }
 
             // NVG
@@ -627,7 +641,7 @@
             if(e) { e.preventDefault(); e.stopPropagation(); }
             if (document.activeElement) document.activeElement.blur();
 
-            let cost = (type === 'bird' || type === 'windshield') ? 3000 : (type === 'nvg' ? 2000 : 1000);
+            let cost = (type === 'nvg') ? 2000 : 1000;
             
             if (playerProfile.points >= cost) {
                 if ((type === 'bird' || type === 'windshield' || type === 'nvg') && !playerProfile.upgrades[type]) {
@@ -835,8 +849,8 @@
             condScore += playerProfile.upgrades.engine * 1000;
             condScore += playerProfile.upgrades.gyro * 1000;
             condScore += playerProfile.upgrades.ap * 1000;
-            if(playerProfile.upgrades.bird) condScore += 3000;
-            if(playerProfile.upgrades.windShield) condScore += 3000;
+            if(playerProfile.upgrades.bird) condScore += 1000;
+            if(playerProfile.upgrades.windShield) condScore += 1000;
             if(playerProfile.upgrades.nvg) condScore += 2000;
             return condScore;
         }
@@ -1062,18 +1076,13 @@
             playerProfile.upgrades.windShield = false;
             playerProfile.upgrades.nvg = false;
             
-            // Downgrade EXACTLY 3 random mechanical components
+            // Downgrade ALL 4 mechanical components by 1 step
             let upgKeys = ['gear', 'engine', 'gyro', 'ap'];
-            upgKeys.sort(() => Math.random() - 0.5); // Shuffle array
-            
-            let downgradedCount = 0;
             for(let i=0; i<upgKeys.length; i++) {
                 let k = upgKeys[i];
                 if (playerProfile.upgrades[k] > 0) {
                     playerProfile.upgrades[k]--;
-                    downgradedCount++;
                 }
-                if (downgradedCount >= 3) break;
             }
             
             saveProfile();

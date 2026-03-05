@@ -23,7 +23,8 @@
             background-color: #000; color: #fff;
             font-family: 'Share Tech Mono', monospace;
             width: 100%; height: 100%; overflow: hidden; 
-            user-select: none; touch-action: none;
+            user-select: none; 
+            /* touch-action removed from body so modals can scroll */
         }
 
         /* Mobile Landscape Orientation Lock */
@@ -41,6 +42,7 @@
         #takeoff-viewport {
             width: 100%; height: 100%; position: relative; overflow: hidden; 
             background-color: #87CEEB; cursor: pointer; transition: background-color 0.5s;
+            touch-action: none; /* Touch lock applied ONLY to the game background */
         }
         
         #tk-alert-overlay {
@@ -76,7 +78,7 @@
         .fog-scenario .tk-enemy img,
         .fog-scenario #tk-overtaker-plane img { filter: brightness(0) !important; transition: filter 0.5s; }
         
-        /* Illuminated Windows for Fog Silhouette (Adjusted to sit perfectly on the fuselage) */
+        /* Illuminated Windows for Fog Silhouette */
         .passenger-windows { 
             display: none; position: absolute; top: 62%; left: 35%; right: 25%; 
             height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; 
@@ -176,7 +178,9 @@
         #fs-btn:active { transform: scale(0.95); }
 
         #prompt-container { position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #tk-touch-prompt { background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px; padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase; margin-bottom: 10px; cursor: pointer; pointer-events: auto;}
+        
+        /* TOUCH PROMPT CLICK REMOVED, WE RELY ON GLOBAL POINTERDOWN NOW */
+        #tk-touch-prompt { background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px; padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase; margin-bottom: 10px; pointer-events: none; animation: pulseText 1.5s infinite;}
         
         #install-btn { background: var(--fo-blue); border: 2px solid #fff; border-radius: 6px; padding: 8px 16px; color: #fff; font-size: 0.9rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); font-family: 'Share Tech Mono', monospace; display: none; pointer-events: auto; }
 
@@ -197,13 +201,22 @@
         .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
 
         /* FLIGHT PLAN OVERLAY */
-        #tk-flight-plan-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+        #tk-flight-plan-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;}
         #tk-flight-plan-overlay.visible { opacity: 1; pointer-events: auto; }
 
-        /* END SCREEN UI */
+        /* END SCREEN & MODALS (SCROLLABLE FIX) */
         #tk-end-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
         #tk-end-screen.visible { opacity: 1; pointer-events: auto; }
-        .end-panel { background: #111; border: 2px solid var(--brand-gold); border-radius: 15px; padding: 30px 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 90%; max-width: 500px; }
+        
+        .end-panel { 
+            background: #111; border: 2px solid var(--brand-gold); border-radius: 15px; 
+            padding: 30px 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
+            transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; touch-action: auto; -webkit-overflow-scrolling: touch; pointer-events: auto;
+        }
+        .end-panel::-webkit-scrollbar { width: 5px; }
+        .end-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 5px; }
+        
         .end-panel.visible { transform: scale(1); }
         #tk-end-screen.visible .end-panel { transform: scale(1); }
         .end-title { font-size: 2rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; text-transform: uppercase;}
@@ -230,13 +243,15 @@
         .minimap-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -4px; border-width: 4px; border-style: solid; border-color: #555 transparent transparent transparent; }
 
         @media screen and (max-height: 450px) {
-            .end-panel { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 15px; width: 95%; max-width: 600px;}
-            .end-title { width: 100%; margin-bottom: 0; font-size: 1.3rem; }
+            .end-panel { padding: 15px; width: 95%; max-width: 600px;}
+            .end-title { font-size: 1.3rem; }
             .end-subtitle { display: none; }
-            .end-score { font-size: 1.8rem; margin: 0; width: 30%; text-align: center;}
-            .completion-wrapper { width: 100%; margin-bottom: 25px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-            .completion-text { font-size: 0.9rem; margin-bottom: 10px; text-align: center;}
-            .play-again-btn { padding: 10px 20px; font-size: 1rem; width: 100%; max-width: 200px; margin-top: 10px;}
+            .end-score { font-size: 1.8rem; margin: 0 0 10px 0; }
+            .completion-wrapper { margin-bottom: 25px; }
+            .completion-text { font-size: 0.9rem; margin-bottom: 10px;}
+            .fp-details { margin: 10px 0 !important; padding: 10px !important; font-size: 0.95rem !important;}
+            .fp-details div { margin-bottom: 6px !important; }
+            .stats-grid { font-size: 0.85rem !important; margin-bottom: 15px !important; }
         }
     </style>
 </head>
@@ -245,7 +260,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v4.1 - Satisfaction & Flight Plan</div>
+        <div id="tk-version">v4.2 - Flight Plan & Scrolling Fix</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
@@ -258,7 +273,7 @@
         </div>
         
         <div id="prompt-container">
-            <div id="tk-touch-prompt" onclick="startFlight(event)">TAP TO VIEW FLIGHT PLAN</div>
+            <div id="tk-touch-prompt">TAP TO VIEW FLIGHT PLAN</div>
             <button id="install-btn" onclick="installApp(event)">INSTALL APP</button>
         </div>
         
@@ -339,11 +354,11 @@
             <div id="pf4" class="pf pf-4"></div>
         </div>
 
-        <div id="tk-flight-plan-overlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:100; flex-direction:column; align-items:center; justify-content:center; opacity:0; transition:opacity 0.3s ease;">
+        <div id="tk-flight-plan-overlay">
             <div class="end-panel visible">
                 <div class="end-title">FLIGHT PLAN</div>
                 <div class="end-subtitle">PRE-FLIGHT BRIEFING</div>
-                <div style="text-align:left; margin: 25px 0; font-size: 1.1rem; color: #ccc; font-family: 'Share Tech Mono', monospace; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #333;">
+                <div class="fp-details" style="text-align:left; margin: 25px 0; font-size: 1.1rem; color: #ccc; font-family: 'Share Tech Mono', monospace; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #333;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
                         <span>SOULS ON BOARD:</span> <strong id="fp-pax" style="color:#fff;">0</strong>
                     </div>
@@ -386,7 +401,7 @@
                     </div>
                 </div>
 
-                <button class="play-again-btn" onclick="startFlight(event)">PLAY AGAIN</button>
+                <button class="play-again-btn" onclick="hardReset(event)" style="width: 100%;">PLAY AGAIN</button>
             </div>
         </div>
     </div>
@@ -515,7 +530,6 @@
             hasOvertakerScenario: false, overtakerActive: false, overtakerX: -30, overtakerAltitude: 0,
             hasBirdScenario: false, birdActive: false, birdX: 150, birdAlt: 0,
             gearBroken: false, gearBreakAlt: 99999, stallFactor: 0, enemies: [],
-            // NEW PASSENGER LOGIC
             passengers: 0, gearRisk: 0, engRisk: 0,
             stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0
         };
@@ -549,14 +563,18 @@
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
             if (tkState.inFlightPlan) return; 
-            sfx.init(); 
             
+            sfx.init(); 
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 try {
                     let elem = document.documentElement;
                     if (elem.requestFullscreen) elem.requestFullscreen().catch(e=>{});
                     else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
                 } catch(e) {}
+            }
+
+            if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') {
+                startFlight(e);
             }
             tkState.pressing = true;
         });
@@ -568,9 +586,14 @@
                 e.preventDefault(); 
                 if (e.repeat) return; 
                 if (tkState.inFlightPlan) return;
+
                 sfx.init(); 
                 if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                     try { document.documentElement.requestFullscreen().catch(e=>{}); } catch(e) {}
+                }
+                
+                if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') {
+                    startFlight(e);
                 }
                 tkState.pressing = true;
             }
@@ -723,6 +746,8 @@
 
         function startFlight(e) {
             if (e) e.stopPropagation();
+            if (tkState.inFlightPlan) return; 
+
             if(tkState.frameId) cancelAnimationFrame(tkState.frameId);
             
             clearInterval(endScreenAnimInterval);
@@ -1027,10 +1052,7 @@
             // LOGIC FOR CUSTOMER SATISFACTION (PITCH COMFORT)
             if (tkState.hasLiftedOff && tkState.phase < 5) {
                 tkState.totalFlightTime += delta;
-                // If pitch exceeds +/- 8 degrees, customers get nervous
-                if (Math.abs(tkState.pitch) > 8) {
-                    tkState.extremePitchTime += delta;
-                }
+                if (Math.abs(tkState.pitch) > 8) { tkState.extremePitchTime += delta; }
             }
 
             // HUD UPDATES
@@ -1057,7 +1079,6 @@
                 else if (tkState.phase === 5) {
                     let badAngle = (isStalling || tkState.pitch < -5 || tkState.pitch > 15);
                     let hotLanding = (tkState.speed > 160);
-                    
                     if (badAngle && hotLanding) return triggerCrash("TOO FAST & BAD ANGLE!");
                     if (badAngle) return triggerCrash("FATAL ANGLE!");
                     if (hotLanding) return triggerCrash("TOO FAST!");
@@ -1096,10 +1117,7 @@
                 
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
                 const gr = gp.getBoundingClientRect();
-                if (!( (pr.right - 12) < (gr.left + 15) || 
-                       (pr.left + 12) > (gr.right - 15) || 
-                       (pr.bottom - 12) < (gr.top + 25) || 
-                       (pr.top + 25) > (gr.bottom - 10) )) {
+                if (!( (pr.right - 12) < (gr.left + 15) || (pr.left + 12) > (gr.right - 15) || (pr.bottom - 12) < (gr.top + 25) || (pr.top + 25) > (gr.bottom - 10) )) {
                     return triggerCrash("MID-AIR CRASH!");
                 }
                 
@@ -1120,10 +1138,7 @@
                 
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
                 const br = bEl.getBoundingClientRect();
-                if (!( (pr.right - 10) < (br.left + 10) || 
-                       (pr.left + 10) > (br.right - 10) || 
-                       (pr.bottom - 10) < (br.top + 10) || 
-                       (pr.top + 25) > (br.bottom - 10) )) { 
+                if (!( (pr.right - 10) < (br.left + 10) || (pr.left + 10) > (br.right - 10) || (pr.bottom - 10) < (br.top + 10) || (pr.top + 25) > (br.bottom - 10) )) { 
                     return triggerCrash("BIRD STRIKE!");
                 }
                 if (tkState.birdX < -20) { tkState.birdActive = false; bEl.style.display = 'none'; }
@@ -1175,10 +1190,7 @@
                         el.style.transform = `translate3d(${e.x}vw, ${-(e.alt - tkState.cameraY)}px, 0)`;
                         
                         const er = el.getBoundingClientRect();
-                        if (!( (pr.right - 12) < (er.left + 15) || 
-                               (pr.left + 12) > (er.right - 15) || 
-                               (pr.bottom - 12) < (er.top + 25) || 
-                               (pr.top + 25) > (er.bottom - 10) )) {
+                        if (!( (pr.right - 12) < (er.left + 15) || (pr.left + 12) > (er.right - 15) || (pr.bottom - 12) < (er.top + 25) || (pr.top + 25) > (er.bottom - 10) )) {
                             collision = true;
                         }
                         

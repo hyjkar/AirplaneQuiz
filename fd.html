@@ -24,19 +24,17 @@
             width: 100%; height: 100%; position: relative; overflow: hidden; 
             background-color: #87CEEB; cursor: pointer; transition: background-color 0.5s;
             touch-action: none; 
-            perspective: 1000px;
         }
         
         #tk-alert-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 99998; transition: background 0.2s;
-            transform: translateZ(9000px);
         }
 
         .flashing { animation: redAlert 0.3s infinite alternate; }
         @keyframes redAlert { from { background: rgba(215, 25, 32, 0); } to { background: rgba(215, 25, 32, 0.35); } }
 
-        #tk-version { position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: bold; z-index: 99999; pointer-events: none; transform: translateZ(9999px); }
+        #tk-version { position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: bold; z-index: 99999; pointer-events: none; }
 
         #camera-rig { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: 30% 80%; will-change: transform; z-index: 1; }
 
@@ -97,10 +95,10 @@
         .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%); background-size: 300% 200%; animation: fogPulse 15s ease-in-out infinite alternate; z-index: 8; }
         .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(200, 210, 220, 0.95) 0%, transparent 40%); background-size: 200% 100%; animation: fogSweep 7s linear infinite; z-index: 15; }
         
-        .rain-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNTAnIGhlaWdodD0nMjUwJz48cmVjdCB4PScyMCcgeT0nMjAnIHdpZHRoPScyJyBoZWlnaHQ9JzE1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuNCknLz48L3N2Zz4="); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
-        .rain-layer.layer-2 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJz48cmVjdCB4PSc1MCcgeT0nNTAnIHdpZHRoPSczJyBoZWlnaHQ9JzI1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuNiknLz48cmVjdCB4PScyNTAnIHk9JzIwMCcgd2lkdGg9JzInIGhlaWdodD0nMTUnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC40KScvPjwvc3ZnPg=="); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
-        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nMjAwJz48Y2lyY2xlIGN4PScyMCcgY3k9JzIwJyByPSczJyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOCknLz48Y2lyY2xlIGN4PScxMDAnIGN5PSc4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjYpJy8+PGNpcmNsZSBjeD0nMTUwJyBjeT0nMTUwJyByPSc0JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PSc1MCcgY3k9JzE4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjUpJy8+PC9zdmc+"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
-        .snow-layer.layer-2 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMDAnIGhlaWdodD0nMzAwJz48Y2lyY2xlIGN4PSc1MCcgY3k9JzUwJyByPSc1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PScyMDAnIGN5PScxNTAnIHI9JzYnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC44KScvPjxjaXJjbGUgY3g9JzI1MCcgY3k9JzI4MCcgcj0nNCcgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjcpJy8+PC9zdmc+"); animation: snowAnim2 3.5s linear infinite; z-index: 16; }
+        .rain-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='250'><rect x='20' y='20' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
+        .rain-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect x='50' y='50' width='3' height='25' fill='rgba(255,255,255,0.6)'/><rect x='250' y='200' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
+        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><circle cx='20' cy='20' r='3' fill='rgba(255,255,255,0.8)'/><circle cx='100' cy='80' r='2' fill='rgba(255,255,255,0.6)'/><circle cx='150' cy='150' r='4' fill='rgba(255,255,255,0.9)'/><circle cx='50' cy='180' r='2' fill='rgba(255,255,255,0.5)'/></svg>"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
+        .snow-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><circle cx='50' cy='50' r='5' fill='rgba(255,255,255,0.9)'/><circle cx='200' cy='150' r='6' fill='rgba(255,255,255,0.8)'/><circle cx='250' cy='280' r='4' fill='rgba(255,255,255,0.7)'/></svg>"); animation: snowAnim2 3.5s linear infinite; z-index: 16; }
         
         @keyframes fogSweep { 0% { background-position: 200% 50%; } 100% { background-position: -100% 50%; } }
         @keyframes fogPulse { 0% { opacity: 0.2; transform: scale(1); } 100% { opacity: 0.6; transform: scale(1.2); } }
@@ -141,7 +139,7 @@
         .alert-text { color: var(--brand-red); font-weight: bold; animation: pulseRed 0.8s infinite alternate; }
         .success-text { color: var(--gauge-green); font-weight: bold; }
 
-        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; pointer-events: none; transform: translateZ(9999px); }
+        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; pointer-events: none; }
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
         #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold); transition: all 0.2s;}
         
@@ -150,13 +148,13 @@
         #nvg-btn { font-size: 0.8rem; font-family: 'Share Tech Mono'; font-weight: bold; background: rgba(46, 204, 113, 0.2); border-color: var(--gauge-green); color: var(--gauge-green); display: none;}
         #reset-btn:active, #pause-btn:active, #fs-btn:active, #nvg-btn:active { transform: scale(0.95); }
 
-        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); transform: translateZ(9999px); }
+        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); }
         
-        #prompt-container { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateZ(9999px); z-index: 99999; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #prompt-container { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 99999; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #tk-touch-prompt { background: var(--brand-red); border: 2px solid #fff; border-radius: 8px; padding: 15px 30px; text-align: center; color: #fff; font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(215,25,32,0.6); width: auto; text-transform: uppercase; cursor: pointer; pointer-events: auto; transition: transform 0.1s;}
         #tk-touch-prompt:active { transform: scale(0.95); }
 
-        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 99999; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s; transform: translateZ(9999px); }
+        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 99999; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s; }
         #tk-eject-btn:active { transform: scale(0.92); }
 
         /* Traffic Planes */
@@ -187,8 +185,8 @@
         .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .cargo-package { position: absolute; z-index: 15; width: 20px; height: 20px; background: #cfa86e; border: 2px solid #fff; left: 0; top: 0; will-change: transform; }
-        .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; transform: translateZ(9999px); }
-        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 9999px); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 9999px); opacity: 0; } }
+        .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
+        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 0); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 0); opacity: 0; } }
 
         /* OVERLAYS FORCED TO TOP */
         #tk-flight-plan-overlay, #tk-end-screen, #leaderboard-overlay { 
@@ -196,7 +194,6 @@
             background: rgba(0,0,0,0.85); z-index: 99999; display: none; 
             flex-direction: column; align-items: center; justify-content: center; 
             opacity: 0; transition: opacity 0.3s ease; pointer-events: none; 
-            transform: translateZ(9999px); 
         }
         
         #tk-flight-plan-overlay.visible, #tk-end-screen.visible, #leaderboard-overlay.visible { opacity: 1; pointer-events: auto; }
@@ -206,6 +203,7 @@
         .end-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 5px; }
         .end-panel.visible { transform: scale(1); }
 
+        /* Restored Vertical UI with Icons */
         .upgrade-list { width: 100%; display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
         .upg-item { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.5); border: 1px solid #333; padding: 4px 8px; border-radius: 8px; }
         .upg-icon { width: 24px; height: 24px; background: #222; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px solid #444; flex-shrink: 0;}
@@ -275,7 +273,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v8.2 - Fullscreen Fixed & Real Rear Warnings</div>
+        <div id="tk-version">v8.3 - Final Build (Freeze Fix & 3D Math cleanup)</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -501,7 +499,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V17) ---
+        // --- PROFILE PERSISTENCE (V18 - Freeze Fixed) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -513,7 +511,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v17');
+                let p = localStorage.getItem('h5_profile_v18');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -525,7 +523,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v17', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v18', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -832,6 +830,7 @@
             if (e.code === 'Space' || e.key === ' ') { e.preventDefault(); tkState.pressing = false; }
         });
 
+        // --- PROGRESS AND EVENT LOGGING ---
         function getCompletionPercentage() {
             let pct = 0;
             if (tkState.phase === 0) pct = Math.min(10, (tkState.speed / 150) * 10);
@@ -848,6 +847,7 @@
             tkState.events.push({ name: name, icon: icon, shortName: shortName, color: color || 'var(--fo-blue)', percent: getCompletionPercentage() });
         }
 
+        // --- CARGO MECHANICS ---
         function ejectCargo(e) {
             if(e) { e.preventDefault(); e.stopPropagation(); }
             if (document.activeElement) document.activeElement.blur();
@@ -874,6 +874,7 @@
             setTimeout(() => el.remove(), 1000); 
         }
 
+        // --- LEVEL ADVANCEMENT & LEADERBOARD ---
         function handleLevelAdvance(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             if (document.activeElement) document.activeElement.blur();
@@ -893,69 +894,7 @@
             }, 300);
         }
 
-        function showLeaderboard() {
-            let finalScore = getConditionScore();
-            
-            let maxPoints = 15; 
-            let currentPoints = playerProfile.upgrades.gear + playerProfile.upgrades.engine + playerProfile.upgrades.gyro + playerProfile.upgrades.ap;
-            if (playerProfile.upgrades.bird) currentPoints += 1;
-            if (playerProfile.upgrades.windShield) currentPoints += 1;
-            if (playerProfile.upgrades.nvg) currentPoints += 1;
-            
-            let finalIntegrity = Math.round((currentPoints / maxPoints) * 100);
-            tkState.finalCampaignScore = finalIntegrity; 
-
-            document.getElementById('stat-funds').textContent = playerProfile.points;
-            let secs = Math.floor(playerProfile.campaignStats.flightTime / 1000);
-            let mins = Math.floor(secs / 60);
-            let remSecs = secs % 60;
-            document.getElementById('stat-time').textContent = `${mins}m ${remSecs}s`;
-            document.getElementById('stat-cargo').textContent = `${playerProfile.campaignStats.cargoHits} / ${playerProfile.campaignStats.cargoHits + playerProfile.campaignStats.cargoMisses}`;
-            document.getElementById('stat-stalls').textContent = `${playerProfile.campaignStats.stalls} / ${playerProfile.campaignStats.crashes}`;
-
-            renderLeaderboardTable();
-
-            document.getElementById('leaderboard-overlay').style.display = 'flex';
-            setTimeout(() => { document.getElementById('leaderboard-overlay').classList.add('visible'); }, 50);
-
-            let intEl = document.getElementById('campaign-integrity');
-            let curInt = 0;
-            let intStep = Math.max(1, finalIntegrity / 50);
-
-            let rollInterval = setInterval(() => {
-                curInt += intStep;
-                if (curInt >= finalIntegrity) {
-                    curInt = finalIntegrity;
-                    clearInterval(rollInterval);
-                    
-                    if (finalIntegrity === 100) intEl.style.color = "var(--brand-gold)";
-                    else if (finalIntegrity >= 50) intEl.style.color = "var(--gauge-green)";
-                    else if (finalIntegrity >= 25) intEl.style.color = "var(--gauge-orange)";
-                    else intEl.style.color = "var(--brand-red)";
-
-                    if (finalIntegrity === 100) intEl.innerHTML = `FLAWLESS!<br><span style="font-size:1.5rem">100% INTEGRITY</span>`;
-                    else intEl.textContent = `${Math.floor(curInt)}%`;
-
-                    if (finalIntegrity >= 50) {
-                        sfx.playDing(1.5);
-                        let duration = finalIntegrity === 100 ? 5000 : 2500; 
-                        let end = Date.now() + duration;
-                        (function frame() {
-                            confetti({ particleCount: 8, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#cfa86e', '#2ecc71', '#fff'], zIndex: 9999999 });
-                            confetti({ particleCount: 8, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#cfa86e', '#2ecc71', '#fff'], zIndex: 9999999 });
-                            if (Date.now() < end) requestAnimationFrame(frame);
-                        }());
-                    } else {
-                        sfx.playExplosion();
-                        intEl.style.transform = "scale(1.1)";
-                        setTimeout(()=> intEl.style.transform = "scale(1)", 200);
-                    }
-                } else {
-                    intEl.textContent = `${Math.floor(curInt)}%`;
-                }
-            }, 30);
-        }
-
+        // MASSIVE SPECTACLE CONDITION SCORING
         function getConditionScore() {
             let condScore = 0;
             condScore += playerProfile.upgrades.gear * 10000;
@@ -966,6 +905,51 @@
             if(playerProfile.upgrades.windShield) condScore += 25000;
             if(playerProfile.upgrades.nvg) condScore += 10000;
             return condScore;
+        }
+
+        function showLeaderboard() {
+            let finalScore = getConditionScore();
+            
+            // Calculate plane integrity %
+            let maxPoints = (4 * 3) + 3; // 4 mechanics (max level 3) + 3 binary shields
+            let currentPoints = playerProfile.upgrades.gear + playerProfile.upgrades.engine + playerProfile.upgrades.gyro + playerProfile.upgrades.ap;
+            if (playerProfile.upgrades.bird) currentPoints += 1;
+            if (playerProfile.upgrades.windShield) currentPoints += 1;
+            if (playerProfile.upgrades.nvg) currentPoints += 1;
+            
+            let integrityPct = Math.round((currentPoints / maxPoints) * 100);
+
+            let intEl = document.getElementById('campaign-integrity');
+            intEl.textContent = `INTEGRITY: ${integrityPct}%`;
+            
+            if (integrityPct >= 100) {
+                intEl.textContent = "FLAWLESS RUN!";
+                intEl.style.color = "var(--brand-gold)";
+            } else if (integrityPct >= 50) {
+                intEl.style.color = "var(--gauge-green)";
+            } else {
+                intEl.style.color = "var(--brand-red)";
+            }
+
+            document.getElementById('lb-base-score').textContent = playerProfile.points;
+            document.getElementById('lb-cond-score').textContent = "+" + finalScore;
+            document.getElementById('lb-final-score').textContent = playerProfile.points + finalScore;
+
+            renderLeaderboardTable();
+
+            document.getElementById('leaderboard-overlay').style.display = 'flex';
+            setTimeout(() => { document.getElementById('leaderboard-overlay').classList.add('visible'); }, 50);
+
+            // FIRE SPECTACLE CONFETTI
+            if (integrityPct >= 50) {
+                sfx.playDing(1.5);
+                let duration = 3000; let end = Date.now() + duration;
+                (function frame() {
+                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#cfa86e', '#2ecc71'] });
+                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#cfa86e', '#2ecc71'] });
+                    if (Date.now() < end) requestAnimationFrame(frame);
+                }());
+            }
         }
 
         function submitScore(e) {
@@ -1154,11 +1138,13 @@
             logEvent(`CRASH: ${reasonText}`, "❌", "CRASH", "var(--brand-red)");
             setDialogue(`<span class='alert-text'>${reasonText}</span>`, 4500);
             
+            // Apply Severe Penalty: Remove all bonus defenses completely
             playerProfile.points = Math.max(0, playerProfile.points - 500);
             playerProfile.upgrades.bird = false;
             playerProfile.upgrades.windShield = false;
             playerProfile.upgrades.nvg = false;
             
+            // Downgrade ALL 4 mechanical components by exactly 1 step
             let upgKeys = ['gear', 'engine', 'gyro', 'ap'];
             for(let i=0; i<upgKeys.length; i++) {
                 let k = upgKeys[i];
@@ -1329,6 +1315,7 @@
                     setDialogue("<span class='capt-text'>FULL POWER!<br><span style='font-size:0.65rem; color:var(--aux-blue);'>TAP PLANE FOR AUTOPILOT</span></span>", 5000);
                 }
 
+                // FIX FOR FREEZE BUG: Explicitly reset to 0
                 tkState.lastFrameTime = 0; 
                 sfx.bgMusic.play().catch(e=>e);
                 tkState.frameId = requestAnimationFrame(gameLoop);
@@ -1470,7 +1457,7 @@
                 document.getElementById('tk-wind-pocket').style.display = 'block';
             }
             if (tkState.windPocketSpawned) {
-                tkState.windPocketX -= (displaySpeed * 0.18 * SPEED_MOD * 0.4); 
+                tkState.windPocketX -= (displaySpeed * 0.18 * SPEED_MOD * 0.3); 
                 document.getElementById('tk-wind-pocket').style.transform = `translate3d(${tkState.windPocketX}px, ${-(300 - tkState.cameraY)}px, 0)`;
 
                 let planeRect = document.getElementById('tk-plane-img').getBoundingClientRect();
@@ -1782,10 +1769,7 @@
             }
 
             if (tkState.phase === 3) {
-                let maxEnemiesBase = Math.floor(1 + (tkState.phaseTimer / 12000) * 4);
-                let maxEnemies = Math.min(12, maxEnemiesBase + (tkState.trafficLevel * 3));
-                if (tkState.phaseTimer > 12000) maxEnemies = 0; 
-                
+                let maxEnemies = Math.min(5, Math.floor(1 + (tkState.phaseTimer / 12000) * 4)); if (tkState.phaseTimer > 12000) maxEnemies = 0; 
                 let activeCount = tkState.enemies.filter(e => e.active).length;
                 let spawnChance = 0.04 + (tkState.trafficLevel * 0.03);
 

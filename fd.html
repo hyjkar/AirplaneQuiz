@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +6,7 @@
     <title>Hangar 5 - Escaping the Swarm</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
 
     <style>
         :root {
@@ -269,11 +267,9 @@
     </style>
 </head>
 <body>
-
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
-
     <div id="takeoff-viewport">
-        <div id="tk-version">v5.10 - Speed Reduced 25%</div>
+        <div id="tk-version">v8.1 - Fixes & Spectacle Applied</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -306,7 +302,7 @@
                 <div id="dialogue-bubble"></div>
                 <div id="landing-guide"><div class="guide-label">-5&deg; TO 15&deg;</div></div>
                 <div id="plane-rotate-group">
-                    <img id="tk-plane-img" src="my-golden-plane.png" onerror="this.style.backgroundColor='blue';">
+                    <img id="tk-plane-img" src="my-plane.png" onerror="this.style.backgroundColor='blue';">
                     <div class="passenger-windows">
                         <div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div>
                     </div>
@@ -504,12 +500,14 @@
         const failMap = { 3: 0, 2: 50, 1: 75, 0: 100 };
         
         function loadProfile() {
-            let p = localStorage.getItem('h5_profile_v8');
-            if(p) {
-                let parsed = JSON.parse(p);
-                if(parsed.upgrades && typeof parsed.upgrades === 'object') playerProfile = parsed;
-                if(playerProfile.currentLevel === undefined) playerProfile.currentLevel = 1;
-            }
+            try {
+                let p = localStorage.getItem('h5_profile_v8');
+                if(p) {
+                    let parsed = JSON.parse(p);
+                    if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
+                }
+            } catch(e) { console.error("Save corrupted, using defaults"); }
+            if(playerProfile.currentLevel === undefined) playerProfile.currentLevel = 1;
         }
         
         function saveProfile() {
@@ -958,7 +956,6 @@
             setTimeout(() => { document.getElementById('leaderboard-overlay').style.display = 'none'; openFlightPlan(); }, 300);
         }
 
-
         // --- END SCREEN LOGIC ---
         function showEndScreen(finalScore, isSuccess) {
             let es = document.getElementById('tk-end-screen');
@@ -1073,26 +1070,8 @@
 
                 if (curScore >= totalScore && curPct >= finalPct && curSat >= finalSatisfaction && phase2Sat) {
                     clearInterval(endScreenAnimInterval);
-                    if(isSuccess) popGoldenPlanes(totalScore > 3500 ? 3 : totalScore > 2000 ? 2 : 1);
                 }
             }, 30);
-        }
-
-        function popGoldenPlanes(count) {
-            let icons = document.querySelectorAll('.reward-icon');
-            if(!icons || icons.length === 0) return;
-            for(let i=0; i<3; i++) {
-                let t = setTimeout(() => {
-                    if(icons[i]) {
-                        icons[i].classList.add('pop');
-                        if(i < count) {
-                            icons[i].classList.add('golden'); sfx.playDing(1 + (i * 0.2)); 
-                            confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 }, zIndex: 200 });
-                        } else { sfx.playDing(0.6); }
-                    }
-                }, i * 500);
-                endScreenTimeouts.push(t);
-            }
         }
 
         function triggerCrash(reasonText) {
@@ -1399,20 +1378,25 @@
 
             let displaySpeed = tkState.speed;
             
-            // WIND POCKET SPAWN
+            // WIND POCKET SPAWN (Slow Dodgeable)
             if (tkState.hasWindPocket && !tkState.windPocketSpawned && tkState.phase >= 2 && tkState.phaseTimer > 1000) {
                 tkState.windPocketSpawned = true; 
                 tkState.windPocketX = window.innerWidth + 500;
                 document.getElementById('tk-wind-pocket').style.display = 'block';
             }
             if (tkState.windPocketSpawned) {
-                tkState.windPocketX -= (displaySpeed * 0.18 * SPEED_MOD * 2.5);
+                tkState.windPocketX -= (displaySpeed * 0.18 * SPEED_MOD * 0.4); 
                 document.getElementById('tk-wind-pocket').style.transform = `translate3d(${tkState.windPocketX}px, ${-(300 - tkState.cameraY)}px, 0)`;
 
                 let planeRect = document.getElementById('tk-plane-img').getBoundingClientRect();
                 let windRect = document.getElementById('tk-wind-pocket').getBoundingClientRect();
                 
-                if (!tkState.windPocketTriggered && planeRect.right > windRect.left && planeRect.left < windRect.right) {
+                let hit = !(planeRect.right < windRect.left + 20 || 
+                            planeRect.left > windRect.right - 20 || 
+                            planeRect.bottom < windRect.top + 20 || 
+                            planeRect.top > windRect.bottom - 20);
+
+                if (!tkState.windPocketTriggered && hit) {
                     tkState.windPocketTriggered = true;
                     if (playerProfile.upgrades.windShield) {
                         logEvent("WIND SHIELD ENGAGED", "🛡️", "BLOCKED", "var(--fo-blue)");
@@ -1525,7 +1509,7 @@
             if (tkState.gearBroken && document.getElementById('tk-plane-img').src.indexOf('nolandinggear') === -1) { document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png'; }
             if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { tkState.phase = 2; tkState.phaseTimer = 0; tkState.currTargetMin = -3; tkState.currTargetMax = 3; setDialogue("<span class='capt-text'>LEVEL OFF</span>", 4000); }
 
-            // CARGO MISSION LOGIC (Fixed using direct pixel values & robust timer)
+            // CARGO MISSION LOGIC 
             if (tkState.hasCargoMission) {
                 tkState.cargoTimer = (tkState.cargoTimer || 0) + delta;
                 let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
@@ -1544,7 +1528,7 @@
                     document.getElementById('tk-drop-zone').style.transform = `translate3d(${tkState.dropZoneX}px, 0, 0)`;
 
                     let pxPerSec = groundSpeed * 60; 
-                    let planeX = window.innerWidth * 0.3; // Plane's X coordinate
+                    let planeX = window.innerWidth * 0.3; 
                     let distToPlane = tkState.dropZoneX - planeX;
                     
                     if (tkState.dropCountdown === 3 && distToPlane <= pxPerSec * 3) {
@@ -1627,7 +1611,7 @@
                 tkState.engineFailure = true; logEvent("ENGINE FAILURE", "🔥", "ENGINE", "var(--brand-red)"); setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 5000); sfx.playExplosion(); document.getElementById('tk-alert-overlay').className = 'flashing'; setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800);
             }
 
-            // Swarm Traffic Phase Trigger (Fixed to PX)
+            // Swarm Traffic Phase Trigger
             if (tkState.phase === 2 && tkState.phaseTimer > 8000) {
                 tkState.phase = 3; tkState.phaseTimer = 0;
                 tkState.currTargetMin = -24; tkState.currTargetMax = -12;
@@ -1659,11 +1643,13 @@
                 tkState.phase = 5; tkState.phaseTimer = 0;
                 tkState.currTargetMin = -8; tkState.currTargetMax = -2; 
                 
-                if (tkState.hasGearFailure && playerProfile.upgrades.gear < 3) {
+                if (playerProfile.upgrades.gear >= 3) {
+                    setDialogue("<span class='success-text'>GEAR DOWN. LANDING SECURE!</span>", 5000);
+                } else if (tkState.hasGearFailure) {
                     tkState.gearBroken = true; sfx.playExplosion(); logEvent("GEAR LOST", "🛬", "NO GEAR", "var(--brand-red)"); setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 5000); const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
                     document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png';
                 } else {
-                    setDialogue("<span class='success-text'>GEAR DOWN. LANDING SECURE!</span>", 5000);
+                    setDialogue("<span class='alert-text'>DESCEND FOR LANDING!</span>", 5000);
                 }
                 if(tkState.autoPilot) toggleAutoPilot();
             }

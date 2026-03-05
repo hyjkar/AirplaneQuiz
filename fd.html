@@ -75,11 +75,10 @@
         #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x; will-change: background-position; }
 
         /* CARGO DROP ZONE - MASSIVE RED BLOCK */
-        #tk-drop-zone { position: absolute; bottom: 0; left: 0; height: 40px; width: 400px; background: rgba(215, 25, 32, 0.7); border: 4px solid #ff3333; border-bottom: none; z-index: 4; display: none; will-change: transform; box-shadow: 0 0 30px rgba(215, 25, 32, 0.6); text-align: center; color: #fff; font-weight: bold; line-height: 32px; font-size: 1.2rem; text-shadow: 1px 1px 2px #000; }
+        #tk-drop-zone { position: absolute; bottom: 0; left: 0; height: 25px; width: 800px; background: rgba(215, 25, 32, 0.5); border: 4px dashed #ff3333; border-bottom: none; z-index: 4; display: none; will-change: transform; box-shadow: 0 0 30px rgba(215, 25, 32, 0.6); text-align: center; color: #fff; font-weight: bold; line-height: 25px; font-size: 1.2rem; text-shadow: 1px 1px 2px #000; }
 
         /* PIXELATED WIND POCKET */
         #tk-wind-pocket { position: absolute; bottom: 100px; width: 300px; height: 150px; z-index: 14; display: none; will-change: transform; pointer-events: none; }
-        .wind-stream { position: absolute; background: #fff; opacity: 0.8; height: 4px; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
 
         /* --- WEATHER STATES --- */
         .weather-layer { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
@@ -166,13 +165,14 @@
         #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 50; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s;}
         #tk-eject-btn:active { transform: scale(0.92); }
         
-        .tk-enemy, #tk-overtaker-plane { position: absolute; bottom: 65px; width: 162px; height: 56px; background-color: rgba(85,85,85,0.01); border-radius: 20px; z-index: 9; display: none; left: 0; will-change: transform; pointer-events: none;}
+        /* Traffic Planes */
+        .tk-enemy, #tk-overtaker-plane { position: absolute; bottom: 65px; width: 162px; height: 56px; z-index: 10; display: none; left: 0; will-change: transform; pointer-events: none;}
         .tk-enemy img { width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1); }
         #tk-overtaker-plane img { width: 100%; height: 100%; object-fit: contain; } 
         
         #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform; pointer-events: none;}
         
-        #tk-bird-flock { position: absolute; bottom: 65px; width: 40px; left: 0; height: 30px; z-index: 9; display: none; pointer-events: none; will-change: transform; }
+        #tk-bird-flock { position: absolute; bottom: 65px; width: 40px; left: 0; height: 30px; z-index: 10; display: none; pointer-events: none; will-change: transform; }
         .bird { position: absolute; width: 4px; height: 4px; background: #111; border-radius: 50%; box-shadow: 12px 6px #111, -8px 10px #111, 16px 14px #111, 6px -4px #111; animation: flap 0.3s infinite alternate; }
 
         .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; left: 0; top: 0; will-change: transform, opacity; }
@@ -183,7 +183,7 @@
         .float-text { position: absolute; z-index: 150; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
         @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 0); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 0); opacity: 0; } }
 
-        /* FLIGHT PLAN OVERLAY (Custom SVG UI) */
+        /* FLIGHT PLAN OVERLAY */
         #tk-flight-plan-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;}
         #tk-flight-plan-overlay.visible { opacity: 1; pointer-events: auto; }
         
@@ -272,7 +272,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v5.4 - Fixes & Custom UI</div>
+        <div id="tk-version">v5.5 - Desktop Fixes & 5-Level Campaign</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -320,12 +320,12 @@
             <div id="tk-fg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             <div id="tk-threat-fog" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             
-            <div id="enemy-0" class="tk-enemy"><div style="width:100%; height:100%; background:#444; border-radius:20px; display:flex; align-items:center;"><img src="a22.png" onerror="this.style.display='none';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div></div>
-            <div id="enemy-1" class="tk-enemy"><div style="width:100%; height:100%; background:#444; border-radius:20px; display:flex; align-items:center;"><img src="a22.png" onerror="this.style.display='none';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div></div>
-            <div id="enemy-2" class="tk-enemy"><div style="width:100%; height:100%; background:#444; border-radius:20px; display:flex; align-items:center;"><img src="a22.png" onerror="this.style.display='none';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div></div>
-            <div id="enemy-3" class="tk-enemy"><div style="width:100%; height:100%; background:#444; border-radius:20px; display:flex; align-items:center;"><img src="a22.png" onerror="this.style.display='none';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div></div>
-            <div id="enemy-4" class="tk-enemy"><div style="width:100%; height:100%; background:#444; border-radius:20px; display:flex; align-items:center;"><img src="a22.png" onerror="this.style.display='none';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div></div>
-            <div id="tk-overtaker-plane"><div style="width:100%; height:100%; background:#444; border-radius:20px; display:flex; align-items:center;"><img src="a22.png" onerror="this.style.display='none';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div></div>
+            <div id="enemy-0" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0.3) hue-rotate(150deg)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-1" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0.3) hue-rotate(150deg)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-2" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0.3) hue-rotate(150deg)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-3" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0.3) hue-rotate(150deg)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-4" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0.3) hue-rotate(150deg)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="tk-overtaker-plane"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0.3) hue-rotate(150deg)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
             
             <div id="tk-bird-flock">
                 <div class="bird" style="top:0; left:10px;"></div><div class="bird" style="top:10px; left:0;"></div><div class="bird" style="top:15px; left:20px;"></div><div class="bird" style="top:5px; left:30px;"></div><div class="bird" style="top:25px; left:15px;"></div>
@@ -369,7 +369,7 @@
                     <div id="fp-cargo-text" style="display:none; color:var(--brand-gold); font-weight:bold;">CARGO DROP</div>
                     <div><button class="reroll-btn" onclick="rerollFlightPlan(event)">REROLL (200)</button></div>
                 </div>
-                <div style="text-align: left; margin-bottom: 5px; font-size: 0.8rem;">WIND SHEAR RISK: <strong id="fp-wind-risk" style="color:var(--brand-gold);">0%</strong></div>
+                <div style="text-align: left; margin-bottom: 5px; font-size: 0.8rem; font-family: 'Share Tech Mono', monospace; color: #ccc;">WIND SHEAR RISK: <strong id="fp-wind-risk" style="color:var(--brand-gold);">0%</strong></div>
 
                 <div class="upgrade-list">
                     <div class="upg-item">
@@ -616,7 +616,7 @@
             overtakerActive: false, overtakerX: -200, overtakerAltitude: 0,
             birdActive: false, birdX: 2000, birdAlt: 0,
             hasWindPocket: false, windPocketSpawned: false, windPocketX: 2000, windPocketTriggered: false, windPocketTimer: 0, gyroFailed: false,
-            dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0, dropCountdown: 3, cargoPrompted: false, apState: 0 
+            dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0, cargoPrompted: false, cargoTimer: 0, dropCountdown: -1, apState: 0 
         };
 
         function updateFlightPlanUI() {
@@ -1162,7 +1162,7 @@
                 hasFogScenario: Math.random() < 0.25,
                 hasOvertakerScenario: Math.random() > 0.5, overtakerActive: false, overtakerX: -200, overtakerAltitude: 0,
                 hasBirdScenario: Math.random() < 0.25, birdActive: false, birdX: window.innerWidth + 200, birdAlt: 0,
-                hasCargoMission: Math.random() < 0.25, dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0, dropCountdown: 3, cargoPrompted: false,
+                hasCargoMission: Math.random() < 0.25, dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0, dropCountdown: 3, cargoPrompted: false, cargoTimer: 0,
                 gearBroken: false, gearBreakAlt: 99999, stallFactor: 0, enemies: [], activeCargo: [],
                 stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0, apState: 0,
                 hasWindPocket: false, windPocketSpawned: false, windPocketX: window.innerWidth + 500, windPocketTriggered: false, windPocketTimer: 0, gyroFailed: false
@@ -1252,6 +1252,7 @@
                     setDialogue("<span class='capt-text'>FULL POWER!<br><span style='font-size:0.65rem; color:var(--aux-blue);'>TAP PLANE FOR AUTOPILOT</span></span>", 5000);
                 }
 
+                // FIX FOR FREEZE BUG: Explicitly reset to 0
                 tkState.lastFrameTime = 0; 
                 sfx.bgMusic.play().catch(e=>e);
                 tkState.frameId = requestAnimationFrame(gameLoop);
@@ -1394,7 +1395,7 @@
                 document.getElementById('tk-wind-pocket').style.display = 'block';
             }
             if (tkState.windPocketSpawned) {
-                tkState.windPocketX -= (displaySpeed * 0.18 * SPEED_MOD * 2.5); // Move faster than ground
+                tkState.windPocketX -= (displaySpeed * 0.18 * SPEED_MOD * 2.5);
                 document.getElementById('tk-wind-pocket').style.transform = `translate3d(${tkState.windPocketX}px, ${-(300 - tkState.cameraY)}px, 0)`;
 
                 let planeRect = document.getElementById('tk-plane-img').getBoundingClientRect();
@@ -1504,9 +1505,7 @@
             
             if (tkState.phase === 1 && tkState.altitude >= tkState.gearBreakAlt && !tkState.gearBroken) {
                 if (playerProfile.upgrades.gear >= 3) {
-                    // Gear is maxed out, no break
-                    tkState.gearBroken = false;
-                    tkState.gearBreakAlt = 99999;
+                    tkState.gearBroken = false; tkState.gearBreakAlt = 99999;
                 } else {
                     tkState.gearBroken = true; sfx.playExplosion(); setDialogue("<span class='alert-text'>GEAR SNAP!</span>", 4000); logEvent("GEAR SNAP", "⚙️", "GEAR DMG", "var(--brand-gold)");
                     const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
@@ -1515,22 +1514,29 @@
             if (tkState.gearBroken && document.getElementById('tk-plane-img').src.indexOf('nolandinggear') === -1) { document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png'; }
             if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { tkState.phase = 2; tkState.phaseTimer = 0; tkState.currTargetMin = -3; tkState.currTargetMax = 3; setDialogue("<span class='capt-text'>LEVEL OFF</span>", 4000); }
 
-            // CARGO MISSION LOGIC (Fixed using direct pixel values)
-            if (tkState.hasCargoMission) {
+            // CARGO MISSION LOGIC (Fixed using direct pixel values & robust timer)
+            if (tkState.hasCargoMission && tkState.phase >= 2) {
+                tkState.cargoTimer = (tkState.cargoTimer || 0) + delta;
                 let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
-                if (!tkState.cargoPrompted && tkState.phase >= 2 && tkState.phase <= 4 && tkState.phaseTimer > 1000) {
+                
+                if (!tkState.cargoPrompted && tkState.cargoTimer > 5000) {
                     tkState.cargoPrompted = true;
                     setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>", 3000);
+                }
+                
+                if (tkState.cargoPrompted && !tkState.dropZoneSpawned && tkState.cargoTimer > 8000) {
                     tkState.dropZoneSpawned = true; 
-                    tkState.dropZoneX = window.innerWidth + 2000;
+                    tkState.dropZoneX = window.innerWidth + 800; // Spawn safely off-screen
                     document.getElementById('tk-drop-zone').style.display = 'block';
                 }
+                
                 if (tkState.dropZoneSpawned) {
                     tkState.dropZoneX -= groundSpeed;
                     document.getElementById('tk-drop-zone').style.transform = `translate3d(${tkState.dropZoneX}px, 0, 0)`;
 
                     let pxPerSec = groundSpeed * 60; 
-                    let distToPlane = tkState.dropZoneX - (window.innerWidth * 0.3);
+                    let planeX = window.innerWidth * 0.3;
+                    let distToPlane = tkState.dropZoneX - planeX;
                     
                     if (tkState.dropCountdown === 3 && distToPlane <= pxPerSec * 3) {
                         setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>3...</span>", 1000);
@@ -1542,7 +1548,7 @@
                         setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>1...</span>", 1000);
                         tkState.dropCountdown = 0; sfx.playDing(1.0);
                     } else if (tkState.dropCountdown === 0 && distToPlane <= 0) {
-                        setDialogue("<span class='success-text'>DROP!</span>", 2000);
+                        setDialogue("<span class='success-text'>DROP NOW!</span>", 2000);
                         tkState.dropCountdown = -1; sfx.playDing(2.0);
                     }
                 }

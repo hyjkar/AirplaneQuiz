@@ -10,46 +10,33 @@
 
     <style>
         :root {
-            --brand-red: #d71920;
-            --gauge-green: #2ecc71;
-            --gauge-orange: #f39c12;
-            --brand-gold: #cfa86e;
-            --fo-blue: #3498db;
-            --panel-bg: #111;
+            --brand-red: #d71920; --gauge-green: #2ecc71; --gauge-orange: #f39c12;
+            --brand-gold: #cfa86e; --fo-blue: #3498db; --panel-bg: #111;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; outline: none; }
+        body, html { background-color: #000; color: #fff; font-family: 'Share Tech Mono', monospace; width: 100%; height: 100%; overflow: hidden; user-select: none; }
 
-        body, html {
-            background-color: #000; color: #fff;
-            font-family: 'Share Tech Mono', monospace;
-            width: 100%; height: 100%; overflow: hidden; 
-            user-select: none; 
-        }
-
-        #orientation-lock {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; color: #fff; z-index: 99999;
-            align-items: center; justify-content: center;
-            font-size: 1.5rem; font-weight: bold; text-align: center; padding: 20px;
-        }
+        #orientation-lock { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; z-index: 999999; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; text-align: center; padding: 20px; }
         @media screen and (orientation: portrait) { #orientation-lock { display: flex; } }
 
         #takeoff-viewport {
             width: 100%; height: 100%; position: relative; overflow: hidden; 
             background-color: #87CEEB; cursor: pointer; transition: background-color 0.5s;
             touch-action: none; 
+            perspective: 1000px;
         }
         
         #tk-alert-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 30; transition: background 0.2s;
+            pointer-events: none; z-index: 99998; transition: background 0.2s;
+            transform: translateZ(9000px);
         }
 
         .flashing { animation: redAlert 0.3s infinite alternate; }
         @keyframes redAlert { from { background: rgba(215, 25, 32, 0); } to { background: rgba(215, 25, 32, 0.35); } }
 
-        #tk-version { position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: bold; z-index: 50; pointer-events: none; }
+        #tk-version { position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: bold; z-index: 99999; pointer-events: none; transform: translateZ(9999px); }
 
         #camera-rig { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: 30% 80%; will-change: transform; z-index: 1; }
 
@@ -59,12 +46,18 @@
         #tk-fg-sky { background-size: auto 150vh; z-index: 14; height: 120%; top: -100%; opacity: 0.8; }
         #tk-threat-fog { display: none; background-size: auto 200vh; z-index: 15; height: 150%; top: -10%; opacity: 0.95; filter: blur(3px) brightness(1.1); }
         .fog-scenario #tk-threat-fog { display: block; }
-        .fog-scenario #tk-plane-img, .fog-scenario .tk-enemy img, .fog-scenario #tk-overtaker-plane img { filter: brightness(0) !important; transition: filter 0.5s; }
+        .fog-scenario #tk-plane-img, .fog-scenario .tk-enemy img, .fog-scenario .tk-overtaker img { filter: brightness(0) !important; transition: filter 0.5s; }
         
+        /* NVG MODE FILTER */
+        .nvg-mode { background-color: #001a00 !important; }
+        .nvg-mode #camera-rig { filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(1.2) contrast(1.5); }
+        .nvg-mode #tk-plane-img, .nvg-mode .tk-enemy img, .nvg-mode .tk-overtaker img { filter: brightness(1.5) drop-shadow(0 0 5px #0f0); }
+        .nvg-mode #tk-drop-zone { border-color: #2ecc71 !important; background: rgba(46,204,113,0.3) !important; box-shadow: 0 0 40px rgba(46,204,113,0.5), inset 0 0 30px rgba(46,204,113,0.5) !important; }
+
         .passenger-windows { display: none; position: absolute; top: 62%; left: 35%; right: 25%; height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; }
         .fog-scenario .passenger-windows { display: flex; }
         .window-dot { width: 4px; height: 4px; background: #fffde7; box-shadow: 0 0 6px #fbc02d, 0 0 10px #f57f17; border-radius: 1px; animation: flicker 2s infinite alternate; }
-        .tk-enemy .passenger-windows { left: 25%; right: 35%; top: 62%; }
+        .tk-enemy .passenger-windows, .tk-overtaker .passenger-windows { left: 25%; right: 35%; top: 62%; }
         @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
         #tk-sun { display: none; position: absolute; right: 15%; bottom: 35%; width: 60px; height: 60px; background: #fff; box-shadow: 0 0 0 10px rgba(255, 240, 150, 0.8), 0 0 0 25px rgba(255, 200, 100, 0.4), 0 0 0 45px rgba(255, 100, 50, 0.2); z-index: 0; will-change: transform; }
@@ -88,12 +81,12 @@
         .night-weather { background-color: #0b1021 !important; }
         .night-weather #tk-bg-sky, .night-weather #tk-fg-sky, .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain { filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2); }
         .night-weather #tk-threat-fog { filter: brightness(0.3) sepia(0.5) hue-rotate(180deg) saturate(1.2) blur(3px); }
-        .night-weather #tk-plane-img, .night-weather .tk-enemy img, .night-weather #tk-overtaker-plane img { filter: brightness(0.55); }
+        .night-weather #tk-plane-img, .night-weather .tk-enemy img, .night-weather .tk-overtaker img { filter: brightness(0.55); }
 
         .sunrise-weather { background-color: #ff9e7a !important; }
         .sunrise-weather #tk-bg-sky, .sunrise-weather #tk-fg-sky, .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8); }
         .sunrise-weather #tk-threat-fog { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.9) blur(3px); }
-        .sunrise-weather #tk-plane-img, .sunrise-weather .tk-enemy img, .sunrise-weather #tk-overtaker-plane img { filter: sepia(0.3) saturate(1.2) brightness(0.9); }
+        .sunrise-weather #tk-plane-img, .sunrise-weather .tk-enemy img, .sunrise-weather .tk-overtaker img { filter: sepia(0.3) saturate(1.2) brightness(0.9); }
 
         .snow-weather { background-color: #b8c6d9 !important; }
         .snow-weather #tk-bg-sky, .snow-weather #tk-fg-sky, .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain { filter: grayscale(0.7) brightness(1.4) contrast(0.6); }
@@ -104,10 +97,10 @@
         .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%); background-size: 300% 200%; animation: fogPulse 15s ease-in-out infinite alternate; z-index: 8; }
         .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(200, 210, 220, 0.95) 0%, transparent 40%); background-size: 200% 100%; animation: fogSweep 7s linear infinite; z-index: 15; }
         
-        .rain-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='250'><rect x='20' y='20' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
-        .rain-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect x='50' y='50' width='3' height='25' fill='rgba(255,255,255,0.6)'/><rect x='250' y='200' width='2' height='15' fill='rgba(255,255,255,0.4)'/></svg>"); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
-        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><circle cx='20' cy='20' r='3' fill='rgba(255,255,255,0.8)'/><circle cx='100' cy='80' r='2' fill='rgba(255,255,255,0.6)'/><circle cx='150' cy='150' r='4' fill='rgba(255,255,255,0.9)'/><circle cx='50' cy='180' r='2' fill='rgba(255,255,255,0.5)'/></svg>"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
-        .snow-layer.layer-2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><circle cx='50' cy='50' r='5' fill='rgba(255,255,255,0.9)'/><circle cx='200' cy='150' r='6' fill='rgba(255,255,255,0.8)'/><circle cx='250' cy='280' r='4' fill='rgba(255,255,255,0.7)'/></svg>"); animation: snowAnim2 3.5s linear infinite; z-index: 16; }
+        .rain-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNTAnIGhlaWdodD0nMjUwJz48cmVjdCB4PScyMCcgeT0nMjAnIHdpZHRoPScyJyBoZWlnaHQ9JzE1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuNCknLz48L3N2Zz4="); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
+        .rain-layer.layer-2 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJz48cmVjdCB4PSc1MCcgeT0nNTAnIHdpZHRoPSczJyBoZWlnaHQ9JzI1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuNiknLz48cmVjdCB4PScyNTAnIHk9JzIwMCcgd2lkdGg9JzInIGhlaWdodD0nMTUnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC40KScvPjwvc3ZnPg=="); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
+        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nMjAwJz48Y2lyY2xlIGN4PScyMCcgY3k9JzIwJyByPSczJyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOCknLz48Y2lyY2xlIGN4PScxMDAnIGN5PSc4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjYpJy8+PGNpcmNsZSBjeD0nMTUwJyBjeT0nMTUwJyByPSc0JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PSc1MCcgY3k9JzE4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjUpJy8+PC9zdmc+"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
+        .snow-layer.layer-2 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMDAnIGhlaWdodD0nMzAwJz48Y2lyY2xlIGN4PSc1MCcgY3k9JzUwJyByPSc1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PScyMDAnIGN5PScxNTAnIHI9JzYnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC44KScvPjxjaXJjbGUgY3g9JzI1MCcgY3k9JzI4MCcgcj0nNCcgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjcpJy8+PC9zdmc+"); animation: snowAnim2 3.5s linear infinite; z-index: 16; }
         
         @keyframes fogSweep { 0% { background-position: 200% 50%; } 100% { background-position: -100% 50%; } }
         @keyframes fogPulse { 0% { opacity: 0.2; transform: scale(1); } 100% { opacity: 0.6; transform: scale(1.2); } }
@@ -130,13 +123,13 @@
         
         #ap-indicator { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: var(--gauge-green); color: #000; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-weight: bold; display: none; z-index: 15; box-shadow: 0 0 10px var(--gauge-green); pointer-events: none; }
 
-        #plane-hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; border-radius: 50%; border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11; will-change: transform; pointer-events: none;}
-        .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; pointer-events: none;}
+        #plane-hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; border-radius: 50%; border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11; will-change: transform; pointer-events: none; transition: border-color 0.2s;}
+        .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; pointer-events: none; transition: color 0.2s;}
         .hud-label { font-size: 0.5rem; opacity: 0.8; display: block; }
         .hud-val { font-size: 1rem; display: block; }
         #hud-spd { left: -5px; top: 50%; transform: translate(-100%, -50%); }
         #hud-pitch { right: -5px; top: 50%; transform: translate(100%, -50%); }
-        #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); }
+        #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); transition: color 0.2s;}
 
         #landing-guide { position: absolute; top: 25px; left: 75px; transform: translate(-50%, -50%); width: 220px; height: 80px; border: 2px solid transparent; border-left: 4px solid var(--gauge-green); border-right: 4px solid var(--gauge-green); border-radius: 15px; display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; z-index: 5; pointer-events: none;}
         .guide-label { position: absolute; bottom: -20px; text-align: center; color: var(--gauge-green); font-weight: bold; font-size: 0.8rem; text-shadow: 1px 1px 2px #000; }
@@ -148,30 +141,44 @@
         .alert-text { color: var(--brand-red); font-weight: bold; animation: pulseRed 0.8s infinite alternate; }
         .success-text { color: var(--gauge-green); font-weight: bold; }
 
-        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 20; pointer-events: none; }
+        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; pointer-events: none; transform: translateZ(9999px); }
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
-        #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold);}
+        #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold); transition: all 0.2s;}
         
-        #reset-btn, #pause-btn, #fs-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #fff; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: auto;}
+        #reset-btn, #pause-btn, #fs-btn, #nvg-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #fff; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; pointer-events: auto; transition: transform 0.1s;}
         #reset-btn { background: rgba(215, 25, 32, 0.9); border-color: #fff; font-size: 1rem; }
-        #reset-btn:active, #pause-btn:active, #fs-btn:active { transform: scale(0.95); }
+        #nvg-btn { font-size: 0.8rem; font-family: 'Share Tech Mono'; font-weight: bold; background: rgba(46, 204, 113, 0.2); border-color: var(--gauge-green); color: var(--gauge-green); display: none;}
+        #reset-btn:active, #pause-btn:active, #fs-btn:active, #nvg-btn:active { transform: scale(0.95); }
 
-        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 40; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); }
+        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); transform: translateZ(9999px); }
         
-        #prompt-container { position: absolute; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #tk-touch-prompt { background: var(--brand-red); border: 2px solid #fff; border-radius: 8px; padding: 15px 30px; text-align: center; color: #fff; font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(215,25,32,0.6); width: auto; text-transform: uppercase; margin-bottom: 10px; cursor: pointer; pointer-events: auto; transition: transform 0.1s;}
+        #prompt-container { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateZ(9999px); z-index: 99999; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #tk-touch-prompt { background: var(--brand-red); border: 2px solid #fff; border-radius: 8px; padding: 15px 30px; text-align: center; color: #fff; font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(215,25,32,0.6); width: auto; text-transform: uppercase; cursor: pointer; pointer-events: auto; transition: transform 0.1s;}
         #tk-touch-prompt:active { transform: scale(0.95); }
 
-        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 50; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s;}
+        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 99999; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s; transform: translateZ(9999px); }
         #tk-eject-btn:active { transform: scale(0.92); }
-        
-        /* Traffic Planes - Transparent background, falls back to player plane tinted black if a22.png is missing */
-        .tk-enemy, #tk-overtaker-plane { position: absolute; bottom: 65px; left: 0; width: 162px; height: 56px; z-index: 10; display: none; will-change: transform; pointer-events: none;}
-        .tk-enemy img { width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1); }
-        #tk-overtaker-plane img { width: 100%; height: 100%; object-fit: contain; } 
-        
+
+        /* Traffic Planes */
+        .tk-enemy, .tk-overtaker { position: absolute; bottom: 65px; left: 0; width: 162px; height: 56px; z-index: 10; display: none; will-change: transform; pointer-events: none;}
+        .tk-enemy img, .tk-overtaker img { width: 100%; height: 100%; object-fit: contain; }
+        .tk-enemy img { transform: scaleX(-1); }
+
+        /* Clear Alert Effect for Overtakers */
+        .rear-warning { 
+            position: absolute; left: 20px; 
+            color: #fff; background: rgba(215, 25, 32, 0.85); 
+            border: 2px solid #fff; border-radius: 8px;
+            padding: 5px 15px; font-family: 'Share Tech Mono', monospace;
+            font-weight: bold; font-size: 1.2rem; 
+            box-shadow: 0 0 15px rgba(215, 25, 32, 0.8); 
+            z-index: 40; display: none; 
+            animation: pulseWarning 0.3s infinite alternate; 
+            pointer-events: none; white-space: nowrap;
+        }
+        @keyframes pulseWarning { from { transform: scale(1); opacity: 1; } to { transform: scale(1.05); opacity: 0.8; } }
+
         #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform; pointer-events: none;}
-        
         #tk-bird-flock { position: absolute; bottom: 65px; left: 0; width: 40px; height: 30px; z-index: 10; display: none; pointer-events: none; will-change: transform; }
         .bird { position: absolute; width: 4px; height: 4px; background: #111; border-radius: 50%; box-shadow: 12px 6px #111, -8px 10px #111, 16px 14px #111, 6px -4px #111; animation: flap 0.3s infinite alternate; }
 
@@ -180,49 +187,47 @@
         .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .cargo-package { position: absolute; z-index: 15; width: 20px; height: 20px; background: #cfa86e; border: 2px solid #fff; left: 0; top: 0; will-change: transform; }
-        .float-text { position: absolute; z-index: 150; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
-        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 0); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 0); opacity: 0; } }
+        .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; transform: translateZ(9999px); }
+        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 9999px); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 9999px); opacity: 0; } }
 
-        /* FLIGHT PLAN OVERLAY */
-        #tk-flight-plan-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;}
-        #tk-flight-plan-overlay.visible { opacity: 1; pointer-events: auto; }
-        
-        .upgrade-list { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-        .upg-item { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.5); border: 1px solid #333; padding: 10px; border-radius: 8px; }
-        .upg-icon { width: 32px; height: 32px; background: #222; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px solid #444; flex-shrink: 0;}
-        .upg-icon svg { width: 20px; height: 20px; fill: #fff; }
-        .upg-info { flex-grow: 1; margin: 0 12px; text-align: left; }
-        .upg-title { font-size: 0.8rem; color: #ccc; }
-        .upg-stat { font-size: 0.95rem; font-weight: bold; text-transform: uppercase; transition: color 0.3s; }
-        .upg-btn { background: transparent; color: var(--gauge-green); border: 1px solid var(--gauge-green); border-radius: 6px; padding: 6px 10px; font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: transform 0.1s;}
-        .upg-btn:active { transform: scale(0.9); }
-        .upg-btn:disabled { border-color: #555; color: #555; cursor: not-allowed; transform: none;}
-
-        .fp-header-info { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.9rem; margin-bottom: 5px; color: #aaa;}
-        .fp-header-info strong { color: #fff; font-size: 1.1rem; }
-        
-        .reroll-btn { background: #333; border: 1px solid var(--brand-gold); color: var(--brand-gold); border-radius: 6px; padding: 4px 8px; font-size: 0.7rem; font-family: 'Share Tech Mono', monospace; font-weight: bold; cursor: pointer; transition: all 0.2s;}
-        .reroll-btn:active { transform: scale(0.95); }
-
-        /* END SCREEN / LEADERBOARD */
-        #tk-end-screen, #leaderboard-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
-        #tk-end-screen.visible, #leaderboard-overlay.visible { opacity: 1; pointer-events: auto; }
-        
-        .end-panel { 
-            background: var(--panel-bg); border: 2px solid var(--brand-gold); border-radius: 15px; 
-            padding: 25px 35px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
-            transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            width: 90%; max-width: 500px; max-height: 95vh; overflow-y: auto; touch-action: auto; -webkit-overflow-scrolling: touch; pointer-events: auto;
+        /* OVERLAYS FORCED TO TOP */
+        #tk-flight-plan-overlay, #tk-end-screen, #leaderboard-overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); z-index: 99999; display: none; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            opacity: 0; transition: opacity 0.3s ease; pointer-events: none; 
+            transform: translateZ(9999px); 
         }
+        
+        #tk-flight-plan-overlay.visible, #tk-end-screen.visible, #leaderboard-overlay.visible { opacity: 1; pointer-events: auto; }
+
+        .end-panel { background: var(--panel-bg); border: 2px solid var(--brand-gold); border-radius: 15px; padding: 15px 20px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); transform: scale(0.8); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 95%; max-width: 650px; max-height: 95vh; overflow-y: auto; touch-action: auto; pointer-events: auto; }
         .end-panel::-webkit-scrollbar { width: 5px; }
         .end-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 5px; }
         .end-panel.visible { transform: scale(1); }
+
+        .upgrade-list { width: 100%; display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+        .upg-item { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.5); border: 1px solid #333; padding: 4px 8px; border-radius: 8px; }
+        .upg-icon { width: 24px; height: 24px; background: #222; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px solid #444; flex-shrink: 0;}
+        .upg-icon svg { width: 14px; height: 14px; fill: #fff; }
+        .upg-info { flex-grow: 1; margin: 0 10px; text-align: left; }
+        .upg-title { font-size: 0.75rem; color: #ccc; }
+        .upg-stat { font-size: 0.85rem; font-weight: bold; text-transform: uppercase; transition: color 0.3s; }
+        .upg-btn { background: transparent; color: var(--gauge-green); border: 1px solid var(--gauge-green); border-radius: 6px; padding: 4px 8px; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; font-weight: bold; cursor: pointer; transition: transform 0.1s;}
+        .upg-btn:active { transform: scale(0.9); }
+        .upg-btn:disabled { border-color: #555; color: #555; cursor: not-allowed; transform: none;}
+
+        .fp-header-info { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.85rem; margin-bottom: 5px; color: #aaa;}
+        .fp-header-info strong { color: #fff; font-size: 1.05rem; }
         
-        .end-title { font-size: 1.8rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; text-transform: uppercase;}
-        .end-subtitle { font-size: 0.9rem; color: #aaa; margin-bottom: 10px; text-transform: uppercase;}
-        .end-score { font-size: 2.5rem; color: var(--gauge-green); margin-bottom: 10px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
-        
-        .play-again-btn { background: var(--brand-gold); color: #000; border: none; padding: 12px 20px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; }
+        .reroll-btn { background: transparent; border: none; color: var(--brand-gold); cursor: pointer; transition: transform 0.1s; display: flex; align-items: center; justify-content: center; padding: 5px;}
+        .reroll-btn:active { transform: scale(0.85); }
+        .reroll-btn svg { width: 18px; height: 18px; stroke: currentColor; }
+
+        .end-title { font-size: 1.6rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; text-transform: uppercase;}
+        .end-subtitle { font-size: 0.8rem; color: #aaa; margin-bottom: 10px; text-transform: uppercase;}
+        .end-score { font-size: 2.2rem; color: var(--gauge-green); margin-bottom: 10px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
+        .play-again-btn { background: var(--brand-gold); color: #000; border: none; padding: 12px 20px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; width: 100%;}
         .play-again-btn:active { transform: scale(0.95); filter: brightness(0.8); }
 
         /* Minimap Progress Bar */
@@ -247,29 +252,30 @@
         .lb-input { width: 100%; padding: 8px; font-family: 'Share Tech Mono', monospace; font-size: 1rem; text-align: center; border-radius: 6px; border: none; margin-bottom: 15px; }
 
         @media screen and (max-height: 450px) {
-            .end-panel { padding: 15px; width: 95%; max-width: 600px;}
-            .end-title { font-size: 1.3rem; }
+            .end-panel { padding: 10px 15px; width: 95%; max-width: 600px;}
+            .end-title { font-size: 1.2rem; }
             .end-subtitle { display: none; }
-            .end-score { font-size: 1.8rem; margin: 0 0 10px 0; }
-            .completion-wrapper { margin-bottom: 20px; }
-            .completion-text { font-size: 0.9rem; margin-bottom: 10px;}
-            .stats-grid { font-size: 0.85rem !important; margin-bottom: 15px !important; }
+            .end-score { font-size: 1.5rem; margin: 0 0 10px 0; }
+            .completion-wrapper { margin-bottom: 15px; }
+            .completion-text { font-size: 0.8rem; margin-bottom: 5px;}
+            .stats-grid { font-size: 0.8rem !important; margin-bottom: 10px !important; }
             #tk-eject-btn { width: 60px; height: 60px; font-size: 0.8rem; }
             .upgrade-list { margin-top: 5px; gap: 4px; }
-            .upg-item { padding: 6px; }
-            .upg-icon { width: 24px; height: 24px; }
-            .upg-icon svg { width: 14px; height: 14px; }
-            .upg-title { font-size: 0.7rem; }
+            .upg-item { padding: 4px 6px; }
             .upg-stat { font-size: 0.8rem; }
             .upg-btn { padding: 4px 6px; font-size: 0.7rem; }
             .fp-header-info { font-size: 0.8rem; margin-bottom: 2px;}
+            .fp-header-info strong { font-size: 0.9rem; }
+            .play-again-btn { padding: 8px 15px; font-size: 0.9rem;}
         }
     </style>
 </head>
 <body>
+
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
+
     <div id="takeoff-viewport">
-        <div id="tk-version">v8.1 - Fixes & Spectacle Applied</div>
+        <div id="tk-version">v8.2 - Fullscreen Fixed & Real Rear Warnings</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -277,6 +283,7 @@
             <div class="top-left-controls">
                 <button id="reset-btn" onclick="hardReset(event)">❌</button>
                 <button id="pause-btn" onclick="togglePause(event)">⏸️</button>
+                <button id="nvg-btn" onclick="toggleNVG(event)">NVG</button>
                 <button id="fs-btn" onclick="toggleFullscreen(event)">⛶</button>
             </div>
             <div id="tk-score-display">SCORE: <span id="score-val">0</span></div>
@@ -317,13 +324,26 @@
             <div id="tk-fg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             <div id="tk-threat-fog" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             
-            <div id="enemy-0" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-1" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-2" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-3" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
-            <div id="enemy-4" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="enemy-0" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-1" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-2" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-3" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-4" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-5" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-6" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-7" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-8" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-9" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-10" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="enemy-11" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
             
-            <div id="tk-overtaker-plane"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"><div class="passenger-windows"><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div></div></div>
+            <div id="overtaker-0" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="overtaker-1" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+            <div id="overtaker-2" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
+
+            <div id="rear-warning-0" class="rear-warning">⚠️ TRAFFIC: 2s</div>
+            <div id="rear-warning-1" class="rear-warning">⚠️ TRAFFIC: 2s</div>
+            <div id="rear-warning-2" class="rear-warning">⚠️ TRAFFIC: 2s</div>
             
             <div id="tk-bird-flock">
                 <div class="bird" style="top:0; left:10px;"></div><div class="bird" style="top:10px; left:0;"></div><div class="bird" style="top:15px; left:20px;"></div><div class="bird" style="top:5px; left:30px;"></div><div class="bird" style="top:25px; left:15px;"></div>
@@ -342,14 +362,10 @@
             </div>
             
             <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M42,35 L50,20 L58,35 Z" fill="#fff"/></svg></div>
-            <div class="weather-layer fog-layer layer-front"></div><div class="weather-layer rain-layer layer-2"></div><div class="weather-layer snow-layer layer-2"></div>
         </div>
 
         <div id="tk-flare-container">
-            <div id="pf1" class="pf pf-1"></div>
-            <div id="pf2" class="pf pf-2"></div>
-            <div id="pf3" class="pf pf-3"></div>
-            <div id="pf4" class="pf pf-4"></div>
+            <div id="pf1" class="pf pf-1"></div><div id="pf2" class="pf pf-2"></div><div id="pf3" class="pf pf-3"></div><div id="pf4" class="pf pf-4"></div>
         </div>
 
         <div id="tk-flight-plan-overlay">
@@ -358,63 +374,59 @@
                 <div class="end-subtitle" id="fp-sector-title">SECTOR 1 OF 5</div>
                 
                 <div style="display:flex; justify-content:space-between; align-items:center; font-family:'Share Tech Mono'; margin-top: 5px;">
-                    <span style="color:#ccc; font-size:0.9rem;">AVAILABLE FUNDS:</span> <strong id="fp-total-points" style="color:var(--brand-gold); font-size:1.4rem;">0</strong>
+                    <span style="color:#ccc; font-size:0.9rem;">SCORE: <strong id="fp-current-score" style="color:#fff;">0</strong></span>
+                    <span style="color:#ccc; font-size:0.9rem;">FUNDS: <strong id="fp-total-points" style="color:var(--brand-gold); font-size:1.2rem;">0</strong></span>
                 </div>
 
-                <div class="fp-header-info" style="margin-top: 15px;">
-                    <div>WEATHER: <strong id="fp-weather" style="color:var(--fo-blue);">CLEAR</strong></div>
-                    <div id="fp-cargo-text" style="display:none; color:var(--brand-gold); font-weight:bold;">CARGO DROP</div>
-                    <div><button class="reroll-btn" onclick="rerollFlightPlan(event)">REROLL (200)</button></div>
+                <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid #333; margin-top: 10px; margin-bottom: 10px; position: relative; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="text-align: left; font-size: 0.85rem; color: #ccc; display: flex; flex-direction: column; gap: 5px;">
+                        <div>WEATHER: <strong id="fp-weather" style="color:var(--fo-blue);">CLEAR</strong></div>
+                        <div>TRAFFIC: <strong id="fp-traffic">NORMAL</strong></div>
+                        <div>WIND SHEAR: <strong id="fp-wind-risk" style="color:var(--brand-gold);">0%</strong></div>
+                        <div id="fp-cargo-text" style="display:none; color:var(--brand-gold); font-weight:bold;">CARGO DROP</div>
+                    </div>
+                    <button class="reroll-btn" onclick="rerollFlightPlan(event)" title="Refresh (200)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    </button>
                 </div>
-                <div style="text-align: left; margin-bottom: 5px; font-size: 0.8rem; font-family: 'Share Tech Mono', monospace; color: #ccc;">WIND SHEAR RISK: <strong id="fp-wind-risk" style="color:var(--brand-gold);">0%</strong></div>
 
                 <div class="upgrade-list">
                     <div class="upg-item">
                         <div class="upg-icon"><svg viewBox="0 0 24 24"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.98C19.47,12.66 19.5,12.34 19.5,12C19.5,11.66 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.65 15.48,5.32 14.87,5.07L14.47,2.42C14.43,2.18 14.23,2 14,2H10C9.77,2 9.57,2.18 9.53,2.42L9.13,5.07C8.52,5.32 7.96,5.65 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.66 4.5,12C4.5,12.34 4.53,12.66 4.57,12.98L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.95C7.96,18.35 8.52,18.68 9.13,18.93L9.53,21.58C9.57,21.82 9.77,22 10,22H14C14.23,22 14.43,21.82 14.47,21.58L14.87,18.93C15.48,18.68 16.04,18.35 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.98Z"/></svg></div>
-                        <div class="upg-info">
-                            <div class="upg-title">LANDING GEAR</div>
-                            <div class="upg-stat" id="stat-gear">50% WORKING</div>
-                        </div>
+                        <div class="upg-info"><div class="upg-title">LANDING GEAR</div><div class="upg-stat" id="stat-gear">50% WORKING</div></div>
                         <button class="upg-btn" id="btn-upg-gear" onclick="buyUpgrade('gear', event)">REPAIR (1K)</button>
                     </div>
                     <div class="upg-item">
                         <div class="upg-icon"><svg viewBox="0 0 24 24"><path d="M20.2 5.9l.8-.8C19.6 3.7 17.8 3 16 3s-3.6.7-5 2.1l.8.8C13 4.8 14.5 4.2 16 4.2s3 .6 4.2 1.7zm-.9.8c-.9-.9-2.1-1.4-3.3-1.4s-2.4.5-3.3 1.4l.8.8c.7-.7 1.6-1 2.5-1s1.8.3 2.5 1l.8-.8zM19 13h-2V9h-2v4H5c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-4c0-1.1-.9-2-2-2zM7 19H5v-4h2v4zm4 0H9v-4h2v4zm4 0h-2v-4h2v4zm4 0h-2v-4h2v4z"/></svg></div>
-                        <div class="upg-info">
-                            <div class="upg-title">ENGINE STABILITY</div>
-                            <div class="upg-stat" id="stat-engine">50% WORKING</div>
-                        </div>
+                        <div class="upg-info"><div class="upg-title">ENGINE STABILITY</div><div class="upg-stat" id="stat-engine">50% WORKING</div></div>
                         <button class="upg-btn" id="btn-upg-engine" onclick="buyUpgrade('engine', event)">REPAIR (1K)</button>
                     </div>
                     <div class="upg-item">
                         <div class="upg-icon"><svg viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6L16,12L12,18L8,12L12,6Z"/></svg></div>
-                        <div class="upg-info">
-                            <div class="upg-title">GYROSCOPE</div>
-                            <div class="upg-stat" id="stat-gyro">50% WORKING</div>
-                        </div>
+                        <div class="upg-info"><div class="upg-title">GYROSCOPE</div><div class="upg-stat" id="stat-gyro">50% WORKING</div></div>
                         <button class="upg-btn" id="btn-upg-gyro" onclick="buyUpgrade('gyro', event)">REPAIR (1K)</button>
                     </div>
                     <div class="upg-item">
                         <div class="upg-icon"><svg viewBox="0 0 24 24"><path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg></div>
-                        <div class="upg-info">
-                            <div class="upg-title">AUTO-PILOT</div>
-                            <div class="upg-stat" id="stat-ap">50% WORKING</div>
-                        </div>
+                        <div class="upg-info"><div class="upg-title">AUTO-PILOT</div><div class="upg-stat" id="stat-ap">50% WORKING</div></div>
                         <button class="upg-btn" id="btn-upg-ap" onclick="buyUpgrade('ap', event)">REPAIR (1K)</button>
                     </div>
+                    
                     <div style="display:flex; gap: 8px;">
                         <div class="upg-item" style="border-color: #444; background: transparent; flex: 1; padding: 6px;">
-                            <div class="upg-info" style="margin:0;">
-                                <div class="upg-title">BIRD SHIELD</div>
-                                <div class="upg-stat" id="stat-bird" style="color: var(--brand-red); font-size: 0.75rem;">OFFLINE</div>
-                            </div>
-                            <button class="upg-btn" id="btn-upg-bird" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('bird', event)">BUY (3K)</button>
+                            <div class="upg-info" style="margin:0;"><div class="upg-title">BIRD SHIELD</div><div class="upg-stat" id="stat-bird" style="color: var(--brand-red); font-size: 0.75rem;">OFFLINE</div></div>
+                            <button class="upg-btn" id="btn-upg-bird" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('bird', event)">BUY (1K)</button>
                         </div>
                         <div class="upg-item" style="border-color: #444; background: transparent; flex: 1; padding: 6px;">
-                            <div class="upg-info" style="margin:0;">
-                                <div class="upg-title">WIND SHIELD</div>
-                                <div class="upg-stat" id="stat-windshield" style="color: var(--brand-red); font-size: 0.75rem;">OFFLINE</div>
-                            </div>
-                            <button class="upg-btn" id="btn-upg-windshield" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('windshield', event)">BUY (3K)</button>
+                            <div class="upg-info" style="margin:0;"><div class="upg-title">WIND SHIELD</div><div class="upg-stat" id="stat-windshield" style="color: var(--brand-red); font-size: 0.75rem;">OFFLINE</div></div>
+                            <button class="upg-btn" id="btn-upg-windshield" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('windshield', event)">BUY (1K)</button>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap: 8px;">
+                        <div class="upg-item" style="border-color: #444; background: transparent; flex: 1; padding: 6px;">
+                            <div class="upg-info" style="margin:0;"><div class="upg-title">NIGHT VISION</div><div class="upg-stat" id="stat-nvg" style="color: var(--brand-red); font-size: 0.75rem;">OFFLINE</div></div>
+                            <button class="upg-btn" id="btn-upg-nvg" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('nvg', event)">BUY (2K)</button>
                         </div>
                     </div>
                 </div>
@@ -455,31 +467,30 @@
 
         <div id="leaderboard-overlay">
             <div class="end-panel visible" style="pointer-events: auto;">
-                <div class="end-title" style="color: var(--brand-gold);">CAMPAIGN COMPLETE</div>
-                <div class="end-subtitle">ALL 5 SECTORS CLEARED</div>
+                <div class="end-title" style="color: var(--brand-gold); font-size: 2rem; text-shadow: 0 0 10px var(--brand-gold);">CAMPAIGN CLEARED</div>
+                <div class="end-subtitle">FINAL PLANE CONDITION</div>
                 
-                <div style="margin: 15px 0; font-size: 1rem; color: #ccc; font-family: 'Share Tech Mono', monospace; text-align: left;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                        <span>BASE SCORE:</span> <strong id="lb-base-score">0</strong>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                        <span>PLANE CONDITION BONUS:</span> <strong id="lb-cond-score" style="color:var(--gauge-green);">+0</strong>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid #555; font-size: 1.2rem;">
-                        <span>FINAL SCORE:</span> <strong id="lb-final-score" style="color:var(--brand-gold);">0</strong>
-                    </div>
+                <div id="campaign-integrity" style="font-size: 4rem; margin: 10px 0; font-weight: bold; color: #fff; text-shadow: 0 0 20px currentColor; transition: transform 0.2s;">
+                    0%
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; font-size: 0.75rem; color: #ccc; background: rgba(0,0,0,0.6); padding: 12px; border-radius: 8px; border: 1px solid #444; margin-bottom: 20px;">
+                    <div>REMAINING FUNDS:<br><strong id="stat-funds" style="color:var(--brand-gold); font-size:1.1rem;">0</strong></div>
+                    <div>TOTAL FLIGHT TIME:<br><strong id="stat-time" style="color:#fff; font-size:1.1rem;">0s</strong></div>
+                    <div>CARGO DELIVERED:<br><strong id="stat-cargo" style="color:var(--gauge-green); font-size:1.1rem;">0/0</strong></div>
+                    <div>TOTAL STALLS/CRASHES:<br><strong id="stat-stalls" style="color:var(--brand-red); font-size:1.1rem;">0/0</strong></div>
                 </div>
 
                 <input type="text" id="pilot-name-input" class="lb-input" placeholder="ENTER CALLSIGN" maxlength="12" autocomplete="off">
                 <button class="play-again-btn" style="width: 100%; margin-bottom: 15px;" onclick="submitScore(event)">SUBMIT SCORE</button>
 
-                <div style="text-align: center; color: var(--brand-gold); margin-bottom: 5px; font-weight: bold;">TOP PILOTS</div>
+                <div style="text-align: center; color: var(--brand-gold); margin-bottom: 5px; font-weight: bold; font-size: 0.8rem;">TOP PILOTS (BY INTEGRITY)</div>
                 <table id="lb-table">
-                    <thead><tr><th>RANK</th><th>PILOT</th><th style="text-align:right;">SCORE</th></tr></thead>
+                    <thead><tr><th>RANK</th><th>PILOT</th><th style="text-align:right;">INTEGRITY</th></tr></thead>
                     <tbody id="lb-table-body"></tbody>
                 </table>
                 
-                <button class="outline-btn" style="color: #fff; border-color: #fff; margin-top: 15px;" onclick="startNewCampaign(event)">NEW CAMPAIGN</button>
+                <button class="outline-btn" style="color: #fff; background: transparent; border: 2px solid #fff; padding: 10px; width: 100%; font-family: 'Share Tech Mono'; border-radius: 6px; cursor: pointer; margin-top: 15px; font-weight:bold; transition: all 0.2s;" onclick="startNewCampaign(event)">NEW CAMPAIGN</button>
             </div>
         </div>
 
@@ -490,28 +501,31 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V8) ---
+        // --- PROFILE PERSISTENCE (V17) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
-            upgrades: { gear: 2, engine: 2, gyro: 2, ap: 2, bird: false, windShield: false } 
+            upgrades: { gear: 2, engine: 2, gyro: 2, ap: 2, bird: false, windShield: false, nvg: false },
+            campaignStats: { stalls: 0, cargoHits: 0, cargoMisses: 0, flightTime: 0, crashes: 0 }
         };
         const workMap = { 3: 100, 2: 50, 1: 25, 0: 0 };
         const failMap = { 3: 0, 2: 50, 1: 75, 0: 100 };
-        
+
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v8');
+                let p = localStorage.getItem('h5_profile_v17');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
                 }
             } catch(e) { console.error("Save corrupted, using defaults"); }
             if(playerProfile.currentLevel === undefined) playerProfile.currentLevel = 1;
+            if(playerProfile.upgrades.nvg === undefined) playerProfile.upgrades.nvg = false;
+            if(!playerProfile.campaignStats) playerProfile.campaignStats = { stalls: 0, cargoHits: 0, cargoMisses: 0, flightTime: 0, crashes: 0 };
         }
-        
+
         function saveProfile() {
-            localStorage.setItem('h5_profile_v8', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v17', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -596,30 +610,30 @@
         let endScreenAnimInterval = null; let endScreenTimeouts = [];
 
         let tkState = {
-            active: false, isPaused: false, inFlightPlan: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
+            active: false, isPaused: false, inFlightPlan: false, nvgActive: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, 
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
             weather: "day", zoom: 1.0, targetZoom: 1.0, speedMod: 0.5625, autoPilot: false, canRestart: true, 
-            hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [], enemies: [], activeCargo: [],
+            hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [], enemies: [], overtakers: [], activeCargo: [],
             
             stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0,
             
-            baseWindRisk: 0,
-            gearRisk: 0, engineRisk: 0, gyroRisk: 0, apRisk: 0,
-            
+            trafficLevel: 0, 
+            baseWindRisk: 0, gearRisk: 0, engineRisk: 0, gyroRisk: 0, apRisk: 0,
             hasFogScenario: false, hasOvertakerScenario: false, hasBirdScenario: false, hasCargoMission: false,
             
             engineFailure: false, gearBroken: false, gearBreakAlt: 99999, stallFactor: 0,
-            overtakerActive: false, overtakerX: -200, overtakerAltitude: 0,
             birdActive: false, birdX: 2000, birdAlt: 0,
             hasWindPocket: false, windPocketSpawned: false, windPocketX: 2000, windPocketTriggered: false, windPocketTimer: 0, gyroFailed: false,
-            dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0, cargoPrompted: false, cargoTimer: 0, dropCountdown: -1, apState: 0 
+            dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0, cargoPrompted: false, cargoTimer: 0, dropCountdown: -1, apState: 0,
+            statsAdded: false, finalCampaignScore: 0
         };
 
         function updateFlightPlanUI() {
             document.getElementById('fp-total-points').textContent = playerProfile.points;
-            
+            document.getElementById('fp-current-score').textContent = Math.floor(tkState.score); 
+
             let types = ['gear', 'engine', 'gyro', 'ap'];
             types.forEach(t => {
                 let lvl = playerProfile.upgrades[t];
@@ -643,7 +657,7 @@
             } else {
                 document.getElementById('stat-bird').textContent = "OFFLINE";
                 document.getElementById('stat-bird').style.color = "var(--brand-red)";
-                bBtn.textContent = "BUY (3K)"; bBtn.disabled = playerProfile.points < 3000;
+                bBtn.textContent = "BUY (1K)"; bBtn.disabled = playerProfile.points < 1000;
             }
 
             // Wind shield
@@ -655,7 +669,19 @@
             } else {
                 document.getElementById('stat-windshield').textContent = "OFFLINE";
                 document.getElementById('stat-windshield').style.color = "var(--brand-red)";
-                wBtn.textContent = "BUY (3K)"; wBtn.disabled = playerProfile.points < 3000;
+                wBtn.textContent = "BUY (1K)"; wBtn.disabled = playerProfile.points < 1000;
+            }
+
+            // NVG
+            let nBtn = document.getElementById('btn-upg-nvg');
+            if(playerProfile.upgrades.nvg) {
+                document.getElementById('stat-nvg').textContent = "ACTIVE";
+                document.getElementById('stat-nvg').style.color = "var(--gauge-green)";
+                nBtn.textContent = "MAX"; nBtn.disabled = true;
+            } else {
+                document.getElementById('stat-nvg').textContent = "OFFLINE";
+                document.getElementById('stat-nvg').style.color = "var(--brand-red)";
+                nBtn.textContent = "BUY (2K)"; nBtn.disabled = playerProfile.points < 2000;
             }
         }
 
@@ -667,43 +693,8 @@
                 playerProfile.points -= 200;
                 saveProfile();
                 sfx.playDing(1.5);
-                
-                // Reroll Logic
-                let rand = Math.random();
-                tkState.weather = rand > 0.75 ? 'night' : (rand > 0.5 ? 'snow' : (rand > 0.25 ? 'sunrise' : 'day'));
-                
-                let vp = document.getElementById('takeoff-viewport');
-                vp.classList.remove('night-weather', 'sunrise-weather', 'snow-weather', 'fog-scenario');
-                vp.style.backgroundColor = ''; 
-                if (tkState.weather !== 'day') vp.classList.add(tkState.weather + '-weather');
-                
-                tkState.baseWindRisk = 10;
-                if(tkState.weather === 'night') tkState.baseWindRisk = 25;
-                if(tkState.weather === 'sunrise') tkState.baseWindRisk = 40;
-                if(tkState.weather === 'snow') tkState.baseWindRisk = 60;
-                
-                tkState.hasFogScenario = Math.random() < 0.25;
-                if (tkState.hasFogScenario) vp.classList.add('fog-scenario');
-                
-                tkState.hasOvertakerScenario = Math.random() > 0.5;
-                tkState.hasBirdScenario = Math.random() < 0.25;
-                tkState.hasCargoMission = Math.random() < 0.25;
-                tkState.cargoCount = tkState.hasCargoMission ? Math.floor(Math.random() * 3) + 1 : 0;
-                
-                // Re-populate UI
-                let wText = "CLEAR"; let wColor = "var(--fo-blue)";
-                if (tkState.hasFogScenario) { wText = "HEAVY FOG"; wColor = "var(--brand-red)"; }
-                else if (tkState.weather === 'snow') { wText = "SNOWSTORM"; wColor = "#bdc3c7"; }
-                else if (tkState.weather === 'night') { wText = "NIGHT OPS"; wColor = "#8e44ad"; }
-                document.getElementById('fp-weather').textContent = wText; document.getElementById('fp-weather').style.color = wColor;
-                
-                let cEl = document.getElementById('fp-cargo-text');
-                if (tkState.hasCargoMission) { cEl.style.display = "block"; cEl.textContent = `${tkState.cargoCount} CARGO DROP`; }
-                else { cEl.style.display = "none"; }
-
-                let wRiskEl = document.getElementById('fp-wind-risk'); wRiskEl.textContent = tkState.baseWindRisk + "%";
-                wRiskEl.style.color = tkState.baseWindRisk > 25 ? "var(--brand-red)" : "var(--brand-gold)";
-
+                generateFlightPlanContext();
+                renderFlightPlanContext();
                 updateFlightPlanUI();
             } else {
                 sfx.playExplosion();
@@ -714,12 +705,12 @@
             if(e) { e.preventDefault(); e.stopPropagation(); }
             if (document.activeElement) document.activeElement.blur();
 
-            let cost = (type === 'bird' || type === 'windshield') ? 3000 : 1000;
+            let cost = (type === 'nvg') ? 2000 : 1000;
             
             if (playerProfile.points >= cost) {
-                if ((type === 'bird' || type === 'windshield') && !playerProfile.upgrades[type]) {
+                if ((type === 'bird' || type === 'windshield' || type === 'nvg') && !playerProfile.upgrades[type]) {
                     playerProfile.points -= cost; playerProfile.upgrades[type] = true; sfx.playDing(1.5);
-                } else if (type !== 'bird' && type !== 'windshield' && playerProfile.upgrades[type] < 3) {
+                } else if (type !== 'bird' && type !== 'windshield' && type !== 'nvg' && playerProfile.upgrades[type] < 3) {
                     playerProfile.points -= cost; playerProfile.upgrades[type]++; sfx.playDing(1.5);
                 } else { sfx.playExplosion(); return; }
                 saveProfile(); updateFlightPlanUI();
@@ -758,45 +749,6 @@
             }
         }
 
-function toggleFullscreen(e) {
-    if (e) { e.preventDefault(); e.stopPropagation(); }
-    
-    // Target the entire document (or you can target document.getElementById('takeoff-viewport'))
-    let elem = document.documentElement; 
-
-    // Check if we are currently in fullscreen mode using cross-browser properties
-    let isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-
-    if (!isFullscreen) {
-        // Enter Fullscreen
-        if (elem.requestFullscreen) { 
-            elem.requestFullscreen().catch(err => { 
-                alert("Fullscreen blocked by browser. If on an iPhone, iOS Safari does not support this feature natively."); 
-            }); 
-        }
-        else if (elem.webkitRequestFullscreen) { /* Safari / Older Chrome */
-            elem.webkitRequestFullscreen(); 
-        } 
-        else if (elem.msRequestFullscreen) { /* IE11 / Older Edge */
-            elem.msRequestFullscreen(); 
-        }
-        else { 
-            alert("Fullscreen API is not supported on this specific browser/device (e.g., iPhone Safari)."); 
-        }
-    } else {
-        // Exit Fullscreen
-        if (document.exitFullscreen) { 
-            document.exitFullscreen(); 
-        }
-        else if (document.webkitExitFullscreen) { /* Safari / Older Chrome */
-            document.webkitExitFullscreen(); 
-        }
-        else if (document.msExitFullscreen) { /* IE11 / Older Edge */
-            document.msExitFullscreen(); 
-        }
-    }
-}
-        
         function togglePause(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             if (document.activeElement) document.activeElement.blur();
@@ -809,9 +761,45 @@ function toggleFullscreen(e) {
             else { pauseOverlay.style.display = 'none'; pauseBtn.textContent = '⏸️'; sfx.bgMusic.play().catch(e=>e); tkState.lastFrameTime = performance.now(); }
         }
 
-        // --- INPUT HANDLING ---
+        function toggleNVG(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (document.activeElement) document.activeElement.blur();
+            if (tkState.weather !== 'night') return;
+            
+            tkState.nvgActive = !tkState.nvgActive;
+            const vp = document.getElementById('takeoff-viewport');
+            const btn = document.getElementById('nvg-btn');
+            
+            if (tkState.nvgActive) {
+                vp.classList.add('nvg-mode');
+                btn.style.background = 'var(--gauge-green)'; btn.style.color = '#000';
+                sfx.playDing(2.0);
+            } else {
+                vp.classList.remove('nvg-mode');
+                btn.style.background = 'rgba(46, 204, 113, 0.2)'; btn.style.color = 'var(--gauge-green)';
+                sfx.playDing(0.8);
+            }
+        }
+
+        function toggleFullscreen(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            let elem = document.documentElement;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                if (elem.requestFullscreen) { 
+                    elem.requestFullscreen().catch(err => { alert("Fullscreen API is restricted by your browser/device."); }); 
+                }
+                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
+                else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+                else { alert("Fullscreen is not supported on this browser (e.g., iOS Safari). Try 'Add to Home Screen'."); }
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); }
+                else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+                else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+            }
+        }
+
         window.addEventListener('pointerdown', (e) => {
-            if (e.target.tagName === 'BUTTON' || e.target.id === 'tk-touch-prompt' || e.target.closest('button')) return;
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
             if (tkState.inFlightPlan || tkState.isPaused) return; 
             sfx.init(); 
             tkState.pressing = true;
@@ -820,26 +808,18 @@ function toggleFullscreen(e) {
         window.addEventListener('touchend', () => tkState.pressing = false);
 
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyP' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
-                togglePause();
-            }
-            if (e.code === 'KeyD' || e.key === 'd' || e.key === 'D' || e.code === 'ShiftLeft') {
-                ejectCargo();
-            }
+            if (e.code === 'KeyP' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') { togglePause(); }
+            if (e.code === 'KeyD' || e.key === 'd' || e.key === 'D' || e.code === 'ShiftLeft') { ejectCargo(); }
+            if (e.code === 'KeyN' || e.key === 'n' || e.key === 'N') { toggleNVG(); }
             if (e.code === 'KeyR' || e.key === 'r' || e.key === 'R') {
-                if (tkState.active || document.getElementById('tk-end-screen').classList.contains('visible')) {
-                    hardReset();
-                }
+                if (tkState.active || document.getElementById('tk-end-screen').classList.contains('visible')) { hardReset(); }
             }
             if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault(); 
                 if (e.repeat) return; 
-                
                 if (document.activeElement) document.activeElement.blur();
-
                 if (tkState.active && !tkState.isPaused && !tkState.inFlightPlan && document.getElementById('tk-end-screen').style.display !== 'flex') {
-                    sfx.init(); 
-                    tkState.pressing = true;
+                    sfx.init(); tkState.pressing = true;
                 }
             }
             if (e.code === 'Enter' || e.key === 'Enter') {
@@ -852,7 +832,6 @@ function toggleFullscreen(e) {
             if (e.code === 'Space' || e.key === ' ') { e.preventDefault(); tkState.pressing = false; }
         });
 
-        // --- PROGRESS AND EVENT LOGGING ---
         function getCompletionPercentage() {
             let pct = 0;
             if (tkState.phase === 0) pct = Math.min(10, (tkState.speed / 150) * 10);
@@ -869,7 +848,6 @@ function toggleFullscreen(e) {
             tkState.events.push({ name: name, icon: icon, shortName: shortName, color: color || 'var(--fo-blue)', percent: getCompletionPercentage() });
         }
 
-        // --- CARGO MECHANICS ---
         function ejectCargo(e) {
             if(e) { e.preventDefault(); e.stopPropagation(); }
             if (document.activeElement) document.activeElement.blur();
@@ -896,7 +874,6 @@ function toggleFullscreen(e) {
             setTimeout(() => el.remove(), 1000); 
         }
 
-        // --- LEVEL ADVANCEMENT & LEADERBOARD ---
         function handleLevelAdvance(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             if (document.activeElement) document.activeElement.blur();
@@ -916,29 +893,79 @@ function toggleFullscreen(e) {
             }, 300);
         }
 
-        function getConditionScore() {
-            let condScore = 0;
-            condScore += playerProfile.upgrades.gear * 1000;
-            condScore += playerProfile.upgrades.engine * 1000;
-            condScore += playerProfile.upgrades.gyro * 1000;
-            condScore += playerProfile.upgrades.ap * 1000;
-            if(playerProfile.upgrades.bird) condScore += 3000;
-            if(playerProfile.upgrades.windShield) condScore += 3000;
-            return condScore;
-        }
-
         function showLeaderboard() {
-            let condScore = getConditionScore();
-            let finalScore = playerProfile.points + condScore;
+            let finalScore = getConditionScore();
+            
+            let maxPoints = 15; 
+            let currentPoints = playerProfile.upgrades.gear + playerProfile.upgrades.engine + playerProfile.upgrades.gyro + playerProfile.upgrades.ap;
+            if (playerProfile.upgrades.bird) currentPoints += 1;
+            if (playerProfile.upgrades.windShield) currentPoints += 1;
+            if (playerProfile.upgrades.nvg) currentPoints += 1;
+            
+            let finalIntegrity = Math.round((currentPoints / maxPoints) * 100);
+            tkState.finalCampaignScore = finalIntegrity; 
 
-            document.getElementById('lb-base-score').textContent = playerProfile.points;
-            document.getElementById('lb-cond-score').textContent = "+" + condScore;
-            document.getElementById('lb-final-score').textContent = finalScore;
+            document.getElementById('stat-funds').textContent = playerProfile.points;
+            let secs = Math.floor(playerProfile.campaignStats.flightTime / 1000);
+            let mins = Math.floor(secs / 60);
+            let remSecs = secs % 60;
+            document.getElementById('stat-time').textContent = `${mins}m ${remSecs}s`;
+            document.getElementById('stat-cargo').textContent = `${playerProfile.campaignStats.cargoHits} / ${playerProfile.campaignStats.cargoHits + playerProfile.campaignStats.cargoMisses}`;
+            document.getElementById('stat-stalls').textContent = `${playerProfile.campaignStats.stalls} / ${playerProfile.campaignStats.crashes}`;
 
             renderLeaderboardTable();
 
             document.getElementById('leaderboard-overlay').style.display = 'flex';
             setTimeout(() => { document.getElementById('leaderboard-overlay').classList.add('visible'); }, 50);
+
+            let intEl = document.getElementById('campaign-integrity');
+            let curInt = 0;
+            let intStep = Math.max(1, finalIntegrity / 50);
+
+            let rollInterval = setInterval(() => {
+                curInt += intStep;
+                if (curInt >= finalIntegrity) {
+                    curInt = finalIntegrity;
+                    clearInterval(rollInterval);
+                    
+                    if (finalIntegrity === 100) intEl.style.color = "var(--brand-gold)";
+                    else if (finalIntegrity >= 50) intEl.style.color = "var(--gauge-green)";
+                    else if (finalIntegrity >= 25) intEl.style.color = "var(--gauge-orange)";
+                    else intEl.style.color = "var(--brand-red)";
+
+                    if (finalIntegrity === 100) intEl.innerHTML = `FLAWLESS!<br><span style="font-size:1.5rem">100% INTEGRITY</span>`;
+                    else intEl.textContent = `${Math.floor(curInt)}%`;
+
+                    if (finalIntegrity >= 50) {
+                        sfx.playDing(1.5);
+                        let duration = finalIntegrity === 100 ? 5000 : 2500; 
+                        let end = Date.now() + duration;
+                        (function frame() {
+                            confetti({ particleCount: 8, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#cfa86e', '#2ecc71', '#fff'], zIndex: 9999999 });
+                            confetti({ particleCount: 8, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#cfa86e', '#2ecc71', '#fff'], zIndex: 9999999 });
+                            if (Date.now() < end) requestAnimationFrame(frame);
+                        }());
+                    } else {
+                        sfx.playExplosion();
+                        intEl.style.transform = "scale(1.1)";
+                        setTimeout(()=> intEl.style.transform = "scale(1)", 200);
+                    }
+                } else {
+                    intEl.textContent = `${Math.floor(curInt)}%`;
+                }
+            }, 30);
+        }
+
+        function getConditionScore() {
+            let condScore = 0;
+            condScore += playerProfile.upgrades.gear * 10000;
+            condScore += playerProfile.upgrades.engine * 10000;
+            condScore += playerProfile.upgrades.gyro * 10000;
+            condScore += playerProfile.upgrades.ap * 10000;
+            if(playerProfile.upgrades.bird) condScore += 25000;
+            if(playerProfile.upgrades.windShield) condScore += 25000;
+            if(playerProfile.upgrades.nvg) condScore += 10000;
+            return condScore;
         }
 
         function submitScore(e) {
@@ -948,7 +975,7 @@ function toggleFullscreen(e) {
             let nameInput = document.getElementById('pilot-name-input').value.trim();
             if (!nameInput) nameInput = "UNKNOWN";
 
-            let finalScore = playerProfile.points + getConditionScore();
+            let finalScore = tkState.finalCampaignScore || 0;
             
             let lb = localStorage.getItem('h5_leaderboard');
             let lbArr = lb ? JSON.parse(lb) : [];
@@ -975,7 +1002,7 @@ function toggleFullscreen(e) {
             lbArr.forEach((entry, i) => {
                 let row = document.createElement('tr');
                 let color = i === 0 ? "var(--brand-gold)" : (i === 1 ? "#ccc" : (i === 2 ? "#cd7f32" : "#888"));
-                row.innerHTML = `<td style="color:${color}; font-weight:bold;">#${i+1}</td><td>${entry.name}</td><td style="text-align:right; font-weight:bold; color:var(--gauge-green);">${entry.score}</td>`;
+                row.innerHTML = `<td style="color:${color}; font-weight:bold;">#${i+1}</td><td>${entry.name}</td><td style="text-align:right; font-weight:bold; color:var(--gauge-green);">${entry.score}%</td>`;
                 tbody.appendChild(row);
             });
         }
@@ -985,9 +1012,9 @@ function toggleFullscreen(e) {
             if (document.activeElement) document.activeElement.blur();
             
             playerProfile = { 
-                currentLevel: 1,
-                points: 1000, 
-                upgrades: { gear: 2, engine: 2, gyro: 2, ap: 2, bird: false, windShield: false } 
+                currentLevel: 1, points: 1000, 
+                upgrades: { gear: 2, engine: 2, gyro: 2, ap: 2, bird: false, windShield: false, nvg: false },
+                campaignStats: { stalls: 0, cargoHits: 0, cargoMisses: 0, flightTime: 0, crashes: 0 }
             };
             saveProfile();
             
@@ -995,7 +1022,6 @@ function toggleFullscreen(e) {
             setTimeout(() => { document.getElementById('leaderboard-overlay').style.display = 'none'; openFlightPlan(); }, 300);
         }
 
-        // --- END SCREEN LOGIC ---
         function showEndScreen(finalScore, isSuccess) {
             let es = document.getElementById('tk-end-screen');
             let title = document.getElementById('end-title-text');
@@ -1005,6 +1031,13 @@ function toggleFullscreen(e) {
             let stallEl = document.getElementById('end-stalls');
             let satEl = document.getElementById('end-satisfaction');
             let nextBtn = document.getElementById('btn-next-action');
+
+            if (!tkState.statsAdded) {
+                tkState.statsAdded = true;
+                playerProfile.campaignStats.stalls += tkState.stallsCount;
+                playerProfile.campaignStats.flightTime += tkState.totalFlightTime;
+                if (!isSuccess) playerProfile.campaignStats.crashes++;
+            }
             
             if (isSuccess) {
                 title.textContent = "MISSION ACCOMPLISHED"; title.style.color = "#fff";
@@ -1039,11 +1072,10 @@ function toggleFullscreen(e) {
 
             let finalSatisfaction = Math.min(100, baseSatisfaction + landingSatBonus);
             let stallPenalty = tkState.stallsCount * 100;
-            let totalScore = Math.max(0, finalScore - stallPenalty + landingScoreBonus);
+            let trafficMult = 1 + (tkState.trafficLevel * 0.5); 
+            let totalScore = Math.max(0, Math.floor((finalScore - stallPenalty + landingScoreBonus) * trafficMult));
             
-            if(isSuccess) {
-                playerProfile.points += totalScore; saveProfile();
-            }
+            if(isSuccess) { playerProfile.points += totalScore; saveProfile(); }
 
             stallEl.textContent = tkState.stallsCount;
             comfortEl.textContent = Math.floor(100 - comfortLoss) + '%';
@@ -1088,7 +1120,7 @@ function toggleFullscreen(e) {
             clearInterval(endScreenAnimInterval);
             endScreenAnimInterval = setInterval(() => {
                 if(curPct < finalPct) { curPct += pctStep; if(curPct >= finalPct) curPct = finalPct; pctEl.textContent = Math.floor(curPct) + '%'; }
-                let targetScore = phase2Score ? totalScore : Math.max(0, finalScore - stallPenalty);
+                let targetScore = phase2Score ? totalScore : Math.max(0, Math.floor((finalScore - stallPenalty) * trafficMult));
                 if(curScore < targetScore) { curScore += scoreStep; if(curScore >= targetScore) curScore = targetScore; scoreEl.textContent = Math.floor(curScore); }
 
                 if (!phase2Sat) {
@@ -1122,33 +1154,73 @@ function toggleFullscreen(e) {
             logEvent(`CRASH: ${reasonText}`, "❌", "CRASH", "var(--brand-red)");
             setDialogue(`<span class='alert-text'>${reasonText}</span>`, 4500);
             
-            // Apply Penalty
             playerProfile.points = Math.max(0, playerProfile.points - 500);
+            playerProfile.upgrades.bird = false;
+            playerProfile.upgrades.windShield = false;
+            playerProfile.upgrades.nvg = false;
+            
             let upgKeys = ['gear', 'engine', 'gyro', 'ap'];
-            let activeUpgrades = upgKeys.filter(k => playerProfile.upgrades[k] > 0);
-            let binaryUpgrades = [];
-            if (playerProfile.upgrades.bird) binaryUpgrades.push('bird');
-            if (playerProfile.upgrades.windShield) binaryUpgrades.push('windShield');
-
-            if (activeUpgrades.length > 0 || binaryUpgrades.length > 0) {
-                let total = activeUpgrades.length + binaryUpgrades.length;
-                let pick = Math.floor(Math.random() * total);
-                if (pick < activeUpgrades.length) {
-                    playerProfile.upgrades[activeUpgrades[pick]]--;
-                } else {
-                    playerProfile.upgrades[binaryUpgrades[pick - activeUpgrades.length]] = false;
+            for(let i=0; i<upgKeys.length; i++) {
+                let k = upgKeys[i];
+                if (playerProfile.upgrades[k] > 0) {
+                    playerProfile.upgrades[k]--;
                 }
             }
+            
             saveProfile();
-
             setTimeout(() => { showEndScreen(Math.floor(tkState.score), false); tkState.canRestart = true; }, 2500); 
         }
 
-        function hardReset(e) {
-            if (e) { e.preventDefault(); e.stopPropagation(); }
-            if (document.activeElement) document.activeElement.blur();
-            document.getElementById('tk-end-screen').classList.remove('visible'); 
-            setTimeout(() => { document.getElementById('tk-end-screen').style.display = 'none'; openFlightPlan(); }, 300);
+        function generateFlightPlanContext() {
+            let rand = Math.random();
+            tkState.weather = rand > 0.75 ? 'night' : (rand > 0.5 ? 'snow' : (rand > 0.25 ? 'sunrise' : 'day'));
+            
+            tkState.trafficLevel = Math.floor(Math.random() * 3); 
+
+            tkState.baseWindRisk = 10;
+            if(tkState.weather === 'night') tkState.baseWindRisk = 25;
+            if(tkState.weather === 'sunrise') tkState.baseWindRisk = 40;
+            if(tkState.weather === 'snow') tkState.baseWindRisk = 60;
+            
+            tkState.hasFogScenario = Math.random() < 0.25;
+            tkState.hasOvertakerScenario = Math.random() > 0.5;
+            tkState.hasBirdScenario = Math.random() < 0.25;
+            tkState.hasCargoMission = Math.random() < 0.25;
+            tkState.cargoCount = tkState.hasCargoMission ? Math.floor(Math.random() * 3) + 1 : 0;
+        }
+
+        function renderFlightPlanContext() {
+            let vp = document.getElementById('takeoff-viewport');
+            vp.classList.remove('night-weather', 'sunrise-weather', 'snow-weather', 'fog-scenario', 'nvg-mode');
+            vp.style.backgroundColor = ''; 
+            document.getElementById('nvg-btn').style.display = 'none';
+            document.getElementById('nvg-btn').style.background = 'rgba(46, 204, 113, 0.2)';
+            document.getElementById('nvg-btn').style.color = 'var(--gauge-green)';
+
+            if (tkState.weather !== 'day') vp.classList.add(tkState.weather + '-weather');
+            if (tkState.hasFogScenario) vp.classList.add('fog-scenario');
+
+            if (tkState.weather === 'night' && playerProfile.upgrades.nvg) {
+                document.getElementById('nvg-btn').style.display = 'flex';
+            }
+
+            let wText = "CLEAR"; let wColor = "var(--fo-blue)";
+            if (tkState.hasFogScenario) { wText = "HEAVY FOG"; wColor = "var(--brand-red)"; }
+            else if (tkState.weather === 'snow') { wText = "SNOWSTORM"; wColor = "#bdc3c7"; }
+            else if (tkState.weather === 'night') { wText = "NIGHT OPS"; wColor = "#8e44ad"; }
+            document.getElementById('fp-weather').textContent = wText; document.getElementById('fp-weather').style.color = wColor;
+            
+            let trafText = "NORMAL"; let trafColor = "var(--gauge-green)";
+            if (tkState.trafficLevel === 1) { trafText = "HIGH (1.5x)"; trafColor = "var(--brand-gold)"; }
+            else if (tkState.trafficLevel === 2) { trafText = "EXTREME (2.0x)"; trafColor = "var(--brand-red)"; }
+            document.getElementById('fp-traffic').textContent = trafText; document.getElementById('fp-traffic').style.color = trafColor;
+
+            let cEl = document.getElementById('fp-cargo-text');
+            if (tkState.hasCargoMission) { cEl.style.display = "block"; cEl.textContent = `${tkState.cargoCount} CARGO DROP`; }
+            else { cEl.style.display = "none"; }
+
+            let wRiskEl = document.getElementById('fp-wind-risk'); wRiskEl.textContent = tkState.baseWindRisk + "%";
+            wRiskEl.style.color = tkState.baseWindRisk > 25 ? "var(--brand-red)" : "var(--brand-gold)";
         }
 
         function openFlightPlan(e) {
@@ -1158,63 +1230,51 @@ function toggleFullscreen(e) {
             
             document.getElementById('tk-touch-prompt').style.display = 'none';
             
-            let rand = Math.random();
-            let weather = 'day';
-            let vp = document.getElementById('takeoff-viewport');
-            vp.classList.remove('night-weather', 'sunrise-weather', 'snow-weather', 'fog-scenario');
-            vp.style.backgroundColor = ''; 
-            
-            if (rand > 0.75) { weather = 'night'; vp.classList.add('night-weather'); } 
-            else if (rand > 0.5) { weather = 'snow'; vp.classList.add('snow-weather'); } 
-            else if (rand > 0.25) { weather = 'sunrise'; vp.classList.add('sunrise-weather'); }
-
             tkState = {
-                active: false, isPaused: false, inFlightPlan: true, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, altitude: 0, cameraY: 0, score: 0, 
+                active: false, isPaused: false, inFlightPlan: true, nvgActive: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, altitude: 0, cameraY: 0, score: 0, 
                 pressing: false, frameId: null, lastFrameTime: 0, 
                 currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260, 
-                dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: 0.5625, autoPilot: false, weather: weather, canRestart: false,
+                dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: 0.5625, autoPilot: false, weather: "day", canRestart: false,
                 hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [],
                 
-                baseWindRisk: 10,
-                
-                gearRisk: 0, engineRisk: 0, windRisk: 0, gyroRisk: 0, apRisk: 0,
-                hasFogScenario: Math.random() < 0.25,
-                hasOvertakerScenario: Math.random() > 0.5, overtakerActive: false, overtakerX: -200, overtakerAltitude: 0,
-                hasBirdScenario: Math.random() < 0.25, birdActive: false, birdX: window.innerWidth + 200, birdAlt: 0,
-                hasCargoMission: Math.random() < 0.25, dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0, dropCountdown: 3, cargoPrompted: false, cargoTimer: 0,
+                gearRisk: 0, engineRisk: 0, windRisk: 0, gyroRisk: 0, apRisk: 0, trafficLevel: 0,
+                hasFogScenario: false, hasOvertakerScenario: false, hasBirdScenario: false, hasCargoMission: false,
+                dropZoneSpawned: false, dropZoneX: 0, cargoCount: 0, dropCountdown: 3, cargoPrompted: false, cargoTimer: 0,
                 gearBroken: false, gearBreakAlt: 99999, stallFactor: 0, 
                 
-                // FIXED SWARM ARRAY INITIALIZATION
                 enemies: [
-                    {active: false, x: 0, alt: 0, spd: 0},
-                    {active: false, x: 0, alt: 0, spd: 0},
-                    {active: false, x: 0, alt: 0, spd: 0},
-                    {active: false, x: 0, alt: 0, spd: 0},
-                    {active: false, x: 0, alt: 0, spd: 0}
+                    {active: false, x: 0, alt: 0, spd: 0}, {active: false, x: 0, alt: 0, spd: 0},
+                    {active: false, x: 0, alt: 0, spd: 0}, {active: false, x: 0, alt: 0, spd: 0},
+                    {active: false, x: 0, alt: 0, spd: 0}, {active: false, x: 0, alt: 0, spd: 0},
+                    {active: false, x: 0, alt: 0, spd: 0}, {active: false, x: 0, alt: 0, spd: 0},
+                    {active: false, x: 0, alt: 0, spd: 0}, {active: false, x: 0, alt: 0, spd: 0},
+                    {active: false, x: 0, alt: 0, spd: 0}, {active: false, x: 0, alt: 0, spd: 0}
                 ], 
-                
+                overtakers: [
+                    {active: false, warning: false, warningTimer: 0, x: -500, alt: 0, spd: 0},
+                    {active: false, warning: false, warningTimer: 0, x: -500, alt: 0, spd: 0},
+                    {active: false, warning: false, warningTimer: 0, x: -500, alt: 0, spd: 0}
+                ],
                 activeCargo: [],
                 stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0, apState: 0,
-                hasWindPocket: false, windPocketSpawned: false, windPocketX: window.innerWidth + 500, windPocketTriggered: false, windPocketTimer: 0, gyroFailed: false
+                hasWindPocket: false, windPocketSpawned: false, windPocketX: window.innerWidth + 500, windPocketTriggered: false, windPocketTimer: 0, gyroFailed: false,
+                statsAdded: false, finalCampaignScore: 0
             };
+
+            document.querySelectorAll('.rear-warning').forEach(el => el.style.display = 'none');
             
-            if(tkState.weather === 'night') tkState.baseWindRisk = 25;
-            if(tkState.weather === 'sunrise') tkState.baseWindRisk = 40;
-            if(tkState.weather === 'snow') tkState.baseWindRisk = 60;
-
-            if(tkState.hasCargoMission) tkState.cargoCount = Math.floor(Math.random() * 3) + 1;
-
-            if (tkState.hasFogScenario) vp.classList.add('fog-scenario');
-
+            generateFlightPlanContext();
+            
             document.getElementById('fp-sector-title').textContent = "SECTOR " + playerProfile.currentLevel + " OF 5";
-
             document.getElementById('tk-eject-btn').style.display = 'none';
             document.getElementById('tk-drop-zone').style.display = 'none';
             document.getElementById('tk-wind-pocket').style.display = 'none';
             document.getElementById('tk-plane-img').src = playerPlaneSkin;
             document.getElementById('plane-container').style.display = 'block';
+            
             document.querySelectorAll('.tk-enemy').forEach(el => el.style.display = 'none');
-            document.getElementById('tk-overtaker-plane').style.display = 'none';
+            document.querySelectorAll('.tk-overtaker').forEach(el => el.style.display = 'none');
+            
             document.getElementById('tk-bird-flock').style.display = 'none';
             document.getElementById('tk-mountain').style.display = 'none';
             document.getElementById('tk-alert-overlay').className = '';
@@ -1229,20 +1289,8 @@ function toggleFullscreen(e) {
             document.getElementById('tk-threat-fog').style.transform = `translate3d(0, 0px, 0)`;
             document.getElementById('camera-rig').style.transform = `scale(1)`;
 
-            let wText = "CLEAR"; let wColor = "var(--fo-blue)";
-            if (tkState.hasFogScenario) { wText = "HEAVY FOG"; wColor = "var(--brand-red)"; }
-            else if (weather === 'snow') { wText = "SNOWSTORM"; wColor = "#bdc3c7"; }
-            else if (weather === 'night') { wText = "NIGHT OPS"; wColor = "#8e44ad"; }
-            document.getElementById('fp-weather').textContent = wText; document.getElementById('fp-weather').style.color = wColor;
-            
-            let cEl = document.getElementById('fp-cargo-text');
-            if (tkState.hasCargoMission) { cEl.style.display = "block"; cEl.textContent = `${tkState.cargoCount} CARGO DROP`; }
-            else { cEl.style.display = "none"; }
-
+            renderFlightPlanContext();
             updateFlightPlanUI();
-
-            let wRiskEl = document.getElementById('fp-wind-risk'); wRiskEl.textContent = tkState.baseWindRisk + "%";
-            wRiskEl.style.color = tkState.baseWindRisk > 25 ? "var(--brand-red)" : "var(--brand-gold)";
 
             const fpOverlay = document.getElementById('tk-flight-plan-overlay');
             fpOverlay.style.display = 'flex';
@@ -1281,14 +1329,12 @@ function toggleFullscreen(e) {
                     setDialogue("<span class='capt-text'>FULL POWER!<br><span style='font-size:0.65rem; color:var(--aux-blue);'>TAP PLANE FOR AUTOPILOT</span></span>", 5000);
                 }
 
-                // FIX FOR FREEZE BUG: Explicitly reset to 0
                 tkState.lastFrameTime = 0; 
                 sfx.bgMusic.play().catch(e=>e);
                 tkState.frameId = requestAnimationFrame(gameLoop);
             }, 300);
         }
 
-        // --- HARDWARE ACCELERATED PARTICLES ---
         function spawnSmoke(x, y) {
             let p = document.createElement('div'); p.className = 'smoke-particle';
             let gray = Math.floor(Math.random() * 80) + 20; p.style.backgroundColor = `rgba(${gray}, ${gray}, ${gray}, 0.8)`;
@@ -1482,7 +1528,7 @@ function toggleFullscreen(e) {
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && displaySpeed > 145 && tkState.altitude > 0);
-            let isTooHigh = (tkState.altitude > 1500 && tkState.phase >= 1 && tkState.phase <= 4);
+            let isTooHigh = (tkState.altitude > 1000 && tkState.phase >= 1 && tkState.phase <= 4); 
             sfx.playAlarm(isStalling);
             
             if (isStalling && !tkState.wasStalling) { tkState.stallsCount++; } tkState.wasStalling = isStalling;
@@ -1490,9 +1536,20 @@ function toggleFullscreen(e) {
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
             if (tkState.stallFactor > 0) targetVSpeed = (targetVSpeed * (1 - tkState.stallFactor)) + (-15 * Math.pow(tkState.stallFactor, 2) * SPEED_MOD);
             
+            // ALTITUDE POINT DRAIN
+            if (isTooHigh) {
+                tkState.score -= 2 * SPEED_MOD;
+                if (tkState.score < 0) tkState.score = 0;
+                if (Math.random() < 0.3) {
+                    const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
+                    showFloat(pr.left + pr.width/2 + (Math.random()*40-20), pr.top, "-10 PTS", "var(--brand-red)");
+                    sfx.playDing(0.4);
+                }
+            }
+
             if (isStalling) { document.getElementById('tk-alert-overlay').className = 'flashing'; setDialogue("<span class='alert-text'>STALL WARNING!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
             } else if (isTooFast) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 1500);
-            } else if (isTooHigh) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>DESCEND! LOW VISIBILITY!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
+            } else if (isTooHigh) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0 || tkState.dialogueText.includes("VISIBILITY")) setDialogue("<span class='alert-text'>TOO HIGH! LOSING POINTS!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
             } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>" && tkState.dialogueText !== "<span class='alert-text'>WIND SHEAR!</span>" && tkState.dialogueText !== "<span class='alert-text'>GYROSCOPE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT OFFLINE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>" && tkState.dialogueText !== "<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>" && !tkState.dialogueText.includes("DROP NOW!")) { document.getElementById('tk-alert-overlay').className = ''; }
 
             tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.12;
@@ -1518,10 +1575,30 @@ function toggleFullscreen(e) {
             let dynColor = `hsl(${p_hue}, 85%, 55%)`; hudRing.style.borderColor = dynColor; document.getElementById('hud-pitch').style.color = dynColor;
             
             const scoreValEl = document.getElementById('score-val');
+            const altHud = document.getElementById('hud-alt');
+            const scoreHud = document.getElementById('tk-score-display');
+
+            if (isTooHigh) {
+                altHud.style.color = 'var(--brand-red)';
+                scoreHud.style.color = 'var(--brand-red)';
+                scoreHud.style.borderColor = 'var(--brand-red)';
+                scoreHud.style.boxShadow = '0 0 10px var(--brand-red)';
+            } else {
+                altHud.style.color = '#fff';
+                scoreHud.style.color = 'var(--brand-gold)';
+                scoreHud.style.borderColor = 'var(--brand-gold)';
+                scoreHud.style.boxShadow = 'none';
+            }
+
             if (inHUDZone && tkState.phase > 0 && tkState.phase < 6) {
-                tkState.score += tkState.autoPilot ? 10 : 4; scoreValEl.style.color = tkState.autoPilot ? '#cfa86e' : '#fff';
-                if (Math.random() > 0.4) { const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); spawnScoreParticle(pr.left + pr.width / 2, pr.top + pr.height / 2, tkState.pitch); }
-            } else { scoreValEl.style.color = '#fff'; }
+                if (!isTooHigh) {
+                    tkState.score += tkState.autoPilot ? 10 : 4; 
+                    if (Math.random() > 0.4) { const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); spawnScoreParticle(pr.left + pr.width / 2, pr.top + pr.height / 2, tkState.pitch); }
+                }
+                if (!isTooHigh) scoreValEl.style.color = tkState.autoPilot ? '#cfa86e' : '#fff';
+            } else { 
+                if (!isTooHigh) scoreValEl.style.color = '#fff'; 
+            }
             scoreValEl.textContent = Math.floor(tkState.score);
 
             if (tkState.altitude <= 0 && tkState.hasLiftedOff) {
@@ -1606,23 +1683,66 @@ function toggleFullscreen(e) {
                     let hit = (pkgRect.right > dz.left && pkgRect.left < dz.right);
                     if (hit) {
                         tkState.score += 500; logEvent("CARGO DELIVERED", "📦", "DELIVERY", "var(--gauge-green)"); showFloat(x, y - 40, "+500 PTS", "var(--gauge-green)"); sfx.playDing(2.0);
+                        playerProfile.campaignStats.cargoHits++;
                     } else {
                         tkState.score -= 200; logEvent("CARGO MISSED", "❌", "MISSED", "var(--brand-red)"); showFloat(x, y - 40, "-200 PTS", "var(--brand-red)"); sfx.playExplosion();
+                        playerProfile.campaignStats.cargoMisses++;
                     }
                     pkg.remove(); tkState.activeCargo.splice(i, 1);
                 }
             }
 
-            // Overtaker (Fixed to PX)
-            if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && !tkState.overtakerActive && tkState.altitude > 200 && tkState.overtakerX === -200 && Math.random() < 0.005) {
-                tkState.overtakerActive = true; tkState.overtakerAltitude = tkState.altitude; logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 4000); document.getElementById('tk-overtaker-plane').style.display = 'block';
+            // Overtaker (Fixed to PX + Red Warning Delay)
+            let trySpawnOvertaker = false;
+            if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && Math.random() < 0.005) { trySpawnOvertaker = true; }
+            if (tkState.trafficLevel === 2 && tkState.phase === 3 && Math.random() < 0.015) { trySpawnOvertaker = true; } 
+
+            if (trySpawnOvertaker) {
+                let slot = tkState.overtakers.findIndex(o => !o.active && !o.warning);
+                if (slot !== -1) {
+                    let o = tkState.overtakers[slot];
+                    o.warning = true; 
+                    o.warningTimer = 2000; // 2-second visual warning delay before spawning
+                    o.alt = tkState.altitude + (Math.random() * 100 - 50); 
+                    if (tkState.phase === 3) {
+                        o.spd = (2 + Math.random() * 3) * SPEED_MOD; // Creep up slowly during extreme mode
+                    } else {
+                        o.spd = (15 + Math.random() * 5) * SPEED_MOD; 
+                    }
+                    logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 4000); 
+                }
             }
-            if (tkState.overtakerActive) {
-                tkState.overtakerX += (15 * SPEED_MOD); let gp = document.getElementById('tk-overtaker-plane'); gp.style.transform = `translate3d(${tkState.overtakerX}px, ${-(tkState.overtakerAltitude - tkState.cameraY)}px, 0)`;
-                const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); const gr = gp.getBoundingClientRect();
-                if (!( (pr.right - 12) < (gr.left + 15) || (pr.left + 12) > (gr.right - 15) || (pr.bottom - 12) < (gr.top + 25) || (pr.top + 25) > (gr.bottom - 10) )) { return triggerCrash("MID-AIR CRASH!"); }
-                if (tkState.overtakerX > window.innerWidth + 200) { tkState.overtakerActive = false; gp.style.display = 'none'; }
-            }
+
+            tkState.overtakers.forEach((o, i) => {
+                let rw = document.getElementById('rear-warning-' + i);
+                if (o.warning) {
+                    o.warningTimer -= delta;
+                    if (rw) {
+                        rw.style.display = 'block';
+                        rw.style.transform = `translate3d(0, ${-(o.alt - tkState.cameraY) + 15}px, 0)`;
+                        rw.innerHTML = `⚠️ TRAFFIC: ${Math.ceil(o.warningTimer/1000)}s`;
+                    }
+                    
+                    if (o.warningTimer <= 0) {
+                        o.warning = false;
+                        o.active = true;
+                        o.x = -250;
+                        document.getElementById('overtaker-' + i).style.display = 'block';
+                        if (rw) rw.style.display = 'none';
+                    }
+                } else if (o.active) {
+                    if (rw) rw.style.display = 'none';
+                    o.x += o.spd; 
+                    let el = document.getElementById('overtaker-' + i); 
+                    el.style.transform = `translate3d(${o.x}px, ${-(o.alt - tkState.cameraY)}px, 0)`;
+                    const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
+                    const gr = el.getBoundingClientRect();
+                    if (!( (pr.right - 12) < (gr.left + 15) || (pr.left + 12) > (gr.right - 15) || (pr.bottom - 12) < (gr.top + 25) || (pr.top + 25) > (gr.bottom - 10) )) { return triggerCrash("MID-AIR CRASH!"); }
+                    if (o.x > window.innerWidth + 200) { o.active = false; el.style.display = 'none'; }
+                } else {
+                    if (rw) rw.style.display = 'none';
+                }
+            });
 
             // Birds (Fixed to PX)
             if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 250 && tkState.phase < 4 && tkState.birdX > window.innerWidth && Math.random() < 0.005) {
@@ -1662,9 +1782,23 @@ function toggleFullscreen(e) {
             }
 
             if (tkState.phase === 3) {
-                let maxEnemies = Math.min(5, Math.floor(1 + (tkState.phaseTimer / 12000) * 4)); if (tkState.phaseTimer > 12000) maxEnemies = 0; 
+                let maxEnemiesBase = Math.floor(1 + (tkState.phaseTimer / 12000) * 4);
+                let maxEnemies = Math.min(12, maxEnemiesBase + (tkState.trafficLevel * 3));
+                if (tkState.phaseTimer > 12000) maxEnemies = 0; 
+                
                 let activeCount = tkState.enemies.filter(e => e.active).length;
-                if (activeCount < maxEnemies && Math.random() < 0.04) { let slotIdx = tkState.enemies.findIndex(e => !e.active); if (slotIdx !== -1) { let e = tkState.enemies[slotIdx]; e.active = true; e.x = window.innerWidth + 200; e.alt = tkState.altitude + (Math.random() * 160 - 80); e.spd = (12 + Math.random() * 10) * SPEED_MOD; document.getElementById('enemy-' + slotIdx).style.display = 'block'; } }
+                let spawnChance = 0.04 + (tkState.trafficLevel * 0.03);
+
+                if (activeCount < maxEnemies && Math.random() < spawnChance) { 
+                    let slotIdx = tkState.enemies.findIndex(e => !e.active); 
+                    if (slotIdx !== -1) { 
+                        let e = tkState.enemies[slotIdx]; e.active = true; 
+                        e.x = window.innerWidth + 200; e.alt = tkState.altitude + (Math.random() * 160 - 80); 
+                        e.spd = (15 + Math.random() * 15) * SPEED_MOD; // Fast pixel movement!
+                        document.getElementById('enemy-' + slotIdx).style.display = 'block'; 
+                    } 
+                }
+
                 let collision = false; const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
                 tkState.enemies.forEach((e, i) => {
                     if (e.active) {

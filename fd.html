@@ -24,7 +24,6 @@
             font-family: 'Share Tech Mono', monospace;
             width: 100%; height: 100%; overflow: hidden; 
             user-select: none; 
-            /* touch-action removed from body so modals can scroll */
         }
 
         /* Mobile Landscape Orientation Lock */
@@ -42,7 +41,7 @@
         #takeoff-viewport {
             width: 100%; height: 100%; position: relative; overflow: hidden; 
             background-color: #87CEEB; cursor: pointer; transition: background-color 0.5s;
-            touch-action: none; /* Touch lock applied ONLY to the game background */
+            touch-action: none; 
         }
         
         #tk-alert-overlay {
@@ -144,22 +143,33 @@
         .pf-3 { width: 100px; height: 100px; border: 4px solid rgba(255, 100, 50, 0.1); background: transparent; }
         .pf-4 { width: 15px; height: 15px; background: rgba(255, 255, 255, 0.4); }
 
-        #plane-container { position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; pointer-events: none; width: 150px; height: 50px; will-change: transform; }
+        /* PLANE CONTAINER IS NOW TAPABLE */
+        #plane-container { 
+            position: absolute; left: 30%; bottom: 65px; transform: translateX(-50%); z-index: 10; 
+            pointer-events: auto; cursor: pointer; width: 150px; height: 50px; will-change: transform; 
+        }
         #plane-rotate-group { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: center center; z-index: 12; will-change: transform; }
-        #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; transition: filter 0.5s; }
+        #tk-plane-img { width: 100%; height: 100%; object-fit: contain; position: relative; transition: filter 0.5s; pointer-events: none;}
         
-        #plane-hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; border-radius: 50%; border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11; will-change: transform; }
-        .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; }
+        #ap-indicator {
+            position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
+            background: var(--gauge-green); color: #000; font-size: 0.7rem; padding: 2px 8px;
+            border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-weight: bold;
+            display: none; z-index: 15; box-shadow: 0 0 10px var(--gauge-green); pointer-events: none;
+        }
+
+        #plane-hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; border-radius: 50%; border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; z-index: 11; will-change: transform; pointer-events: none;}
+        .hud-text { position: absolute; font-weight: bold; text-shadow: 2px 2px 4px #000; text-align: center; color: #fff; pointer-events: none;}
         .hud-label { font-size: 0.5rem; opacity: 0.8; display: block; }
         .hud-val { font-size: 1rem; display: block; }
         #hud-spd { left: -5px; top: 50%; transform: translate(-100%, -50%); }
         #hud-pitch { right: -5px; top: 50%; transform: translate(100%, -50%); }
         #hud-alt { bottom: -5px; left: 50%; transform: translate(-50%, 100%); }
 
-        #landing-guide { position: absolute; top: 25px; left: 75px; transform: translate(-50%, -50%); width: 220px; height: 80px; border: 2px solid transparent; border-left: 4px solid var(--gauge-green); border-right: 4px solid var(--gauge-green); border-radius: 15px; display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; z-index: 5; }
+        #landing-guide { position: absolute; top: 25px; left: 75px; transform: translate(-50%, -50%); width: 220px; height: 80px; border: 2px solid transparent; border-left: 4px solid var(--gauge-green); border-right: 4px solid var(--gauge-green); border-radius: 15px; display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; z-index: 5; pointer-events: none;}
         .guide-label { position: absolute; bottom: -20px; text-align: center; color: var(--gauge-green); font-weight: bold; font-size: 0.8rem; text-shadow: 1px 1px 2px #000; }
 
-        #dialogue-bubble { position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20; font-weight: bold; text-transform: uppercase; }
+        #dialogue-bubble { position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20; font-weight: bold; text-transform: uppercase; pointer-events: none;}
         #dialogue-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent; }
         
         .capt-text { color: #111; font-weight: bold; }
@@ -170,26 +180,22 @@
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
         #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold);}
         
-        #reset-btn { background: rgba(215, 25, 32, 0.9); border: 2px solid #fff; border-radius: 8px; color: #fff; font-size: 1rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
-        #ap-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #aaa; font-size: 0.9rem; cursor: pointer; padding: 0 12px; height: 40px; font-family: 'Share Tech Mono', monospace; font-weight: bold; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: auto; }
-        #ap-btn:active { transform: scale(0.95); }
+        #reset-btn { background: rgba(215, 25, 32, 0.9); border: 2px solid #fff; border-radius: 8px; color: #fff; font-size: 1rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; pointer-events: auto;}
         
         #fs-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #aaa; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: auto; }
         #fs-btn:active { transform: scale(0.95); }
 
         #prompt-container { position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        
-        /* TOUCH PROMPT CLICK REMOVED, WE RELY ON GLOBAL POINTERDOWN NOW */
-        #tk-touch-prompt { background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px; padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase; margin-bottom: 10px; pointer-events: none; animation: pulseText 1.5s infinite;}
+        #tk-touch-prompt { background: rgba(0, 0, 0, 0.85); border: 1px solid #fff; border-radius: 6px; padding: 8px 16px; text-align: center; color: #fff; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: auto; text-transform: uppercase; margin-bottom: 10px; cursor: pointer; pointer-events: auto;}
         
         #install-btn { background: var(--fo-blue); border: 2px solid #fff; border-radius: 6px; padding: 8px 16px; color: #fff; font-size: 0.9rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); font-family: 'Share Tech Mono', monospace; display: none; pointer-events: auto; }
 
         /* Traffic Planes */
-        .tk-enemy, #tk-overtaker-plane { position: absolute; bottom: 65px; width: 162px; height: 56px; z-index: 9; display: none; left: 0; will-change: transform; }
+        .tk-enemy, #tk-overtaker-plane { position: absolute; bottom: 65px; width: 162px; height: 56px; z-index: 9; display: none; left: 0; will-change: transform; pointer-events: none;}
         .tk-enemy img { width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1); }
         #tk-overtaker-plane img { width: 100%; height: 100%; object-fit: contain; } 
         
-        #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform;}
+        #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform; pointer-events: none;}
         
         #tk-bird-flock { position: absolute; bottom: 65px; width: 40px; left: 0; height: 30px; z-index: 9; display: none; pointer-events: none; will-change: transform; }
         .bird { position: absolute; width: 4px; height: 4px; background: #111; border-radius: 50%; box-shadow: 12px 6px #111, -8px 10px #111, 16px 14px #111, 6px -4px #111; animation: flap 0.3s infinite alternate; }
@@ -260,20 +266,19 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v4.2 - Flight Plan & Scrolling Fix</div>
+        <div id="tk-version">v5.0 - Plane Tap AP & Shorter Climb</div>
         <div id="tk-alert-overlay"></div>
         
         <div id="tk-hud-top">
             <div class="top-left-controls">
                 <button id="reset-btn" onclick="hardReset(event)">❌</button>
-                <button id="ap-btn" onclick="toggleAutoPilot(event)">AUTO</button>
                 <button id="fs-btn" onclick="toggleFullscreen(event)">⛶</button>
             </div>
             <div id="tk-score-display">SCORE: <span id="score-val">0</span></div>
         </div>
         
         <div id="prompt-container">
-            <div id="tk-touch-prompt">TAP TO VIEW FLIGHT PLAN</div>
+            <div id="tk-touch-prompt" onclick="startFlight(event)">TAP TO VIEW FLIGHT PLAN</div>
             <button id="install-btn" onclick="installApp(event)">INSTALL APP</button>
         </div>
         
@@ -286,7 +291,8 @@
             <div class="weather-layer rain-layer layer-1"></div>
             <div class="weather-layer snow-layer layer-1"></div>
 
-            <div id="plane-container">
+            <div id="plane-container" onpointerdown="toggleAutoPilot(event)">
+                <div id="ap-indicator">AUTO</div>
                 <div id="dialogue-bubble"></div>
                 <div id="landing-guide"><div class="guide-label">-5&deg; TO 15&deg;</div></div>
                 <div id="plane-rotate-group">
@@ -410,6 +416,7 @@
         let SPEED_MOD = 0.75; 
         let playerPlaneSkin = 'my-plane.png';
         let playerNoGearSkin = 'my-plane-nolandinggear.png';
+        const CRUISE_ALT = 450; // Lowered to make 15-degree climb sequence shorter
 
         // --- PWA INSTALLATION LOGIC ---
         let deferredPrompt;
@@ -534,8 +541,6 @@
             stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0
         };
 
-        const CRUISE_ALT = 600; 
-
         setDialogue("<span class='capt-text'>STANDBY...</span>", 999999);
 
         function setDialogue(text, timeMs) {
@@ -544,18 +549,18 @@
         }
 
         function toggleAutoPilot(e) {
-            if (e) { e.preventDefault(); e.stopPropagation(); }
             if (!tkState.active || tkState.phase === 0 || tkState.phase >= 6) return; 
+            if (e) { e.preventDefault(); e.stopPropagation(); }
 
             tkState.autoPilot = !tkState.autoPilot;
-            const btn = document.getElementById('ap-btn');
+            const apInd = document.getElementById('ap-indicator');
             
             if (tkState.autoPilot) {
-                btn.style.background = 'var(--gauge-green)'; btn.style.borderColor = '#fff'; btn.style.color = '#000';
-                btn.style.boxShadow = '0 0 15px var(--gauge-green)'; sfx.playDing(1.5); 
+                apInd.style.display = 'block';
+                sfx.playDing(1.5); 
             } else {
-                btn.style.background = '#333'; btn.style.borderColor = '#aaa'; btn.style.color = '#aaa';
-                btn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)'; sfx.playDing(0.8);
+                apInd.style.display = 'none';
+                sfx.playDing(0.8);
             }
         }
 
@@ -563,8 +568,8 @@
         window.addEventListener('pointerdown', (e) => {
             if (e.target.tagName === 'BUTTON') return;
             if (tkState.inFlightPlan) return; 
-            
             sfx.init(); 
+            
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 try {
                     let elem = document.documentElement;
@@ -586,7 +591,6 @@
                 e.preventDefault(); 
                 if (e.repeat) return; 
                 if (tkState.inFlightPlan) return;
-
                 sfx.init(); 
                 if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                     try { document.documentElement.requestFullscreen().catch(e=>{}); } catch(e) {}
@@ -762,8 +766,8 @@
             document.getElementById('end-completion-val').textContent = '0%';
             document.getElementById('end-completion-val').style.color = 'var(--fo-blue)';
 
-            const apBtn = document.getElementById('ap-btn');
-            apBtn.style.background = '#333'; apBtn.style.borderColor = '#aaa'; apBtn.style.color = '#aaa'; apBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
+            const apInd = document.getElementById('ap-indicator');
+            if (apInd) apInd.style.display = 'none';
 
             document.getElementById('tk-plane-img').src = playerPlaneSkin;
             
@@ -851,8 +855,11 @@
                 tkState.inFlightPlan = false;
                 tkState.active = true;
                 
-                if (tkState.hasFogScenario) setDialogue("<span class='alert-text'>HEAVY FOG AHEAD!</span>", 4000);
-                else setDialogue("<span class='capt-text'>FULL POWER!</span>", 3000);
+                if (tkState.hasFogScenario) {
+                    setDialogue("<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>", 6000);
+                } else {
+                    setDialogue("<span class='capt-text'>FULL POWER!<br><span style='font-size:0.65rem; color:var(--aux-blue);'>TAP PLANE FOR AUTOPILOT</span></span>", 5000);
+                }
 
                 tkState.lastFrameTime = performance.now();
                 tkState.frameId = requestAnimationFrame(gameLoop);
@@ -988,7 +995,7 @@
                 if (tkState.speed <= 0) { 
                     tkState.active = false; 
                     logEvent("SAFE LANDING", "🏁", "LANDED", "var(--gauge-green)");
-                    setDialogue("<span class='success-text'>SAFE! EVACUATE!</span>", 5000); 
+                    setDialogue("<span class='success-text'>SAFE! EVACUATE!</span>", 6000); 
                     sfx.stopAll(); 
                     setTimeout(() => { showEndScreen(Math.floor(tkState.score), true); tkState.canRestart = true; }, 1500); 
                     return; 
@@ -1018,7 +1025,7 @@
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && tkState.speed > 145 && tkState.altitude > 0);
-            let isTooHigh = (tkState.altitude > 1500 && tkState.phase >= 1 && tkState.phase <= 4);
+            let isTooHigh = (tkState.altitude > 800 && tkState.phase >= 1 && tkState.phase <= 4);
             
             sfx.playAlarm(isStalling);
             
@@ -1031,12 +1038,12 @@
             if (tkState.stallFactor > 0) targetVSpeed = (targetVSpeed * (1 - tkState.stallFactor)) + (-15 * Math.pow(tkState.stallFactor, 2) * SPEED_MOD);
             
             if (isStalling) { 
-                document.getElementById('tk-alert-overlay').className = 'flashing'; setDialogue("<span class='alert-text'>STALL WARNING!</span>", 500); if(tkState.autoPilot) toggleAutoPilot();
+                document.getElementById('tk-alert-overlay').className = 'flashing'; setDialogue("<span class='alert-text'>STALL WARNING!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
             } else if (isTooFast) {
-                document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 500);
+                document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 1500);
             } else if (isTooHigh) {
-                document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>DESCEND! LOW VISIBILITY!</span>", 500); if(tkState.autoPilot) toggleAutoPilot();
-            } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!</span>") {
+                document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>DESCEND! LOW VISIBILITY!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
+            } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>") {
                 document.getElementById('tk-alert-overlay').className = '';
             }
 
@@ -1079,6 +1086,7 @@
                 else if (tkState.phase === 5) {
                     let badAngle = (isStalling || tkState.pitch < -5 || tkState.pitch > 15);
                     let hotLanding = (tkState.speed > 160);
+                    
                     if (badAngle && hotLanding) return triggerCrash("TOO FAST & BAD ANGLE!");
                     if (badAngle) return triggerCrash("FATAL ANGLE!");
                     if (hotLanding) return triggerCrash("TOO FAST!");
@@ -1088,12 +1096,12 @@
             // TIME-BASED PHASE LOGIC
             if (tkState.phase === 0 && tkState.speed >= 150) { 
                 tkState.phase = 1; tkState.phaseTimer = 0;
-                setDialogue("<span class='capt-text'>V1! PULL UP!</span>", 3000); 
+                setDialogue("<span class='capt-text'>V1! KEEP 15 DEGREES</span>", 99999); 
             }
             
             // Random Gear Break (Climb)
             if (tkState.phase === 1 && tkState.altitude >= tkState.gearBreakAlt && !tkState.gearBroken) {
-                tkState.gearBroken = true; sfx.playExplosion(); setDialogue("<span class='alert-text'>GEAR SNAP!</span>", 3000);
+                tkState.gearBroken = true; sfx.playExplosion(); setDialogue("<span class='alert-text'>GEAR SNAP!</span>", 4000);
                 logEvent("GEAR SNAP", "⚙️", "GEAR DMG", "var(--brand-gold)");
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
             }
@@ -1102,14 +1110,14 @@
             if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { 
                 tkState.phase = 2; tkState.phaseTimer = 0;
                 tkState.currTargetMin = -3; tkState.currTargetMax = 3; 
-                setDialogue("<span class='capt-text'>LEVEL OFF</span>", 3000); 
+                setDialogue("<span class='capt-text'>LEVEL OFF</span>", 4000); 
             }
 
             // Overtaker Scenario (Climb/Level)
             if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && !tkState.overtakerActive && tkState.altitude > 200 && tkState.overtakerX === -30 && Math.random() < 0.005) {
                 tkState.overtakerActive = true; tkState.overtakerAltitude = tkState.altitude;
                 logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)");
-                setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 3000); document.getElementById('tk-overtaker-plane').style.display = 'block';
+                setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 4000); document.getElementById('tk-overtaker-plane').style.display = 'block';
             }
             if (tkState.overtakerActive) {
                 tkState.overtakerX += (0.6 * SPEED_MOD); let gp = document.getElementById('tk-overtaker-plane');
@@ -1117,7 +1125,10 @@
                 
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
                 const gr = gp.getBoundingClientRect();
-                if (!( (pr.right - 12) < (gr.left + 15) || (pr.left + 12) > (gr.right - 15) || (pr.bottom - 12) < (gr.top + 25) || (pr.top + 25) > (gr.bottom - 10) )) {
+                if (!( (pr.right - 12) < (gr.left + 15) || 
+                       (pr.left + 12) > (gr.right - 15) || 
+                       (pr.bottom - 12) < (gr.top + 25) || 
+                       (pr.top + 25) > (gr.bottom - 10) )) {
                     return triggerCrash("MID-AIR CRASH!");
                 }
                 
@@ -1129,7 +1140,7 @@
                 tkState.birdActive = true; tkState.birdAlt = tkState.altitude + (Math.random() * 60 - 30);
                 logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)");
                 document.getElementById('tk-bird-flock').style.display = 'block';
-                setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 2000);
+                setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 3000);
             }
             if (tkState.birdActive) {
                 tkState.birdX -= (1.1 * SPEED_MOD); 
@@ -1138,7 +1149,10 @@
                 
                 const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
                 const br = bEl.getBoundingClientRect();
-                if (!( (pr.right - 10) < (br.left + 10) || (pr.left + 10) > (br.right - 10) || (pr.bottom - 10) < (br.top + 10) || (pr.top + 25) > (br.bottom - 10) )) { 
+                if (!( (pr.right - 10) < (br.left + 10) || 
+                       (pr.left + 10) > (br.right - 10) || 
+                       (pr.bottom - 10) < (br.top + 10) || 
+                       (pr.top + 25) > (br.bottom - 10) )) { 
                     return triggerCrash("BIRD STRIKE!");
                 }
                 if (tkState.birdX < -20) { tkState.birdActive = false; bEl.style.display = 'none'; }
@@ -1148,7 +1162,7 @@
             if (tkState.phase === 2 && tkState.phaseTimer > 3000 && tkState.hasEngineFailureScenario && !tkState.engineFailure) {
                 tkState.engineFailure = true; 
                 logEvent("ENGINE FAILURE", "🔥", "ENGINE", "var(--brand-red)");
-                setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 4000); sfx.playExplosion();
+                setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 5000); sfx.playExplosion();
                 document.getElementById('tk-alert-overlay').className = 'flashing'; 
                 setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800);
             }
@@ -1158,7 +1172,7 @@
                 tkState.phase = 3; tkState.phaseTimer = 0;
                 tkState.currTargetMin = -24; tkState.currTargetMax = -12;
                 logEvent("TRAFFIC SWARM", "✈️", "SWARM", "var(--brand-red)");
-                setDialogue("<span class='alert-text'>TRAFFIC SWARM! DIVE!</span>", 4000);
+                setDialogue("<span class='alert-text'>TRAFFIC SWARM! DIVE!</span>", 5000);
                 document.getElementById('tk-alert-overlay').className = 'flashing';
                 setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800); 
                 if(tkState.autoPilot) toggleAutoPilot();
@@ -1190,7 +1204,10 @@
                         el.style.transform = `translate3d(${e.x}vw, ${-(e.alt - tkState.cameraY)}px, 0)`;
                         
                         const er = el.getBoundingClientRect();
-                        if (!( (pr.right - 12) < (er.left + 15) || (pr.left + 12) > (er.right - 15) || (pr.bottom - 12) < (er.top + 25) || (pr.top + 25) > (er.bottom - 10) )) {
+                        if (!( (pr.right - 12) < (er.left + 15) || 
+                               (pr.left + 12) > (er.right - 15) || 
+                               (pr.bottom - 12) < (er.top + 25) || 
+                               (pr.top + 25) > (er.bottom - 10) )) {
                             collision = true;
                         }
                         
@@ -1203,7 +1220,7 @@
                 if (tkState.phaseTimer > 12000 && activeCount === 0) {
                     tkState.phase = 4; tkState.phaseTimer = 0;
                     tkState.currTargetMin = -3; tkState.currTargetMax = 3;
-                    setDialogue("<span class='success-text'>CLEAR! LEVEL OFF</span>", 3000);
+                    setDialogue("<span class='success-text'>CLEAR! LEVEL OFF</span>", 4000);
                     document.getElementById('tk-alert-overlay').className = '';
                 }
             }
@@ -1215,17 +1232,17 @@
                 if (!tkState.gearBroken) {
                     tkState.gearBroken = true; sfx.playExplosion(); 
                     logEvent("GEAR LOST", "🛬", "NO GEAR", "var(--brand-red)");
-                    setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 4000);
+                    setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 5000);
                     const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
                 } else {
-                    setDialogue("<span class='alert-text'>DESCEND FOR BELLY LANDING!</span>", 4000);
+                    setDialogue("<span class='alert-text'>DESCEND FOR BELLY LANDING!</span>", 5000);
                 }
                 if(tkState.autoPilot) toggleAutoPilot();
             }
             
             if (tkState.phase === 5 && tkState.altitude <= 0) {
                  tkState.phase = 6; tkState.altitude = 0; tkState.vSpeed = 0; 
-                 setDialogue("<span class='alert-text'>BRAKES ON!</span>", 3000);
+                 setDialogue("<span class='alert-text'>BRAKES ON!</span>", 4000);
                  if(tkState.autoPilot) toggleAutoPilot();
             }
 
@@ -1250,7 +1267,7 @@
             if (isLandingApproach) baseTargetCam -= 20; 
             tkState.cameraY += (baseTargetCam - tkState.cameraY) * 0.15;
 
-            let fgSkyOpacity = Math.max(0, Math.min(1, (tkState.altitude - 650) / 100));
+            let fgSkyOpacity = Math.max(0, Math.min(1, (tkState.altitude - 450) / 100));
             document.getElementById('tk-fg-sky').style.opacity = fgSkyOpacity;
 
             // Apply Hardware Accelerated Transforms

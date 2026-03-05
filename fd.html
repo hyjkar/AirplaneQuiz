@@ -606,8 +606,12 @@
             tkState.isPaused = !tkState.isPaused;
             const pauseOverlay = document.getElementById('pause-overlay');
             const pauseBtn = document.getElementById('pause-btn');
-            if (tkState.isPaused) { pauseOverlay.style.display = 'flex'; pauseBtn.textContent = '▶️'; sfx.bgMusic.pause(); sfx.playAlarm(false); } 
-            else { pauseOverlay.style.display = 'none'; pauseBtn.textContent = '⏸️'; sfx.bgMusic.play().catch(e=>e); tkState.lastFrameTime = performance.now(); }
+            if (tkState.isPaused) { 
+                pauseOverlay.style.display = 'flex'; pauseBtn.textContent = '▶️'; sfx.bgMusic.pause(); sfx.playAlarm(false); 
+            } else { 
+                pauseOverlay.style.display = 'none'; pauseBtn.textContent = '⏸️'; sfx.bgMusic.play().catch(e=>e); 
+                tkState.lastFrameTime = 0; // Fixes freeze on unpause
+            }
         }
 
         // --- INPUT HANDLING ---
@@ -618,11 +622,47 @@
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 try { let elem = document.documentElement; if (elem.requestFullscreen) elem.requestFullscreen().catch(e=>{}); } catch(e) {}
             }
-            if (!tkState.active && tkState.canRestart && document.getElementById('tk-end-screen').style.display !== 'flex') { startFlight(); }
             tkState.pressing = true;
         });
         window.addEventListener('pointerup', () => tkState.pressing = false);
         window.addEventListener('touchend', () => tkState.pressing = false);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyP' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+                togglePause();
+            }
+            if (e.code === 'KeyD' || e.key === 'd' || e.key === 'D' || e.code === 'ShiftLeft') {
+                ejectCargo();
+            }
+            if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault(); 
+                if (e.repeat) return; 
+
+                if (document.getElementById('tk-end-screen').classList.contains('visible')) {
+                    hardReset(); return;
+                }
+                if (document.getElementById('prompt-container').style.display !== 'none') {
+                    openFlightPlan(); return;
+                }
+                if (tkState.inFlightPlan) {
+                    authorizeFlight(); return;
+                }
+
+                if (tkState.active && !tkState.isPaused) {
+                    sfx.init(); 
+                    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                        try { document.documentElement.requestFullscreen().catch(e=>{}); } catch(e) {}
+                    }
+                    tkState.pressing = true;
+                }
+            }
+            if (e.code === 'Enter' || e.key === 'Enter') {
+                e.preventDefault(); if (e.repeat) return; toggleAutoPilot(e);
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' || e.key === ' ') { e.preventDefault(); tkState.pressing = false; }
+        });
 
         // --- PROGRESS AND EVENT LOGGING ---
         function getCompletionPercentage() {
@@ -657,6 +697,7 @@
             document.getElementById('takeoff-viewport').appendChild(p);
             tkState.activeCargo.push(p);
             sfx.playDing(0.5);
+            if(e && e.target && e.target.blur) e.target.blur();
         }
 
         function showFloat(x, y, text, color) { 
@@ -821,12 +862,14 @@
 
         function hardReset(e) {
             if (e) e.stopPropagation();
+            if (e && e.target && e.target.blur) e.target.blur();
             document.getElementById('tk-end-screen').classList.remove('visible'); 
             setTimeout(() => { document.getElementById('tk-end-screen').style.display = 'none'; openFlightPlan(); }, 300);
         }
 
         function openFlightPlan(e) {
             if (e) e.stopPropagation();
+            if (e && e.target && e.target.blur) e.target.blur();
             sfx.init();
             
             document.getElementById('tk-touch-prompt').style.display = 'none';
@@ -907,6 +950,7 @@
 
         function authorizeFlight(e) {
             if (e) e.stopPropagation();
+            if (e && e.target && e.target.blur) e.target.blur();
             
             tkState.apState = Math.random() * 100 < tkState.apRisk ? (Math.random() < 0.5 ? 1 : 2) : 0;
 
@@ -935,7 +979,7 @@
                     setDialogue("<span class='capt-text'>FULL POWER!<br><span style='font-size:0.65rem; color:var(--aux-blue);'>TAP PLANE FOR AUTOPILOT</span></span>", 5000);
                 }
 
-                // FIX FOR FREEZE BUG: 
+                // FIX FOR FREEZE BUG: Explicitly reset to 0 instead of using performance.now()
                 tkState.lastFrameTime = 0; 
                 tkState.frameId = requestAnimationFrame(gameLoop);
             }, 300);
@@ -1027,10 +1071,13 @@
         function gameLoop(timestamp) {
             if (!tkState.active && !tkState.isPaused) return;
             if (tkState.isPaused) { tkState.lastFrameTime = timestamp; tkState.frameId = requestAnimationFrame(gameLoop); return; }
+            
+            // STRICT 60 FPS LOCK
             if (tkState.lastFrameTime === 0) tkState.lastFrameTime = timestamp;
             let delta = timestamp - tkState.lastFrameTime;
             if (delta < 16.66) { tkState.frameId = requestAnimationFrame(gameLoop); return; }
             tkState.lastFrameTime = timestamp - (delta % 16.66);
+
             tkState.phaseTimer += delta;
 
             const hudRing = document.getElementById('plane-hud');
@@ -1236,15 +1283,8 @@
 
             // Swarm Traffic Phase Trigger
             if (tkState.phase === 2 && tkState.phaseTimer > 8000) {
-                tkState.phase = 3; tkState.phaseTimer = 0;
-                tkState.currTargetMin = -24; tkState.currTargetMax = -12;
-                logEvent("TRAFFIC SWARM", "✈️", "SWARM", "var(--brand-red)");
-                setDialogue("<span class='alert-text'>TRAFFIC SWARM! DIVE!</span>", 5000);
-                document.getElementById('tk-alert-overlay').className = 'flashing';
-                setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800); 
-                if(tkState.autoPilot) toggleAutoPilot();
+                tkState.phase = 3; tkState.phaseTimer = 0; tkState.currTargetMin = -24; tkState.currTargetMax = -12; logEvent("TRAFFIC SWARM", "✈️", "SWARM", "var(--brand-red)"); setDialogue("<span class='alert-text'>TRAFFIC SWARM! DIVE!</span>", 5000); document.getElementById('tk-alert-overlay').className = 'flashing'; setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800); if(tkState.autoPilot) toggleAutoPilot();
             }
-
             if (tkState.phase === 3) {
                 let maxEnemies = Math.min(5, Math.floor(1 + (tkState.phaseTimer / 12000) * 4)); if (tkState.phaseTimer > 12000) maxEnemies = 0; 
                 let activeCount = tkState.enemies.filter(e => e.active).length;
@@ -1285,7 +1325,6 @@
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
             document.getElementById('plane-hud').style.transform = `translate3d(-50%, -50%, 0) rotate(${-displayPitch}deg)`;
 
-            // EFFECTS
             const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
             if (tkState.phase === 5 && Math.random() > 0.4) spawnSpark(pr.left + pr.width/2 - 10, pr.bottom - 15, true);
             if (tkState.phase === 6 && displaySpeed > 0) { let sparkCount = Math.floor(displaySpeed / 40); for(let i=0; i<sparkCount; i++) spawnSpark(pr.left + pr.width/2 + (Math.random()*40 - 20), pr.bottom - 5, false); if (Math.random() > 0.3) spawnSpark(pr.left + pr.width/2 + (Math.random()*30), pr.bottom - 5, false); }

@@ -45,10 +45,14 @@
         #tk-threat-fog { display: none; background-size: auto 200vh; z-index: 15; height: 150%; top: -10%; opacity: 0.95; filter: blur(3px) brightness(1.1); }
         .wea-fog #tk-threat-fog { display: block; }
         
-        /* NVG MODE FILTER - Planes Only */
-        .nvg-mode #tk-plane-img, .nvg-mode .tk-enemy img, .nvg-mode .tk-overtaker img { 
-            filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(2.5) drop-shadow(0 0 8px #0f0) !important; 
-        }
+        /* NVG MODE FILTER - High Performance */
+        .nvg-mode { background-color: #052205 !important; }
+        #nvg-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 255, 0, 0.15); pointer-events: none; z-index: 16; mix-blend-mode: multiply; }
+        .nvg-mode #nvg-overlay { display: block; }
+        .nvg-mode .parallax-layer, .nvg-mode #tk-mountain { filter: sepia(1) hue-rotate(70deg) saturate(2) brightness(0.8) !important; }
+        .nvg-mode #tk-threat-fog { filter: sepia(1) hue-rotate(70deg) saturate(2) brightness(0.8) blur(3px) !important; }
+        .nvg-mode #tk-plane-img, .nvg-mode .tk-enemy img, .nvg-mode .tk-overtaker img { filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(1.5) drop-shadow(0 0 5px #0f0) !important; }
+        .nvg-mode #tk-drop-zone { border-color: #2ecc71 !important; background: rgba(46,204,113,0.15) !important; }
 
         .passenger-windows { display: none; position: absolute; top: 62%; left: 35%; right: 25%; height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; }
         .wea-fog .passenger-windows, .tod-night .passenger-windows { display: flex; }
@@ -63,12 +67,11 @@
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3; transition: filter 0.5s; will-change: transform; }
         #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x; will-change: background-position; }
 
-        /* CARGO DROP ZONE OVERHAUL (HIGH CONTRAST) */
+        /* CARGO DROP ZONE OVERHAUL */
         #tk-drop-zone { 
             position: absolute; bottom: 0; left: 0; height: 3000px; width: 1000px; 
-            background: linear-gradient(to top, rgba(46, 204, 113, 0.5), rgba(46, 204, 113, 0.1)); 
-            border-left: 8px dashed rgba(46, 204, 113, 0.9); border-right: 8px dashed rgba(46, 204, 113, 0.9); 
-            box-shadow: inset 0 0 50px rgba(46, 204, 113, 0.4), 0 0 50px rgba(46, 204, 113, 0.4);
+            background: linear-gradient(to top, rgba(46, 204, 113, 0.25), rgba(46, 204, 113, 0.05)); 
+            border-left: 6px dashed #2ecc71; border-right: 6px dashed #2ecc71; 
             z-index: 4; display: none; will-change: transform; 
             text-shadow: 2px 2px 4px #000; font-family: 'Share Tech Mono', monospace; font-weight: bold;
             pointer-events: none;
@@ -279,7 +282,9 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v9.4 - Decoupled Time/Weather & NVG Fix</div>
+        <div id="tk-version">v9.6 - Funds Mechanics & Final Polish</div>
+        
+        <div id="nvg-overlay"></div>
         
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
@@ -290,7 +295,7 @@
                 <button id="pause-btn" onclick="togglePause(event)">⏸️</button>
                 <button id="fs-btn" onclick="toggleFullscreen(event)">⛶</button>
             </div>
-            <div id="tk-score-display">SCORE: <span id="score-val">0</span></div>
+            <div id="tk-score-display">FUNDS: <span id="funds-val">0</span> <span style="font-size: 0.7em; opacity: 0.7; margin-left: 5px;">| SCORE: <span id="score-val">0</span></span></div>
         </div>
         
         <div id="prompt-container">
@@ -382,9 +387,8 @@
                 <div class="end-title">FLIGHT PLAN</div>
                 <div class="end-subtitle" id="fp-sector-title">SECTOR 1 OF 5</div>
                 
-                <div style="display:flex; justify-content:space-between; align-items:center; font-family:'Share Tech Mono'; margin-top: 5px;">
-                    <span style="color:#ccc; font-size:0.9rem;">SCORE: <strong id="fp-current-score" style="color:#fff;">0</strong></span>
-                    <span style="color:#ccc; font-size:0.9rem;">FUNDS: <strong id="fp-total-points" style="color:var(--brand-gold); font-size:1.2rem;">0</strong></span>
+                <div style="display:flex; justify-content:center; align-items:center; font-family:'Share Tech Mono'; margin-top: 5px;">
+                    <span style="color:#ccc; font-size:1rem;">AVAILABLE FUNDS: <strong id="fp-total-points" style="color:var(--brand-gold); font-size:1.4rem;">0</strong></span>
                 </div>
 
                 <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid #333; margin-top: 10px; margin-bottom: 10px; position: relative; display: flex; align-items: center; justify-content: space-between;">
@@ -404,39 +408,39 @@
                     <div class="upg-item">
                         <div class="upg-icon"><svg viewBox="0 0 24 24"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.98C19.47,12.66 19.5,12.34 19.5,12C19.5,11.66 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.65 15.48,5.32 14.87,5.07L14.47,2.42C14.43,2.18 14.23,2 14,2H10C9.77,2 9.57,2.18 9.53,2.42L9.13,5.07C8.52,5.32 7.96,5.65 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.66 4.5,12C4.5,12.34 4.53,12.66 4.57,12.98L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.95C7.96,18.35 8.52,18.68 9.13,18.93L9.53,21.58C9.57,21.82 9.77,22 10,22H14C14.23,22 14.43,21.82 14.47,21.58L14.87,18.93C15.48,18.68 16.04,18.35 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.98Z"/></svg></div>
                         <div class="upg-info"><div class="upg-title">LANDING GEAR</div><div class="upg-stat" id="stat-gear">50% WORKING</div></div>
-                        <button class="upg-btn" id="btn-upg-gear" onclick="buyUpgrade('gear', event)">REPAIR (1K)</button>
+                        <button class="upg-btn" id="btn-upg-gear" onclick="buyUpgrade('gear', event)">REPAIR (1000)</button>
                     </div>
                     <div class="upg-item">
                         <div class="upg-icon"><svg viewBox="0 0 24 24"><path d="M20.2 5.9l.8-.8C19.6 3.7 17.8 3 16 3s-3.6.7-5 2.1l.8.8C13 4.8 14.5 4.2 16 4.2s3 .6 4.2 1.7zm-.9.8c-.9-.9-2.1-1.4-3.3-1.4s-2.4.5-3.3 1.4l.8.8c.7-.7 1.6-1 2.5-1s1.8.3 2.5 1l.8-.8zM19 13h-2V9h-2v4H5c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-4c0-1.1-.9-2-2-2zM7 19H5v-4h2v4zm4 0H9v-4h2v4zm4 0h-2v-4h2v4zm4 0h-2v-4h2v4z"/></svg></div>
                         <div class="upg-info"><div class="upg-title">ENGINE STABILITY</div><div class="upg-stat" id="stat-engine">50% WORKING</div></div>
-                        <button class="upg-btn" id="btn-upg-engine" onclick="buyUpgrade('engine', event)">REPAIR (1K)</button>
+                        <button class="upg-btn" id="btn-upg-engine" onclick="buyUpgrade('engine', event)">REPAIR (1000)</button>
                     </div>
                     <div class="upg-item">
                         <div class="upg-icon"><svg viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6L16,12L12,18L8,12L12,6Z"/></svg></div>
                         <div class="upg-info"><div class="upg-title">GYROSCOPE</div><div class="upg-stat" id="stat-gyro">50% WORKING</div></div>
-                        <button class="upg-btn" id="btn-upg-gyro" onclick="buyUpgrade('gyro', event)">REPAIR (1K)</button>
+                        <button class="upg-btn" id="btn-upg-gyro" onclick="buyUpgrade('gyro', event)">REPAIR (1000)</button>
                     </div>
                     <div class="upg-item">
                         <div class="upg-icon"><svg viewBox="0 0 24 24"><path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg></div>
                         <div class="upg-info"><div class="upg-title">AUTO-PILOT</div><div class="upg-stat" id="stat-ap">50% WORKING</div></div>
-                        <button class="upg-btn" id="btn-upg-ap" onclick="buyUpgrade('ap', event)">REPAIR (1K)</button>
+                        <button class="upg-btn" id="btn-upg-ap" onclick="buyUpgrade('ap', event)">REPAIR (1000)</button>
                     </div>
                     
                     <div style="display:flex; gap: 8px;">
                         <div class="upg-item" style="border-color: #444; background: transparent; flex: 1; padding: 6px;">
                             <div class="upg-info" style="margin:0;"><div class="upg-title">BIRD SHIELD</div><div class="upg-stat" id="stat-bird" style="color: var(--brand-red); font-size: 0.75rem;">OFFLINE</div></div>
-                            <button class="upg-btn" id="btn-upg-bird" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('bird', event)">BUY (1K)</button>
+                            <button class="upg-btn" id="btn-upg-bird" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('bird', event)">BUY (1000)</button>
                         </div>
                         <div class="upg-item" style="border-color: #444; background: transparent; flex: 1; padding: 6px;">
                             <div class="upg-info" style="margin:0;"><div class="upg-title">WIND SHIELD</div><div class="upg-stat" id="stat-windshield" style="color: var(--brand-red); font-size: 0.75rem;">OFFLINE</div></div>
-                            <button class="upg-btn" id="btn-upg-windshield" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('windshield', event)">BUY (1K)</button>
+                            <button class="upg-btn" id="btn-upg-windshield" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('windshield', event)">BUY (1000)</button>
                         </div>
                     </div>
 
                     <div style="display:flex; gap: 8px;">
                         <div class="upg-item" style="border-color: #444; background: transparent; flex: 1; padding: 6px;">
                             <div class="upg-info" style="margin:0;"><div class="upg-title">NIGHT VISION</div><div class="upg-stat" id="stat-nvg" style="color: var(--brand-red); font-size: 0.75rem;">OFFLINE</div></div>
-                            <button class="upg-btn" id="btn-upg-nvg" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('nvg', event)">BUY (2K)</button>
+                            <button class="upg-btn" id="btn-upg-nvg" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('nvg', event)">BUY (2000)</button>
                         </div>
                         <div style="flex:1;"></div>
                     </div>
@@ -515,7 +519,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V32) ---
+        // --- PROFILE PERSISTENCE (V33) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -527,7 +531,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v32');
+                let p = localStorage.getItem('h5_profile_v33');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -539,7 +543,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v32', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v33', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -624,7 +628,7 @@
         let endScreenAnimInterval = null; let endScreenTimeouts = [];
 
         let tkState = {
-            active: false, isPaused: false, inFlightPlan: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
+            active: false, isPaused: false, inFlightPlan: false, nvgActive: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, 
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
@@ -646,7 +650,6 @@
 
         function updateFlightPlanUI() {
             document.getElementById('fp-total-points').textContent = playerProfile.points;
-            document.getElementById('fp-current-score').textContent = Math.floor(tkState.score); 
 
             let types = ['gear', 'engine', 'gyro', 'ap'];
             types.forEach(t => {
@@ -659,10 +662,9 @@
                 
                 let btn = document.getElementById('btn-upg-' + t);
                 if(lvl >= 4) { btn.textContent = "MAX"; btn.disabled = true; }
-                else { btn.textContent = `REPAIR (1K)`; btn.disabled = playerProfile.points < 1000; }
+                else { btn.textContent = `REPAIR (1000)`; btn.disabled = playerProfile.points < 1000; }
             });
             
-            // Bird shield
             let bBtn = document.getElementById('btn-upg-bird');
             if(playerProfile.upgrades.bird) {
                 document.getElementById('stat-bird').textContent = "ACTIVE";
@@ -671,10 +673,9 @@
             } else {
                 document.getElementById('stat-bird').textContent = "OFFLINE";
                 document.getElementById('stat-bird').style.color = "var(--brand-red)";
-                bBtn.textContent = "BUY (1K)"; bBtn.disabled = playerProfile.points < 1000;
+                bBtn.textContent = "BUY (1000)"; bBtn.disabled = playerProfile.points < 1000;
             }
 
-            // Wind shield
             let wBtn = document.getElementById('btn-upg-windshield');
             if(playerProfile.upgrades.windShield) {
                 document.getElementById('stat-windshield').textContent = "ACTIVE";
@@ -683,10 +684,9 @@
             } else {
                 document.getElementById('stat-windshield').textContent = "OFFLINE";
                 document.getElementById('stat-windshield').style.color = "var(--brand-red)";
-                wBtn.textContent = "BUY (1K)"; wBtn.disabled = playerProfile.points < 1000;
+                wBtn.textContent = "BUY (1000)"; wBtn.disabled = playerProfile.points < 1000;
             }
 
-            // NVG
             let nBtn = document.getElementById('btn-upg-nvg');
             if(playerProfile.upgrades.nvg) {
                 document.getElementById('stat-nvg').textContent = "ACTIVE";
@@ -695,7 +695,7 @@
             } else {
                 document.getElementById('stat-nvg').textContent = "OFFLINE";
                 document.getElementById('stat-nvg').style.color = "var(--brand-red)";
-                nBtn.textContent = "BUY (2K)"; nBtn.disabled = playerProfile.points < 2000;
+                nBtn.textContent = "BUY (2000)"; nBtn.disabled = playerProfile.points < 2000;
             }
         }
 
@@ -863,16 +863,16 @@
             if (isHit) {
                 let dropAlt = tkState.altitude;
                 if(dropAlt < 100) {
-                    tkState.score += 1000; logEvent("PERFECT DROP", "📦", "PERFECT", "var(--brand-gold)"); showFloat(planeX, pr.bottom, "+1000 PTS", "var(--brand-gold)"); sfx.playDing(2.5);
+                    tkState.score += 1000; playerProfile.points += 1000; logEvent("PERFECT DROP", "📦", "PERFECT", "var(--brand-gold)"); showFloat(planeX, pr.bottom, "+1000 FUNDS", "var(--brand-gold)"); sfx.playDing(2.5);
                 } else if (dropAlt < 300) {
-                    tkState.score += 500; logEvent("GOOD DROP", "📦", "GOOD", "var(--gauge-green)"); showFloat(planeX, pr.bottom, "+500 PTS", "var(--gauge-green)"); sfx.playDing(2.0);
+                    tkState.score += 500; playerProfile.points += 500; logEvent("GOOD DROP", "📦", "GOOD", "var(--gauge-green)"); showFloat(planeX, pr.bottom, "+500 FUNDS", "var(--gauge-green)"); sfx.playDing(2.0);
                 } else {
-                    tkState.score += 200; logEvent("HIGH DROP", "📦", "OK", "var(--fo-blue)"); showFloat(planeX, pr.bottom, "+200 PTS", "var(--fo-blue)"); sfx.playDing(1.5);
+                    tkState.score += 200; playerProfile.points += 200; logEvent("HIGH DROP", "📦", "OK", "var(--fo-blue)"); showFloat(planeX, pr.bottom, "+200 FUNDS", "var(--fo-blue)"); sfx.playDing(1.5);
                 }
                 playerProfile.campaignStats.cargoHits++;
                 setDialogue("<span class='success-text'>CARGO SECURED!</span>", 2000);
             } else {
-                tkState.score -= 200; logEvent("CARGO MISSED", "❌", "MISSED", "var(--brand-red)"); showFloat(planeX, pr.bottom, "-200 PTS", "var(--brand-red)"); sfx.playExplosion();
+                playerProfile.points = Math.max(0, playerProfile.points - 200); logEvent("CARGO MISSED", "❌", "MISSED", "var(--brand-red)"); showFloat(planeX, pr.bottom, "-200 FUNDS", "var(--brand-red)"); sfx.playExplosion();
                 playerProfile.campaignStats.cargoMisses++;
                 setDialogue("<span class='alert-text'>MISSED TARGET!</span>", 2000);
             }
@@ -1353,8 +1353,8 @@
                 tkState.inFlightPlan = false;
                 tkState.active = true;
                 
-                // Automatic Night Vision Execution (NIGHT ONLY)
-                if (playerProfile.upgrades.nvg && tkState.timeOfDay === 'night') {
+                // Automatic Night Vision Execution (NIGHT OR FOG ONLY)
+                if (playerProfile.upgrades.nvg && (tkState.timeOfDay === 'night' || tkState.weather === 'fog')) {
                     document.getElementById('takeoff-viewport').classList.add('nvg-mode');
                     sfx.playDing(2.0);
                 }
@@ -1564,7 +1564,7 @@
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && displaySpeed > 145 && tkState.altitude > 0);
-            let isTooHigh = (tkState.altitude > 1500 && tkState.phase >= 1 && tkState.phase <= 4); 
+            let isTooHigh = (tkState.altitude > 1000 && tkState.phase >= 1 && tkState.phase <= 4); 
             sfx.playAlarm(isStalling);
             
             if (isStalling && !tkState.wasStalling) { tkState.stallsCount++; } tkState.wasStalling = isStalling;
@@ -1572,20 +1572,21 @@
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
             if (tkState.stallFactor > 0) targetVSpeed = (targetVSpeed * (1 - tkState.stallFactor)) + (-15 * Math.pow(tkState.stallFactor, 2) * SPEED_MOD);
             
-            // ALTITUDE POINT DRAIN
+            // ALTITUDE POINT DRAIN (FUNDS PENALTY)
             if (isTooHigh) {
-                tkState.score -= 2 * SPEED_MOD;
-                if (tkState.score < 0) tkState.score = 0;
-                if (Math.random() < 0.3) {
+                playerProfile.points -= 2 * SPEED_MOD;
+                if (playerProfile.points < 0) playerProfile.points = 0;
+                
+                if (Math.random() < 0.1) {
                     const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
-                    showFloat(pr.left + pr.width/2 + (Math.random()*40-20), pr.top, "-10 PTS", "var(--brand-red)");
+                    showFloat(pr.left + pr.width/2 + (Math.random()*40-20), pr.top, "-5 FUNDS", "var(--brand-red)");
                     sfx.playDing(0.4);
                 }
             }
 
             if (isStalling) { document.getElementById('tk-alert-overlay').className = 'flashing'; setDialogue("<span class='alert-text'>STALL WARNING!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
             } else if (isTooFast) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 1500);
-            } else if (isTooHigh) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0 || tkState.dialogueText.includes("VISIBILITY")) setDialogue("<span class='alert-text'>TOO HIGH! LOSING POINTS!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
+            } else if (isTooHigh) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>TOO HIGH! LOSING FUNDS!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
             } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>" && tkState.dialogueText !== "<span class='alert-text'>WIND SHEAR!</span>" && tkState.dialogueText !== "<span class='alert-text'>GYROSCOPE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT OFFLINE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>" && tkState.dialogueText !== "<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>" && !tkState.dialogueText.includes("DROP NOW!") && !tkState.dialogueText.includes("MISSED TARGET!") && !tkState.dialogueText.includes("CARGO SECURED!")) { document.getElementById('tk-alert-overlay').className = ''; }
 
             tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.12;
@@ -1611,19 +1612,22 @@
             let dynColor = `hsl(${p_hue}, 85%, 55%)`; hudRing.style.borderColor = dynColor; document.getElementById('hud-pitch').style.color = dynColor;
             
             const scoreValEl = document.getElementById('score-val');
+            const fundsValEl = document.getElementById('funds-val');
             const altHud = document.getElementById('hud-alt');
             const scoreHud = document.getElementById('tk-score-display');
+            
+            fundsValEl.textContent = Math.floor(playerProfile.points);
 
             if (isTooHigh) {
                 altHud.style.color = 'var(--brand-red)';
-                scoreHud.style.color = 'var(--brand-red)';
                 scoreHud.style.borderColor = 'var(--brand-red)';
                 scoreHud.style.boxShadow = '0 0 10px var(--brand-red)';
+                fundsValEl.style.color = 'var(--brand-red)';
             } else {
                 altHud.style.color = '#fff';
-                scoreHud.style.color = 'var(--brand-gold)';
                 scoreHud.style.borderColor = 'var(--brand-gold)';
                 scoreHud.style.boxShadow = 'none';
+                fundsValEl.style.color = 'var(--brand-gold)';
             }
 
             if (inHUDZone && tkState.phase > 0 && tkState.phase < 6) {

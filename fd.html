@@ -52,7 +52,7 @@
         .nvg-mode { background-color: #001a00 !important; }
         .nvg-mode #camera-rig { filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(1.2) contrast(1.5); }
         .nvg-mode #tk-plane-img, .nvg-mode .tk-enemy img, .nvg-mode .tk-overtaker img { filter: brightness(1.5) drop-shadow(0 0 5px #0f0); }
-        .nvg-mode #tk-drop-zone { border-color: #2ecc71 !important; background: rgba(46,204,113,0.3) !important; box-shadow: 0 0 40px rgba(46,204,113,0.5), inset 0 0 30px rgba(46,204,113,0.5) !important; }
+        .nvg-mode #tk-drop-zone { border-color: #2ecc71 !important; background: rgba(46,204,113,0.15) !important; }
 
         .passenger-windows { display: none; position: absolute; top: 62%; left: 35%; right: 25%; height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; }
         .fog-scenario .passenger-windows { display: flex; }
@@ -152,10 +152,9 @@
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
         #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold); transition: all 0.2s;}
         
-        #reset-btn, #pause-btn, #fs-btn, #nvg-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #fff; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; pointer-events: auto; transition: transform 0.1s;}
+        #reset-btn, #pause-btn, #fs-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #fff; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; pointer-events: auto; transition: transform 0.1s;}
         #reset-btn { background: rgba(215, 25, 32, 0.9); border-color: #fff; font-size: 1rem; }
-        #nvg-btn { font-size: 0.8rem; font-family: 'Share Tech Mono'; font-weight: bold; background: rgba(46, 204, 113, 0.2); border-color: var(--gauge-green); color: var(--gauge-green); display: none;}
-        #reset-btn:active, #pause-btn:active, #fs-btn:active, #nvg-btn:active { transform: scale(0.95); }
+        #reset-btn:active, #pause-btn:active, #fs-btn:active { transform: scale(0.95); }
 
         #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); transform: translateZ(9999px); }
         
@@ -283,7 +282,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v8.8 - Adjusted Traffic Speeds</div>
+        <div id="tk-version">v9.0 - Final Features Applied</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -291,7 +290,6 @@
             <div class="top-left-controls">
                 <button id="reset-btn" onclick="hardReset(event)">❌</button>
                 <button id="pause-btn" onclick="togglePause(event)">⏸️</button>
-                <button id="nvg-btn" onclick="toggleNVG(event)">NVG</button>
                 <button id="fs-btn" onclick="toggleFullscreen(event)">⛶</button>
             </div>
             <div id="tk-score-display">SCORE: <span id="score-val">0</span></div>
@@ -436,13 +434,6 @@
                             <button class="upg-btn" id="btn-upg-windshield" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('windshield', event)">BUY (1K)</button>
                         </div>
                     </div>
-
-                    <div style="display:flex; gap: 8px;">
-                        <div class="upg-item" style="border-color: #444; background: transparent; flex: 1; padding: 6px;">
-                            <div class="upg-info" style="margin:0;"><div class="upg-title">NIGHT VISION</div><div class="upg-stat" id="stat-nvg" style="color: var(--brand-red); font-size: 0.75rem;">OFFLINE</div></div>
-                            <button class="upg-btn" id="btn-upg-nvg" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('nvg', event)">BUY (2K)</button>
-                        </div>
-                    </div>
                 </div>
 
                 <button class="play-again-btn" style="background: var(--brand-red); color: #fff; width: 100%; margin-top: 15px;" onclick="authorizeFlight(event)">AUTHORIZE TAKEOFF</button>
@@ -518,7 +509,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V25) ---
+        // --- PROFILE PERSISTENCE (V26) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -530,7 +521,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v25');
+                let p = localStorage.getItem('h5_profile_v26');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -542,7 +533,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v25', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v26', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -665,6 +656,7 @@
                 else { btn.textContent = `REPAIR (1K)`; btn.disabled = playerProfile.points < 1000; }
             });
             
+            // Bird shield
             let bBtn = document.getElementById('btn-upg-bird');
             if(playerProfile.upgrades.bird) {
                 document.getElementById('stat-bird').textContent = "ACTIVE";
@@ -676,6 +668,7 @@
                 bBtn.textContent = "BUY (1K)"; bBtn.disabled = playerProfile.points < 1000;
             }
 
+            // Wind shield
             let wBtn = document.getElementById('btn-upg-windshield');
             if(playerProfile.upgrades.windShield) {
                 document.getElementById('stat-windshield').textContent = "ACTIVE";
@@ -685,17 +678,6 @@
                 document.getElementById('stat-windshield').textContent = "OFFLINE";
                 document.getElementById('stat-windshield').style.color = "var(--brand-red)";
                 wBtn.textContent = "BUY (1K)"; wBtn.disabled = playerProfile.points < 1000;
-            }
-
-            let nBtn = document.getElementById('btn-upg-nvg');
-            if(playerProfile.upgrades.nvg) {
-                document.getElementById('stat-nvg').textContent = "ACTIVE";
-                document.getElementById('stat-nvg').style.color = "var(--gauge-green)";
-                nBtn.textContent = "MAX"; nBtn.disabled = true;
-            } else {
-                document.getElementById('stat-nvg').textContent = "OFFLINE";
-                document.getElementById('stat-nvg').style.color = "var(--brand-red)";
-                nBtn.textContent = "BUY (2K)"; nBtn.disabled = playerProfile.points < 2000;
             }
         }
 
@@ -775,26 +757,6 @@
             else { pauseOverlay.style.display = 'none'; pauseBtn.textContent = '⏸️'; sfx.bgMusic.play().catch(e=>e); tkState.lastFrameTime = performance.now(); }
         }
 
-        function toggleNVG(e) {
-            if (e) { e.preventDefault(); e.stopPropagation(); }
-            if (document.activeElement) document.activeElement.blur();
-            if (tkState.weather !== 'night') return;
-            
-            tkState.nvgActive = !tkState.nvgActive;
-            const vp = document.getElementById('takeoff-viewport');
-            const btn = document.getElementById('nvg-btn');
-            
-            if (tkState.nvgActive) {
-                vp.classList.add('nvg-mode');
-                btn.style.background = 'var(--gauge-green)'; btn.style.color = '#000';
-                sfx.playDing(2.0);
-            } else {
-                vp.classList.remove('nvg-mode');
-                btn.style.background = 'rgba(46, 204, 113, 0.2)'; btn.style.color = 'var(--gauge-green)';
-                sfx.playDing(0.8);
-            }
-        }
-
         function toggleFullscreen(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             let elem = document.documentElement;
@@ -823,8 +785,10 @@
 
         window.addEventListener('keydown', (e) => {
             if (e.code === 'KeyP' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') { togglePause(); }
-            if (e.code === 'KeyD' || e.key === 'd' || e.key === 'D' || e.code === 'ShiftLeft') { ejectCargo(); }
-            if (e.code === 'KeyN' || e.key === 'n' || e.key === 'N') { toggleNVG(); }
+            if (e.code === 'KeyC' || e.key === 'c' || e.key === 'C' || e.code === 'ShiftLeft') { ejectCargo(); }
+            if (e.code === 'KeyD' || e.key === 'd' || e.key === 'D') { 
+                playerProfile.points += 99999; saveProfile(); if(tkState.inFlightPlan) updateFlightPlanUI(); sfx.playDing(1.5); showFloat(window.innerWidth/2, window.innerHeight/2, "+99999 FUNDS", "var(--brand-gold)");
+            }
             if (e.code === 'KeyR' || e.key === 'r' || e.key === 'R') {
                 if (tkState.active || document.getElementById('tk-end-screen').classList.contains('visible')) { hardReset(); }
             }
@@ -871,13 +835,35 @@
             document.getElementById('cargo-count').textContent = tkState.cargoCount;
             if(tkState.cargoCount <= 0) document.getElementById('tk-eject-btn').style.opacity = 0.5;
             
-            let p = document.createElement('div'); p.className = 'cargo-package';
             const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
-            p.dataset.x = pr.left + pr.width/2; p.dataset.y = pr.bottom; p.dataset.vy = 0;
+            let planeX = pr.left + pr.width / 2;
+            let dzLeft = tkState.dropZoneX;
+            let dzRight = tkState.dropZoneX + 1000;
+            
+            let isHit = tkState.dropZoneSpawned && (planeX >= dzLeft && planeX <= dzRight);
+            
+            if (isHit) {
+                let dropAlt = tkState.altitude;
+                if(dropAlt < 100) {
+                    tkState.score += 1000; logEvent("PERFECT DROP", "📦", "PERFECT", "var(--brand-gold)"); showFloat(planeX, pr.bottom, "+1000 PTS", "var(--brand-gold)"); sfx.playDing(2.5);
+                } else if (dropAlt < 300) {
+                    tkState.score += 500; logEvent("GOOD DROP", "📦", "GOOD", "var(--gauge-green)"); showFloat(planeX, pr.bottom, "+500 PTS", "var(--gauge-green)"); sfx.playDing(2.0);
+                } else {
+                    tkState.score += 200; logEvent("HIGH DROP", "📦", "OK", "var(--fo-blue)"); showFloat(planeX, pr.bottom, "+200 PTS", "var(--fo-blue)"); sfx.playDing(1.5);
+                }
+                playerProfile.campaignStats.cargoHits++;
+                setDialogue("<span class='success-text'>CARGO SECURED!</span>", 2000);
+            } else {
+                tkState.score -= 200; logEvent("CARGO MISSED", "❌", "MISSED", "var(--brand-red)"); showFloat(planeX, pr.bottom, "-200 PTS", "var(--brand-red)"); sfx.playExplosion();
+                playerProfile.campaignStats.cargoMisses++;
+                setDialogue("<span class='alert-text'>MISSED TARGET!</span>", 2000);
+            }
+            
+            let p = document.createElement('div'); p.className = 'cargo-package';
+            p.dataset.x = planeX; p.dataset.y = pr.bottom; p.dataset.vy = 0;
             p.style.transform = `translate3d(${p.dataset.x}px, ${p.dataset.y}px, 0)`;
             document.getElementById('takeoff-viewport').appendChild(p);
             tkState.activeCargo.push(p);
-            sfx.playDing(0.5);
         }
 
         function showFloat(x, y, text, color) { 
@@ -907,7 +893,6 @@
             }, 300);
         }
 
-        // MASSIVE SPECTACLE CONDITION SCORING
         function getConditionScore() {
             let condScore = 0;
             condScore += playerProfile.upgrades.gear * 10000;
@@ -916,18 +901,16 @@
             condScore += playerProfile.upgrades.ap * 10000;
             if(playerProfile.upgrades.bird) condScore += 25000;
             if(playerProfile.upgrades.windShield) condScore += 25000;
-            if(playerProfile.upgrades.nvg) condScore += 10000;
             return condScore;
         }
 
         function showLeaderboard() {
             let finalScore = getConditionScore();
             
-            let maxPoints = 19; 
+            let maxPoints = 18; // 4 mechanics (max 4 each) + 2 binary shields
             let currentPoints = playerProfile.upgrades.gear + playerProfile.upgrades.engine + playerProfile.upgrades.gyro + playerProfile.upgrades.ap;
             if (playerProfile.upgrades.bird) currentPoints += 1;
             if (playerProfile.upgrades.windShield) currentPoints += 1;
-            if (playerProfile.upgrades.nvg) currentPoints += 1;
             
             let finalIntegrity = Math.round((currentPoints / maxPoints) * 100);
             tkState.finalCampaignScore = finalIntegrity; 
@@ -1163,7 +1146,6 @@
         function triggerCrash(reasonText) {
             sfx.stopAll();
             
-            // Fix: Break collision check so we don't spam the function and freeze
             let collisionAlreadyTriggered = !tkState.active;
             if (collisionAlreadyTriggered) return;
 
@@ -1175,13 +1157,11 @@
             logEvent(`CRASH: ${reasonText}`, "❌", "CRASH", "var(--brand-red)");
             setDialogue(`<span class='alert-text'>${reasonText}</span>`, 4500);
             
-            // Apply Severe Penalty: Remove all bonus defenses completely
             playerProfile.points = Math.max(0, playerProfile.points - 500);
             playerProfile.upgrades.bird = false;
             playerProfile.upgrades.windShield = false;
             playerProfile.upgrades.nvg = false;
             
-            // Downgrade ALL 4 mechanical components by exactly 1 step
             let upgKeys = ['gear', 'engine', 'gyro', 'ap'];
             for(let i=0; i<upgKeys.length; i++) {
                 let k = upgKeys[i];
@@ -1198,7 +1178,6 @@
             let rand = Math.random();
             tkState.weather = rand > 0.75 ? 'night' : (rand > 0.5 ? 'snow' : (rand > 0.25 ? 'sunrise' : 'day'));
             
-            // 70% Normal, 20% High, 10% Extreme
             let trRoll = Math.random();
             tkState.trafficLevel = trRoll < 0.7 ? 0 : (trRoll < 0.9 ? 1 : 2);
 
@@ -1218,16 +1197,9 @@
             let vp = document.getElementById('takeoff-viewport');
             vp.classList.remove('night-weather', 'sunrise-weather', 'snow-weather', 'fog-scenario', 'nvg-mode');
             vp.style.backgroundColor = ''; 
-            document.getElementById('nvg-btn').style.display = 'none';
-            document.getElementById('nvg-btn').style.background = 'rgba(46, 204, 113, 0.2)';
-            document.getElementById('nvg-btn').style.color = 'var(--gauge-green)';
 
             if (tkState.weather !== 'day') vp.classList.add(tkState.weather + '-weather');
             if (tkState.hasFogScenario) vp.classList.add('fog-scenario');
-
-            if (tkState.weather === 'night' && playerProfile.upgrades.nvg) {
-                document.getElementById('nvg-btn').style.display = 'flex';
-            }
 
             let wText = "CLEAR"; let wColor = "var(--fo-blue)";
             if (tkState.hasFogScenario) { wText = "HEAVY FOG"; wColor = "var(--brand-red)"; }
@@ -1348,13 +1320,16 @@
                 tkState.inFlightPlan = false;
                 tkState.active = true;
                 
+                if (tkState.weather === 'night' && playerProfile.upgrades.nvg) {
+                    document.getElementById('takeoff-viewport').classList.add('nvg-mode');
+                }
+                
                 if (tkState.hasFogScenario) {
                     setDialogue("<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>", 6000);
                 } else {
                     setDialogue("<span class='capt-text'>FULL POWER!<br><span style='font-size:0.65rem; color:var(--aux-blue);'>TAP PLANE FOR AUTOPILOT</span></span>", 5000);
                 }
 
-                // FIX FOR FREEZE BUG: Explicitly reset to 0
                 tkState.lastFrameTime = 0; 
                 sfx.bgMusic.play().catch(e=>e);
                 tkState.frameId = requestAnimationFrame(gameLoop);
@@ -1703,17 +1678,7 @@
                 pkg.dataset.x = x; pkg.dataset.y = y; pkg.dataset.vy = vy; pkg.dataset.vx = vx;
                 pkg.style.transform = `translate3d(${x}px, ${y}px, 0)`;
                 
-                if (y > window.innerHeight - 80 + tkState.cameraY) {
-                    let dz = document.getElementById('tk-drop-zone').getBoundingClientRect();
-                    let pkgRect = pkg.getBoundingClientRect();
-                    let hit = (pkgRect.right > dz.left && pkgRect.left < dz.right);
-                    if (hit) {
-                        tkState.score += 500; logEvent("CARGO DELIVERED", "📦", "DELIVERY", "var(--gauge-green)"); showFloat(x, y - 40, "+500 PTS", "var(--gauge-green)"); sfx.playDing(2.0);
-                        playerProfile.campaignStats.cargoHits++;
-                    } else {
-                        tkState.score -= 200; logEvent("CARGO MISSED", "❌", "MISSED", "var(--brand-red)"); showFloat(x, y - 40, "-200 PTS", "var(--brand-red)"); sfx.playExplosion();
-                        playerProfile.campaignStats.cargoMisses++;
-                    }
+                if (y > window.innerHeight + 100) {
                     pkg.remove(); tkState.activeCargo.splice(i, 1);
                 }
             }
@@ -1740,9 +1705,9 @@
                         o.warningTimer = 1500;
                         o.alt = proposedAlt; 
                         if (tkState.phase === 3) {
-                            o.spd = (0.96 + Math.random() * 1.44) * SPEED_MOD; // 40% slower
+                            o.spd = (1.6 + Math.random() * 2.4) * SPEED_MOD; // 20% slower
                         } else {
-                            o.spd = (7.2 + Math.random() * 2.4) * SPEED_MOD; // 40% slower
+                            o.spd = (12 + Math.random() * 4) * SPEED_MOD; // 20% slower
                         }
                         logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 4000); 
                     }

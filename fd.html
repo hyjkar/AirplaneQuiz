@@ -136,7 +136,7 @@
         #dialogue-bubble { position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20; font-weight: bold; text-transform: uppercase; pointer-events: none;}
         #dialogue-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent; }
         
-        /* Bouncing Red Alert Bubble */
+        /* Bouncing Red Alert Bubble (Used exclusively for Traffic Behind) */
         .critical-bubble { background: var(--brand-red) !important; color: #fff !important; animation: bubbleBounce 0.4s alternate infinite cubic-bezier(0.2, 0.8, 0.2, 1) !important; border: 2px solid #fff; }
         .critical-bubble::after { border-color: var(--brand-red) transparent transparent transparent !important; bottom: -8px !important; margin-left: -8px !important; border-width: 8px !important;}
         @keyframes bubbleBounce { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.15) translateY(-10px); box-shadow: 0 10px 25px rgba(215,25,32,0.8); } }
@@ -276,7 +276,9 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v10.6 - High Difficulty Rebalance</div>
+        <div id="tk-version">v10.7 - Zero Flicker & Overtaker Alert</div>
+        
+        <div id="nvg-overlay"></div>
         
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
@@ -341,10 +343,6 @@
             <div id="overtaker-1" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
             <div id="overtaker-2" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
 
-            <div id="rear-warning-0" class="rear-warning">⚠️ TRAFFIC: 1.5s</div>
-            <div id="rear-warning-1" class="rear-warning">⚠️ TRAFFIC: 1.5s</div>
-            <div id="rear-warning-2" class="rear-warning">⚠️ TRAFFIC: 1.5s</div>
-            
             <div id="tk-bird-flock">
                 <div class="bird" style="top:0; left:10px;"></div><div class="bird" style="top:10px; left:0;"></div><div class="bird" style="top:15px; left:20px;"></div><div class="bird" style="top:5px; left:30px;"></div><div class="bird" style="top:25px; left:15px;"></div>
             </div>
@@ -527,7 +525,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V42) ---
+        // --- PROFILE PERSISTENCE (V43) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -541,7 +539,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v42');
+                let p = localStorage.getItem('h5_profile_v43');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -557,7 +555,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v42', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v43', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -793,6 +791,7 @@
         }
 
         function setDialogue(text, timeMs, critical = false) {
+            if (tkState.dialogueCritical && tkState.dialogueTimeLeft > 0 && !critical) return;
             tkState.dialogueText = text; 
             tkState.dialogueTimeLeft = timeMs;
             tkState.dialogueCritical = critical;
@@ -1577,12 +1576,16 @@
             const bubble = document.getElementById('dialogue-bubble');
             if (tkState.dialogueTimeLeft > 0) { 
                 tkState.dialogueTimeLeft -= delta; 
-                bubble.innerHTML = tkState.dialogueText; 
+                // Only update innerHTML if it has actually changed to prevent CSS animation flickering
+                if (bubble.innerHTML !== tkState.dialogueText) {
+                    bubble.innerHTML = tkState.dialogueText; 
+                }
                 bubble.style.opacity = 1; 
                 if(tkState.dialogueCritical) bubble.classList.add('critical-bubble'); else bubble.classList.remove('critical-bubble');
             } else { 
                 bubble.style.opacity = 0; 
                 bubble.classList.remove('critical-bubble');
+                tkState.dialogueCritical = false;
             }
 
             // SPEED ENGINE WITH WIND POCKET
@@ -1823,6 +1826,25 @@
                 }
             }
 
+            for (let i = tkState.activeCargo.length - 1; i >= 0; i--) {
+                let pkg = tkState.activeCargo[i];
+                let x = parseFloat(pkg.dataset.x); let y = parseFloat(pkg.dataset.y); let vy = parseFloat(pkg.dataset.vy);
+                
+                let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
+                pkg.dataset.vx = parseFloat(pkg.dataset.vx) || 0;
+                let vx = parseFloat(pkg.dataset.vx);
+                vx -= 0.2; 
+                if (vx < -groundSpeed) vx = -groundSpeed; 
+                x += vx; vy += 0.4; y += vy;
+
+                pkg.dataset.x = x; pkg.dataset.y = y; pkg.dataset.vy = vy; pkg.dataset.vx = vx;
+                pkg.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+                
+                if (y > window.innerHeight + 100) {
+                    pkg.remove(); tkState.activeCargo.splice(i, 1);
+                }
+            }
+
             // Overtaker (Fixed to PX + Red Warning Delay + Safe Spawning)
             let trySpawnOvertaker = false;
             if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && Math.random() < 0.005) { trySpawnOvertaker = true; }
@@ -1850,6 +1872,7 @@
                             o.spd = (7.2 + Math.random() * 2.4) * SPEED_MOD; // 40% slower
                         }
                         logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); 
+                        setDialogue("⚠️ TRAFFIC BEHIND!", 1500, true);
                     }
                 }
             }
@@ -1858,10 +1881,6 @@
             tkState.overtakers.forEach((o, i) => {
                 if (o.warning) {
                     o.warningTimer -= delta;
-                    
-                    if (o.warningTimer > 0) {
-                        setDialogue(`TRAFFIC: ${(o.warningTimer/1000).toFixed(1)}s`, 150, true);
-                    }
                     
                     if (o.warningTimer <= 0) {
                         o.warning = false;

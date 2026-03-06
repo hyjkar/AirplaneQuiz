@@ -43,8 +43,7 @@
         #tk-bg-sky { background-size: auto 100vh; z-index: 1; height: 120%; top: -10%; }
         #tk-fg-sky { background-size: auto 150vh; z-index: 14; height: 120%; top: -100%; opacity: 0.8; }
         #tk-threat-fog { display: none; background-size: auto 200vh; z-index: 15; height: 150%; top: -10%; opacity: 0.95; filter: blur(3px) brightness(1.1); }
-        .fog-scenario #tk-threat-fog { display: block; }
-        .fog-scenario #tk-plane-img, .fog-scenario .tk-enemy img, .fog-scenario .tk-overtaker img { filter: brightness(0) !important; transition: filter 0.5s; }
+        .wea-fog #tk-threat-fog { display: block; }
         
         /* NVG MODE FILTER - High Performance */
         .nvg-mode { background-color: #052205 !important; }
@@ -54,13 +53,13 @@
         .nvg-mode #tk-drop-zone { border-color: #2ecc71 !important; background: rgba(46,204,113,0.15) !important; }
 
         .passenger-windows { display: none; position: absolute; top: 62%; left: 35%; right: 25%; height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; }
-        .fog-scenario .passenger-windows { display: flex; }
+        .wea-fog .passenger-windows, .tod-night .passenger-windows { display: flex; }
         .window-dot { width: 4px; height: 4px; background: #fffde7; box-shadow: 0 0 6px #fbc02d, 0 0 10px #f57f17; border-radius: 1px; animation: flicker 2s infinite alternate; }
         .tk-enemy .passenger-windows, .tk-overtaker .passenger-windows { left: 25%; right: 35%; top: 62%; }
         @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
         #tk-sun { display: none; position: absolute; right: 15%; bottom: 35%; width: 60px; height: 60px; background: #fff; box-shadow: 0 0 0 10px rgba(255, 240, 150, 0.8), 0 0 0 25px rgba(255, 200, 100, 0.4), 0 0 0 45px rgba(255, 100, 50, 0.2); z-index: 0; will-change: transform; }
-        .sunrise-weather #tk-sun { display: block; }
+        .tod-sunrise #tk-sun { display: block; }
 
         #tk-bg-city { height: 100%; background-size: auto 100%; background-position: bottom left; z-index: 2; top: 0; }
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3; transition: filter 0.5s; will-change: transform; }
@@ -79,27 +78,27 @@
         /* PIXELATED WIND POCKET */
         #tk-wind-pocket { position: absolute; bottom: 100px; left: 0; width: 300px; height: 150px; z-index: 14; display: none; will-change: transform; pointer-events: none; }
 
-        /* --- WEATHER STATES --- */
+        /* --- WEATHER & TIME STATES --- */
         .weather-layer { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
-        .night-weather .rain-layer, .night-weather .fog-layer.layer-back { display: block; }
-        .snow-weather .snow-layer, .snow-weather .fog-layer { display: block; }
         
-        .night-weather { background-color: #0b1021 !important; }
-        .night-weather #tk-bg-sky, .night-weather #tk-fg-sky, .night-weather #tk-bg-city, .night-weather #tk-runway, .night-weather #tk-mountain { filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2); }
-        .night-weather #tk-threat-fog { filter: brightness(0.3) sepia(0.5) hue-rotate(180deg) saturate(1.2) blur(3px); }
-        .night-weather #tk-plane-img, .night-weather .tk-enemy img, .night-weather .tk-overtaker img { filter: brightness(0.55); }
-
-        .sunrise-weather { background-color: #ff9e7a !important; }
-        .sunrise-weather #tk-bg-sky, .sunrise-weather #tk-fg-sky, .sunrise-weather #tk-bg-city, .sunrise-weather #tk-runway, .sunrise-weather #tk-mountain { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8); }
-        .sunrise-weather #tk-threat-fog { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.9) blur(3px); }
-        .sunrise-weather #tk-plane-img, .sunrise-weather .tk-enemy img, .sunrise-weather .tk-overtaker img { filter: sepia(0.3) saturate(1.2) brightness(0.9); }
-
-        .snow-weather { background-color: #b8c6d9 !important; }
-        .snow-weather #tk-bg-sky, .snow-weather #tk-fg-sky, .snow-weather #tk-bg-city, .snow-weather #tk-runway, .snow-weather #tk-mountain { filter: grayscale(0.7) brightness(1.4) contrast(0.6); }
-        .snow-weather #tk-threat-fog { filter: grayscale(0.7) brightness(1.4) blur(3px); }
+        .wea-rain .rain-layer { display: block; }
+        .wea-snow .snow-layer, .wea-snow .fog-layer { display: block; }
+        .wea-fog .fog-layer { display: block; }
         
-        .snow-weather .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, transparent 65%); }
-        .snow-weather .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(240, 245, 250, 0.8) 0%, transparent 70%); }
+        /* Time of Day Base Colors & Filters */
+        .tod-night { background-color: #0b1021 !important; }
+        .tod-night #tk-bg-sky, .tod-night #tk-fg-sky, .tod-night #tk-bg-city, .tod-night #tk-runway, .tod-night #tk-mountain { filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2); }
+        .tod-night #tk-threat-fog { filter: brightness(0.3) sepia(0.5) hue-rotate(180deg) saturate(1.2) blur(3px); }
+        .tod-night #tk-plane-img, .tod-night .tk-enemy img, .tod-night .tk-overtaker img { filter: brightness(0.55); }
+
+        .tod-sunrise { background-color: #ff9e7a !important; }
+        .tod-sunrise #tk-bg-sky, .tod-sunrise #tk-fg-sky, .tod-sunrise #tk-bg-city, .tod-sunrise #tk-runway, .tod-sunrise #tk-mountain { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.8); }
+        .tod-sunrise #tk-threat-fog { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.9) blur(3px); }
+        .tod-sunrise #tk-plane-img, .tod-sunrise .tk-enemy img, .tod-sunrise .tk-overtaker img { filter: sepia(0.3) saturate(1.2) brightness(0.9); }
+
+        /* Weather specific overlays */
+        .wea-snow .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, transparent 65%); }
+        .wea-snow .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(240, 245, 250, 0.8) 0%, transparent 70%); }
         .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%); background-size: 300% 200%; animation: fogPulse 15s ease-in-out infinite alternate; z-index: 8; }
         .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(200, 210, 220, 0.95) 0%, transparent 40%); background-size: 200% 100%; animation: fogSweep 7s linear infinite; z-index: 15; }
         
@@ -116,7 +115,7 @@
         @keyframes snowAnim2 { from { background-position: 0 -300px; } to { background-position: -150px 300px; } }
 
         #tk-flare-container { display: none; position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25; overflow: hidden; transition: opacity 0.2s; }
-        .sunrise-weather #tk-flare-container { display: block; }
+        .tod-sunrise #tk-flare-container { display: block; }
         .pf { position: absolute; background: rgba(255, 200, 100, 0.2); transform: translate(-50%, -50%); }
         .pf-1 { width: 60px; height: 60px; background: rgba(255, 150, 50, 0.15); border: 2px solid rgba(255,200,100,0.3); }
         .pf-2 { width: 30px; height: 30px; background: rgba(150, 255, 150, 0.2); }
@@ -210,7 +209,6 @@
         .end-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 5px; }
         .end-panel.visible { transform: scale(1); }
 
-        /* Restored Vertical UI with Icons */
         .upgrade-list { width: 100%; display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
         .upg-item { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.5); border: 1px solid #333; padding: 4px 8px; border-radius: 8px; }
         .upg-icon { width: 24px; height: 24px; background: #222; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px solid #444; flex-shrink: 0;}
@@ -280,7 +278,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v9.3 - Crash Fixes & Optimization</div>
+        <div id="tk-version">v9.5 - Automatic NVG & Debug Keys</div>
         
         <div id="nvg-overlay"></div>
         
@@ -392,6 +390,7 @@
 
                 <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid #333; margin-top: 10px; margin-bottom: 10px; position: relative; display: flex; align-items: center; justify-content: space-between;">
                     <div style="text-align: left; font-size: 0.85rem; color: #ccc; display: flex; flex-direction: column; gap: 5px;">
+                        <div>TIME: <strong id="fp-time" style="color:#fff;">DAY</strong></div>
                         <div>WEATHER: <strong id="fp-weather" style="color:var(--fo-blue);">CLEAR</strong></div>
                         <div>TRAFFIC: <strong id="fp-traffic">NORMAL</strong></div>
                         <div>WIND SHEAR: <strong id="fp-wind-risk" style="color:var(--brand-gold);">0%</strong></div>
@@ -517,7 +516,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V29) ---
+        // --- PROFILE PERSISTENCE (V30) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -529,7 +528,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v29');
+                let p = localStorage.getItem('h5_profile_v30');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -541,7 +540,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v29', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v30', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -630,7 +629,7 @@
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, 
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
-            weather: "day", zoom: 1.0, targetZoom: 1.0, speedMod: CRUISE_SPEED, autoPilot: false, canRestart: true, 
+            timeOfDay: "day", weather: "clear", zoom: 1.0, targetZoom: 1.0, speedMod: CRUISE_SPEED, autoPilot: false, canRestart: true, 
             hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [], enemies: [], overtakers: [], activeCargo: [],
             
             stallsCount: 0, wasStalling: false, extremePitchTime: 0, totalFlightTime: 0,
@@ -664,6 +663,7 @@
                 else { btn.textContent = `REPAIR (1K)`; btn.disabled = playerProfile.points < 1000; }
             });
             
+            // Bird shield
             let bBtn = document.getElementById('btn-upg-bird');
             if(playerProfile.upgrades.bird) {
                 document.getElementById('stat-bird').textContent = "ACTIVE";
@@ -675,6 +675,7 @@
                 bBtn.textContent = "BUY (1K)"; bBtn.disabled = playerProfile.points < 1000;
             }
 
+            // Wind shield
             let wBtn = document.getElementById('btn-upg-windshield');
             if(playerProfile.upgrades.windShield) {
                 document.getElementById('stat-windshield').textContent = "ACTIVE";
@@ -686,6 +687,7 @@
                 wBtn.textContent = "BUY (1K)"; wBtn.disabled = playerProfile.points < 1000;
             }
 
+            // NVG
             let nBtn = document.getElementById('btn-upg-nvg');
             if(playerProfile.upgrades.nvg) {
                 document.getElementById('stat-nvg').textContent = "ACTIVE";
@@ -910,6 +912,7 @@
             }, 300);
         }
 
+        // MASSIVE SPECTACLE CONDITION SCORING
         function getConditionScore() {
             let condScore = 0;
             condScore += playerProfile.upgrades.gear * 10000;
@@ -1196,18 +1199,23 @@
         }
 
         function generateFlightPlanContext() {
-            let rand = Math.random();
-            tkState.weather = rand > 0.75 ? 'night' : (rand > 0.5 ? 'snow' : (rand > 0.25 ? 'sunrise' : 'day'));
+            let timeRoll = Math.random();
+            tkState.timeOfDay = timeRoll > 0.66 ? 'night' : (timeRoll > 0.33 ? 'sunrise' : 'day');
+
+            let weaRoll = Math.random();
+            tkState.weather = weaRoll > 0.75 ? 'fog' : (weaRoll > 0.5 ? 'snow' : (weaRoll > 0.25 ? 'rain' : 'clear'));
             
             let trRoll = Math.random();
             tkState.trafficLevel = trRoll < 0.7 ? 0 : (trRoll < 0.9 ? 1 : 2);
 
             tkState.baseWindRisk = 10;
-            if(tkState.weather === 'night') tkState.baseWindRisk = 25;
-            if(tkState.weather === 'sunrise') tkState.baseWindRisk = 40;
-            if(tkState.weather === 'snow') tkState.baseWindRisk = 60;
+            if(tkState.timeOfDay === 'night') tkState.baseWindRisk += 15;
+            if(tkState.timeOfDay === 'sunrise') tkState.baseWindRisk += 10;
+            if(tkState.weather === 'snow') tkState.baseWindRisk += 30;
+            if(tkState.weather === 'rain') tkState.baseWindRisk += 20;
+            if(tkState.weather === 'fog') tkState.baseWindRisk += 10;
             
-            tkState.hasFogScenario = Math.random() < 0.25;
+            tkState.hasFogScenario = (tkState.weather === 'fog');
             tkState.hasOvertakerScenario = Math.random() > 0.5;
             tkState.hasBirdScenario = Math.random() < 0.25;
             tkState.hasCargoMission = Math.random() < 0.25;
@@ -1216,16 +1224,21 @@
 
         function renderFlightPlanContext() {
             let vp = document.getElementById('takeoff-viewport');
-            vp.classList.remove('night-weather', 'sunrise-weather', 'snow-weather', 'fog-scenario', 'nvg-mode');
+            vp.classList.remove('tod-day', 'tod-night', 'tod-sunrise', 'wea-clear', 'wea-snow', 'wea-rain', 'wea-fog', 'nvg-mode');
             vp.style.backgroundColor = ''; 
 
-            if (tkState.weather !== 'day') vp.classList.add(tkState.weather + '-weather');
-            if (tkState.hasFogScenario) vp.classList.add('fog-scenario');
+            vp.classList.add('tod-' + tkState.timeOfDay);
+            vp.classList.add('wea-' + tkState.weather);
 
-            let wText = "CLEAR"; let wColor = "var(--fo-blue)";
-            if (tkState.hasFogScenario) { wText = "HEAVY FOG"; wColor = "var(--brand-red)"; }
-            else if (tkState.weather === 'snow') { wText = "SNOWSTORM"; wColor = "#bdc3c7"; }
-            else if (tkState.weather === 'night') { wText = "NIGHT OPS"; wColor = "#8e44ad"; }
+            let timeText = tkState.timeOfDay.toUpperCase();
+            let timeColor = tkState.timeOfDay === 'night' ? '#8e44ad' : (tkState.timeOfDay === 'sunrise' ? '#e67e22' : '#f1c40f');
+            document.getElementById('fp-time').textContent = timeText;
+            document.getElementById('fp-time').style.color = timeColor;
+
+            let wText = tkState.weather.toUpperCase(); 
+            let wColor = "var(--fo-blue)";
+            if (tkState.weather === 'fog') { wColor = "var(--brand-red)"; }
+            else if (tkState.weather === 'snow') { wColor = "#bdc3c7"; }
             document.getElementById('fp-weather').textContent = wText; document.getElementById('fp-weather').style.color = wColor;
             
             let trafText = "NORMAL"; let trafColor = "var(--gauge-green)";
@@ -1252,7 +1265,7 @@
                 active: false, isPaused: false, inFlightPlan: true, nvgActive: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, altitude: 0, cameraY: 0, score: 0, 
                 pressing: false, frameId: null, lastFrameTime: 0, 
                 currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260, 
-                dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: CRUISE_SPEED, autoPilot: false, weather: "day", canRestart: false,
+                dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: CRUISE_SPEED, autoPilot: false, weather: "clear", timeOfDay: "day", canRestart: false,
                 hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [],
                 
                 gearRisk: 0, engineRisk: 0, windRisk: 0, gyroRisk: 0, apRisk: 0, trafficLevel: 0,
@@ -1341,8 +1354,10 @@
                 tkState.inFlightPlan = false;
                 tkState.active = true;
                 
-                if (tkState.weather === 'night' && playerProfile.upgrades.nvg) {
+                // Automatic Night Vision Execution
+                if (playerProfile.upgrades.nvg && (tkState.timeOfDay === 'night' || tkState.weather === 'fog')) {
                     document.getElementById('takeoff-viewport').classList.add('nvg-mode');
+                    sfx.playDing(2.0);
                 }
                 
                 if (tkState.hasFogScenario) {
@@ -1420,7 +1435,7 @@
 
         function triggerEpicCollision(x, y) {
             sfx.playExplosion(); const vp = document.getElementById('takeoff-viewport'); vp.style.backgroundColor = "#ffffff";
-            setTimeout(() => { if (tkState.weather === 'night') vp.style.backgroundColor = "#0b1021"; else if (tkState.weather === 'sunrise') vp.style.backgroundColor = "#ff9e7a"; else if (tkState.weather === 'snow') vp.style.backgroundColor = "#b8c6d9"; else vp.style.backgroundColor = "#87CEEB"; }, 150);
+            setTimeout(() => { if (tkState.timeOfDay === 'night') vp.style.backgroundColor = "#0b1021"; else if (tkState.timeOfDay === 'sunrise') vp.style.backgroundColor = "#ff9e7a"; else if (tkState.weather === 'snow') vp.style.backgroundColor = "#b8c6d9"; else vp.style.backgroundColor = "#87CEEB"; }, 150);
             let shakeAmount = 35;
             function applyShake() { 
                 if (tkState.isPaused) { requestAnimationFrame(applyShake); return; }
@@ -1461,7 +1476,7 @@
                 guide.style.borderLeftColor = guideColor; guide.style.borderRightColor = guideColor; guide.querySelector('.guide-label').style.color = guideColor;
             } else { guide.style.opacity = 0; }
 
-            if (tkState.weather === 'sunrise') {
+            if (tkState.timeOfDay === 'sunrise') {
                 const sun = document.getElementById('tk-sun'); const flareCont = document.getElementById('tk-flare-container'); const sunRect = sun.getBoundingClientRect();
                 let sx = sunRect.left + sunRect.width / 2; let sy = sunRect.top + sunRect.height / 2;
                 let cx = window.innerWidth / 2; let cy = window.innerHeight / 2; let dx = cx - sx; let dy = cy - sy;
@@ -1572,7 +1587,7 @@
             if (isStalling) { document.getElementById('tk-alert-overlay').className = 'flashing'; setDialogue("<span class='alert-text'>STALL WARNING!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
             } else if (isTooFast) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 1500);
             } else if (isTooHigh) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0 || tkState.dialogueText.includes("VISIBILITY")) setDialogue("<span class='alert-text'>TOO HIGH! LOSING POINTS!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
-            } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>" && tkState.dialogueText !== "<span class='alert-text'>WIND SHEAR!</span>" && tkState.dialogueText !== "<span class='alert-text'>GYROSCOPE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT OFFLINE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>" && tkState.dialogueText !== "<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>" && !tkState.dialogueText.includes("DROP NOW!") && !tkState.dialogueText.includes("MISSED TARGET!")) { document.getElementById('tk-alert-overlay').className = ''; }
+            } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>" && tkState.dialogueText !== "<span class='alert-text'>WIND SHEAR!</span>" && tkState.dialogueText !== "<span class='alert-text'>GYROSCOPE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT OFFLINE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>" && tkState.dialogueText !== "<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>" && !tkState.dialogueText.includes("DROP NOW!") && !tkState.dialogueText.includes("MISSED TARGET!") && !tkState.dialogueText.includes("CARGO SECURED!")) { document.getElementById('tk-alert-overlay').className = ''; }
 
             tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.12;
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
@@ -1652,6 +1667,7 @@
                 tkState.cargoTimer = (tkState.cargoTimer || 0) + delta;
                 let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
                 
+                // Spawn exactly 5 seconds into Phase 2
                 if (!tkState.cargoPrompted && tkState.phase >= 2 && tkState.phase <= 4 && tkState.cargoTimer > 5000) {
                     tkState.cargoPrompted = true;
                     setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>", 3000);
@@ -1868,13 +1884,13 @@
             // Camera Parallax Apply
             tkState.bgX_sky -= (displaySpeed * 0.006 * SPEED_MOD); tkState.bgX_fgSky -= (displaySpeed * 0.012 * SPEED_MOD); tkState.bgX_city -= (displaySpeed * 0.03 * SPEED_MOD); tkState.bgX_runway -= (displaySpeed * 0.18 * SPEED_MOD);
             document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 10%`; document.getElementById('tk-fg-sky').style.backgroundPosition = `${tkState.bgX_fgSky}px 20%`; document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`; document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
-            if (tkState.hasFogScenario) { tkState.bgX_threatFog -= (displaySpeed * 0.025 * SPEED_MOD); document.getElementById('tk-threat-fog').style.backgroundPosition = `${tkState.bgX_threatFog}px 50%`; }
+            if (tkState.weather === 'fog') { tkState.bgX_threatFog -= (displaySpeed * 0.025 * SPEED_MOD); document.getElementById('tk-threat-fog').style.backgroundPosition = `${tkState.bgX_threatFog}px 50%`; }
 
             let maxVisualAltitude = Math.min(60, window.innerHeight * 0.15); let baseTargetCam = Math.max(0, tkState.altitude - maxVisualAltitude); if (isLandingApproach) baseTargetCam -= 20; tkState.cameraY += (baseTargetCam - tkState.cameraY) * 0.15;
             document.getElementById('tk-fg-sky').style.opacity = Math.max(0, Math.min(1, (tkState.altitude - 450) / 100));
 
             document.getElementById('tk-runway').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; document.getElementById('tk-bg-city').style.transform = `translate3d(0, ${tkState.cameraY * 0.7}px, 0)`; document.getElementById('tk-bg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`; document.getElementById('tk-fg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.3}px, 0)`; document.getElementById('tk-mountain').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; document.getElementById('tk-sun').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`;
-            if (tkState.hasFogScenario) { document.getElementById('tk-threat-fog').style.transform = `translate3d(0, ${tkState.cameraY * 0.45}px, 0)`; }
+            if (tkState.weather === 'fog') { document.getElementById('tk-threat-fog').style.transform = `translate3d(0, ${tkState.cameraY * 0.45}px, 0)`; }
             
             let planeY = -(tkState.altitude - tkState.cameraY);
             document.getElementById('plane-container').style.transform = `translate3d(-50%, ${planeY}px, 0)`;

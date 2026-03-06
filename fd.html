@@ -99,7 +99,7 @@
         
         .rain-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNTAnIGhlaWdodD0nMjUwJz48cmVjdCB4PScyMCcgeT0nMjAnIHdpZHRoPScyJyBoZWlnaHQ9JzE1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuNCknLz48L3N2Zz4="); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
         .rain-layer.layer-2 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJz48cmVjdCB4PSc1MCcgeT0nNTAnIHdpZHRoPSczJyBoZWlnaHQ9JzI1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuNiknLz48cmVjdCB4PScyNTAnIHk9JzIwMCcgd2lkdGg9JzInIGhlaWdodD0nMTUnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC40KScvPjwvc3ZnPg=="); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
-        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nMjAwJz48Y2lyY2xlIGN4PScyMCcgY3k9JzIwJyByPSczJyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOCknLz48Y2lyY2xlIGN4PSc1MCcgY3k9JzE4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjYpJy8+PGNpcmNsZSBjeD0nMTUwJyBjeT0nMTUwJyByPSc0JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PSc1MCcgY3k9JzE4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjUpJy8+PC9zdmc+"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
+        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nMjAwJz48Y2lyY2xlIGN4PScyMCcgY3k9JzIwJyByPSczJyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOCknLz48Y2lyY2xlIGN4PScxMDAnIGN5PSc4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjYpJy8+PGNpcmNsZSBjeD0nMTUwJyBjeT0nMTUwJyByPSc0JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PSc1MCcgY3k9JzE4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjUpJy8+PC9zdmc+"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
         .snow-layer.layer-2 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMDAnIGhlaWdodD0nMzAwJz48Y2lyY2xlIGN4PSc1MCcgY3k9JzUwJyByPSc1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PScyMDAnIGN5PScxNTAnIHI9JzYnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC44KScvPjxjaXJjbGUgY3g9JzI1MCcgY3k9JzI4MCcgcj0nNCcgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjcpJy8+PC9zdmc+"); animation: snowAnim2 3.5s linear infinite; z-index: 16; }
         
         @keyframes rainAnim1 { from { background-position: 0 0; } to { background-position: -60px 250px; } }
@@ -167,6 +167,20 @@
         .tk-enemy img, .tk-overtaker img { width: 100%; height: 100%; object-fit: contain; }
         .tk-enemy img { transform: scaleX(-1); }
 
+        /* Clear Alert Effect for Overtakers */
+        .rear-warning { 
+            position: absolute; left: 20px; 
+            color: #fff; background: rgba(215, 25, 32, 0.85); 
+            border: 2px solid #fff; border-radius: 8px;
+            padding: 5px 15px; font-family: 'Share Tech Mono', monospace;
+            font-weight: bold; font-size: 1.2rem; 
+            box-shadow: 0 0 15px rgba(215, 25, 32, 0.8); 
+            z-index: 40; display: none; 
+            animation: pulseWarning 0.3s infinite alternate; 
+            pointer-events: none; white-space: nowrap;
+        }
+        @keyframes pulseWarning { from { transform: scale(1); opacity: 1; } to { transform: scale(1.05); opacity: 0.8; } }
+
         #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform; pointer-events: none;}
         #tk-bird-flock { position: absolute; bottom: 65px; left: 0; width: 40px; height: 30px; z-index: 10; display: none; pointer-events: none; will-change: transform; }
         .bird { position: absolute; width: 4px; height: 4px; background: #111; border-radius: 50%; box-shadow: 12px 6px #111, -8px 10px #111, 16px 14px #111, 6px -4px #111; animation: flap 0.3s infinite alternate; }
@@ -175,7 +189,20 @@
         .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
-        .cargo-package { position: absolute; z-index: 15; width: 20px; height: 20px; background: #cfa86e; border: 2px solid #fff; left: 0; top: 0; will-change: transform; }
+        
+        /* NEW IMAGE-BASED CARGO SPRITE */
+        .cargo-package { 
+            position: absolute; 
+            z-index: 15; 
+            width: 24px; 
+            height: 24px; 
+            left: 0; 
+            top: 0; 
+            will-change: transform; 
+            object-fit: contain;
+            image-rendering: pixelated; 
+        }
+
         .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
         @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 0); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 0); opacity: 0; } }
 
@@ -263,7 +290,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v10.3 - Golden Plane Paint Shop & Crash Fix</div>
+        <div id="tk-version">v10.5 - Custom Cargo Sprite Added</div>
         
         <div id="nvg-overlay"></div>
         
@@ -665,7 +692,7 @@
                 else { btn.textContent = `REPAIR (1000)`; btn.disabled = playerProfile.points < 1000; }
             });
             
-            // Defenses & NVG
+            // Bird shield
             let bBtn = document.getElementById('btn-upg-bird');
             if(playerProfile.upgrades.bird) {
                 document.getElementById('stat-bird').textContent = "ACTIVE";
@@ -677,6 +704,7 @@
                 bBtn.textContent = "BUY (1000)"; bBtn.disabled = playerProfile.points < 1000;
             }
 
+            // Wind shield
             let wBtn = document.getElementById('btn-upg-windshield');
             if(playerProfile.upgrades.windShield) {
                 document.getElementById('stat-windshield').textContent = "ACTIVE";
@@ -688,6 +716,7 @@
                 wBtn.textContent = "BUY (1000)"; wBtn.disabled = playerProfile.points < 1000;
             }
 
+            // NVG
             let nBtn = document.getElementById('btn-upg-nvg');
             if(playerProfile.upgrades.nvg) {
                 document.getElementById('stat-nvg').textContent = "ACTIVE";
@@ -788,7 +817,7 @@
 
             if (!tkState.autoPilot) {
                 if (tkState.apState === 1) {
-                    sfx.playDing(0.5); setDialogue("<span class='alert-text'>AUTOPILOT OFFLINE!</span>", 2000); return;
+                    sfx.playDing(0.5); setDialogue("AUTOPILOT OFFLINE!", 2000, true); return;
                 }
                 
                 tkState.autoPilot = true;
@@ -797,7 +826,7 @@
                 
                 if (tkState.apState === 2) {
                     apInd.style.background = 'var(--brand-red)'; apInd.textContent = 'ERR';
-                    sfx.playDing(0.5); setDialogue("<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>", 3000);
+                    sfx.playDing(0.5); setDialogue("AUTOPILOT MALFUNCTION!", 3000, true);
                     logEvent("AP FAILURE", "⚠️", "AP ERR", "var(--brand-red)");
                 } else {
                     apInd.style.background = 'var(--gauge-green)'; apInd.textContent = 'AUTO'; sfx.playDing(1.5); 
@@ -920,10 +949,12 @@
             } else {
                 playerProfile.points = Math.max(0, playerProfile.points - 200); logEvent("CARGO MISSED", "❌", "MISSED", "var(--brand-red)"); showFloat(planeX, pr.bottom, "-200 FUNDS", "var(--brand-red)"); sfx.playExplosion();
                 playerProfile.campaignStats.cargoMisses++;
-                setDialogue("<span class='alert-text'>MISSED TARGET!</span>", 2000);
+                setDialogue("MISSED TARGET!", 2000, true);
             }
             
-            let p = document.createElement('div'); p.className = 'cargo-package';
+            let p = document.createElement('img'); 
+            p.className = 'cargo-package';
+            p.src = 'cargo.png';
             p.dataset.x = planeX; p.dataset.y = pr.bottom; p.dataset.vy = 0;
             p.style.transform = `translate3d(${p.dataset.x}px, ${p.dataset.y}px, 0)`;
             document.getElementById('takeoff-viewport').appendChild(p);
@@ -957,6 +988,7 @@
             }, 300);
         }
 
+        // MASSIVE SPECTACLE CONDITION SCORING
         function getConditionScore() {
             let condScore = 0;
             condScore += playerProfile.upgrades.gear * 10000;
@@ -1669,7 +1701,7 @@
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
             if (tkState.stallFactor > 0) targetVSpeed = (targetVSpeed * (1 - tkState.stallFactor)) + (-15 * Math.pow(tkState.stallFactor, 2) * SPEED_MOD);
             
-            // SCREEN FLASH & PENALTY LOGIC
+            // ALTITUDE POINT DRAIN (FUNDS PENALTY)
             if (tkState.flashTimer > 0) tkState.flashTimer -= delta;
 
             if (isTooHigh) {
@@ -1693,7 +1725,7 @@
                 if(tkState.autoPilot) toggleAutoPilot();
             }
 
-            if (isStalling || isTooFast || isTooHigh || tkState.flashTimer > 0) {
+            if (isStalling || isTooFast || isTooHigh || (tkState.dialogueCritical && tkState.dialogueTimeLeft > 0) || tkState.flashTimer > 0) {
                 document.getElementById('tk-alert-overlay').className = 'flashing';
             } else {
                 document.getElementById('tk-alert-overlay').className = '';
@@ -1800,6 +1832,25 @@
                         setDialogue("<span class='success-text'>DROP NOW!</span>", 2000);
                         tkState.dropCountdown = -1; sfx.playDing(2.0);
                     }
+                }
+            }
+
+            for (let i = tkState.activeCargo.length - 1; i >= 0; i--) {
+                let pkg = tkState.activeCargo[i];
+                let x = parseFloat(pkg.dataset.x); let y = parseFloat(pkg.dataset.y); let vy = parseFloat(pkg.dataset.vy);
+                
+                let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
+                pkg.dataset.vx = parseFloat(pkg.dataset.vx) || 0;
+                let vx = parseFloat(pkg.dataset.vx);
+                vx -= 0.2; 
+                if (vx < -groundSpeed) vx = -groundSpeed; 
+                x += vx; vy += 0.4; y += vy;
+
+                pkg.dataset.x = x; pkg.dataset.y = y; pkg.dataset.vy = vy; pkg.dataset.vx = vx;
+                pkg.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+                
+                if (y > window.innerHeight + 100) {
+                    pkg.remove(); tkState.activeCargo.splice(i, 1);
                 }
             }
 

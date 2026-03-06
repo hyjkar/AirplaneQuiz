@@ -148,7 +148,7 @@
         .alert-text { color: var(--brand-red); font-weight: bold; animation: pulseRed 0.8s infinite alternate; }
         .success-text { color: var(--gauge-green); font-weight: bold; }
 
-        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; pointer-events: none; }
+        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; pointer-events: none; transform: translateZ(9999px); }
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
         #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold); transition: all 0.2s;}
         
@@ -157,13 +157,13 @@
         #nvg-btn { font-size: 0.8rem; font-family: 'Share Tech Mono'; font-weight: bold; background: rgba(46, 204, 113, 0.2); border-color: var(--gauge-green); color: var(--gauge-green); display: none;}
         #reset-btn:active, #pause-btn:active, #fs-btn:active, #nvg-btn:active { transform: scale(0.95); }
 
-        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); }
+        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); transform: translateZ(9999px); }
         
-        #prompt-container { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 99999; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #prompt-container { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateZ(9999px); z-index: 99999; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #tk-touch-prompt { background: var(--brand-red); border: 2px solid #fff; border-radius: 8px; padding: 15px 30px; text-align: center; color: #fff; font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(215,25,32,0.6); width: auto; text-transform: uppercase; cursor: pointer; pointer-events: auto; transition: transform 0.1s;}
         #tk-touch-prompt:active { transform: scale(0.95); }
 
-        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 99999; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s; }
+        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 99999; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s; transform: translateZ(9999px); }
         #tk-eject-btn:active { transform: scale(0.92); }
 
         /* Traffic Planes */
@@ -194,8 +194,8 @@
         .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .cargo-package { position: absolute; z-index: 15; width: 20px; height: 20px; background: #cfa86e; border: 2px solid #fff; left: 0; top: 0; will-change: transform; }
-        .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
-        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 0); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 0); opacity: 0; } }
+        .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; transform: translateZ(9999px); }
+        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 9999px); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 9999px); opacity: 0; } }
 
         /* OVERLAYS FORCED TO TOP */
         #tk-flight-plan-overlay, #tk-end-screen, #leaderboard-overlay { 
@@ -203,6 +203,7 @@
             background: rgba(0,0,0,0.85); z-index: 99999; display: none; 
             flex-direction: column; align-items: center; justify-content: center; 
             opacity: 0; transition: opacity 0.3s ease; pointer-events: none; 
+            transform: translateZ(9999px); 
         }
         
         #tk-flight-plan-overlay.visible, #tk-end-screen.visible, #leaderboard-overlay.visible { opacity: 1; pointer-events: auto; }
@@ -282,7 +283,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v8.8 - Normal Traffic Chance 70%</div>
+        <div id="tk-version">v8.8 - Adjusted Traffic Speeds</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -358,7 +359,12 @@
 
             <div id="tk-runway">
                 <div id="tk-runway-stripes"></div>
-                <div id="tk-drop-zone">TARGET ZONE</div>
+                <div id="tk-drop-zone">
+                    <div style="position: absolute; bottom: 100px; left: 0; width: 100%; border-top: 4px dashed var(--brand-gold); color: var(--brand-gold); font-size: 1.2rem; text-align: left; padding-left: 10px; opacity: 0.9;">100m - PERFECT DROP (1000 PTS)</div>
+                    <div style="position: absolute; bottom: 300px; left: 0; width: 100%; border-top: 4px dashed var(--gauge-green); color: var(--gauge-green); font-size: 1.2rem; text-align: left; padding-left: 10px; opacity: 0.9;">300m - GOOD DROP (500 PTS)</div>
+                    <div style="position: absolute; bottom: 500px; left: 0; width: 100%; border-top: 4px dashed var(--fo-blue); color: var(--fo-blue); font-size: 1.2rem; text-align: left; padding-left: 10px; opacity: 0.9;">HIGH DROP (200 PTS)</div>
+                    <div style="position: absolute; bottom: 20px; width: 100%; font-size: 3rem; color: #fff; text-align: center;">TARGET ZONE</div>
+                </div>
             </div>
             
             <div id="tk-wind-pocket">
@@ -369,6 +375,7 @@
             </div>
             
             <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M42,35 L50,20 L58,35 Z" fill="#fff"/></svg></div>
+            <div class="weather-layer fog-layer layer-front"></div><div class="weather-layer rain-layer layer-2"></div><div class="weather-layer snow-layer layer-2"></div>
         </div>
 
         <div id="tk-flare-container">
@@ -511,7 +518,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V24) ---
+        // --- PROFILE PERSISTENCE (V25) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -523,7 +530,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v24');
+                let p = localStorage.getItem('h5_profile_v25');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -535,7 +542,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v24', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v25', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -658,7 +665,6 @@
                 else { btn.textContent = `REPAIR (1K)`; btn.disabled = playerProfile.points < 1000; }
             });
             
-            // Bird shield
             let bBtn = document.getElementById('btn-upg-bird');
             if(playerProfile.upgrades.bird) {
                 document.getElementById('stat-bird').textContent = "ACTIVE";
@@ -670,7 +676,6 @@
                 bBtn.textContent = "BUY (1K)"; bBtn.disabled = playerProfile.points < 1000;
             }
 
-            // Wind shield
             let wBtn = document.getElementById('btn-upg-windshield');
             if(playerProfile.upgrades.windShield) {
                 document.getElementById('stat-windshield').textContent = "ACTIVE";
@@ -682,7 +687,6 @@
                 wBtn.textContent = "BUY (1K)"; wBtn.disabled = playerProfile.points < 1000;
             }
 
-            // NVG
             let nBtn = document.getElementById('btn-upg-nvg');
             if(playerProfile.upgrades.nvg) {
                 document.getElementById('stat-nvg').textContent = "ACTIVE";
@@ -919,7 +923,7 @@
         function showLeaderboard() {
             let finalScore = getConditionScore();
             
-            let maxPoints = 19; // 4 mechanics (max 4 each) + 3 binary shields
+            let maxPoints = 19; 
             let currentPoints = playerProfile.upgrades.gear + playerProfile.upgrades.engine + playerProfile.upgrades.gyro + playerProfile.upgrades.ap;
             if (playerProfile.upgrades.bird) currentPoints += 1;
             if (playerProfile.upgrades.windShield) currentPoints += 1;
@@ -1350,6 +1354,7 @@
                     setDialogue("<span class='capt-text'>FULL POWER!<br><span style='font-size:0.65rem; color:var(--aux-blue);'>TAP PLANE FOR AUTOPILOT</span></span>", 5000);
                 }
 
+                // FIX FOR FREEZE BUG: Explicitly reset to 0
                 tkState.lastFrameTime = 0; 
                 sfx.bgMusic.play().catch(e=>e);
                 tkState.frameId = requestAnimationFrame(gameLoop);
@@ -1549,7 +1554,7 @@
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && displaySpeed > 145 && tkState.altitude > 0);
-            let isTooHigh = (tkState.altitude > 1000 && tkState.phase >= 1 && tkState.phase <= 4); 
+            let isTooHigh = (tkState.altitude > 1500 && tkState.phase >= 1 && tkState.phase <= 4); 
             sfx.playAlarm(isStalling);
             
             if (isStalling && !tkState.wasStalling) { tkState.stallsCount++; } tkState.wasStalling = isStalling;
@@ -1703,15 +1708,7 @@
                     let pkgRect = pkg.getBoundingClientRect();
                     let hit = (pkgRect.right > dz.left && pkgRect.left < dz.right);
                     if (hit) {
-                        
-                        let dropAlt = tkState.altitude;
-                        if(dropAlt < 100) {
-                            tkState.score += 1000; logEvent("PERFECT DROP", "📦", "PERFECT", "var(--brand-gold)"); showFloat(x, y - 40, "+1000 PTS", "var(--brand-gold)"); sfx.playDing(2.5);
-                        } else if (dropAlt < 300) {
-                            tkState.score += 500; logEvent("GOOD DROP", "📦", "GOOD", "var(--gauge-green)"); showFloat(x, y - 40, "+500 PTS", "var(--gauge-green)"); sfx.playDing(2.0);
-                        } else {
-                            tkState.score += 200; logEvent("HIGH DROP", "📦", "OK", "var(--fo-blue)"); showFloat(x, y - 40, "+200 PTS", "var(--fo-blue)"); sfx.playDing(1.5);
-                        }
+                        tkState.score += 500; logEvent("CARGO DELIVERED", "📦", "DELIVERY", "var(--gauge-green)"); showFloat(x, y - 40, "+500 PTS", "var(--gauge-green)"); sfx.playDing(2.0);
                         playerProfile.campaignStats.cargoHits++;
                     } else {
                         tkState.score -= 200; logEvent("CARGO MISSED", "❌", "MISSED", "var(--brand-red)"); showFloat(x, y - 40, "-200 PTS", "var(--brand-red)"); sfx.playExplosion();
@@ -1743,9 +1740,9 @@
                         o.warningTimer = 1500;
                         o.alt = proposedAlt; 
                         if (tkState.phase === 3) {
-                            o.spd = (1.6 + Math.random() * 2.4) * SPEED_MOD; 
+                            o.spd = (0.96 + Math.random() * 1.44) * SPEED_MOD; // 40% slower
                         } else {
-                            o.spd = (12 + Math.random() * 4) * SPEED_MOD; 
+                            o.spd = (7.2 + Math.random() * 2.4) * SPEED_MOD; // 40% slower
                         }
                         logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 4000); 
                     }
@@ -1845,7 +1842,7 @@
                             let e = tkState.enemies[slotIdx]; e.active = true; 
                             e.x = window.innerWidth + 200 + (Math.random() * 150); 
                             e.alt = proposedAlt; 
-                            e.spd = (12 + Math.random() * 12) * SPEED_MOD; 
+                            e.spd = (9.6 + Math.random() * 9.6) * SPEED_MOD; // 20% slower
                             document.getElementById('enemy-' + slotIdx).style.display = 'block'; 
                         }
                     } 

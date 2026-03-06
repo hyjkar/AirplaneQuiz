@@ -48,10 +48,11 @@
         .fog-scenario #tk-threat-fog { display: block; }
         .fog-scenario #tk-plane-img, .fog-scenario .tk-enemy img, .fog-scenario .tk-overtaker img { filter: brightness(0) !important; transition: filter 0.5s; }
         
-        /* NVG MODE FILTER */
-        .nvg-mode { background-color: #001a00 !important; }
-        .nvg-mode #camera-rig { filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(1.2) contrast(1.5); }
-        .nvg-mode #tk-plane-img, .nvg-mode .tk-enemy img, .nvg-mode .tk-overtaker img { filter: brightness(1.5) drop-shadow(0 0 5px #0f0); }
+        /* CORRECTED NVG MODE FILTER - NO GPU FREEZING */
+        .nvg-mode { background-color: #052205 !important; }
+        .nvg-mode .parallax-layer, .nvg-mode #tk-mountain { filter: sepia(1) hue-rotate(70deg) saturate(2) brightness(0.8) !important; }
+        .nvg-mode #tk-threat-fog { filter: sepia(1) hue-rotate(70deg) saturate(2) brightness(0.8) blur(3px) !important; }
+        .nvg-mode #tk-plane-img, .nvg-mode .tk-enemy img, .nvg-mode .tk-overtaker img { filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(1.5) drop-shadow(0 0 5px #0f0) !important; }
         .nvg-mode #tk-drop-zone { border-color: #2ecc71 !important; background: rgba(46,204,113,0.15) !important; }
 
         .passenger-windows { display: none; position: absolute; top: 62%; left: 35%; right: 25%; height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; }
@@ -282,7 +283,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v9.1 - Menu Restored & Debug Mode Active</div>
+        <div id="tk-version">v9.2 - Instant Cargo & Auto NVG Fixed</div>
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -373,7 +374,6 @@
             </div>
             
             <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M42,35 L50,20 L58,35 Z" fill="#fff"/></svg></div>
-            <div class="weather-layer fog-layer layer-front"></div><div class="weather-layer rain-layer layer-2"></div><div class="weather-layer snow-layer layer-2"></div>
         </div>
 
         <div id="tk-flare-container">
@@ -517,7 +517,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V27) ---
+        // --- PROFILE PERSISTENCE (V28) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -529,7 +529,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v27');
+                let p = localStorage.getItem('h5_profile_v28');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -541,7 +541,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v27', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v28', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -626,7 +626,7 @@
         let endScreenAnimInterval = null; let endScreenTimeouts = [];
 
         let tkState = {
-            active: false, isPaused: false, inFlightPlan: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
+            active: false, isPaused: false, inFlightPlan: false, nvgActive: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, 
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
@@ -664,7 +664,6 @@
                 else { btn.textContent = `REPAIR (1K)`; btn.disabled = playerProfile.points < 1000; }
             });
             
-            // Bird shield
             let bBtn = document.getElementById('btn-upg-bird');
             if(playerProfile.upgrades.bird) {
                 document.getElementById('stat-bird').textContent = "ACTIVE";
@@ -676,7 +675,6 @@
                 bBtn.textContent = "BUY (1K)"; bBtn.disabled = playerProfile.points < 1000;
             }
 
-            // Wind shield
             let wBtn = document.getElementById('btn-upg-windshield');
             if(playerProfile.upgrades.windShield) {
                 document.getElementById('stat-windshield').textContent = "ACTIVE";
@@ -688,7 +686,6 @@
                 wBtn.textContent = "BUY (1K)"; wBtn.disabled = playerProfile.points < 1000;
             }
 
-            // NVG
             let nBtn = document.getElementById('btn-upg-nvg');
             if(playerProfile.upgrades.nvg) {
                 document.getElementById('stat-nvg').textContent = "ACTIVE";
@@ -913,7 +910,6 @@
             }, 300);
         }
 
-        // MASSIVE SPECTACLE CONDITION SCORING
         function getConditionScore() {
             let condScore = 0;
             condScore += playerProfile.upgrades.gear * 10000;
@@ -929,8 +925,7 @@
         function showLeaderboard() {
             let finalScore = getConditionScore();
             
-            // Calculate plane integrity %
-            let maxPoints = 19; // 4 mechanics (max 4 each) + 3 binary shields
+            let maxPoints = 19; 
             let currentPoints = playerProfile.upgrades.gear + playerProfile.upgrades.engine + playerProfile.upgrades.gyro + playerProfile.upgrades.ap;
             if (playerProfile.upgrades.bird) currentPoints += 1;
             if (playerProfile.upgrades.windShield) currentPoints += 1;
@@ -1561,21 +1556,10 @@
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
             if (tkState.stallFactor > 0) targetVSpeed = (targetVSpeed * (1 - tkState.stallFactor)) + (-15 * Math.pow(tkState.stallFactor, 2) * SPEED_MOD);
             
-            // ALTITUDE POINT DRAIN
-            if (isTooHigh) {
-                tkState.score -= 2 * SPEED_MOD;
-                if (tkState.score < 0) tkState.score = 0;
-                if (Math.random() < 0.3) {
-                    const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
-                    showFloat(pr.left + pr.width/2 + (Math.random()*40-20), pr.top, "-10 PTS", "var(--brand-red)");
-                    sfx.playDing(0.4);
-                }
-            }
-
             if (isStalling) { document.getElementById('tk-alert-overlay').className = 'flashing'; setDialogue("<span class='alert-text'>STALL WARNING!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
             } else if (isTooFast) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 1500);
             } else if (isTooHigh) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0 || tkState.dialogueText.includes("VISIBILITY")) setDialogue("<span class='alert-text'>TOO HIGH! LOSING POINTS!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
-            } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>" && tkState.dialogueText !== "<span class='alert-text'>WIND SHEAR!</span>" && tkState.dialogueText !== "<span class='alert-text'>GYROSCOPE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT OFFLINE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>" && tkState.dialogueText !== "<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>" && !tkState.dialogueText.includes("DROP NOW!")) { document.getElementById('tk-alert-overlay').className = ''; }
+            } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>" && tkState.dialogueText !== "<span class='alert-text'>WIND SHEAR!</span>" && tkState.dialogueText !== "<span class='alert-text'>GYROSCOPE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT OFFLINE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>" && tkState.dialogueText !== "<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>" && !tkState.dialogueText.includes("DROP NOW!") && !tkState.dialogueText.includes("MISSED TARGET!")) { document.getElementById('tk-alert-overlay').className = ''; }
 
             tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.12;
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
@@ -1655,7 +1639,6 @@
                 tkState.cargoTimer = (tkState.cargoTimer || 0) + delta;
                 let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
                 
-                // Spawn exactly 5 seconds into Phase 2
                 if (!tkState.cargoPrompted && tkState.phase >= 2 && tkState.phase <= 4 && tkState.cargoTimer > 5000) {
                     tkState.cargoPrompted = true;
                     setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>", 3000);
@@ -1667,43 +1650,6 @@
                 if (tkState.dropZoneSpawned) {
                     tkState.dropZoneX -= groundSpeed;
                     document.getElementById('tk-drop-zone').style.transform = `translate3d(${tkState.dropZoneX}px, 0, 0)`;
-
-                    let pxPerSec = groundSpeed * 60; 
-                    let planeX = window.innerWidth * 0.3; 
-                    let distToPlane = tkState.dropZoneX - planeX;
-                    
-                    if (tkState.dropCountdown === 3 && distToPlane <= pxPerSec * 3) {
-                        setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>3...</span>", 1000);
-                        tkState.dropCountdown = 2; sfx.playDing(1.0);
-                    } else if (tkState.dropCountdown === 2 && distToPlane <= pxPerSec * 2) {
-                        setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>2...</span>", 1000);
-                        tkState.dropCountdown = 1; sfx.playDing(1.0);
-                    } else if (tkState.dropCountdown === 1 && distToPlane <= pxPerSec * 1) {
-                        setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>1...</span>", 1000);
-                        tkState.dropCountdown = 0; sfx.playDing(1.0);
-                    } else if (tkState.dropCountdown === 0 && distToPlane <= 0) {
-                        setDialogue("<span class='success-text'>DROP NOW!</span>", 2000);
-                        tkState.dropCountdown = -1; sfx.playDing(2.0);
-                    }
-                }
-            }
-
-            for (let i = tkState.activeCargo.length - 1; i >= 0; i--) {
-                let pkg = tkState.activeCargo[i];
-                let x = parseFloat(pkg.dataset.x); let y = parseFloat(pkg.dataset.y); let vy = parseFloat(pkg.dataset.vy);
-                
-                let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
-                pkg.dataset.vx = parseFloat(pkg.dataset.vx) || 0;
-                let vx = parseFloat(pkg.dataset.vx);
-                vx -= 0.2; 
-                if (vx < -groundSpeed) vx = -groundSpeed; 
-                x += vx; vy += 0.4; y += vy;
-
-                pkg.dataset.x = x; pkg.dataset.y = y; pkg.dataset.vy = vy; pkg.dataset.vx = vx;
-                pkg.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-                
-                if (y > window.innerHeight + 100) {
-                    pkg.remove(); tkState.activeCargo.splice(i, 1);
                 }
             }
 

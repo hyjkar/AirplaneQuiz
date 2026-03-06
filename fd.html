@@ -276,7 +276,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v10.9 - Pristine Alerts & Zero Flicker</div>
+        <div id="tk-version">v11.0 - UI Mastery & Overtaker Fix</div>
         
         <div id="nvg-overlay"></div>
         
@@ -324,7 +324,6 @@
             </div>
 
             <div id="tk-fg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
-            <div id="tk-threat-fog" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             
             <div id="enemy-0" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
             <div id="enemy-1" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
@@ -525,7 +524,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V45) ---
+        // --- PROFILE PERSISTENCE (V46) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -539,7 +538,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v45');
+                let p = localStorage.getItem('h5_profile_v46');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -555,7 +554,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v45', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v46', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -1382,7 +1381,7 @@
                 hasWindPocket: false, windPocketSpawned: false, windPocketX: window.innerWidth + 500, windPocketTriggered: false, windPocketTimer: 0, gyroFailed: false,
                 statsAdded: false, finalCampaignScore: 0
             };
-
+            
             generateFlightPlanContext();
             
             document.getElementById('fp-sector-title').textContent = "SECTOR " + playerProfile.currentLevel + " OF 5";
@@ -2008,21 +2007,21 @@
             }
 
             // Camera Parallax Apply
-            tkState.bgX_sky -= (displaySpeed * 0.006 * SPEED_MOD); tkState.bgX_fgSky -= (displaySpeed * 0.012 * SPEED_MOD); tkState.bgX_city -= (displaySpeed * 0.03 * SPEED_MOD); tkState.bgX_runway -= (displaySpeed * 0.18 * SPEED_MOD);
-            document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 10%`; document.getElementById('tk-fg-sky').style.backgroundPosition = `${tkState.bgX_fgSky}px 20%`; document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`; document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
+            tkState.bgX_sky -= (displaySpeed * 0.006 * SPEED_MOD); 
+            tkState.bgX_fgSky -= (displaySpeed * 0.035 * SPEED_MOD); // Dramatically sped up the front cloud layer
+            tkState.bgX_city -= (displaySpeed * 0.03 * SPEED_MOD); 
+            tkState.bgX_runway -= (displaySpeed * 0.18 * SPEED_MOD);
             
-            // Add threat fog moving math back
-            if (tkState.weather === 'fog') { 
-                tkState.bgX_threatFog -= (displaySpeed * 0.025 * SPEED_MOD); 
-                document.getElementById('tk-threat-fog').style.backgroundPosition = `${tkState.bgX_threatFog}px 50%`; 
-            }
+            document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 10%`; 
+            document.getElementById('tk-fg-sky').style.backgroundPosition = `${tkState.bgX_fgSky}px 20%`; 
+            document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`; 
+            document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
 
             let maxVisualAltitude = Math.min(60, window.innerHeight * 0.15); let baseTargetCam = Math.max(0, tkState.altitude - maxVisualAltitude); if (isLandingApproach) baseTargetCam -= 20; tkState.cameraY += (baseTargetCam - tkState.cameraY) * 0.15;
             document.getElementById('tk-fg-sky').style.opacity = Math.max(0, Math.min(1, (tkState.altitude - 450) / 100));
 
             document.getElementById('tk-runway').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; document.getElementById('tk-bg-city').style.transform = `translate3d(0, ${tkState.cameraY * 0.7}px, 0)`; document.getElementById('tk-bg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`; document.getElementById('tk-fg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.3}px, 0)`; document.getElementById('tk-mountain').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; document.getElementById('tk-sun').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`;
-            if (tkState.weather === 'fog') { document.getElementById('tk-threat-fog').style.transform = `translate3d(0, ${tkState.cameraY * 0.45}px, 0)`; }
-
+            
             let planeY = -(tkState.altitude - tkState.cameraY);
             document.getElementById('plane-container').style.transform = `translate3d(-50%, ${planeY}px, 0)`;
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;

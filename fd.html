@@ -276,7 +276,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v11.0 - UI Mastery & Overtaker Fix</div>
+        <div id="tk-version">v11.1 - Fully Fixed Start Freeze</div>
         
         <div id="nvg-overlay"></div>
         
@@ -524,7 +524,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V46) ---
+        // --- PROFILE PERSISTENCE (V47) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -538,7 +538,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v46');
+                let p = localStorage.getItem('h5_profile_v47');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -554,7 +554,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v46', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v47', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -803,7 +803,7 @@
 
             if (!tkState.autoPilot) {
                 if (tkState.apState === 1) {
-                    sfx.playDing(0.5); setDialogue("<span class='alert-text'>AUTOPILOT OFFLINE!</span>", 2000); return;
+                    sfx.playDing(0.5); setDialogue("AUTOPILOT OFFLINE!", 2000); return;
                 }
                 
                 tkState.autoPilot = true;
@@ -812,7 +812,7 @@
                 
                 if (tkState.apState === 2) {
                     apInd.style.background = 'var(--brand-red)'; apInd.textContent = 'ERR';
-                    sfx.playDing(0.5); setDialogue("<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>", 3000);
+                    sfx.playDing(0.5); setDialogue("AUTOPILOT MALFUNCTION!", 3000);
                     logEvent("AP FAILURE", "⚠️", "AP ERR", "var(--brand-red)");
                 } else {
                     apInd.style.background = 'var(--gauge-green)'; apInd.textContent = 'AUTO'; sfx.playDing(1.5); 
@@ -834,6 +834,14 @@
             const pauseBtn = document.getElementById('pause-btn');
             if (tkState.isPaused) { pauseOverlay.style.display = 'flex'; pauseBtn.textContent = '▶️'; sfx.bgMusic.pause(); sfx.playAlarm(false); } 
             else { pauseOverlay.style.display = 'none'; pauseBtn.textContent = '⏸️'; sfx.bgMusic.play().catch(e=>e); tkState.lastFrameTime = performance.now(); }
+        }
+
+        function hardReset(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (document.activeElement) document.activeElement.blur();
+            if (confirm("Abandon flight and return to menu?")) {
+                location.reload();
+            }
         }
 
         function toggleFullscreen(e) {

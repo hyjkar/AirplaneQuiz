@@ -45,14 +45,10 @@
         #tk-threat-fog { display: none; background-size: auto 200vh; z-index: 15; height: 150%; top: -10%; opacity: 0.95; filter: blur(3px) brightness(1.1); }
         .wea-fog #tk-threat-fog { display: block; }
         
-        /* NVG MODE FILTER - High Performance */
-        .nvg-mode { background-color: #052205 !important; }
-        #nvg-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 255, 0, 0.15); pointer-events: none; z-index: 16; mix-blend-mode: multiply; }
-        .nvg-mode #nvg-overlay { display: block; }
-        .nvg-mode .parallax-layer, .nvg-mode #tk-mountain { filter: sepia(1) hue-rotate(70deg) saturate(2) brightness(0.8) !important; }
-        .nvg-mode #tk-threat-fog { filter: sepia(1) hue-rotate(70deg) saturate(2) brightness(0.8) blur(3px) !important; }
-        .nvg-mode #tk-plane-img, .nvg-mode .tk-enemy img, .nvg-mode .tk-overtaker img { filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(1.5) drop-shadow(0 0 5px #0f0) !important; }
-        .nvg-mode #tk-drop-zone { border-color: #2ecc71 !important; background: rgba(46,204,113,0.15) !important; }
+        /* NVG MODE FILTER - Planes Only */
+        .nvg-mode #tk-plane-img, .nvg-mode .tk-enemy img, .nvg-mode .tk-overtaker img { 
+            filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(2.5) drop-shadow(0 0 8px #0f0) !important; 
+        }
 
         .passenger-windows { display: none; position: absolute; top: 62%; left: 35%; right: 25%; height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; }
         .wea-fog .passenger-windows, .tod-night .passenger-windows { display: flex; }
@@ -67,11 +63,12 @@
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3; transition: filter 0.5s; will-change: transform; }
         #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x; will-change: background-position; }
 
-        /* CARGO DROP ZONE */
+        /* CARGO DROP ZONE OVERHAUL (HIGH CONTRAST) */
         #tk-drop-zone { 
             position: absolute; bottom: 0; left: 0; height: 3000px; width: 1000px; 
-            background: linear-gradient(to top, rgba(46, 204, 113, 0.25), rgba(46, 204, 113, 0.05)); 
-            border-left: 6px dashed #2ecc71; border-right: 6px dashed #2ecc71; 
+            background: linear-gradient(to top, rgba(46, 204, 113, 0.5), rgba(46, 204, 113, 0.1)); 
+            border-left: 8px dashed rgba(46, 204, 113, 0.9); border-right: 8px dashed rgba(46, 204, 113, 0.9); 
+            box-shadow: inset 0 0 50px rgba(46, 204, 113, 0.4), 0 0 50px rgba(46, 204, 113, 0.4);
             z-index: 4; display: none; will-change: transform; 
             text-shadow: 2px 2px 4px #000; font-family: 'Share Tech Mono', monospace; font-weight: bold;
             pointer-events: none;
@@ -234,11 +231,11 @@
         .end-title { font-size: 1.6rem; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px #000; text-transform: uppercase;}
         .end-subtitle { font-size: 0.8rem; color: #aaa; margin-bottom: 10px; text-transform: uppercase;}
         .end-score { font-size: 2.2rem; color: var(--gauge-green); margin-bottom: 10px; font-weight: bold; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);}
-        .play-again-btn { background: var(--brand-gold); color: #000; border: none; padding: 12px 20px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; width: 100%;}
+        .play-again-btn { background: var(--gauge-green); color: #000; border: none; padding: 12px 20px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; width: 100%; margin-top: 15px; box-shadow: 0 0 15px rgba(46,204,113,0.4);}
         .play-again-btn:active { transform: scale(0.95); filter: brightness(0.8); }
 
         /* Minimap Progress Bar */
-        .completion-wrapper { margin-bottom: 25px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .completion-wrapper { margin-bottom: 35px; width: 100%; display: flex; flex-direction: column; align-items: center; }
         .completion-text { font-size: 1rem; color: #fff; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; text-align: center; width: 100%; }
         #end-completion-val { color: var(--fo-blue); }
         #tk-minimap { width: 90%; height: 12px; background: #222; border-radius: 6px; position: relative; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); margin: 0 auto; }
@@ -263,7 +260,7 @@
             .end-title { font-size: 1.2rem; }
             .end-subtitle { display: none; }
             .end-score { font-size: 1.5rem; margin: 0 0 10px 0; }
-            .completion-wrapper { margin-bottom: 15px; }
+            .completion-wrapper { margin-bottom: 25px; }
             .completion-text { font-size: 0.8rem; margin-bottom: 5px;}
             .stats-grid { font-size: 0.8rem !important; margin-bottom: 10px !important; }
             #tk-eject-btn { width: 60px; height: 60px; font-size: 0.8rem; }
@@ -273,7 +270,7 @@
             .upg-btn { padding: 4px 6px; font-size: 0.7rem; }
             .fp-header-info { font-size: 0.8rem; margin-bottom: 2px;}
             .fp-header-info strong { font-size: 0.9rem; }
-            .play-again-btn { padding: 8px 15px; font-size: 0.9rem;}
+            .play-again-btn { padding: 8px 15px; font-size: 0.9rem; margin-top: 10px;}
         }
     </style>
 </head>
@@ -282,9 +279,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v9.2 - Decoupled Time/Weather & NVG Fix</div>
-        
-        <div id="nvg-overlay"></div>
+        <div id="tk-version">v9.4 - Decoupled Time/Weather & NVG Fix</div>
         
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
@@ -361,10 +356,10 @@
             <div id="tk-runway">
                 <div id="tk-runway-stripes"></div>
                 <div id="tk-drop-zone">
-                    <div style="position: absolute; bottom: 100px; left: 0; width: 100%; border-top: 4px dashed var(--brand-gold); color: var(--brand-gold); font-size: 1.2rem; text-align: left; padding-left: 10px; opacity: 0.9;">100m - PERFECT DROP (1000 PTS)</div>
-                    <div style="position: absolute; bottom: 300px; left: 0; width: 100%; border-top: 4px dashed var(--gauge-green); color: var(--gauge-green); font-size: 1.2rem; text-align: left; padding-left: 10px; opacity: 0.9;">300m - GOOD DROP (500 PTS)</div>
-                    <div style="position: absolute; bottom: 500px; left: 0; width: 100%; border-top: 4px dashed var(--fo-blue); color: var(--fo-blue); font-size: 1.2rem; text-align: left; padding-left: 10px; opacity: 0.9;">HIGH DROP (200 PTS)</div>
-                    <div style="position: absolute; bottom: 20px; width: 100%; font-size: 3rem; color: #fff; text-align: center;">TARGET ZONE</div>
+                    <div style="position: absolute; bottom: 100px; left: 0; width: 100%; border-top: 6px dashed var(--brand-gold); color: var(--brand-gold); font-size: 1.5rem; text-align: left; padding-left: 15px; opacity: 1; text-shadow: 2px 2px 4px #000, 0 0 10px var(--brand-gold);">100m - PERFECT DROP (1000 PTS)</div>
+                    <div style="position: absolute; bottom: 300px; left: 0; width: 100%; border-top: 6px dashed var(--gauge-green); color: var(--gauge-green); font-size: 1.5rem; text-align: left; padding-left: 15px; opacity: 1; text-shadow: 2px 2px 4px #000, 0 0 10px var(--gauge-green);">300m - GOOD DROP (500 PTS)</div>
+                    <div style="position: absolute; bottom: 500px; left: 0; width: 100%; border-top: 6px dashed var(--fo-blue); color: var(--fo-blue); font-size: 1.5rem; text-align: left; padding-left: 15px; opacity: 1; text-shadow: 2px 2px 4px #000, 0 0 10px var(--fo-blue);">HIGH DROP (200 PTS)</div>
+                    <div style="position: absolute; bottom: 20px; width: 100%; font-size: 3.5rem; color: #fff; text-align: center; text-shadow: 3px 3px 6px #000, 0 0 20px #2ecc71;">TARGET ZONE</div>
                 </div>
             </div>
             
@@ -443,10 +438,11 @@
                             <div class="upg-info" style="margin:0;"><div class="upg-title">NIGHT VISION</div><div class="upg-stat" id="stat-nvg" style="color: var(--brand-red); font-size: 0.75rem;">OFFLINE</div></div>
                             <button class="upg-btn" id="btn-upg-nvg" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('nvg', event)">BUY (2K)</button>
                         </div>
+                        <div style="flex:1;"></div>
                     </div>
                 </div>
 
-                <button class="play-again-btn" style="background: var(--brand-red); color: #fff; width: 100%; margin-top: 15px;" onclick="authorizeFlight(event)">AUTHORIZE TAKEOFF</button>
+                <button class="play-again-btn" onclick="authorizeFlight(event)">AUTHORIZE TAKEOFF</button>
             </div>
         </div>
 
@@ -476,7 +472,7 @@
                     </div>
                 </div>
 
-                <button class="play-again-btn" id="btn-next-action" onclick="handleLevelAdvance(event)" style="width: 100%;">CONTINUE</button>
+                <button class="play-again-btn" id="btn-next-action" style="margin-top: 10px;" onclick="handleLevelAdvance(event)">CONTINUE</button>
             </div>
         </div>
 
@@ -519,7 +515,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V31) ---
+        // --- PROFILE PERSISTENCE (V32) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -531,7 +527,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v31');
+                let p = localStorage.getItem('h5_profile_v32');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -543,7 +539,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v31', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v32', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -628,7 +624,7 @@
         let endScreenAnimInterval = null; let endScreenTimeouts = [];
 
         let tkState = {
-            active: false, isPaused: false, inFlightPlan: false, nvgActive: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
+            active: false, isPaused: false, inFlightPlan: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, 
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
@@ -666,6 +662,7 @@
                 else { btn.textContent = `REPAIR (1K)`; btn.disabled = playerProfile.points < 1000; }
             });
             
+            // Bird shield
             let bBtn = document.getElementById('btn-upg-bird');
             if(playerProfile.upgrades.bird) {
                 document.getElementById('stat-bird').textContent = "ACTIVE";
@@ -677,6 +674,7 @@
                 bBtn.textContent = "BUY (1K)"; bBtn.disabled = playerProfile.points < 1000;
             }
 
+            // Wind shield
             let wBtn = document.getElementById('btn-upg-windshield');
             if(playerProfile.upgrades.windShield) {
                 document.getElementById('stat-windshield').textContent = "ACTIVE";
@@ -688,6 +686,7 @@
                 wBtn.textContent = "BUY (1K)"; wBtn.disabled = playerProfile.points < 1000;
             }
 
+            // NVG
             let nBtn = document.getElementById('btn-upg-nvg');
             if(playerProfile.upgrades.nvg) {
                 document.getElementById('stat-nvg').textContent = "ACTIVE";
@@ -912,6 +911,7 @@
             }, 300);
         }
 
+        // MASSIVE SPECTACLE CONDITION SCORING
         function getConditionScore() {
             let condScore = 0;
             condScore += playerProfile.upgrades.gear * 10000;
@@ -1353,8 +1353,8 @@
                 tkState.inFlightPlan = false;
                 tkState.active = true;
                 
-                // Automatic Night Vision Execution
-                if (playerProfile.upgrades.nvg && (tkState.timeOfDay === 'night' || tkState.weather === 'fog')) {
+                // Automatic Night Vision Execution (NIGHT ONLY)
+                if (playerProfile.upgrades.nvg && tkState.timeOfDay === 'night') {
                     document.getElementById('takeoff-viewport').classList.add('nvg-mode');
                     sfx.playDing(2.0);
                 }

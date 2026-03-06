@@ -136,7 +136,7 @@
         #dialogue-bubble { position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20; font-weight: bold; text-transform: uppercase; pointer-events: none;}
         #dialogue-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent; }
         
-        /* Bouncing Red Alert Bubble */
+        /* Bouncing Red Alert Bubble (Used exclusively for Traffic Behind) */
         .critical-bubble { background: var(--brand-red) !important; color: #fff !important; animation: bubbleBounce 0.4s alternate infinite cubic-bezier(0.2, 0.8, 0.2, 1) !important; border: 2px solid #fff; }
         .critical-bubble::after { border-color: var(--brand-red) transparent transparent transparent !important; bottom: -8px !important; margin-left: -8px !important; border-width: 8px !important;}
         @keyframes bubbleBounce { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.15) translateY(-10px); box-shadow: 0 10px 25px rgba(215,25,32,0.8); } }
@@ -276,7 +276,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v10.8 - True Final Polish</div>
+        <div id="tk-version">v10.9 - Pristine Alerts & Zero Flicker</div>
         
         <div id="nvg-overlay"></div>
         
@@ -525,7 +525,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V44) ---
+        // --- PROFILE PERSISTENCE (V45) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -539,7 +539,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v44');
+                let p = localStorage.getItem('h5_profile_v45');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -555,7 +555,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v44', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v45', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -1383,8 +1383,6 @@
                 statsAdded: false, finalCampaignScore: 0
             };
 
-            document.querySelectorAll('.rear-warning').forEach(el => el.style.display = 'none');
-            
             generateFlightPlanContext();
             
             document.getElementById('fp-sector-title').textContent = "SECTOR " + playerProfile.currentLevel + " OF 5";

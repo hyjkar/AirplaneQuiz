@@ -24,19 +24,17 @@
             width: 100%; height: 100%; position: relative; overflow: hidden; 
             background-color: #87CEEB; cursor: pointer; transition: background-color 0.5s;
             touch-action: none; 
-            perspective: 1000px;
         }
         
         #tk-alert-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 99998; transition: background 0.2s;
-            transform: translateZ(9000px);
         }
 
         .flashing { animation: redAlert 0.3s infinite alternate; }
         @keyframes redAlert { from { background: rgba(215, 25, 32, 0); } to { background: rgba(215, 25, 32, 0.35); } }
 
-        #tk-version { position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: bold; z-index: 99999; pointer-events: none; transform: translateZ(9999px); }
+        #tk-version { position: absolute; bottom: 10px; right: 15px; color: rgba(255,255,255,0.4); font-size: 0.8rem; font-weight: bold; z-index: 99999; pointer-events: none; }
 
         #camera-rig { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: 30% 80%; will-change: transform; z-index: 1; }
 
@@ -48,10 +46,10 @@
         .fog-scenario #tk-threat-fog { display: block; }
         .fog-scenario #tk-plane-img, .fog-scenario .tk-enemy img, .fog-scenario .tk-overtaker img { filter: brightness(0) !important; transition: filter 0.5s; }
         
-        /* CORRECTED NVG MODE FILTER - NO GPU FREEZING */
+        /* NVG MODE FILTER - High Performance */
         .nvg-mode { background-color: #052205 !important; }
-        .nvg-mode .parallax-layer, .nvg-mode #tk-mountain { filter: sepia(1) hue-rotate(70deg) saturate(2) brightness(0.8) !important; }
-        .nvg-mode #tk-threat-fog { filter: sepia(1) hue-rotate(70deg) saturate(2) brightness(0.8) blur(3px) !important; }
+        #nvg-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 255, 0, 0.15); pointer-events: none; z-index: 16; mix-blend-mode: multiply; }
+        .nvg-mode #nvg-overlay { display: block; }
         .nvg-mode #tk-plane-img, .nvg-mode .tk-enemy img, .nvg-mode .tk-overtaker img { filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(1.5) drop-shadow(0 0 5px #0f0) !important; }
         .nvg-mode #tk-drop-zone { border-color: #2ecc71 !important; background: rgba(46,204,113,0.15) !important; }
 
@@ -149,7 +147,7 @@
         .alert-text { color: var(--brand-red); font-weight: bold; animation: pulseRed 0.8s infinite alternate; }
         .success-text { color: var(--gauge-green); font-weight: bold; }
 
-        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; pointer-events: none; transform: translateZ(9999px); }
+        #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; pointer-events: none; }
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
         #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold); transition: all 0.2s;}
         
@@ -157,13 +155,13 @@
         #reset-btn { background: rgba(215, 25, 32, 0.9); border-color: #fff; font-size: 1rem; }
         #reset-btn:active, #pause-btn:active, #fs-btn:active { transform: scale(0.95); }
 
-        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); transform: translateZ(9999px); }
+        #pause-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px #000; pointer-events: auto; cursor: pointer; backdrop-filter: blur(2px); }
         
-        #prompt-container { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateZ(9999px); z-index: 99999; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #prompt-container { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 99999; pointer-events: none; width: 95%; max-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #tk-touch-prompt { background: var(--brand-red); border: 2px solid #fff; border-radius: 8px; padding: 15px 30px; text-align: center; color: #fff; font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(215,25,32,0.6); width: auto; text-transform: uppercase; cursor: pointer; pointer-events: auto; transition: transform 0.1s;}
         #tk-touch-prompt:active { transform: scale(0.95); }
 
-        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 99999; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s; transform: translateZ(9999px); }
+        #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 99999; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s; }
         #tk-eject-btn:active { transform: scale(0.92); }
 
         /* Traffic Planes */
@@ -194,8 +192,8 @@
         .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .cargo-package { position: absolute; z-index: 15; width: 20px; height: 20px; background: #cfa86e; border: 2px solid #fff; left: 0; top: 0; will-change: transform; }
-        .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; transform: translateZ(9999px); }
-        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 9999px); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 9999px); opacity: 0; } }
+        .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
+        @keyframes floatUp { 0% { transform: translate3d(-50%, 0, 0); opacity: 1; } 100% { transform: translate3d(-50%, -50px, 0); opacity: 0; } }
 
         /* OVERLAYS FORCED TO TOP */
         #tk-flight-plan-overlay, #tk-end-screen, #leaderboard-overlay { 
@@ -203,7 +201,6 @@
             background: rgba(0,0,0,0.85); z-index: 99999; display: none; 
             flex-direction: column; align-items: center; justify-content: center; 
             opacity: 0; transition: opacity 0.3s ease; pointer-events: none; 
-            transform: translateZ(9999px); 
         }
         
         #tk-flight-plan-overlay.visible, #tk-end-screen.visible, #leaderboard-overlay.visible { opacity: 1; pointer-events: auto; }
@@ -283,7 +280,10 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v9.2 - Instant Cargo & Auto NVG Fixed</div>
+        <div id="tk-version">v9.3 - Crash Fixes & Optimization</div>
+        
+        <div id="nvg-overlay"></div>
+        
         <div id="tk-alert-overlay"></div>
         <div id="pause-overlay" onclick="togglePause(event)">PAUSED<br><span style="font-size: 1rem; margin-top: 10px; color: #aaa;">TAP ANYWHERE TO RESUME</span></div>
         
@@ -517,7 +517,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V28) ---
+        // --- PROFILE PERSISTENCE (V29) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -529,7 +529,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v28');
+                let p = localStorage.getItem('h5_profile_v29');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -541,7 +541,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v28', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v29', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -626,7 +626,7 @@
         let endScreenAnimInterval = null; let endScreenTimeouts = [];
 
         let tkState = {
-            active: false, isPaused: false, inFlightPlan: false, nvgActive: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
+            active: false, isPaused: false, inFlightPlan: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, 
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
@@ -1176,11 +1176,13 @@
             logEvent(`CRASH: ${reasonText}`, "❌", "CRASH", "var(--brand-red)");
             setDialogue(`<span class='alert-text'>${reasonText}</span>`, 4500);
             
+            // Apply Severe Penalty: Remove all bonus defenses completely
             playerProfile.points = Math.max(0, playerProfile.points - 500);
             playerProfile.upgrades.bird = false;
             playerProfile.upgrades.windShield = false;
             playerProfile.upgrades.nvg = false;
             
+            // Downgrade ALL 4 mechanical components by exactly 1 step
             let upgKeys = ['gear', 'engine', 'gyro', 'ap'];
             for(let i=0; i<upgKeys.length; i++) {
                 let k = upgKeys[i];
@@ -1556,6 +1558,17 @@
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
             if (tkState.stallFactor > 0) targetVSpeed = (targetVSpeed * (1 - tkState.stallFactor)) + (-15 * Math.pow(tkState.stallFactor, 2) * SPEED_MOD);
             
+            // ALTITUDE POINT DRAIN
+            if (isTooHigh) {
+                tkState.score -= 2 * SPEED_MOD;
+                if (tkState.score < 0) tkState.score = 0;
+                if (Math.random() < 0.3) {
+                    const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
+                    showFloat(pr.left + pr.width/2 + (Math.random()*40-20), pr.top, "-10 PTS", "var(--brand-red)");
+                    sfx.playDing(0.4);
+                }
+            }
+
             if (isStalling) { document.getElementById('tk-alert-overlay').className = 'flashing'; setDialogue("<span class='alert-text'>STALL WARNING!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
             } else if (isTooFast) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 1500);
             } else if (isTooHigh) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0 || tkState.dialogueText.includes("VISIBILITY")) setDialogue("<span class='alert-text'>TOO HIGH! LOSING POINTS!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
@@ -1650,6 +1663,43 @@
                 if (tkState.dropZoneSpawned) {
                     tkState.dropZoneX -= groundSpeed;
                     document.getElementById('tk-drop-zone').style.transform = `translate3d(${tkState.dropZoneX}px, 0, 0)`;
+
+                    let pxPerSec = groundSpeed * 60; 
+                    let planeX = window.innerWidth * 0.3; 
+                    let distToPlane = tkState.dropZoneX - planeX;
+                    
+                    if (tkState.dropCountdown === 3 && distToPlane <= pxPerSec * 3) {
+                        setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>3...</span>", 1000);
+                        tkState.dropCountdown = 2; sfx.playDing(1.0);
+                    } else if (tkState.dropCountdown === 2 && distToPlane <= pxPerSec * 2) {
+                        setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>2...</span>", 1000);
+                        tkState.dropCountdown = 1; sfx.playDing(1.0);
+                    } else if (tkState.dropCountdown === 1 && distToPlane <= pxPerSec * 1) {
+                        setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>1...</span>", 1000);
+                        tkState.dropCountdown = 0; sfx.playDing(1.0);
+                    } else if (tkState.dropCountdown === 0 && distToPlane <= 0) {
+                        setDialogue("<span class='success-text'>DROP NOW!</span>", 2000);
+                        tkState.dropCountdown = -1; sfx.playDing(2.0);
+                    }
+                }
+            }
+
+            for (let i = tkState.activeCargo.length - 1; i >= 0; i--) {
+                let pkg = tkState.activeCargo[i];
+                let x = parseFloat(pkg.dataset.x); let y = parseFloat(pkg.dataset.y); let vy = parseFloat(pkg.dataset.vy);
+                
+                let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
+                pkg.dataset.vx = parseFloat(pkg.dataset.vx) || 0;
+                let vx = parseFloat(pkg.dataset.vx);
+                vx -= 0.2; 
+                if (vx < -groundSpeed) vx = -groundSpeed; 
+                x += vx; vy += 0.4; y += vy;
+
+                pkg.dataset.x = x; pkg.dataset.y = y; pkg.dataset.vy = vy; pkg.dataset.vx = vx;
+                pkg.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+                
+                if (y > window.innerHeight + 100) {
+                    pkg.remove(); tkState.activeCargo.splice(i, 1);
                 }
             }
 

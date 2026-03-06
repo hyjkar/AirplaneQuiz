@@ -724,14 +724,14 @@
                 if (playerProfile.points >= 250) {
                     playerProfile.points -= 250;
                     playerProfile.ownsGoldenPlane = true;
-                    playerProfile.currentSkin = 'my-golden-plane.png';
+                    playerProfile.currentSkin = 'my-plane-golden.png';
                     sfx.playDing(1.5);
                 } else {
                     sfx.playExplosion();
                 }
             } else {
                 if (playerProfile.currentSkin === 'my-plane.png') {
-                    playerProfile.currentSkin = 'my-golden-plane.png';
+                    playerProfile.currentSkin = 'my-plane-golden.png';
                     sfx.playDing(1.2);
                 } else {
                     playerProfile.currentSkin = 'my-plane.png';

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -276,7 +277,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v11.1 - Fully Fixed Start Freeze</div>
+        <div id="tk-version">v10.9 - Pristine Alerts & Zero Flicker</div>
         
         <div id="nvg-overlay"></div>
         
@@ -324,6 +325,7 @@
             </div>
 
             <div id="tk-fg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
+            <div id="tk-threat-fog" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             
             <div id="enemy-0" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
             <div id="enemy-1" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
@@ -524,7 +526,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V47) ---
+        // --- PROFILE PERSISTENCE (V45) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -538,7 +540,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v47');
+                let p = localStorage.getItem('h5_profile_v45');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -554,7 +556,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v47', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v45', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -803,7 +805,7 @@
 
             if (!tkState.autoPilot) {
                 if (tkState.apState === 1) {
-                    sfx.playDing(0.5); setDialogue("AUTOPILOT OFFLINE!", 2000); return;
+                    sfx.playDing(0.5); setDialogue("<span class='alert-text'>AUTOPILOT OFFLINE!</span>", 2000); return;
                 }
                 
                 tkState.autoPilot = true;
@@ -812,7 +814,7 @@
                 
                 if (tkState.apState === 2) {
                     apInd.style.background = 'var(--brand-red)'; apInd.textContent = 'ERR';
-                    sfx.playDing(0.5); setDialogue("AUTOPILOT MALFUNCTION!", 3000);
+                    sfx.playDing(0.5); setDialogue("<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>", 3000);
                     logEvent("AP FAILURE", "⚠️", "AP ERR", "var(--brand-red)");
                 } else {
                     apInd.style.background = 'var(--gauge-green)'; apInd.textContent = 'AUTO'; sfx.playDing(1.5); 
@@ -834,14 +836,6 @@
             const pauseBtn = document.getElementById('pause-btn');
             if (tkState.isPaused) { pauseOverlay.style.display = 'flex'; pauseBtn.textContent = '▶️'; sfx.bgMusic.pause(); sfx.playAlarm(false); } 
             else { pauseOverlay.style.display = 'none'; pauseBtn.textContent = '⏸️'; sfx.bgMusic.play().catch(e=>e); tkState.lastFrameTime = performance.now(); }
-        }
-
-        function hardReset(e) {
-            if (e) { e.preventDefault(); e.stopPropagation(); }
-            if (document.activeElement) document.activeElement.blur();
-            if (confirm("Abandon flight and return to menu?")) {
-                location.reload();
-            }
         }
 
         function toggleFullscreen(e) {
@@ -1389,7 +1383,7 @@
                 hasWindPocket: false, windPocketSpawned: false, windPocketX: window.innerWidth + 500, windPocketTriggered: false, windPocketTimer: 0, gyroFailed: false,
                 statsAdded: false, finalCampaignScore: 0
             };
-            
+
             generateFlightPlanContext();
             
             document.getElementById('fp-sector-title').textContent = "SECTOR " + playerProfile.currentLevel + " OF 5";
@@ -2015,21 +2009,21 @@
             }
 
             // Camera Parallax Apply
-            tkState.bgX_sky -= (displaySpeed * 0.006 * SPEED_MOD); 
-            tkState.bgX_fgSky -= (displaySpeed * 0.035 * SPEED_MOD); // Dramatically sped up the front cloud layer
-            tkState.bgX_city -= (displaySpeed * 0.03 * SPEED_MOD); 
-            tkState.bgX_runway -= (displaySpeed * 0.18 * SPEED_MOD);
+            tkState.bgX_sky -= (displaySpeed * 0.006 * SPEED_MOD); tkState.bgX_fgSky -= (displaySpeed * 0.012 * SPEED_MOD); tkState.bgX_city -= (displaySpeed * 0.03 * SPEED_MOD); tkState.bgX_runway -= (displaySpeed * 0.18 * SPEED_MOD);
+            document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 10%`; document.getElementById('tk-fg-sky').style.backgroundPosition = `${tkState.bgX_fgSky}px 20%`; document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`; document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
             
-            document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 10%`; 
-            document.getElementById('tk-fg-sky').style.backgroundPosition = `${tkState.bgX_fgSky}px 20%`; 
-            document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`; 
-            document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
+            // Add threat fog moving math back
+            if (tkState.weather === 'fog') { 
+                tkState.bgX_threatFog -= (displaySpeed * 0.025 * SPEED_MOD); 
+                document.getElementById('tk-threat-fog').style.backgroundPosition = `${tkState.bgX_threatFog}px 50%`; 
+            }
 
             let maxVisualAltitude = Math.min(60, window.innerHeight * 0.15); let baseTargetCam = Math.max(0, tkState.altitude - maxVisualAltitude); if (isLandingApproach) baseTargetCam -= 20; tkState.cameraY += (baseTargetCam - tkState.cameraY) * 0.15;
             document.getElementById('tk-fg-sky').style.opacity = Math.max(0, Math.min(1, (tkState.altitude - 450) / 100));
 
             document.getElementById('tk-runway').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; document.getElementById('tk-bg-city').style.transform = `translate3d(0, ${tkState.cameraY * 0.7}px, 0)`; document.getElementById('tk-bg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`; document.getElementById('tk-fg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.3}px, 0)`; document.getElementById('tk-mountain').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; document.getElementById('tk-sun').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`;
-            
+            if (tkState.weather === 'fog') { document.getElementById('tk-threat-fog').style.transform = `translate3d(0, ${tkState.cameraY * 0.45}px, 0)`; }
+
             let planeY = -(tkState.altitude - tkState.cameraY);
             document.getElementById('plane-container').style.transform = `translate3d(-50%, ${planeY}px, 0)`;
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;

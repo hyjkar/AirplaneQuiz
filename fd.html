@@ -136,7 +136,7 @@
         #dialogue-bubble { position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20; font-weight: bold; text-transform: uppercase; pointer-events: none;}
         #dialogue-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent; }
         
-        /* Bouncing Red Alert Bubble (Used exclusively for Traffic Behind) */
+        /* Bouncing Red Alert Bubble */
         .critical-bubble { background: var(--brand-red) !important; color: #fff !important; animation: bubbleBounce 0.4s alternate infinite cubic-bezier(0.2, 0.8, 0.2, 1) !important; border: 2px solid #fff; }
         .critical-bubble::after { border-color: var(--brand-red) transparent transparent transparent !important; bottom: -8px !important; margin-left: -8px !important; border-width: 8px !important;}
         @keyframes bubbleBounce { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.15) translateY(-10px); box-shadow: 0 10px 25px rgba(215,25,32,0.8); } }
@@ -276,7 +276,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v10.7 - Zero Flicker & Overtaker Alert</div>
+        <div id="tk-version">v10.8 - True Final Polish</div>
         
         <div id="nvg-overlay"></div>
         
@@ -525,7 +525,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V43) ---
+        // --- PROFILE PERSISTENCE (V44) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -539,7 +539,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v43');
+                let p = localStorage.getItem('h5_profile_v44');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -555,7 +555,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v43', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v44', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -1692,7 +1692,7 @@
             let targetVSpeed = tkState.pitch * 0.55 * SPEED_MOD;
             if (tkState.stallFactor > 0) targetVSpeed = (targetVSpeed * (1 - tkState.stallFactor)) + (-15 * Math.pow(tkState.stallFactor, 2) * SPEED_MOD);
             
-            // ALTITUDE POINT DRAIN (FUNDS PENALTY)
+            // SCREEN FLASH & PENALTY LOGIC
             if (tkState.flashTimer > 0) tkState.flashTimer -= delta;
 
             if (isTooHigh) {
@@ -1872,15 +1872,22 @@
                             o.spd = (7.2 + Math.random() * 2.4) * SPEED_MOD; // 40% slower
                         }
                         logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); 
-                        setDialogue("⚠️ TRAFFIC BEHIND!", 1500, true);
                     }
                 }
             }
 
             let overtakerCollision = false;
+            let minOvertakerTimer = 9999;
+            let hasOvertakerWarning = false;
+            
             tkState.overtakers.forEach((o, i) => {
                 if (o.warning) {
                     o.warningTimer -= delta;
+                    
+                    if (o.warningTimer > 0) {
+                        hasOvertakerWarning = true;
+                        if (o.warningTimer < minOvertakerTimer) minOvertakerTimer = o.warningTimer;
+                    }
                     
                     if (o.warningTimer <= 0) {
                         o.warning = false;
@@ -1899,6 +1906,11 @@
                 }
             });
             if (overtakerCollision) { return triggerCrash("MID-AIR CRASH!"); }
+
+            // Single unified Overtaker warning call
+            if (hasOvertakerWarning) {
+                setDialogue(`⚠️ TRAFFIC: ${(minOvertakerTimer/1000).toFixed(1)}s`, 150, true);
+            }
 
             // Birds (Fixed to PX)
             if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 250 && tkState.phase < 4 && tkState.birdX > window.innerWidth && Math.random() < 0.005) {
@@ -1937,13 +1949,11 @@
             }
 
             if (tkState.phase === 3) {
-                // REDUCED: Changed multiplier from 3 to 1.5 to lower max simultaneous planes on High/Extreme difficulties.
                 let maxEnemiesBase = Math.floor(1 + (tkState.phaseTimer / 12000) * 4);
                 let maxEnemies = Math.min(12, Math.floor(maxEnemiesBase + (tkState.trafficLevel * 1.5)));
                 if (tkState.phaseTimer > 12000) maxEnemies = 0; 
                 
                 let activeCount = tkState.enemies.filter(e => e.active).length;
-                // REDUCED: Changed spawn chance multiplier from 0.03 to 0.015 to give slightly more breathing room
                 let spawnChance = 0.04 + (tkState.trafficLevel * 0.015);
 
                 if (activeCount < maxEnemies && Math.random() < spawnChance) { 
@@ -2002,12 +2012,19 @@
             // Camera Parallax Apply
             tkState.bgX_sky -= (displaySpeed * 0.006 * SPEED_MOD); tkState.bgX_fgSky -= (displaySpeed * 0.012 * SPEED_MOD); tkState.bgX_city -= (displaySpeed * 0.03 * SPEED_MOD); tkState.bgX_runway -= (displaySpeed * 0.18 * SPEED_MOD);
             document.getElementById('tk-bg-sky').style.backgroundPosition = `${tkState.bgX_sky}px 10%`; document.getElementById('tk-fg-sky').style.backgroundPosition = `${tkState.bgX_fgSky}px 20%`; document.getElementById('tk-bg-city').style.backgroundPosition = `${tkState.bgX_city}px bottom`; document.getElementById('tk-runway-stripes').style.backgroundPosition = `${tkState.bgX_runway}px 10px`;
+            
+            // Add threat fog moving math back
+            if (tkState.weather === 'fog') { 
+                tkState.bgX_threatFog -= (displaySpeed * 0.025 * SPEED_MOD); 
+                document.getElementById('tk-threat-fog').style.backgroundPosition = `${tkState.bgX_threatFog}px 50%`; 
+            }
 
             let maxVisualAltitude = Math.min(60, window.innerHeight * 0.15); let baseTargetCam = Math.max(0, tkState.altitude - maxVisualAltitude); if (isLandingApproach) baseTargetCam -= 20; tkState.cameraY += (baseTargetCam - tkState.cameraY) * 0.15;
             document.getElementById('tk-fg-sky').style.opacity = Math.max(0, Math.min(1, (tkState.altitude - 450) / 100));
 
             document.getElementById('tk-runway').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; document.getElementById('tk-bg-city').style.transform = `translate3d(0, ${tkState.cameraY * 0.7}px, 0)`; document.getElementById('tk-bg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`; document.getElementById('tk-fg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.3}px, 0)`; document.getElementById('tk-mountain').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; document.getElementById('tk-sun').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`;
-            
+            if (tkState.weather === 'fog') { document.getElementById('tk-threat-fog').style.transform = `translate3d(0, ${tkState.cameraY * 0.45}px, 0)`; }
+
             let planeY = -(tkState.altitude - tkState.cameraY);
             document.getElementById('plane-container').style.transform = `translate3d(-50%, ${planeY}px, 0)`;
             document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;

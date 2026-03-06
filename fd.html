@@ -49,6 +49,8 @@
         .nvg-mode { background-color: #052205 !important; }
         #nvg-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 255, 0, 0.15); pointer-events: none; z-index: 16; mix-blend-mode: multiply; }
         .nvg-mode #nvg-overlay { display: block; }
+        .nvg-mode .parallax-layer, .nvg-mode #tk-mountain { filter: sepia(1) hue-rotate(70deg) saturate(2) brightness(0.8) !important; }
+        .nvg-mode #tk-threat-fog { filter: sepia(1) hue-rotate(70deg) saturate(2) brightness(0.8) blur(3px) !important; }
         .nvg-mode #tk-plane-img, .nvg-mode .tk-enemy img, .nvg-mode .tk-overtaker img { filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(1.5) drop-shadow(0 0 5px #0f0) !important; }
         .nvg-mode #tk-drop-zone { border-color: #2ecc71 !important; background: rgba(46,204,113,0.15) !important; }
 
@@ -65,7 +67,7 @@
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3; transition: filter 0.5s; will-change: transform; }
         #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x; will-change: background-position; }
 
-        /* CARGO DROP ZONE OVERHAUL */
+        /* CARGO DROP ZONE */
         #tk-drop-zone { 
             position: absolute; bottom: 0; left: 0; height: 3000px; width: 1000px; 
             background: linear-gradient(to top, rgba(46, 204, 113, 0.25), rgba(46, 204, 113, 0.05)); 
@@ -96,7 +98,9 @@
         .tod-sunrise #tk-threat-fog { filter: sepia(0.4) hue-rotate(-15deg) saturate(1.4) brightness(0.9) blur(3px); }
         .tod-sunrise #tk-plane-img, .tod-sunrise .tk-enemy img, .tod-sunrise .tk-overtaker img { filter: sepia(0.3) saturate(1.2) brightness(0.9); }
 
-        /* Weather specific overlays */
+        .wea-snow #tk-bg-sky, .wea-snow #tk-fg-sky, .wea-snow #tk-bg-city, .wea-snow #tk-runway, .wea-snow #tk-mountain { filter: grayscale(0.7) brightness(1.4) contrast(0.6); }
+        .wea-snow #tk-threat-fog { filter: grayscale(0.7) brightness(1.4) blur(3px); }
+        
         .wea-snow .fog-layer.layer-front { background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, transparent 65%); }
         .wea-snow .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(240, 245, 250, 0.8) 0%, transparent 70%); }
         .fog-layer.layer-back { background: radial-gradient(circle at 50% 50%, rgba(180, 190, 210, 0.4) 0%, transparent 60%); background-size: 300% 200%; animation: fogPulse 15s ease-in-out infinite alternate; z-index: 8; }
@@ -278,7 +282,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v9.5 - Automatic NVG & Debug Keys</div>
+        <div id="tk-version">v9.2 - Decoupled Time/Weather & NVG Fix</div>
         
         <div id="nvg-overlay"></div>
         
@@ -439,7 +443,6 @@
                             <div class="upg-info" style="margin:0;"><div class="upg-title">NIGHT VISION</div><div class="upg-stat" id="stat-nvg" style="color: var(--brand-red); font-size: 0.75rem;">OFFLINE</div></div>
                             <button class="upg-btn" id="btn-upg-nvg" style="color:var(--fo-blue); border-color:var(--fo-blue);" onclick="buyUpgrade('nvg', event)">BUY (2K)</button>
                         </div>
-                        <div style="flex:1;"></div>
                     </div>
                 </div>
 
@@ -516,7 +519,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V30) ---
+        // --- PROFILE PERSISTENCE (V31) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -528,7 +531,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v30');
+                let p = localStorage.getItem('h5_profile_v31');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -540,7 +543,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v30', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v31', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -625,7 +628,7 @@
         let endScreenAnimInterval = null; let endScreenTimeouts = [];
 
         let tkState = {
-            active: false, isPaused: false, inFlightPlan: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
+            active: false, isPaused: false, inFlightPlan: false, nvgActive: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, 
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
             takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
@@ -663,7 +666,6 @@
                 else { btn.textContent = `REPAIR (1K)`; btn.disabled = playerProfile.points < 1000; }
             });
             
-            // Bird shield
             let bBtn = document.getElementById('btn-upg-bird');
             if(playerProfile.upgrades.bird) {
                 document.getElementById('stat-bird').textContent = "ACTIVE";
@@ -675,7 +677,6 @@
                 bBtn.textContent = "BUY (1K)"; bBtn.disabled = playerProfile.points < 1000;
             }
 
-            // Wind shield
             let wBtn = document.getElementById('btn-upg-windshield');
             if(playerProfile.upgrades.windShield) {
                 document.getElementById('stat-windshield').textContent = "ACTIVE";
@@ -687,7 +688,6 @@
                 wBtn.textContent = "BUY (1K)"; wBtn.disabled = playerProfile.points < 1000;
             }
 
-            // NVG
             let nBtn = document.getElementById('btn-upg-nvg');
             if(playerProfile.upgrades.nvg) {
                 document.getElementById('stat-nvg').textContent = "ACTIVE";
@@ -912,7 +912,6 @@
             }, 300);
         }
 
-        // MASSIVE SPECTACLE CONDITION SCORING
         function getConditionScore() {
             let condScore = 0;
             condScore += playerProfile.upgrades.gear * 10000;
@@ -1697,25 +1696,6 @@
                         setDialogue("<span class='success-text'>DROP NOW!</span>", 2000);
                         tkState.dropCountdown = -1; sfx.playDing(2.0);
                     }
-                }
-            }
-
-            for (let i = tkState.activeCargo.length - 1; i >= 0; i--) {
-                let pkg = tkState.activeCargo[i];
-                let x = parseFloat(pkg.dataset.x); let y = parseFloat(pkg.dataset.y); let vy = parseFloat(pkg.dataset.vy);
-                
-                let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
-                pkg.dataset.vx = parseFloat(pkg.dataset.vx) || 0;
-                let vx = parseFloat(pkg.dataset.vx);
-                vx -= 0.2; 
-                if (vx < -groundSpeed) vx = -groundSpeed; 
-                x += vx; vy += 0.4; y += vy;
-
-                pkg.dataset.x = x; pkg.dataset.y = y; pkg.dataset.vy = vy; pkg.dataset.vx = vx;
-                pkg.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-                
-                if (y > window.innerHeight + 100) {
-                    pkg.remove(); tkState.activeCargo.splice(i, 1);
                 }
             }
 

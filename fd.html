@@ -67,11 +67,12 @@
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3; transition: filter 0.5s; will-change: transform; }
         #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x; will-change: background-position; }
 
-        /* CARGO DROP ZONE OVERHAUL */
+        /* CARGO DROP ZONE OVERHAUL (HIGH CONTRAST) */
         #tk-drop-zone { 
             position: absolute; bottom: 0; left: 0; height: 3000px; width: 1000px; 
-            background: linear-gradient(to top, rgba(46, 204, 113, 0.25), rgba(46, 204, 113, 0.05)); 
-            border-left: 6px dashed #2ecc71; border-right: 6px dashed #2ecc71; 
+            background: linear-gradient(to top, rgba(46, 204, 113, 0.5), rgba(46, 204, 113, 0.1)); 
+            border-left: 8px dashed rgba(46, 204, 113, 0.9); border-right: 8px dashed rgba(46, 204, 113, 0.9); 
+            box-shadow: inset 0 0 50px rgba(46, 204, 113, 0.4), 0 0 50px rgba(46, 204, 113, 0.4);
             z-index: 4; display: none; will-change: transform; 
             text-shadow: 2px 2px 4px #000; font-family: 'Share Tech Mono', monospace; font-weight: bold;
             pointer-events: none;
@@ -108,7 +109,7 @@
         
         .rain-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNTAnIGhlaWdodD0nMjUwJz48cmVjdCB4PScyMCcgeT0nMjAnIHdpZHRoPScyJyBoZWlnaHQ9JzE1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuNCknLz48L3N2Zz4="); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
         .rain-layer.layer-2 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJz48cmVjdCB4PSc1MCcgeT0nNTAnIHdpZHRoPSczJyBoZWlnaHQ9JzI1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuNiknLz48cmVjdCB4PScyNTAnIHk9JzIwMCcgd2lkdGg9JzInIGhlaWdodD0nMTUnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC40KScvPjwvc3ZnPg=="); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
-        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nMjAwJz48Y2lyY2xlIGN4PScyMCcgY3k9JzIwJyByPSczJyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOCknLz48Y2lyY2xlIGN4PScxMDAnIGN5PSc4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjYpJy8+PGNpcmNsZSBjeD0nMTUwJyBjeT0nMTUwJyByPSc0JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PSc1MCcgY3k9JzE4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjUpJy8+PC9zdmc+"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
+        .snow-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nMjAwJz48Y2lyY2xlIGN4PScyMCcgY3k9JzIwJyByPSczJyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOCknLz48Y2lyY2xlIGN4PSc1MCcgY3k9JzE4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjYpJy8+PGNpcmNsZSBjeD0nMTUwJyBjeT0nMTUwJyByPSc0JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PSc1MCcgY3k9JzE4MCcgcj0nMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjUpJy8+PC9zdmc+"); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
         .snow-layer.layer-2 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMDAnIGhlaWdodD0nMzAwJz48Y2lyY2xlIGN4PSc1MCcgY3k9JzUwJyByPSc1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuOSknLz48Y2lyY2xlIGN4PScyMDAnIGN5PScxNTAnIHI9JzYnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC44KScvPjxjaXJjbGUgY3g9JzI1MCcgY3k9JzI4MCcgcj0nNCcgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjcpJy8+PC9zdmc+"); animation: snowAnim2 3.5s linear infinite; z-index: 16; }
         
         @keyframes fogSweep { 0% { background-position: 200% 50%; } 100% { background-position: -100% 50%; } }
@@ -143,16 +144,20 @@
         #landing-guide { position: absolute; top: 25px; left: 75px; transform: translate(-50%, -50%); width: 220px; height: 80px; border: 2px solid transparent; border-left: 4px solid var(--gauge-green); border-right: 4px solid var(--gauge-green); border-radius: 15px; display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; z-index: 5; pointer-events: none;}
         .guide-label { position: absolute; bottom: -20px; text-align: center; color: var(--gauge-green); font-weight: bold; font-size: 0.8rem; text-shadow: 1px 1px 2px #000; }
 
+        /* UPGRADED DIALOGUE BUBBLE SYSTEM */
         #dialogue-bubble { position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.95); color: #111; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20; font-weight: bold; text-transform: uppercase; pointer-events: none;}
         #dialogue-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent; }
         
+        .critical-bubble { background: var(--brand-red) !important; color: #fff !important; animation: bubbleBounce 0.4s alternate infinite cubic-bezier(0.2, 0.8, 0.2, 1) !important; border: 2px solid #fff; }
+        .critical-bubble::after { border-color: var(--brand-red) transparent transparent transparent !important; bottom: -8px !important; margin-left: -8px !important; border-width: 8px !important;}
+        @keyframes bubbleBounce { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.15) translateY(-10px); box-shadow: 0 10px 25px rgba(215,25,32,0.8); } }
+        
         .capt-text { color: #111; font-weight: bold; }
-        .alert-text { color: var(--brand-red); font-weight: bold; animation: pulseRed 0.8s infinite alternate; }
         .success-text { color: var(--gauge-green); font-weight: bold; }
 
         #tk-hud-top { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 99999; pointer-events: none; }
         .top-left-controls { display: flex; gap: 10px; pointer-events: auto; }
-        #tk-score-display { color: var(--brand-gold); font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold); transition: all 0.2s;}
+        #tk-score-display { color: var(--brand-gold); font-size: 1.2rem; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--brand-gold); transition: all 0.2s;}
         
         #reset-btn, #pause-btn, #fs-btn { background: #333; border: 2px solid #aaa; border-radius: 8px; color: #fff; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; pointer-events: auto; transition: transform 0.1s;}
         #reset-btn { background: rgba(215, 25, 32, 0.9); border-color: #fff; font-size: 1rem; }
@@ -171,20 +176,6 @@
         .tk-enemy, .tk-overtaker { position: absolute; bottom: 65px; left: 0; width: 162px; height: 56px; z-index: 10; display: none; will-change: transform; pointer-events: none;}
         .tk-enemy img, .tk-overtaker img { width: 100%; height: 100%; object-fit: contain; }
         .tk-enemy img { transform: scaleX(-1); }
-
-        /* Clear Alert Effect for Overtakers */
-        .rear-warning { 
-            position: absolute; left: 20px; 
-            color: #fff; background: rgba(215, 25, 32, 0.85); 
-            border: 2px solid #fff; border-radius: 8px;
-            padding: 5px 15px; font-family: 'Share Tech Mono', monospace;
-            font-weight: bold; font-size: 1.2rem; 
-            box-shadow: 0 0 15px rgba(215, 25, 32, 0.8); 
-            z-index: 40; display: none; 
-            animation: pulseWarning 0.3s infinite alternate; 
-            pointer-events: none; white-space: nowrap;
-        }
-        @keyframes pulseWarning { from { transform: scale(1); opacity: 1; } to { transform: scale(1.05); opacity: 0.8; } }
 
         #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform; pointer-events: none;}
         #tk-bird-flock { position: absolute; bottom: 65px; left: 0; width: 40px; height: 30px; z-index: 10; display: none; pointer-events: none; will-change: transform; }
@@ -282,7 +273,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v9.9 - Flat UI & Freeze Destroyed</div>
+        <div id="tk-version">v10.0 - Unified Alerts & Funds HUD</div>
         
         <div id="nvg-overlay"></div>
         
@@ -295,7 +286,7 @@
                 <button id="pause-btn" onclick="togglePause(event)">⏸️</button>
                 <button id="fs-btn" onclick="toggleFullscreen(event)">⛶</button>
             </div>
-            <div id="tk-score-display">FUNDS: <span id="funds-val">0</span> <span style="font-size: 0.7em; opacity: 0.7; margin-left: 5px;">| SCORE: <span id="score-val">0</span></span></div>
+            <div id="tk-score-display">FUNDS: <span id="funds-val">0</span></div>
         </div>
         
         <div id="prompt-container">
@@ -350,10 +341,6 @@
             <div id="overtaker-1" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
             <div id="overtaker-2" class="tk-overtaker"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
 
-            <div id="rear-warning-0" class="rear-warning">⚠️ TRAFFIC: 1.5s</div>
-            <div id="rear-warning-1" class="rear-warning">⚠️ TRAFFIC: 1.5s</div>
-            <div id="rear-warning-2" class="rear-warning">⚠️ TRAFFIC: 1.5s</div>
-            
             <div id="tk-bird-flock">
                 <div class="bird" style="top:0; left:10px;"></div><div class="bird" style="top:10px; left:0;"></div><div class="bird" style="top:15px; left:20px;"></div><div class="bird" style="top:5px; left:30px;"></div><div class="bird" style="top:25px; left:15px;"></div>
             </div>
@@ -361,9 +348,9 @@
             <div id="tk-runway">
                 <div id="tk-runway-stripes"></div>
                 <div id="tk-drop-zone">
-                    <div style="position: absolute; bottom: 100px; left: 0; width: 100%; border-top: 6px dashed var(--brand-gold); color: var(--brand-gold); font-size: 1.5rem; text-align: left; padding-left: 15px; opacity: 1; text-shadow: 2px 2px 4px #000, 0 0 10px var(--brand-gold);">100m - PERFECT DROP (1000 PTS)</div>
-                    <div style="position: absolute; bottom: 300px; left: 0; width: 100%; border-top: 6px dashed var(--gauge-green); color: var(--gauge-green); font-size: 1.5rem; text-align: left; padding-left: 15px; opacity: 1; text-shadow: 2px 2px 4px #000, 0 0 10px var(--gauge-green);">300m - GOOD DROP (500 PTS)</div>
-                    <div style="position: absolute; bottom: 500px; left: 0; width: 100%; border-top: 6px dashed var(--fo-blue); color: var(--fo-blue); font-size: 1.5rem; text-align: left; padding-left: 15px; opacity: 1; text-shadow: 2px 2px 4px #000, 0 0 10px var(--fo-blue);">HIGH DROP (200 PTS)</div>
+                    <div style="position: absolute; bottom: 100px; left: 0; width: 100%; border-top: 6px dashed var(--brand-gold); color: var(--brand-gold); font-size: 1.5rem; text-align: left; padding-left: 15px; opacity: 1; text-shadow: 2px 2px 4px #000, 0 0 10px var(--brand-gold);">100m - PERFECT DROP (+1000 FUNDS)</div>
+                    <div style="position: absolute; bottom: 300px; left: 0; width: 100%; border-top: 6px dashed var(--gauge-green); color: var(--gauge-green); font-size: 1.5rem; text-align: left; padding-left: 15px; opacity: 1; text-shadow: 2px 2px 4px #000, 0 0 10px var(--gauge-green);">300m - GOOD DROP (+500 FUNDS)</div>
+                    <div style="position: absolute; bottom: 500px; left: 0; width: 100%; border-top: 6px dashed var(--fo-blue); color: var(--fo-blue); font-size: 1.5rem; text-align: left; padding-left: 15px; opacity: 1; text-shadow: 2px 2px 4px #000, 0 0 10px var(--fo-blue);">HIGH DROP (+200 FUNDS)</div>
                     <div style="position: absolute; bottom: 20px; width: 100%; font-size: 3.5rem; color: #fff; text-align: center; text-shadow: 3px 3px 6px #000, 0 0 20px #2ecc71;">TARGET ZONE</div>
                 </div>
             </div>
@@ -523,7 +510,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V36 - Completely Flat CSS) ---
+        // --- PROFILE PERSISTENCE (V37) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -535,7 +522,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v36');
+                let p = localStorage.getItem('h5_profile_v37');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -547,7 +534,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v36', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v37', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -635,7 +622,7 @@
             active: false, isPaused: false, inFlightPlan: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, 
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
-            takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
+            takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", dialogueCritical: false,
             timeOfDay: "day", weather: "clear", zoom: 1.0, targetZoom: 1.0, speedMod: CRUISE_SPEED, autoPilot: false, canRestart: true, 
             hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [], enemies: [], overtakers: [], activeCargo: [],
             
@@ -669,7 +656,6 @@
                 else { btn.textContent = `REPAIR (1000)`; btn.disabled = playerProfile.points < 1000; }
             });
             
-            // Bird shield
             let bBtn = document.getElementById('btn-upg-bird');
             if(playerProfile.upgrades.bird) {
                 document.getElementById('stat-bird').textContent = "ACTIVE";
@@ -681,7 +667,6 @@
                 bBtn.textContent = "BUY (1000)"; bBtn.disabled = playerProfile.points < 1000;
             }
 
-            // Wind shield
             let wBtn = document.getElementById('btn-upg-windshield');
             if(playerProfile.upgrades.windShield) {
                 document.getElementById('stat-windshield').textContent = "ACTIVE";
@@ -693,7 +678,6 @@
                 wBtn.textContent = "BUY (1000)"; wBtn.disabled = playerProfile.points < 1000;
             }
 
-            // NVG
             let nBtn = document.getElementById('btn-upg-nvg');
             if(playerProfile.upgrades.nvg) {
                 document.getElementById('stat-nvg').textContent = "ACTIVE";
@@ -738,8 +722,10 @@
             } else { sfx.playExplosion(); }
         }
 
-        function setDialogue(text, timeMs) {
-            tkState.dialogueText = text; tkState.dialogueTimeLeft = timeMs;
+        function setDialogue(text, timeMs, critical = false) {
+            tkState.dialogueText = text; 
+            tkState.dialogueTimeLeft = timeMs;
+            tkState.dialogueCritical = critical;
         }
 
         function toggleAutoPilot(e) {
@@ -749,7 +735,7 @@
 
             if (!tkState.autoPilot) {
                 if (tkState.apState === 1) {
-                    sfx.playDing(0.5); setDialogue("<span class='alert-text'>AUTOPILOT OFFLINE!</span>", 2000); return;
+                    sfx.playDing(0.5); setDialogue("AUTOPILOT OFFLINE!", 2000, true); return;
                 }
                 
                 tkState.autoPilot = true;
@@ -758,7 +744,7 @@
                 
                 if (tkState.apState === 2) {
                     apInd.style.background = 'var(--brand-red)'; apInd.textContent = 'ERR';
-                    sfx.playDing(0.5); setDialogue("<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>", 3000);
+                    sfx.playDing(0.5); setDialogue("AUTOPILOT MALFUNCTION!", 3000, true);
                     logEvent("AP FAILURE", "⚠️", "AP ERR", "var(--brand-red)");
                 } else {
                     apInd.style.background = 'var(--gauge-green)'; apInd.textContent = 'AUTO'; sfx.playDing(1.5); 
@@ -881,7 +867,7 @@
             } else {
                 playerProfile.points = Math.max(0, playerProfile.points - 200); logEvent("CARGO MISSED", "❌", "MISSED", "var(--brand-red)"); showFloat(planeX, pr.bottom, "-200 FUNDS", "var(--brand-red)"); sfx.playExplosion();
                 playerProfile.campaignStats.cargoMisses++;
-                setDialogue("<span class='alert-text'>MISSED TARGET!</span>", 2000);
+                setDialogue("MISSED TARGET!", 2000, true);
             }
             
             let p = document.createElement('div'); p.className = 'cargo-package';
@@ -1183,7 +1169,7 @@
             tkState.active = false;
             
             logEvent(`CRASH: ${reasonText}`, "❌", "CRASH", "var(--brand-red)");
-            setDialogue(`<span class='alert-text'>${reasonText}</span>`, 4500);
+            setDialogue(reasonText, 4500, true);
             
             // Apply Severe Penalty: Remove all bonus defenses completely
             playerProfile.points = Math.max(0, playerProfile.points - 500);
@@ -1255,10 +1241,11 @@
             let cEl = document.getElementById('fp-cargo-text');
             if (tkState.hasCargoMission) { 
                 cEl.textContent = `${tkState.cargoCount} CARGO DROP`; 
-                cEl.style.color = "var(--brand-gold)";
+                cEl.style.display = "block";
             } else { 
                 cEl.textContent = "NONE"; 
                 cEl.style.color = "#777";
+                cEl.style.display = "block";
             }
 
             let wRiskEl = document.getElementById('fp-wind-risk'); wRiskEl.textContent = tkState.baseWindRisk + "%";
@@ -1270,13 +1257,14 @@
             if (document.activeElement) document.activeElement.blur();
             sfx.init();
             
+            tkState.dialogueCritical = false;
             document.getElementById('tk-touch-prompt').style.display = 'none';
             
             tkState = {
                 active: false, isPaused: false, inFlightPlan: true, nvgActive: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, altitude: 0, cameraY: 0, score: 0, 
                 pressing: false, frameId: null, lastFrameTime: 0, 
                 currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, takeoffDist: 150, landingDist: 260, 
-                dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", zoom: 1.0, speedMod: CRUISE_SPEED, autoPilot: false, weather: "clear", timeOfDay: "day", canRestart: false,
+                dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", dialogueCritical: false, zoom: 1.0, speedMod: CRUISE_SPEED, autoPilot: false, weather: "clear", timeOfDay: "day", canRestart: false,
                 hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [],
                 
                 gearRisk: 0, engineRisk: 0, windRisk: 0, gyroRisk: 0, apRisk: 0, trafficLevel: 0,
@@ -1302,8 +1290,6 @@
                 hasWindPocket: false, windPocketSpawned: false, windPocketX: window.innerWidth + 500, windPocketTriggered: false, windPocketTimer: 0, gyroFailed: false,
                 statsAdded: false, finalCampaignScore: 0
             };
-
-            document.querySelectorAll('.rear-warning').forEach(el => el.style.display = 'none');
             
             generateFlightPlanContext();
             
@@ -1372,7 +1358,7 @@
                 }
                 
                 if (tkState.hasFogScenario) {
-                    setDialogue("<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>", 6000);
+                    setDialogue("HEAVY FOG AHEAD!<br><span style='font-size:0.65rem;'>TAP PLANE FOR AUTOPILOT</span>", 6000, true);
                 } else {
                     setDialogue("<span class='capt-text'>FULL POWER!<br><span style='font-size:0.65rem; color:var(--aux-blue);'>TAP PLANE FOR AUTOPILOT</span></span>", 5000);
                 }
@@ -1495,7 +1481,15 @@
             }
 
             const bubble = document.getElementById('dialogue-bubble');
-            if (tkState.dialogueTimeLeft > 0) { tkState.dialogueTimeLeft -= delta; bubble.innerHTML = tkState.dialogueText; bubble.style.opacity = 1; } else { bubble.style.opacity = 0; }
+            if (tkState.dialogueTimeLeft > 0) { 
+                tkState.dialogueTimeLeft -= delta; 
+                bubble.innerHTML = tkState.dialogueText; 
+                bubble.style.opacity = 1; 
+                if(tkState.dialogueCritical) bubble.classList.add('critical-bubble'); else bubble.classList.remove('critical-bubble');
+            } else { 
+                bubble.style.opacity = 0; 
+                bubble.classList.remove('critical-bubble');
+            }
 
             // SPEED ENGINE WITH WIND POCKET
             let inHUDZone = (tkState.pitch >= tkState.currTargetMin && tkState.pitch <= tkState.currTargetMax);
@@ -1537,7 +1531,7 @@
                         sfx.playDing(1.2);
                     } else {
                         tkState.windPocketTimer = 2000; 
-                        logEvent("WIND SHEAR", "💨", "WIND", "var(--gauge-orange)"); setDialogue("<span class='alert-text'>WIND SHEAR!</span>", 2000);
+                        logEvent("WIND SHEAR", "💨", "WIND", "var(--gauge-orange)"); setDialogue("WIND SHEAR!", 2000, true);
                     }
                 }
             }
@@ -1569,7 +1563,7 @@
             
             // GYROSCOPE FAILURE
             if (tkState.hasGyroFailure && !tkState.gyroFailed && tkState.phase >= 1 && Math.random() < 0.001) {
-                tkState.gyroFailed = true; logEvent("GYRO FAILURE", "🧭", "GYRO", "var(--brand-red)"); setDialogue("<span class='alert-text'>GYROSCOPE FAILURE!</span>", 4000);
+                tkState.gyroFailed = true; logEvent("GYRO FAILURE", "🧭", "GYRO", "var(--brand-red)"); setDialogue("GYROSCOPE FAILURE!", 4000, true);
             }
             let displayPitch = tkState.hudPitch;
             if (tkState.gyroFailed) { displayPitch += Math.sin(timestamp / 200) * 25 + Math.cos(timestamp / 300) * 10; }
@@ -1596,10 +1590,16 @@
                 }
             }
 
-            if (isStalling) { document.getElementById('tk-alert-overlay').className = 'flashing'; setDialogue("<span class='alert-text'>STALL WARNING!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
-            } else if (isTooFast) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>CHECK LANDING SPEED!</span>", 1500);
-            } else if (isTooHigh) { document.getElementById('tk-alert-overlay').className = 'flashing'; if (tkState.dialogueTimeLeft <= 0) setDialogue("<span class='alert-text'>TOO HIGH! LOSING FUNDS!</span>", 1500); if(tkState.autoPilot) toggleAutoPilot();
-            } else if (tkState.dialogueText !== "<span class='alert-text'>ENGINE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>TRAFFIC BEHIND!</span>" && tkState.dialogueText !== "<span class='alert-text'>BIRDS AHEAD!</span>" && tkState.dialogueText !== "<span class='alert-text'>HEAVY FOG AHEAD!<br><span style='font-size:0.65rem; color:#fff;'>TAP PLANE FOR AUTOPILOT</span></span>" && tkState.dialogueText !== "<span class='alert-text'>WIND SHEAR!</span>" && tkState.dialogueText !== "<span class='alert-text'>GYROSCOPE FAILURE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT OFFLINE!</span>" && tkState.dialogueText !== "<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>" && tkState.dialogueText !== "<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>" && !tkState.dialogueText.includes("DROP NOW!") && !tkState.dialogueText.includes("MISSED TARGET!") && !tkState.dialogueText.includes("CARGO SECURED!")) { document.getElementById('tk-alert-overlay').className = ''; }
+            if (isStalling) { setDialogue("STALL WARNING!", 1500, true); if(tkState.autoPilot) toggleAutoPilot();
+            } else if (isTooFast) { if (tkState.dialogueTimeLeft <= 0) setDialogue("CHECK LANDING SPEED!", 1500, true);
+            } else if (isTooHigh) { if (tkState.dialogueTimeLeft <= 0) setDialogue("TOO HIGH! LOSING FUNDS!", 1500, true); if(tkState.autoPilot) toggleAutoPilot();
+            }
+
+            if (tkState.dialogueCritical && tkState.dialogueTimeLeft > 0) {
+                document.getElementById('tk-alert-overlay').className = 'flashing';
+            } else {
+                document.getElementById('tk-alert-overlay').className = '';
+            }
 
             tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.12;
             if (tkState.altitude <= 0 && tkState.pitch < 0) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
@@ -1623,7 +1623,6 @@
             if (isStalling || tkState.gyroFailed) p_hue = 0;
             let dynColor = `hsl(${p_hue}, 85%, 55%)`; hudRing.style.borderColor = dynColor; document.getElementById('hud-pitch').style.color = dynColor;
             
-            const scoreValEl = document.getElementById('score-val');
             const fundsValEl = document.getElementById('funds-val');
             const altHud = document.getElementById('hud-alt');
             const scoreHud = document.getElementById('tk-score-display');
@@ -1647,11 +1646,7 @@
                     tkState.score += tkState.autoPilot ? 10 : 4; 
                     if (Math.random() > 0.4) { const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); spawnScoreParticle(pr.left + pr.width / 2, pr.top + pr.height / 2, tkState.pitch); }
                 }
-                if (!isTooHigh) scoreValEl.style.color = tkState.autoPilot ? '#cfa86e' : '#fff';
-            } else { 
-                if (!isTooHigh) scoreValEl.style.color = '#fff'; 
             }
-            scoreValEl.textContent = Math.floor(tkState.score);
 
             if (tkState.altitude <= 0 && tkState.hasLiftedOff) {
                 if (tkState.phase < 5) return triggerCrash("CRASHED INTO TERRAIN!");
@@ -1670,7 +1665,7 @@
                 if (playerProfile.upgrades.gear >= 4) {
                     tkState.gearBroken = false; tkState.gearBreakAlt = 99999;
                 } else {
-                    tkState.gearBroken = true; sfx.playExplosion(); setDialogue("<span class='alert-text'>GEAR SNAP!</span>", 4000); logEvent("GEAR SNAP", "⚙️", "GEAR DMG", "var(--brand-gold)");
+                    tkState.gearBroken = true; sfx.playExplosion(); setDialogue("GEAR SNAP!", 4000, true); logEvent("GEAR SNAP", "⚙️", "GEAR DMG", "var(--brand-gold)");
                     const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
                 }
             }
@@ -1682,10 +1677,9 @@
                 tkState.cargoTimer = (tkState.cargoTimer || 0) + delta;
                 let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
                 
-                // Spawn exactly 5 seconds into Phase 2
                 if (!tkState.cargoPrompted && tkState.phase >= 2 && tkState.phase <= 4 && tkState.cargoTimer > 5000) {
                     tkState.cargoPrompted = true;
-                    setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>APPROACHING DROP ZONE!</span>", 3000);
+                    setDialogue("<span style='color:var(--brand-gold); font-weight:bold;'>APPROACHING DROP ZONE!</span>", 3000);
                     tkState.dropZoneSpawned = true; 
                     tkState.dropZoneX = window.innerWidth + 2000;
                     document.getElementById('tk-drop-zone').style.display = 'block';
@@ -1700,13 +1694,13 @@
                     let distToPlane = tkState.dropZoneX - planeX;
                     
                     if (tkState.dropCountdown === 3 && distToPlane <= pxPerSec * 3) {
-                        setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>3...</span>", 1000);
+                        setDialogue("<span style='color:var(--brand-gold); font-weight:bold;'>3...</span>", 1000);
                         tkState.dropCountdown = 2; sfx.playDing(1.0);
                     } else if (tkState.dropCountdown === 2 && distToPlane <= pxPerSec * 2) {
-                        setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>2...</span>", 1000);
+                        setDialogue("<span style='color:var(--brand-gold); font-weight:bold;'>2...</span>", 1000);
                         tkState.dropCountdown = 1; sfx.playDing(1.0);
                     } else if (tkState.dropCountdown === 1 && distToPlane <= pxPerSec * 1) {
-                        setDialogue("<span class='alert-text' style='color:var(--brand-gold)'>1...</span>", 1000);
+                        setDialogue("<span style='color:var(--brand-gold); font-weight:bold;'>1...</span>", 1000);
                         tkState.dropCountdown = 0; sfx.playDing(1.0);
                     } else if (tkState.dropCountdown === 0 && distToPlane <= 0) {
                         setDialogue("<span class='success-text'>DROP NOW!</span>", 2000);
@@ -1760,20 +1754,18 @@
                         } else {
                             o.spd = (7.2 + Math.random() * 2.4) * SPEED_MOD; // 40% slower
                         }
-                        logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); setDialogue("<span class='alert-text'>TRAFFIC BEHIND!</span>", 4000); 
+                        logEvent("TRAFFIC BEHIND", "⚠️", "TAIL", "var(--brand-gold)"); 
                     }
                 }
             }
 
             let overtakerCollision = false;
             tkState.overtakers.forEach((o, i) => {
-                let rw = document.getElementById('rear-warning-' + i);
                 if (o.warning) {
                     o.warningTimer -= delta;
-                    if (rw) {
-                        rw.style.display = 'block';
-                        rw.style.transform = `translate3d(0, ${-(o.alt - tkState.cameraY) + 15}px, 0)`;
-                        rw.innerHTML = `⚠️ TRAFFIC: ${(o.warningTimer/1000).toFixed(1)}s`;
+                    
+                    if (o.warningTimer > 0) {
+                        setDialogue(`⚠️ TRAFFIC: ${(o.warningTimer/1000).toFixed(1)}s`, 150, true);
                     }
                     
                     if (o.warningTimer <= 0) {
@@ -1781,10 +1773,8 @@
                         o.active = true;
                         o.x = -250;
                         document.getElementById('overtaker-' + i).style.display = 'block';
-                        if (rw) rw.style.display = 'none';
                     }
                 } else if (o.active) {
-                    if (rw) rw.style.display = 'none';
                     o.x += o.spd; 
                     let el = document.getElementById('overtaker-' + i); 
                     el.style.transform = `translate3d(${o.x}px, ${-(o.alt - tkState.cameraY)}px, 0)`;
@@ -1792,15 +1782,13 @@
                     const gr = el.getBoundingClientRect();
                     if (!( (pr.right - 12) < (gr.left + 15) || (pr.left + 12) > (gr.right - 15) || (pr.bottom - 12) < (gr.top + 25) || (pr.top + 25) > (gr.bottom - 10) )) { overtakerCollision = true; }
                     if (o.x > window.innerWidth + 200) { o.active = false; el.style.display = 'none'; }
-                } else {
-                    if (rw) rw.style.display = 'none';
                 }
             });
             if (overtakerCollision) { return triggerCrash("MID-AIR CRASH!"); }
 
             // Birds (Fixed to PX)
             if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 250 && tkState.phase < 4 && tkState.birdX > window.innerWidth && Math.random() < 0.005) {
-                tkState.birdActive = true; tkState.birdAlt = Math.max(20, tkState.altitude + (Math.random() * 60 - 30)); logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)"); document.getElementById('tk-bird-flock').style.display = 'block'; setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 3000);
+                tkState.birdActive = true; tkState.birdAlt = Math.max(20, tkState.altitude + (Math.random() * 60 - 30)); logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)"); document.getElementById('tk-bird-flock').style.display = 'block'; setDialogue("BIRDS AHEAD!", 3000, true);
             }
             if (tkState.birdActive) {
                 tkState.birdX -= (20 * SPEED_MOD); let bEl = document.getElementById('tk-bird-flock'); bEl.style.transform = `translate3d(${tkState.birdX}px, ${-(tkState.birdAlt - tkState.cameraY)}px, 0)`;
@@ -1810,8 +1798,8 @@
                         tkState.birdActive = false; document.getElementById('tk-bird-flock').style.display = 'none';
                         tkState.engineFailure = true;
                         logEvent("BIRD SHIELD TRIGGERED", "🛡️", "SHIELD", "var(--fo-blue)");
-                        setDialogue("<span class='alert-text'>BIRD STRIKE! ENGINES DAMAGED!</span>", 4000);
-                        sfx.playExplosion(); document.getElementById('tk-alert-overlay').className = 'flashing'; setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800);
+                        setDialogue("BIRD STRIKE! ENGINES DAMAGED!", 4000, true);
+                        sfx.playExplosion(); 
                     } else {
                         return triggerCrash("BIRD STRIKE!");
                     }
@@ -1821,7 +1809,7 @@
 
             // Random Engine Fail
             if (tkState.phase === 2 && tkState.phaseTimer > 3000 && tkState.hasEngineFailureScenario && !tkState.engineFailure) {
-                tkState.engineFailure = true; logEvent("ENGINE FAILURE", "🔥", "ENGINE", "var(--brand-red)"); setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 5000); sfx.playExplosion(); document.getElementById('tk-alert-overlay').className = 'flashing'; setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800);
+                tkState.engineFailure = true; logEvent("ENGINE FAILURE", "🔥", "ENGINE", "var(--brand-red)"); setDialogue("ENGINE FAILURE!", 5000, true); sfx.playExplosion(); 
             }
 
             // Swarm Traffic Phase Trigger
@@ -1829,9 +1817,7 @@
                 tkState.phase = 3; tkState.phaseTimer = 0;
                 tkState.currTargetMin = -24; tkState.currTargetMax = -12;
                 logEvent("TRAFFIC SWARM", "✈️", "SWARM", "var(--brand-red)");
-                setDialogue("<span class='alert-text'>TRAFFIC SWARM! DIVE!</span>", 5000);
-                document.getElementById('tk-alert-overlay').className = 'flashing';
-                setTimeout(() => { document.getElementById('tk-alert-overlay').className = ''; }, 800); 
+                setDialogue("TRAFFIC SWARM! DIVE!", 5000, true);
                 if(tkState.autoPilot) toggleAutoPilot();
             }
 
@@ -1874,7 +1860,7 @@
                 });
                 if (swarmCollision) { return triggerCrash("MID-AIR CRASH!"); }
 
-                if (tkState.phaseTimer > 12000 && activeCount === 0) { tkState.phase = 4; tkState.phaseTimer = 0; tkState.currTargetMin = -3; tkState.currTargetMax = 3; setDialogue("<span class='success-text'>CLEAR! LEVEL OFF</span>", 4000); document.getElementById('tk-alert-overlay').className = ''; }
+                if (tkState.phaseTimer > 12000 && activeCount === 0) { tkState.phase = 4; tkState.phaseTimer = 0; tkState.currTargetMin = -3; tkState.currTargetMax = 3; setDialogue("<span class='success-text'>CLEAR! LEVEL OFF</span>", 4000); }
             }
 
             // Descent
@@ -1885,15 +1871,15 @@
                 if (playerProfile.upgrades.gear >= 4) {
                     setDialogue("<span class='success-text'>GEAR DOWN. LANDING SECURE!</span>", 5000);
                 } else if (tkState.hasGearFailure) {
-                    tkState.gearBroken = true; sfx.playExplosion(); logEvent("GEAR LOST", "🛬", "NO GEAR", "var(--brand-red)"); setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 5000); const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
+                    tkState.gearBroken = true; sfx.playExplosion(); logEvent("GEAR LOST", "🛬", "NO GEAR", "var(--brand-red)"); setDialogue("GEAR LOST! LAND NOW!", 5000, true); const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
                     document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png';
                 } else {
-                    setDialogue("<span class='alert-text'>DESCEND FOR LANDING!</span>", 5000);
+                    setDialogue("DESCEND FOR LANDING!", 5000, true);
                 }
                 if(tkState.autoPilot) toggleAutoPilot();
             }
             if (tkState.phase === 5 && tkState.altitude <= 0) {
-                 tkState.phase = 6; tkState.altitude = 0; tkState.vSpeed = 0; setDialogue("<span class='alert-text'>BRAKES ON!</span>", 4000); if(tkState.autoPilot) toggleAutoPilot(); 
+                 tkState.phase = 6; tkState.altitude = 0; tkState.vSpeed = 0; setDialogue("BRAKES ON!", 4000, true); if(tkState.autoPilot) toggleAutoPilot(); 
             }
 
             // Camera Parallax Apply

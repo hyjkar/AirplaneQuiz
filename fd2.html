@@ -260,7 +260,6 @@
         .wiz-btn.primary { background: var(--fo-blue); color: #fff; }
         .wiz-btn.success { background: var(--gauge-green); color: #000; box-shadow: 0 0 10px rgba(46,204,113,0.4); }
 
-        /* GRID FOR UPGRADES PAGE */
         .upg-section-header {
             font-size: 0.7rem; color: var(--brand-gold); text-align: left; 
             margin: 2px 0 4px 0; border-bottom: 1px solid #444; padding-bottom: 2px;
@@ -354,7 +353,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v16.0 - Wizard UI & Category Systems</div>
+        <div id="tk-version">v17.0 - Action Arcade Edition</div>
         
         <div id="nvg-overlay"></div>
         <div id="tk-alert-overlay"></div>
@@ -657,7 +656,7 @@
         // Wizard navigation state
         let currentWizPage = 0;
 
-        // --- PROFILE PERSISTENCE (V57) ---
+        // --- PROFILE PERSISTENCE (V58) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -674,7 +673,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v57');
+                let p = localStorage.getItem('h5_profile_v58');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -693,7 +692,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v57', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v58', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -781,7 +780,7 @@
             active: false, isPaused: false, inFlightPlan: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, flashTimer: 0,
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
-            takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", dialogueCritical: false,
+            takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
             timeOfDay: "day", weather: "clear", zoom: 1.0, targetZoom: 1.0, speedMod: CRUISE_SPEED, autoPilot: false, canRestart: true, 
             hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [], enemies: [], overtakers: [], activeCargo: [],
             
@@ -914,7 +913,7 @@
                             stat.textContent = "OFFLINE";
                         }
                         stat.style.color = "var(--brand-red)";
-                        btn.textContent = `BUY (${cost})`; btn.disabled = playerProfile.points < cost;
+                        btn.textContent = `BUY`; btn.disabled = playerProfile.points < cost;
                     }
                 }
             });
@@ -1134,11 +1133,9 @@
         function getCompletionPercentage() {
             let pct = 0;
             if (tkState.phase === 0) pct = Math.min(10, (tkState.speed / 150) * 10);
-            else if (tkState.phase === 1) pct = 10 + Math.min(20, (tkState.altitude / CRUISE_ALT) * 20);
-            else if (tkState.phase === 2) pct = 30 + Math.min(20, (tkState.phaseTimer / 8000) * 20);
-            else if (tkState.phase === 3) pct = 50 + Math.min(20, (tkState.phaseTimer / 12000) * 20);
-            else if (tkState.phase === 4) pct = 70 + Math.min(10, (tkState.phaseTimer / 5000) * 10);
-            else if (tkState.phase === 5) pct = 80 + Math.max(0, Math.min(15, ((CRUISE_ALT - tkState.altitude) / CRUISE_ALT) * 15));
+            else if (tkState.phase === 1) pct = 10 + Math.min(15, (tkState.altitude / 150) * 15);
+            else if (tkState.phase === 3) pct = 25 + Math.min(50, (tkState.phaseTimer / 12000) * 50);
+            else if (tkState.phase === 5) pct = 75 + Math.max(0, Math.min(20, (tkState.altitude / 300) * 20));
             else if (tkState.phase === 6) pct = 95 + Math.min(5, ((150 - tkState.speed) / 150) * 5);
             return Math.max(0, Math.min(100, pct));
         }
@@ -1771,7 +1768,7 @@
             
             tkState.apState = Math.random() * 100 < failMap[playerProfile.upgrades.ap] ? (Math.random() < 0.5 ? 1 : 2) : 0;
             tkState.hasGearFailure = Math.random() * 100 < failMap[playerProfile.upgrades.gear];
-            if (tkState.hasGearFailure) tkState.gearBreakAlt = Math.random() * (CRUISE_ALT - 200) + 100;
+            if (tkState.hasGearFailure) tkState.gearBreakAlt = Math.random() * 50 + 50; // Break early!
             
             tkState.engineFailure = false;
             tkState.hasEngineFailureScenario = Math.random() * 100 < failMap[playerProfile.upgrades.engine];
@@ -1992,7 +1989,7 @@
             let displaySpeed = tkState.speed;
             
             // WIND POCKET SPAWN (Slow Dodgeable)
-            if (tkState.hasWindPocket && !tkState.windPocketSpawned && tkState.phase >= 2 && tkState.phaseTimer > 1000) {
+            if (tkState.hasWindPocket && !tkState.windPocketSpawned && tkState.phase === 3 && tkState.phaseTimer > 2000) {
                 tkState.windPocketSpawned = true; 
                 tkState.windPocketX = window.innerWidth + 500;
                 let wp = document.getElementById('tk-wind-pocket');
@@ -2033,7 +2030,7 @@
             }
 
             let spdHue = 0;
-            if (tkState.phase < 2) spdHue = (displaySpeed >= 150) ? 120 : 0; else if (tkState.phase === 5) spdHue = (displaySpeed <= 160) ? 120 : 0; else spdHue = (displaySpeed > 130) ? 120 : 0;
+            if (tkState.phase < 3) spdHue = (displaySpeed >= 150) ? 120 : 0; else if (tkState.phase === 5) spdHue = (displaySpeed <= 160) ? 120 : 0; else spdHue = (displaySpeed > 130) ? 120 : 0;
             let hudSpd = document.getElementById('hud-spd');
             let hudSpdVal = document.getElementById('hud-spd-val');
             if(hudSpd) hudSpd.style.color = `hsl(${spdHue}, 85%, 55%)`; 
@@ -2062,8 +2059,8 @@
             let displayPitch = tkState.hudPitch;
             if (tkState.gyroFailed) { displayPitch += Math.sin(timestamp / 200) * 25 + Math.cos(timestamp / 300) * 10; }
 
-            // NEW: SMOOTH FLIGHT BONUS LOGIC
-            if (!tkState.smoothFlightAchieved && tkState.phase >= 1 && tkState.phase < 5) {
+            // SMOOTH FLIGHT BONUS LOGIC
+            if (!tkState.smoothFlightAchieved && (tkState.phase === 1 || tkState.phase === 3)) {
                 if (Math.abs(tkState.pitch) <= 1.0) {
                     tkState.smoothFlightTimer += delta;
                     if (tkState.smoothFlightTimer >= tkState.smoothFlightTarget) {
@@ -2086,7 +2083,7 @@
 
             let isStalling = (tkState.pitch >= 24.2 && tkState.altitude > 10);
             let isTooFast = (tkState.phase === 5 && displaySpeed > 145 && tkState.altitude > 0);
-            let isTooHigh = (tkState.altitude > 1000 && tkState.phase >= 1 && tkState.phase <= 4); 
+            let isTooHigh = (tkState.altitude > 800 && tkState.phase >= 1 && tkState.phase <= 4); 
             sfx.playAlarm(isStalling);
             
             if (isStalling && !tkState.wasStalling) { tkState.stallsCount++; } tkState.wasStalling = isStalling;
@@ -2201,8 +2198,11 @@
                 }
             }
 
-            // PHASE LOGIC
-            if (tkState.phase === 0 && displaySpeed >= 150) { tkState.phase = 1; tkState.phaseTimer = 0; setDialogue("<span class='capt-text'>V1! KEEP 15 DEGREES</span>", 99999); }
+            // SIMPLIFIED GAME PHASE LOGIC
+            if (tkState.phase === 0 && displaySpeed >= 150) { 
+                tkState.phase = 1; tkState.phaseTimer = 0; 
+                setDialogue("<span class='capt-text'>V1! KEEP 15 DEGREES</span>", 99999); 
+            }
             
             if (tkState.phase === 1 && tkState.altitude >= tkState.gearBreakAlt && !tkState.gearBroken) {
                 if (playerProfile.upgrades.gear >= 4) {
@@ -2224,15 +2224,25 @@
                 }
             }
             
-            if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { tkState.phase = 2; tkState.phaseTimer = 0; tkState.currTargetMin = -3; tkState.currTargetMax = 3; setDialogue("<span class='capt-text'>LEVEL OFF</span>", 4000); }
+            // JUMP DIRECTLY TO SWARM (PHASE 3) AT 150m ALTITUDE
+            if (tkState.phase === 1 && tkState.altitude >= 150) { 
+                tkState.phase = 3; 
+                tkState.phaseTimer = 0; 
+                tkState.currTargetMin = -15; // Wide target zone to allow dodging without penalty
+                tkState.currTargetMax = 20; 
+                setDialogue("<span class='alert-text'>TRAFFIC SWARM! EVADE!</span>", 5000); 
+                tkState.flashTimer = 800; 
+                if(tkState.autoPilot) toggleAutoPilot();
+                logEvent("TRAFFIC SWARM", "✈️", "SWARM", "var(--brand-red)");
+            }
 
-            // CARGO MISSION LOGIC 
+            // CARGO MISSION LOGIC (MOVED TO PHASE 3)
             if (tkState.hasCargoMission) {
                 tkState.cargoTimer = (tkState.cargoTimer || 0) + delta;
                 let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
                 
-                // Spawn exactly 5 seconds into Phase 2
-                if (!tkState.cargoPrompted && tkState.phase >= 2 && tkState.phase <= 4 && tkState.cargoTimer > 5000) {
+                // Spawn exactly 4 seconds into Phase 3
+                if (!tkState.cargoPrompted && tkState.phase === 3 && tkState.cargoTimer > 4000) {
                     tkState.cargoPrompted = true;
                     setDialogue("<span style='color:var(--brand-gold); font-weight:bold;'>APPROACHING DROP ZONE!</span>", 3000);
                     tkState.dropZoneSpawned = true; 
@@ -2285,9 +2295,9 @@
                 }
             }
 
-            // Overtaker (Fixed to PX + Edge Warning Spawning)
+            // Overtaker (Allowed in Phase 1 or 3)
             let trySpawnOvertaker = false;
-            if (tkState.phase >= 1 && tkState.phase <= 2 && tkState.hasOvertakerScenario && Math.random() < 0.005) { trySpawnOvertaker = true; }
+            if (tkState.phase === 1 && tkState.hasOvertakerScenario && Math.random() < 0.01) { trySpawnOvertaker = true; }
             if (tkState.trafficLevel === 2 && tkState.phase === 3 && Math.random() < 0.015) { trySpawnOvertaker = true; } 
 
             if (trySpawnOvertaker) {
@@ -2359,7 +2369,7 @@
 
 
             // Birds (Fixed to PX)
-            if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 250 && tkState.phase < 4 && tkState.birdX > window.innerWidth && Math.random() < 0.005) {
+            if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 250 && tkState.phase === 3 && tkState.birdX > window.innerWidth && Math.random() < 0.005) {
                 tkState.birdActive = true; tkState.birdAlt = Math.max(20, tkState.altitude + (Math.random() * 60 - 30)); logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)"); 
                 let bFlock = document.getElementById('tk-bird-flock');
                 if(bFlock) bFlock.style.display = 'block'; 
@@ -2388,20 +2398,12 @@
                 }
             }
 
-            // Random Engine Fail
-            if (tkState.phase === 2 && tkState.phaseTimer > 3000 && tkState.hasEngineFailureScenario && !tkState.engineFailure) {
+            // Random Engine Fail (Moved to Phase 3)
+            if (tkState.phase === 3 && tkState.phaseTimer > 3000 && tkState.phaseTimer < 8000 && tkState.hasEngineFailureScenario && !tkState.engineFailure) {
                 tkState.engineFailure = true; logEvent("ENGINE FAILURE", "🔥", "ENGINE", "var(--brand-red)"); setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 5000); tkState.flashTimer = 800; sfx.playExplosion(); 
             }
 
-            // Swarm Traffic Phase Trigger
-            if (tkState.phase === 2 && tkState.phaseTimer > 8000) {
-                tkState.phase = 3; tkState.phaseTimer = 0;
-                tkState.currTargetMin = -24; tkState.currTargetMax = -12;
-                logEvent("TRAFFIC SWARM", "✈️", "SWARM", "var(--brand-red)");
-                tkState.flashTimer = 800; 
-                if(tkState.autoPilot) toggleAutoPilot();
-            }
-
+            // Swarm Traffic Phase 
             if (tkState.phase === 3) {
                 let maxEnemiesBase = Math.floor(1 + (tkState.phaseTimer / 12000) * 4);
                 let maxEnemies = Math.min(12, Math.floor(maxEnemiesBase + (tkState.trafficLevel * 1.5)));
@@ -2467,28 +2469,30 @@
                 
                 if (swarmCollision) { return triggerCrash("MID-AIR CRASH!"); }
 
-                if (tkState.phaseTimer > 12000 && activeCount === 0) { tkState.phase = 4; tkState.phaseTimer = 0; tkState.currTargetMin = -3; tkState.currTargetMax = 3; setDialogue("<span class='success-text'>CLEAR! LEVEL OFF</span>", 4000); }
+                // End Swarm -> JUMP DIRECTLY TO DESCENT (PHASE 5)
+                if (tkState.phaseTimer > 12000 && activeCount === 0) { 
+                    tkState.phase = 5; 
+                    tkState.phaseTimer = 0; 
+                    tkState.currTargetMin = -8; 
+                    tkState.currTargetMax = -2; 
+                    
+                    if (playerProfile.upgrades.gear >= 4) {
+                        setDialogue("<span class='success-text'>CLEAR! DESCEND & LAND!</span>", 5000);
+                    } else if (tkState.hasGearFailure) {
+                        tkState.gearBroken = true; sfx.playExplosion(); logEvent("GEAR LOST", "🛬", "NO GEAR", "var(--brand-red)"); setDialogue("<span class='alert-text'>CLEAR! BUT GEAR LOST! LAND NOW!</span>", 5000); 
+                        let pImg = document.getElementById('tk-plane-img');
+                        if(pImg) {
+                            const pr = pImg.getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
+                            pImg.src = playerPlaneSkin.replace('.png', '-nolandinggear.png');
+                        }
+                    } else {
+                        setDialogue("<span class='alert-text'>CLEAR! DESCEND FOR LANDING!</span>", 5000);
+                    }
+                    if(tkState.autoPilot) toggleAutoPilot();
+                }
             }
 
-            // Descent
-            if (tkState.phase === 4 && tkState.phaseTimer > 5000) { 
-                tkState.phase = 5; tkState.phaseTimer = 0;
-                tkState.currTargetMin = -8; tkState.currTargetMax = -2; 
-                
-                if (playerProfile.upgrades.gear >= 4) {
-                    setDialogue("<span class='success-text'>GEAR DOWN. LANDING SECURE!</span>", 5000);
-                } else if (tkState.hasGearFailure) {
-                    tkState.gearBroken = true; sfx.playExplosion(); logEvent("GEAR LOST", "🛬", "NO GEAR", "var(--brand-red)"); setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 5000); 
-                    let pImg = document.getElementById('tk-plane-img');
-                    if(pImg) {
-                        const pr = pImg.getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
-                        pImg.src = playerPlaneSkin.replace('.png', '-nolandinggear.png');
-                    }
-                } else {
-                    setDialogue("<span class='alert-text'>DESCEND FOR LANDING!</span>", 5000);
-                }
-                if(tkState.autoPilot) toggleAutoPilot();
-            }
+            // Descent ends
             if (tkState.phase === 5 && tkState.altitude <= 0) {
                  tkState.phase = 6; tkState.altitude = 0; tkState.vSpeed = 0; setDialogue("<span class='alert-text'>BRAKES ON!</span>", 4000); if(tkState.autoPilot) toggleAutoPilot(); 
             }
@@ -2525,7 +2529,7 @@
             if(cityBg) cityBg.style.transform = `translate3d(0, ${tkState.cameraY * 0.7}px, 0)`; 
             if(skyBg) skyBg.style.transform = `translate3d(0, ${tkState.cameraY * 0.4}px, 0)`; 
             
-            let fgCloudDrop = Math.max(0, (tkState.altitude - 600) * 1.5);
+            let fgCloudDrop = Math.max(0, (tkState.altitude - 500) * 1.5);
             if(fgSky) {
                 fgSky.style.transform = `translate3d(0, ${tkState.cameraY * 0.85 + fgCloudDrop}px, 0)`; 
             }

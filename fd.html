@@ -40,7 +40,6 @@
 
         .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none; background-repeat: repeat-x; transition: filter 0.5s, background-color 0.5s; will-change: background-position, transform; }
 
-        /* CLOUDS RESTORED TO RUNWAY LEVEL */
         #tk-bg-sky { background-size: auto 100vh; z-index: 1; height: 120%; top: -10%; }
         #tk-fg-sky { background-size: auto 150vh; z-index: 14; height: 120%; top: -100%; opacity: 0.8; }
         #tk-threat-fog { display: none; background-size: auto 200vh; z-index: 15; height: 150%; top: -10%; opacity: 0.95; filter: blur(3px) brightness(1.1); }
@@ -187,7 +186,7 @@
         .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         
-        /* IMAGE-BASED CARGO SPRITE (Transparency bug fixed) */
+        /* IMAGE-BASED CARGO SPRITE */
         .cargo-package { 
             position: absolute; 
             z-index: 15; 
@@ -299,7 +298,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v12.3 - Clean Fog & Solid Physics</div>
+        <div id="tk-version">v12.4 - Crash & Dual Warning Fixed</div>
         
         <div id="nvg-overlay"></div>
         
@@ -326,6 +325,7 @@
             <div id="tk-bg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             <div id="tk-bg-city" class="parallax-layer" style="background-image: url('mountain.png');"></div>
             
+            <div class="weather-layer fog-layer layer-back"></div>
             <div class="weather-layer rain-layer layer-1"></div>
             <div class="weather-layer snow-layer layer-1"></div>
 
@@ -347,6 +347,7 @@
             </div>
 
             <div id="tk-fg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
+            <div id="tk-threat-fog" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             
             <div id="enemy-0" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
             <div id="enemy-1" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
@@ -391,6 +392,7 @@
             </div>
             
             <div id="tk-mountain"><svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M0,100 L50,20 L100,100 Z" fill="#3b3b3b"/><path d="M30,100 L50,50 L70,100 Z" fill="#4a4a4a"/><path d="M42,35 L50,20 L58,35 Z" fill="#fff"/></svg></div>
+            <div class="weather-layer fog-layer layer-front"></div>
             <div class="weather-layer rain-layer layer-2"></div>
             <div class="weather-layer snow-layer layer-2"></div>
         </div>
@@ -552,7 +554,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V51) ---
+        // --- PROFILE PERSISTENCE (V52) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -566,7 +568,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v51');
+                let p = localStorage.getItem('h5_profile_v52');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -582,7 +584,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v51', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v52', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -808,7 +810,8 @@
                 }
             }
             playerPlaneSkin = playerProfile.currentSkin;
-            document.getElementById('tk-plane-img').src = playerPlaneSkin; 
+            let flightPlane = document.getElementById('tk-plane-img');
+            if (flightPlane) flightPlane.src = playerPlaneSkin; 
             saveProfile();
             updateFlightPlanUI();
         }
@@ -862,18 +865,20 @@
                 
                 tkState.autoPilot = true;
                 const apInd = document.getElementById('ap-indicator');
-                apInd.style.display = 'block';
+                if(apInd) apInd.style.display = 'block';
                 
                 if (tkState.apState === 2) {
-                    apInd.style.background = 'var(--brand-red)'; apInd.textContent = 'ERR';
+                    if(apInd) { apInd.style.background = 'var(--brand-red)'; apInd.textContent = 'ERR'; }
                     sfx.playDing(0.5); setDialogue("<span class='alert-text'>AUTOPILOT MALFUNCTION!</span>", 3000);
                     logEvent("AP FAILURE", "⚠️", "AP ERR", "var(--brand-red)");
                 } else {
-                    apInd.style.background = 'var(--gauge-green)'; apInd.textContent = 'AUTO'; sfx.playDing(1.5); 
+                    if(apInd) { apInd.style.background = 'var(--gauge-green)'; apInd.textContent = 'AUTO'; }
+                    sfx.playDing(1.5); 
                 }
             } else {
                 tkState.autoPilot = false;
-                document.getElementById('ap-indicator').style.display = 'none';
+                let apInd = document.getElementById('ap-indicator');
+                if(apInd) apInd.style.display = 'none';
                 sfx.playDing(0.8);
             }
         }
@@ -886,8 +891,8 @@
             tkState.isPaused = !tkState.isPaused;
             const pauseOverlay = document.getElementById('pause-overlay');
             const pauseBtn = document.getElementById('pause-btn');
-            if (tkState.isPaused) { pauseOverlay.style.display = 'flex'; pauseBtn.textContent = '▶️'; sfx.bgMusic.pause(); sfx.playAlarm(false); } 
-            else { pauseOverlay.style.display = 'none'; pauseBtn.textContent = '⏸️'; sfx.bgMusic.play().catch(e=>e); tkState.lastFrameTime = performance.now(); }
+            if (tkState.isPaused) { if(pauseOverlay) pauseOverlay.style.display = 'flex'; if(pauseBtn) pauseBtn.textContent = '▶️'; sfx.bgMusic.pause(); sfx.playAlarm(false); } 
+            else { if(pauseOverlay) pauseOverlay.style.display = 'none'; if(pauseBtn) pauseBtn.textContent = '⏸️'; sfx.bgMusic.play().catch(e=>e); tkState.lastFrameTime = performance.now(); }
         }
 
         function toggleFullscreen(e) {
@@ -1420,7 +1425,9 @@
             tkState.dialogueText = "";
             tkState.dialogueTimeLeft = 0;
             tkState.flashTimer = 0;
-            document.getElementById('tk-touch-prompt').style.display = 'none';
+            
+            let prmt = document.getElementById('tk-touch-prompt');
+            if(prmt) prmt.style.display = 'none';
             
             tkState = {
                 active: false, isPaused: false, inFlightPlan: true, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
@@ -1459,35 +1466,46 @@
             
             generateFlightPlanContext();
             
-            document.getElementById('fp-sector-title').textContent = "SECTOR " + playerProfile.currentLevel + " OF 5";
-            document.getElementById('tk-eject-btn').style.display = 'none';
-            document.getElementById('tk-drop-zone').style.display = 'none';
-            document.getElementById('tk-wind-pocket').style.display = 'none';
-            document.getElementById('tk-plane-img').src = playerPlaneSkin;
-            document.getElementById('plane-container').style.display = 'block';
+            let st = document.getElementById('fp-sector-title');
+            if (st) st.textContent = "SECTOR " + playerProfile.currentLevel + " OF 5";
+            
+            let eb = document.getElementById('tk-eject-btn');
+            if (eb) eb.style.display = 'none';
+            let dz = document.getElementById('tk-drop-zone');
+            if(dz) dz.style.display = 'none';
+            let wp = document.getElementById('tk-wind-pocket');
+            if(wp) wp.style.display = 'none';
+            
+            let pImg = document.getElementById('tk-plane-img');
+            if (pImg) pImg.src = playerPlaneSkin;
+            let pCon = document.getElementById('plane-container');
+            if(pCon) pCon.style.display = 'block';
             
             document.querySelectorAll('.tk-enemy').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tk-overtaker').forEach(el => el.style.display = 'none');
             
-            document.getElementById('tk-bird-flock').style.display = 'none';
-            document.getElementById('tk-mountain').style.display = 'none';
-            document.getElementById('tk-alert-overlay').className = '';
+            let bf = document.getElementById('tk-bird-flock');
+            if(bf) bf.style.display = 'none';
             
-            document.getElementById('tk-runway').style.transform = `translate3d(0, 0px, 0)`;
-            document.getElementById('tk-bg-city').style.transform = `translate3d(0, 0px, 0)`;
-            document.getElementById('tk-bg-sky').style.transform = `translate3d(0, 0px, 0)`;
-            document.getElementById('tk-fg-sky').style.transform = `translate3d(0, 0px, 0)`;
-            document.getElementById('tk-mountain').style.transform = `translate3d(0, 0px, 0)`;
-            document.getElementById('tk-sun').style.transform = `translate3d(0, 0px, 0)`;
-            document.getElementById('tk-threat-fog').style.transform = `translate3d(0, 0px, 0)`;
-            document.getElementById('camera-rig').style.transform = `scale(1)`;
+            let overlay = document.getElementById('tk-alert-overlay');
+            if(overlay) overlay.className = '';
+            
+            const resetEls = ['tk-runway', 'tk-bg-city', 'tk-bg-sky', 'tk-fg-sky', 'tk-mountain', 'tk-sun', 'tk-threat-fog'];
+            resetEls.forEach(id => {
+                let el = document.getElementById(id);
+                if (el) el.style.transform = `translate3d(0, 0px, 0)`;
+            });
+            let crig = document.getElementById('camera-rig');
+            if(crig) crig.style.transform = `scale(1)`;
 
             renderFlightPlanContext();
             updateFlightPlanUI();
 
             const fpOverlay = document.getElementById('tk-flight-plan-overlay');
-            fpOverlay.style.display = 'flex';
-            setTimeout(() => fpOverlay.classList.add('visible'), 50);
+            if(fpOverlay) {
+                fpOverlay.style.display = 'flex';
+                setTimeout(() => fpOverlay.classList.add('visible'), 50);
+            }
         }
 
         function authorizeFlight(e) {
@@ -1505,9 +1523,13 @@
             tkState.hasWindPocket = Math.random() * 100 < tkState.baseWindRisk;
 
             if (tkState.hasCargoMission) {
-                document.getElementById('tk-eject-btn').style.display = 'block';
-                document.getElementById('tk-eject-btn').style.opacity = 1;
-                document.getElementById('cargo-count').textContent = tkState.cargoCount;
+                let ej = document.getElementById('tk-eject-btn');
+                if (ej) {
+                    ej.style.display = 'block';
+                    ej.style.opacity = 1;
+                }
+                let cc = document.getElementById('cargo-count');
+                if (cc) cc.textContent = tkState.cargoCount;
             }
 
             document.getElementById('tk-flight-plan-overlay').classList.remove('visible');
@@ -1629,32 +1651,42 @@
             let isLandingApproach = (tkState.phase === 5 && tkState.altitude <= 70 && tkState.altitude > 0);
             let targetSpeedMod = isLandingApproach ? LANDING_SPEED : CRUISE_SPEED; let targetZoom = isLandingApproach ? 1.8 : 1.0;
             tkState.speedMod += (targetSpeedMod - tkState.speedMod) * 0.1; tkState.zoom += (targetZoom - tkState.zoom) * 0.05;
-            SPEED_MOD = tkState.speedMod; document.getElementById('camera-rig').style.transform = `scale(${tkState.zoom})`;
+            SPEED_MOD = tkState.speedMod; 
+            
+            let cRig = document.getElementById('camera-rig');
+            if(cRig) cRig.style.transform = `scale(${tkState.zoom})`;
 
             let guide = document.getElementById('landing-guide');
-            if (isLandingApproach) {
-                guide.style.opacity = 1; let isSafe = (tkState.pitch >= -5 && tkState.pitch <= 15);
-                let guideColor = isSafe ? '#2ecc71' : '#d71920';
-                guide.style.borderLeftColor = guideColor; guide.style.borderRightColor = guideColor; guide.querySelector('.guide-label').style.color = guideColor;
-            } else { guide.style.opacity = 0; }
+            if(guide) {
+                if (isLandingApproach) {
+                    guide.style.opacity = 1; let isSafe = (tkState.pitch >= -5 && tkState.pitch <= 15);
+                    let guideColor = isSafe ? '#2ecc71' : '#d71920';
+                    guide.style.borderLeftColor = guideColor; guide.style.borderRightColor = guideColor; guide.querySelector('.guide-label').style.color = guideColor;
+                } else { guide.style.opacity = 0; }
+            }
 
             if (tkState.timeOfDay === 'sunrise') {
-                const sun = document.getElementById('tk-sun'); const flareCont = document.getElementById('tk-flare-container'); const sunRect = sun.getBoundingClientRect();
-                let sx = sunRect.left + sunRect.width / 2; let sy = sunRect.top + sunRect.height / 2;
-                let cx = window.innerWidth / 2; let cy = window.innerHeight / 2; let dx = cx - sx; let dy = cy - sy;
-                document.getElementById('pf1').style.transform = `translate3d(${sx + dx * 1.4}px, ${sy + dy * 1.4}px, 0)`; document.getElementById('pf2').style.transform = `translate3d(${sx + dx * 0.6}px, ${sy + dy * 0.6}px, 0)`; document.getElementById('pf3').style.transform = `translate3d(${sx + dx * 1.8}px, ${sy + dy * 1.8}px, 0)`; document.getElementById('pf4').style.transform = `translate3d(${sx + dx * 2.2}px, ${sy + dy * 2.2}px, 0)`; flareCont.style.opacity = Math.max(0, Math.min(1, (window.innerHeight - 100 - sy) / 100));
+                const sun = document.getElementById('tk-sun'); const flareCont = document.getElementById('tk-flare-container'); 
+                if (sun && flareCont) {
+                    const sunRect = sun.getBoundingClientRect();
+                    let sx = sunRect.left + sunRect.width / 2; let sy = sunRect.top + sunRect.height / 2;
+                    let cx = window.innerWidth / 2; let cy = window.innerHeight / 2; let dx = cx - sx; let dy = cy - sy;
+                    document.getElementById('pf1').style.transform = `translate3d(${sx + dx * 1.4}px, ${sy + dy * 1.4}px, 0)`; document.getElementById('pf2').style.transform = `translate3d(${sx + dx * 0.6}px, ${sy + dy * 0.6}px, 0)`; document.getElementById('pf3').style.transform = `translate3d(${sx + dx * 1.8}px, ${sy + dy * 1.8}px, 0)`; document.getElementById('pf4').style.transform = `translate3d(${sx + dx * 2.2}px, ${sy + dy * 2.2}px, 0)`; flareCont.style.opacity = Math.max(0, Math.min(1, (window.innerHeight - 100 - sy) / 100));
+                }
             }
 
             const bubble = document.getElementById('dialogue-bubble');
-            if (tkState.dialogueTimeLeft > 0) { 
-                tkState.dialogueTimeLeft -= delta; 
-                if (bubble.innerHTML !== tkState.dialogueText) {
-                    bubble.innerHTML = tkState.dialogueText; 
+            if (bubble) {
+                if (tkState.dialogueTimeLeft > 0) { 
+                    tkState.dialogueTimeLeft -= delta; 
+                    if (bubble.innerHTML !== tkState.dialogueText) {
+                        bubble.innerHTML = tkState.dialogueText; 
+                    }
+                    bubble.style.opacity = 1; 
+                } else { 
+                    bubble.style.opacity = 0; 
+                    tkState.dialogueCritical = false;
                 }
-                bubble.style.opacity = 1; 
-            } else { 
-                bubble.style.opacity = 0; 
-                tkState.dialogueCritical = false;
             }
 
             // SPEED ENGINE WITH WIND POCKET
@@ -1675,29 +1707,34 @@
             if (tkState.hasWindPocket && !tkState.windPocketSpawned && tkState.phase >= 2 && tkState.phaseTimer > 1000) {
                 tkState.windPocketSpawned = true; 
                 tkState.windPocketX = window.innerWidth + 500;
-                document.getElementById('tk-wind-pocket').style.display = 'block';
+                let wp = document.getElementById('tk-wind-pocket');
+                if(wp) wp.style.display = 'block';
             }
             if (tkState.windPocketSpawned) {
                 tkState.windPocketX -= (displaySpeed * 0.18 * SPEED_MOD * 0.4); 
-                document.getElementById('tk-wind-pocket').style.transform = `translate3d(${tkState.windPocketX}px, ${-(300 - tkState.cameraY)}px, 0)`;
+                let wp = document.getElementById('tk-wind-pocket');
+                if(wp) wp.style.transform = `translate3d(${tkState.windPocketX}px, ${-(300 - tkState.cameraY)}px, 0)`;
 
-                let planeRect = document.getElementById('tk-plane-img').getBoundingClientRect();
-                let windRect = document.getElementById('tk-wind-pocket').getBoundingClientRect();
-                
-                let hit = !(planeRect.right < windRect.left + 20 || 
-                            planeRect.left > windRect.right - 20 || 
-                            planeRect.bottom < windRect.top + 20 || 
-                            planeRect.top > windRect.bottom - 20);
+                let planeImg = document.getElementById('tk-plane-img');
+                if(planeImg && wp) {
+                    let planeRect = planeImg.getBoundingClientRect();
+                    let windRect = wp.getBoundingClientRect();
+                    
+                    let hit = !(planeRect.right < windRect.left + 20 || 
+                                planeRect.left > windRect.right - 20 || 
+                                planeRect.bottom < windRect.top + 20 || 
+                                planeRect.top > windRect.bottom - 20);
 
-                if (!tkState.windPocketTriggered && hit) {
-                    tkState.windPocketTriggered = true;
-                    if (playerProfile.upgrades.windShield) {
-                        logEvent("WIND SHIELD ENGAGED", "🛡️", "BLOCKED", "var(--fo-blue)");
-                        setDialogue("<span class='success-text'>WIND SHIELD ENGAGED!</span>", 2000);
-                        sfx.playDing(1.2);
-                    } else {
-                        tkState.windPocketTimer = 2000; 
-                        logEvent("WIND SHEAR", "💨", "WIND", "var(--gauge-orange)"); setDialogue("<span class='alert-text'>WIND SHEAR!</span>", 2000);
+                    if (!tkState.windPocketTriggered && hit) {
+                        tkState.windPocketTriggered = true;
+                        if (playerProfile.upgrades.windShield) {
+                            logEvent("WIND SHIELD ENGAGED", "🛡️", "BLOCKED", "var(--fo-blue)");
+                            setDialogue("<span class='success-text'>WIND SHIELD ENGAGED!</span>", 2000);
+                            sfx.playDing(1.2);
+                        } else {
+                            tkState.windPocketTimer = 2000; 
+                            logEvent("WIND SHEAR", "💨", "WIND", "var(--gauge-orange)"); setDialogue("<span class='alert-text'>WIND SHEAR!</span>", 2000);
+                        }
                     }
                 }
             }
@@ -1709,7 +1746,10 @@
 
             let spdHue = 0;
             if (tkState.phase < 2) spdHue = (displaySpeed >= 150) ? 120 : 0; else if (tkState.phase === 5) spdHue = (displaySpeed <= 160) ? 120 : 0; else spdHue = (displaySpeed > 130) ? 120 : 0;
-            document.getElementById('hud-spd').style.color = `hsl(${spdHue}, 85%, 55%)`; document.getElementById('hud-spd-val').textContent = Math.floor(displaySpeed);
+            let hudSpd = document.getElementById('hud-spd');
+            let hudSpdVal = document.getElementById('hud-spd-val');
+            if(hudSpd) hudSpd.style.color = `hsl(${spdHue}, 85%, 55%)`; 
+            if(hudSpdVal) hudSpdVal.textContent = Math.floor(displaySpeed);
 
             // PITCH & PHYSICS WITH AP CRITICAL FAILURE
             if (tkState.phase === 0 && displaySpeed < 150) { tkState.pitch = 0; tkState.pitchVelocity = 0; }
@@ -1785,10 +1825,13 @@
                 if(tkState.autoPilot) toggleAutoPilot();
             }
 
-            if (isStalling || isTooFast || isTooHigh || tkState.flashTimer > 0) {
-                document.getElementById('tk-alert-overlay').className = 'flashing';
-            } else {
-                document.getElementById('tk-alert-overlay').className = '';
+            let tkOverlay = document.getElementById('tk-alert-overlay');
+            if(tkOverlay) {
+                if (isStalling || isTooFast || isTooHigh || (tkState.dialogueCritical && tkState.dialogueTimeLeft > 0) || tkState.flashTimer > 0) {
+                    tkOverlay.className = 'flashing';
+                } else {
+                    tkOverlay.className = '';
+                }
             }
 
             tkState.vSpeed += (targetVSpeed - tkState.vSpeed) * 0.12;
@@ -1806,24 +1849,39 @@
             }
 
             // HUD UPDATES
-            document.getElementById('hud-alt-val').textContent = Math.floor(tkState.altitude) + 'm';
-            document.getElementById('hud-pitch-val').innerHTML = Math.floor(displayPitch) + '&deg;';
+            let hAltVal = document.getElementById('hud-alt-val');
+            let hPitchVal = document.getElementById('hud-pitch-val');
+            let hPitch = document.getElementById('hud-pitch');
+            
+            if(hAltVal) hAltVal.textContent = Math.floor(tkState.altitude) + 'm';
+            if(hPitchVal) hPitchVal.innerHTML = Math.floor(displayPitch) + '&deg;';
             let center = (tkState.currTargetMin + tkState.currTargetMax) / 2; let error = Math.abs(displayPitch - center);
             let p_hue = inHUDZone ? 120 : Math.max(0, 120 - error * 9);
             if (isStalling || tkState.gyroFailed) p_hue = 0;
-            let dynColor = `hsl(${p_hue}, 85%, 55%)`; hudRing.style.borderColor = dynColor; document.getElementById('hud-pitch').style.color = dynColor;
+            let dynColor = `hsl(${p_hue}, 85%, 55%)`; 
+            if(hudRing) hudRing.style.borderColor = dynColor; 
+            if(hPitch) hPitch.style.color = dynColor;
             
             const fundsValEl = document.getElementById('funds-val');
             const altHud = document.getElementById('hud-alt');
+            const scoreHud = document.getElementById('tk-score-display');
             
-            fundsValEl.textContent = Math.floor(playerProfile.points);
+            if(fundsValEl) fundsValEl.textContent = Math.floor(playerProfile.points);
 
             if (isTooHigh) {
-                altHud.style.color = 'var(--brand-red)';
-                fundsValEl.style.color = 'var(--brand-red)';
+                if(altHud) altHud.style.color = 'var(--brand-red)';
+                if(scoreHud) {
+                    scoreHud.style.borderColor = 'var(--brand-red)';
+                    scoreHud.style.boxShadow = '0 0 10px var(--brand-red)';
+                }
+                if(fundsValEl) fundsValEl.style.color = 'var(--brand-red)';
             } else {
-                altHud.style.color = '#fff';
-                fundsValEl.style.color = 'var(--brand-gold)';
+                if(altHud) altHud.style.color = '#fff';
+                if(scoreHud) {
+                    scoreHud.style.borderColor = 'var(--brand-gold)';
+                    scoreHud.style.boxShadow = 'none';
+                }
+                if(fundsValEl) fundsValEl.style.color = 'var(--brand-gold)';
             }
 
             if (inHUDZone && tkState.phase > 0 && tkState.phase < 6) {
@@ -1854,7 +1912,13 @@
                     const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
                 }
             }
-            if (tkState.gearBroken && document.getElementById('tk-plane-img').src.indexOf('nolandinggear') === -1) { document.getElementById('tk-plane-img').src = playerPlaneSkin.replace('.png', '-nolandinggear.png'); }
+            if (tkState.gearBroken) { 
+                let pImg = document.getElementById('tk-plane-img');
+                if(pImg && pImg.src.indexOf('nolandinggear') === -1) {
+                    pImg.src = playerPlaneSkin.replace('.png', '-nolandinggear.png'); 
+                }
+            }
+            
             if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { tkState.phase = 2; tkState.phaseTimer = 0; tkState.currTargetMin = -3; tkState.currTargetMax = 3; setDialogue("<span class='capt-text'>LEVEL OFF</span>", 4000); }
 
             // CARGO MISSION LOGIC 
@@ -1868,12 +1932,14 @@
                     setDialogue("<span style='color:var(--brand-gold); font-weight:bold;'>APPROACHING DROP ZONE!</span>", 3000);
                     tkState.dropZoneSpawned = true; 
                     tkState.dropZoneX = window.innerWidth + 2000;
-                    document.getElementById('tk-drop-zone').style.display = 'block';
+                    let dz = document.getElementById('tk-drop-zone');
+                    if(dz) dz.style.display = 'block';
                 }
                 
                 if (tkState.dropZoneSpawned) {
                     tkState.dropZoneX -= groundSpeed;
-                    document.getElementById('tk-drop-zone').style.transform = `translate3d(${tkState.dropZoneX}px, 0, 0)`;
+                    let dz = document.getElementById('tk-drop-zone');
+                    if(dz) dz.style.transform = `translate3d(${tkState.dropZoneX}px, 0, 0)`;
 
                     let pxPerSec = groundSpeed * 60; 
                     let planeX = window.innerWidth * 0.3; 
@@ -1895,10 +1961,11 @@
                 }
             }
 
+            // High-Performance Cargo Physics Loop (Fixed to pure math object)
             for (let i = tkState.activeCargo.length - 1; i >= 0; i--) {
                 let pkg = tkState.activeCargo[i];
-                
                 let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
+                
                 pkg.vx -= 0.2; 
                 if (pkg.vx < -groundSpeed) pkg.vx = -groundSpeed; 
                 pkg.x += pkg.vx; 
@@ -1963,43 +2030,53 @@
                         o.warning = false;
                         o.active = true;
                         o.x = -250;
-                        document.getElementById('overtaker-' + i).style.display = 'block';
+                        let el = document.getElementById('overtaker-' + i);
+                        if(el) el.style.display = 'block';
                         if (rw) rw.style.display = 'none';
                     }
                 } else if (o.active) {
                     if (rw) rw.style.display = 'none';
                     o.x += o.spd; 
                     let el = document.getElementById('overtaker-' + i); 
-                    el.style.transform = `translate3d(${o.x}px, ${-(o.alt - tkState.cameraY)}px, 0)`;
-                    const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
-                    const gr = el.getBoundingClientRect();
-                    if (!( (pr.right - 12) < (gr.left + 15) || (pr.left + 12) > (gr.right - 15) || (pr.bottom - 12) < (gr.top + 25) || (pr.top + 25) > (gr.bottom - 10) )) { overtakerCollision = true; }
-                    if (o.x > window.innerWidth + 200) { o.active = false; el.style.display = 'none'; }
+                    if(el) {
+                        el.style.transform = `translate3d(${o.x}px, ${-(o.alt - tkState.cameraY)}px, 0)`;
+                        const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); 
+                        const gr = el.getBoundingClientRect();
+                        if (!( (pr.right - 12) < (gr.left + 15) || (pr.left + 12) > (gr.right - 15) || (pr.bottom - 12) < (gr.top + 25) || (pr.top + 25) > (gr.bottom - 10) )) { overtakerCollision = true; }
+                        if (o.x > window.innerWidth + 200) { o.active = false; el.style.display = 'none'; }
+                    }
                 } else {
                     if (rw) rw.style.display = 'none';
                 }
             });
             if (overtakerCollision) { return triggerCrash("MID-AIR CRASH!"); }
 
+
             // Birds (Fixed to PX)
             if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 250 && tkState.phase < 4 && tkState.birdX > window.innerWidth && Math.random() < 0.005) {
-                tkState.birdActive = true; tkState.birdAlt = Math.max(20, tkState.altitude + (Math.random() * 60 - 30)); logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)"); document.getElementById('tk-bird-flock').style.display = 'block'; setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 3000);
+                tkState.birdActive = true; tkState.birdAlt = Math.max(20, tkState.altitude + (Math.random() * 60 - 30)); logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)"); 
+                let bFlock = document.getElementById('tk-bird-flock');
+                if(bFlock) bFlock.style.display = 'block'; 
+                setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 3000);
             }
             if (tkState.birdActive) {
-                tkState.birdX -= (20 * SPEED_MOD); let bEl = document.getElementById('tk-bird-flock'); bEl.style.transform = `translate3d(${tkState.birdX}px, ${-(tkState.birdAlt - tkState.cameraY)}px, 0)`;
-                const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); const br = bEl.getBoundingClientRect();
-                if (!( (pr.right - 10) < (br.left + 10) || (pr.left + 10) > (br.right - 10) || (pr.bottom - 10) < (br.top + 10) || (pr.top + 25) > (br.bottom - 10) )) { 
-                    if (playerProfile.upgrades.bird && !tkState.engineFailure) {
-                        tkState.birdActive = false; document.getElementById('tk-bird-flock').style.display = 'none';
-                        tkState.engineFailure = true;
-                        logEvent("BIRD SHIELD TRIGGERED", "🛡️", "SHIELD", "var(--fo-blue)");
-                        setDialogue("<span class='alert-text'>BIRD STRIKE! ENGINES DAMAGED!</span>", 4000);
-                        tkState.flashTimer = 800; sfx.playExplosion(); 
-                    } else {
-                        return triggerCrash("BIRD STRIKE!");
+                tkState.birdX -= (20 * SPEED_MOD); let bEl = document.getElementById('tk-bird-flock'); 
+                if(bEl) {
+                    bEl.style.transform = `translate3d(${tkState.birdX}px, ${-(tkState.birdAlt - tkState.cameraY)}px, 0)`;
+                    const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); const br = bEl.getBoundingClientRect();
+                    if (!( (pr.right - 10) < (br.left + 10) || (pr.left + 10) > (br.right - 10) || (pr.bottom - 10) < (br.top + 10) || (pr.top + 25) > (br.bottom - 10) )) { 
+                        if (playerProfile.upgrades.bird && !tkState.engineFailure) {
+                            tkState.birdActive = false; bEl.style.display = 'none';
+                            tkState.engineFailure = true;
+                            logEvent("BIRD SHIELD TRIGGERED", "🛡️", "SHIELD", "var(--fo-blue)");
+                            setDialogue("<span class='alert-text'>BIRD STRIKE! ENGINES DAMAGED!</span>", 4000);
+                            tkState.flashTimer = 800; sfx.playExplosion(); 
+                        } else {
+                            return triggerCrash("BIRD STRIKE!");
+                        }
                     }
+                    if (tkState.birdX < -100) { tkState.birdActive = false; bEl.style.display = 'none'; }
                 }
-                if (tkState.birdX < -100) { tkState.birdActive = false; bEl.style.display = 'none'; }
             }
 
             // Random Engine Fail
@@ -2041,7 +2118,8 @@
                             e.x = window.innerWidth + 200 + (Math.random() * 150); 
                             e.alt = proposedAlt; 
                             e.spd = (9.6 + Math.random() * 9.6) * SPEED_MOD; // 20% slower
-                            document.getElementById('enemy-' + slotIdx).style.display = 'block'; 
+                            let el = document.getElementById('enemy-' + slotIdx);
+                            if(el) el.style.display = 'block'; 
                         }
                     } 
                 }
@@ -2049,9 +2127,12 @@
                 let swarmCollision = false; const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
                 tkState.enemies.forEach((e, i) => {
                     if (e.active) {
-                        e.x -= e.spd; let el = document.getElementById('enemy-' + i); el.style.transform = `translate3d(${e.x}px, ${-(e.alt - tkState.cameraY)}px, 0)`;
-                        const er = el.getBoundingClientRect(); if (!( (pr.right - 12) < (er.left + 15) || (pr.left + 12) > (er.right - 15) || (pr.bottom - 12) < (er.top + 25) || (pr.top + 25) > (er.bottom - 10) )) { swarmCollision = true; }
-                        if (e.x < -300) { e.active = false; el.style.display = 'none'; }
+                        e.x -= e.spd; let el = document.getElementById('enemy-' + i); 
+                        if(el) {
+                            el.style.transform = `translate3d(${e.x}px, ${-(e.alt - tkState.cameraY)}px, 0)`;
+                            const er = el.getBoundingClientRect(); if (!( (pr.right - 12) < (er.left + 15) || (pr.left + 12) > (er.right - 15) || (pr.bottom - 12) < (er.top + 25) || (pr.top + 25) > (er.bottom - 10) )) { swarmCollision = true; }
+                            if (e.x < -300) { e.active = false; el.style.display = 'none'; }
+                        }
                     }
                 });
                 if (swarmCollision) { return triggerCrash("MID-AIR CRASH!"); }
@@ -2068,7 +2149,8 @@
                     setDialogue("<span class='success-text'>GEAR DOWN. LANDING SECURE!</span>", 5000);
                 } else if (tkState.hasGearFailure) {
                     tkState.gearBroken = true; sfx.playExplosion(); logEvent("GEAR LOST", "🛬", "NO GEAR", "var(--brand-red)"); setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 5000); const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
-                    document.getElementById('tk-plane-img').src = playerPlaneSkin.replace('.png', '-nolandinggear.png');
+                    let pi = document.getElementById('tk-plane-img');
+                    if(pi) pi.src = playerPlaneSkin.replace('.png', '-nolandinggear.png');
                 } else {
                     setDialogue("<span class='alert-text'>DESCEND FOR LANDING!</span>", 5000);
                 }
@@ -2080,40 +2162,64 @@
 
             // Camera Parallax Apply
             tkState.bgX_sky -= (displaySpeed * 0.006 * SPEED_MOD); 
-            tkState.bgX_fgSky -= (displaySpeed * 0.05 * SPEED_MOD); 
+            tkState.bgX_fgSky -= (displaySpeed * 0.05 * SPEED_MOD); // Foreground clouds drastically sped up
             tkState.bgX_city -= (displaySpeed * 0.03 * SPEED_MOD); 
             tkState.bgX_runway -= (displaySpeed * 0.18 * SPEED_MOD);
             
-            document.getElementById('tk-bg-sky').style.backgroundPositionX = `${tkState.bgX_sky}px`; 
-            document.getElementById('tk-fg-sky').style.backgroundPositionX = `${tkState.bgX_fgSky}px`; 
-            document.getElementById('tk-bg-city').style.backgroundPositionX = `${tkState.bgX_city}px`; 
-            document.getElementById('tk-runway-stripes').style.backgroundPositionX = `${tkState.bgX_runway}px`;
+            let skyBg = document.getElementById('tk-bg-sky');
+            let fgSky = document.getElementById('tk-fg-sky');
+            let cityBg = document.getElementById('tk-bg-city');
+            let rwStr = document.getElementById('tk-runway-stripes');
+            
+            if(skyBg) skyBg.style.backgroundPositionX = `${tkState.bgX_sky}px`; 
+            if(fgSky) fgSky.style.backgroundPositionX = `${tkState.bgX_fgSky}px`; 
+            if(cityBg) cityBg.style.backgroundPositionX = `${tkState.bgX_city}px`; 
+            if(rwStr) rwStr.style.backgroundPositionX = `${tkState.bgX_runway}px`;
             
             if (tkState.weather === 'fog') { 
                 tkState.bgX_threatFog -= (displaySpeed * 0.025 * SPEED_MOD); 
-                document.getElementById('tk-threat-fog').style.backgroundPositionX = `${tkState.bgX_threatFog}px`; 
+                let tFog = document.getElementById('tk-threat-fog');
+                if(tFog) tFog.style.backgroundPositionX = `${tkState.bgX_threatFog}px`; 
             }
 
             let maxVisualAltitude = Math.min(60, window.innerHeight * 0.15); let baseTargetCam = Math.max(0, tkState.altitude - maxVisualAltitude); if (isLandingApproach) baseTargetCam -= 20; tkState.cameraY += (baseTargetCam - tkState.cameraY) * 0.15;
             
-            document.getElementById('tk-runway').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; 
-            document.getElementById('tk-bg-city').style.transform = `translate3d(0, ${tkState.cameraY * 0.7}px, 0)`; 
-            document.getElementById('tk-bg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`; 
-            document.getElementById('tk-fg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.3}px, 0)`; 
-            document.getElementById('tk-mountain').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; 
-            document.getElementById('tk-sun').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`;
-            if (tkState.weather === 'fog') { document.getElementById('tk-threat-fog').style.transform = `translate3d(0, ${tkState.cameraY * 0.45}px, 0)`; }
+            let rw = document.getElementById('tk-runway');
+            let tkMnt = document.getElementById('tk-mountain');
+            let tkSun = document.getElementById('tk-sun');
+            
+            if(rw) rw.style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; 
+            if(cityBg) cityBg.style.transform = `translate3d(0, ${tkState.cameraY * 0.7}px, 0)`; 
+            if(skyBg) skyBg.style.transform = `translate3d(0, ${tkState.cameraY * 0.4}px, 0)`; 
+            
+            // Bring down foreground clouds drastically near 1000 altitude
+            let fgCloudDrop = Math.max(0, (tkState.altitude - 600) * 1.5);
+            if(fgSky) fgSky.style.transform = `translate3d(0, ${tkState.cameraY * 0.85 + fgCloudDrop}px, 0)`; 
+            
+            if(tkMnt) tkMnt.style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; 
+            if(tkSun) tkSun.style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`;
+            if (tkState.weather === 'fog') { 
+                let tFog = document.getElementById('tk-threat-fog');
+                if(tFog) tFog.style.transform = `translate3d(0, ${tkState.cameraY * 0.45}px, 0)`; 
+            }
 
             let planeY = -(tkState.altitude - tkState.cameraY);
-            document.getElementById('plane-container').style.transform = `translate3d(-50%, ${planeY}px, 0)`;
-            document.getElementById('plane-rotate-group').style.transform = `rotate(${-tkState.pitch}deg)`;
-            document.getElementById('plane-hud').style.transform = `translate3d(-50%, -50%, 0) rotate(${-displayPitch}deg)`;
+            let pCon = document.getElementById('plane-container');
+            let pRot = document.getElementById('plane-rotate-group');
+            let pHud = document.getElementById('plane-hud');
+            
+            if(pCon) pCon.style.transform = `translate3d(-50%, ${planeY}px, 0)`;
+            if(pRot) pRot.style.transform = `rotate(${-tkState.pitch}deg)`;
+            if(pHud) pHud.style.transform = `translate3d(-50%, -50%, 0) rotate(${-displayPitch}deg)`;
 
             // EFFECTS
-            const pr = document.getElementById('tk-plane-img').getBoundingClientRect();
-            if (tkState.phase === 5 && Math.random() > 0.4) spawnSpark(pr.left + pr.width/2 - 10, pr.bottom - 15, true);
-            if (tkState.phase === 6 && displaySpeed > 0) { let sparkCount = Math.floor(displaySpeed / 40); for(let i=0; i<sparkCount; i++) spawnSpark(pr.left + pr.width/2 + (Math.random()*40 - 20), pr.bottom - 5, false); if (Math.random() > 0.3) spawnSpark(pr.left + pr.width/2 + (Math.random()*30), pr.bottom - 5, false); }
-            if (tkState.engineFailure && tkState.phase > 0 && tkState.phase < 6 && Math.random() > 0.3) { let cx = pr.left + pr.width / 2; let cy = pr.top + pr.height / 2; let rad = -tkState.pitch * (Math.PI / 180); spawnSmoke(cx + Math.cos(rad) * (pr.width / 2 - 10), cy + Math.sin(rad) * (pr.width / 2 - 10)); }
+            let tkPImg = document.getElementById('tk-plane-img');
+            if (tkPImg) {
+                const pr = tkPImg.getBoundingClientRect();
+                if (tkState.phase === 5 && Math.random() > 0.4) spawnSpark(pr.left + pr.width/2 - 10, pr.bottom - 15, true);
+                if (tkState.phase === 6 && displaySpeed > 0) { let sparkCount = Math.floor(displaySpeed / 40); for(let i=0; i<sparkCount; i++) spawnSpark(pr.left + pr.width/2 + (Math.random()*40 - 20), pr.bottom - 5, false); if (Math.random() > 0.3) spawnSpark(pr.left + pr.width/2 + (Math.random()*30), pr.bottom - 5, false); }
+                if (tkState.engineFailure && tkState.phase > 0 && tkState.phase < 6 && Math.random() > 0.3) { let cx = pr.left + pr.width / 2; let cy = pr.top + pr.height / 2; let rad = -tkState.pitch * (Math.PI / 180); spawnSmoke(cx + Math.cos(rad) * (pr.width / 2 - 10), cy + Math.sin(rad) * (pr.width / 2 - 10)); }
+            }
 
             tkState.frameId = requestAnimationFrame(gameLoop);
         }

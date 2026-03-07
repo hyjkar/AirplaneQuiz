@@ -353,7 +353,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v17.0 - Action Arcade Edition</div>
+        <div id="tk-version">v18.0 - High Speed Arcade Edition</div>
         
         <div id="nvg-overlay"></div>
         <div id="tk-alert-overlay"></div>
@@ -646,17 +646,15 @@
     </div>
 
     <script>
-        const CRUISE_SPEED = 0.5625; // Universal Top Speed 
-        const LANDING_SPEED = 0.25;  // Universal Slow-Mo Speed
+        const CRUISE_SPEED = 0.5625; 
+        const LANDING_SPEED = 0.25;  
         let SPEED_MOD = CRUISE_SPEED; 
         
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // Wizard navigation state
         let currentWizPage = 0;
 
-        // --- PROFILE PERSISTENCE (V58) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -696,7 +694,6 @@
         }
         loadProfile();
 
-        // --- AUDIO ENGINE ---
         const sfx = {
             ctx: null, alarmInterval: null, isAlarming: false, bgMusic: new Audio('hangar5-music.mp3'),
             init: function() {
@@ -774,7 +771,7 @@
         });
         window.addEventListener("pagehide", () => { sfx.stopAll(); if (sfx.ctx) sfx.ctx.close(); });
 
-        let endScreenAnimInterval = null; let endScreenTimeouts = [];
+        let endScreenAnimInterval = null; 
 
         let tkState = {
             active: false, isPaused: false, inFlightPlan: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
@@ -818,7 +815,6 @@
             }, 300);
         }
 
-        // --- HORIZONTAL MENU WIZARD LOGIC ---
         function navWizard(dir) {
             sfx.playDing(1.2);
             currentWizPage += dir;
@@ -918,7 +914,7 @@
                 }
             });
             
-            tkState.crashAnimDone = true; // Prevent re-animation on simple refreshes
+            tkState.crashAnimDone = true; 
 
             // Skin Update
             let skinPreview = document.getElementById('menu-plane-preview');
@@ -952,7 +948,6 @@
             }
         }
 
-        // New explicit skin selector
         function equipSkin(type, e) {
             if(e) { e.preventDefault(); e.stopPropagation(); }
             if(document.activeElement) document.activeElement.blur();
@@ -1010,15 +1005,14 @@
             if (playerProfile.points >= cost) {
                 if ((type === 'bird' || type === 'windshield' || type === 'nvg') && !playerProfile.upgrades[type]) {
                     playerProfile.points -= cost; playerProfile.upgrades[type] = true; 
-                    if(playerProfile.lostDefenses) playerProfile.lostDefenses[type] = false; // clear destroyed tag
+                    if(playerProfile.lostDefenses) playerProfile.lostDefenses[type] = false; 
                     sfx.playDing(1.5);
                 } else if (type !== 'bird' && type !== 'windshield' && type !== 'nvg' && playerProfile.upgrades[type] < 4) {
                     playerProfile.points -= cost; playerProfile.upgrades[type]++; 
-                    if(playerProfile.crashDamage) playerProfile.crashDamage[type] = false; // clear DMG tag
+                    if(playerProfile.crashDamage) playerProfile.crashDamage[type] = false; 
                     sfx.playDing(1.5);
                 } else { sfx.playExplosion(); return; }
                 
-                // If everything is fully repaired, remove the top banner
                 let needsRepair = false;
                 ['gear', 'engine', 'gyro', 'ap'].forEach(k => { if(playerProfile.crashDamage && playerProfile.crashDamage[k] && playerProfile.upgrades[k] < 4) needsRepair = true; });
                 ['bird', 'windShield', 'nvg'].forEach(k => { if(playerProfile.lostDefenses && playerProfile.lostDefenses[k] && !playerProfile.upgrades[k]) needsRepair = true; });
@@ -1188,7 +1182,6 @@
             let tv = document.getElementById('takeoff-viewport');
             if(tv) tv.appendChild(p);
             
-            // Push purely mathematical physics object
             tkState.activeCargo.push({ el: p, x: planeX, y: pr.bottom, vx: 0, vy: 0 });
         }
 
@@ -1228,7 +1221,6 @@
             sfx.playExplosion(); 
         }
 
-        // MASSIVE SPECTACLE CONDITION SCORING
         function getConditionScore() {
             let condScore = 0;
             condScore += playerProfile.upgrades.gear * 10000;
@@ -1438,7 +1430,6 @@
             
             let totalScore = Math.max(0, Math.floor((finalScore - stallPenalty + landingScoreBonus) * trafficMult));
             
-            // STRICT CRASH PUNISHMENT -> 0 Points
             if (!isSuccess) {
                 finalScore = 0; stallPenalty = 0; landingScoreBonus = 0; totalScore = 0;
             } else {
@@ -1560,7 +1551,6 @@
             logEvent(`CRASH: ${reasonText}`, "❌", "CRASH", "var(--brand-red)");
             setDialogue("<span class='alert-text'>" + reasonText + "</span>", 4500);
             
-            // Apply Severe Penalty: Remove all bonus defenses completely
             playerProfile.points = Math.max(0, playerProfile.points - 500);
             
             playerProfile.lostDefenses = {
@@ -1575,7 +1565,6 @@
             
             playerProfile.crashDamage = {};
             
-            // Downgrade ALL 4 mechanical components by exactly 1 step
             let upgKeys = ['gear', 'engine', 'gyro', 'ap'];
             for(let i=0; i<upgKeys.length; i++) {
                 let k = upgKeys[i];
@@ -1586,7 +1575,7 @@
             }
             
             playerProfile.justCrashed = true;
-            tkState.crashAnimDone = false; // prime animation for the menu
+            tkState.crashAnimDone = false; 
             saveProfile();
             setTimeout(() => { showEndScreen(Math.floor(tkState.score), false); tkState.canRestart = true; }, 2500); 
         }
@@ -1598,7 +1587,6 @@
             let weaRoll = Math.random();
             tkState.weather = weaRoll > 0.75 ? 'fog' : (weaRoll > 0.5 ? 'snow' : (weaRoll > 0.25 ? 'rain' : 'clear'));
             
-            // NEVER allow Night or Fog on Level 1
             if (playerProfile.currentLevel === 1) {
                 if (tkState.timeOfDay === 'night') tkState.timeOfDay = 'day';
                 if (tkState.weather === 'fog') tkState.weather = 'clear';
@@ -1751,7 +1739,6 @@
             renderFlightPlanContext();
             updateFlightPlanUI();
             
-            // Reset Wizard to Page 0
             currentWizPage = 0;
             navWizard(0);
 
@@ -1768,7 +1755,7 @@
             
             tkState.apState = Math.random() * 100 < failMap[playerProfile.upgrades.ap] ? (Math.random() < 0.5 ? 1 : 2) : 0;
             tkState.hasGearFailure = Math.random() * 100 < failMap[playerProfile.upgrades.gear];
-            if (tkState.hasGearFailure) tkState.gearBreakAlt = Math.random() * 50 + 50; // Break early!
+            if (tkState.hasGearFailure) tkState.gearBreakAlt = Math.random() * 50 + 50;
             
             tkState.engineFailure = false;
             tkState.hasEngineFailureScenario = Math.random() * 100 < failMap[playerProfile.upgrades.engine];
@@ -1786,7 +1773,6 @@
                 if (cc) cc.textContent = tkState.cargoCount;
             }
             
-            // Clear crash status on successful authorization
             playerProfile.justCrashed = false;
             playerProfile.lostDefenses = null;
             playerProfile.crashDamage = {};
@@ -1800,7 +1786,6 @@
                 tkState.inFlightPlan = false;
                 tkState.active = true;
                 
-                // Automatic Night Vision Execution (NIGHT ONLY)
                 if (playerProfile.upgrades.nvg && tkState.timeOfDay === 'night') {
                     let tv = document.getElementById('takeoff-viewport');
                     if(tv) tv.classList.add('nvg-mode');
@@ -2030,7 +2015,7 @@
             }
 
             let spdHue = 0;
-            if (tkState.phase < 3) spdHue = (displaySpeed >= 150) ? 120 : 0; else if (tkState.phase === 5) spdHue = (displaySpeed <= 160) ? 120 : 0; else spdHue = (displaySpeed > 130) ? 120 : 0;
+            if (tkState.phase < 2) spdHue = (displaySpeed >= 150) ? 120 : 0; else if (tkState.phase === 5) spdHue = (displaySpeed <= 160) ? 120 : 0; else spdHue = (displaySpeed > 130) ? 120 : 0;
             let hudSpd = document.getElementById('hud-spd');
             let hudSpdVal = document.getElementById('hud-spd-val');
             if(hudSpd) hudSpd.style.color = `hsl(${spdHue}, 85%, 55%)`; 
@@ -2053,7 +2038,7 @@
             tkState.hudPitchVelocity += (tkState.pitch - tkState.hudPitch) * 0.1; tkState.hudPitchVelocity *= 0.8; tkState.hudPitch += tkState.hudPitchVelocity;
             
             // GYROSCOPE FAILURE
-            if (tkState.hasGyroFailure && !tkState.gyroFailed && tkState.phase >= 1 && Math.random() < 0.001) {
+            if (tkState.hasGyroFailure && !tkState.gyroFailed && tkState.phase >= 1 && Math.random() < 0.003) {
                 tkState.gyroFailed = true; logEvent("GYRO FAILURE", "🧭", "GYRO", "var(--brand-red)"); setDialogue("<span class='alert-text'>GYROSCOPE FAILURE!</span>", 4000);
             }
             let displayPitch = tkState.hudPitch;
@@ -2368,8 +2353,8 @@
             if (overtakerCollision) { return triggerCrash("MID-AIR CRASH!"); }
 
 
-            // Birds (Fixed to PX)
-            if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 250 && tkState.phase === 3 && tkState.birdX > window.innerWidth && Math.random() < 0.005) {
+            // Birds (Trigger reduced to 100m so it fits into the fast arcade loop)
+            if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 100 && tkState.phase === 3 && tkState.birdX > window.innerWidth && Math.random() < 0.01) {
                 tkState.birdActive = true; tkState.birdAlt = Math.max(20, tkState.altitude + (Math.random() * 60 - 30)); logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)"); 
                 let bFlock = document.getElementById('tk-bird-flock');
                 if(bFlock) bFlock.style.display = 'block'; 

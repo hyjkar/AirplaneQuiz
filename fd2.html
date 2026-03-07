@@ -175,12 +175,13 @@
 
         #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform; pointer-events: none;}
         #tk-bird-flock { position: absolute; bottom: 65px; left: 0; width: 40px; height: 30px; z-index: 10; display: none; pointer-events: none; will-change: transform; }
-        .bird { position: absolute; width: 4px; height: 4px; background: #111; border-radius: 50%; box-shadow: 12px 6px #111, -8px 10px #111, 16px 14px #111, 6px -4px #111; animation: flap 0.3s infinite alternate; }
+        .bird { position: absolute; width: 4px; height: 4px; background: #111; box-shadow: 12px 6px #111, -8px 10px #111, 16px 14px #111, 6px -4px #111; animation: flap 0.3s infinite alternate; }
 
-        .pixel-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 1px; left: 0; top: 0; will-change: transform, opacity; }
-        .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
-        .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
-        .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
+        /* ALL PARTICLES SQUARED */
+        .pixel-particle { position: absolute; z-index: 100; pointer-events: none; left: 0; top: 0; will-change: transform, opacity; }
+        .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; left: 0; top: 0; will-change: transform, opacity; }
+        .smoke-particle { position: absolute; z-index: 100; pointer-events: none; left: 0; top: 0; will-change: transform, opacity; }
+        .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; left: 0; top: 0; will-change: transform, opacity; }
         
         .cargo-package { 
             position: absolute; z-index: 15; width: 24px; height: 24px; left: 0; top: 0; 
@@ -353,7 +354,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v18.0 - High Speed Arcade Edition</div>
+        <div id="tk-version">v18.2 - Continuous Music & Square Particles</div>
         
         <div id="nvg-overlay"></div>
         <div id="tk-alert-overlay"></div>
@@ -612,33 +613,51 @@
         </div>
 
         <div id="leaderboard-overlay">
-            <div class="end-panel-classic visible" style="pointer-events: auto;">
-                <div class="end-title" style="color: var(--brand-gold); font-size: 2rem; text-shadow: 0 0 10px var(--brand-gold);">CAMPAIGN CLEARED</div>
-                <div class="end-subtitle">FINAL PLANE CONDITION</div>
+            <div class="wizard-panel visible" style="pointer-events: auto;">
                 
-                <div id="campaign-integrity" style="font-size: 4rem; margin: 10px 0; font-weight: bold; color: #fff; text-shadow: 0 0 20px currentColor; transition: transform 0.2s;">
-                    0%
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; font-size: 0.75rem; color: #ccc; background: rgba(0,0,0,0.6); padding: 12px; border-radius: 8px; border: 1px solid #444; margin-bottom: 20px;">
-                    <div>REMAINING FUNDS:<br><strong id="stat-funds" style="color:var(--brand-gold); font-size:1.1rem;">0</strong></div>
-                    <div>TOTAL FLIGHT TIME:<br><strong id="stat-time" style="color:#fff; font-size:1.1rem;">0s</strong></div>
-                    <div>CARGO DELIVERED:<br><strong id="stat-cargo" style="color:var(--gauge-green); font-size:1.1rem;">0/0</strong></div>
-                    <div>TOTAL STALLS/CRASHES:<br><strong id="stat-stalls" style="color:var(--brand-red); font-size:1.1rem;">0/0</strong></div>
+                <div class="wizard-header">
+                    <div style="color:var(--brand-gold); font-size:1.4rem; font-weight:bold; text-shadow: 0 0 10px var(--brand-gold);">CAMPAIGN CLEARED</div>
                 </div>
 
-                <input type="text" id="pilot-name-input" class="lb-input" placeholder="ENTER CALLSIGN" maxlength="12" autocomplete="off">
-                <button class="play-again-btn" style="width: 100%; margin-bottom: 15px;" onclick="submitScore(event)">SUBMIT SCORE</button>
+                <div class="wizard-tabs">
+                    <div id="lb-tab-0" class="wiz-tab active">1. RESULTS</div>
+                    <div id="lb-tab-1" class="wiz-tab">2. LEADERBOARD</div>
+                </div>
 
-                <div style="text-align: center; color: var(--brand-gold); margin-bottom: 5px; font-weight: bold; font-size: 0.8rem;">TOP PILOTS (BY INTEGRITY)</div>
-                <table id="lb-table">
-                    <thead><tr><th>RANK</th><th>PILOT</th><th style="text-align:right;">INTEGRITY</th></tr></thead>
-                    <tbody id="lb-table-body"></tbody>
-                </table>
-                
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button class="outline-btn" style="flex: 1; color: var(--brand-red); background: transparent; border: 2px solid var(--brand-red); padding: 10px; font-family: 'Share Tech Mono'; border-radius: 6px; cursor: pointer; font-weight:bold; transition: all 0.2s;" onclick="clearLeaderboard(event)">CLEAR DATA</button>
-                    <button class="outline-btn" style="flex: 2; color: #fff; background: transparent; border: 2px solid #fff; padding: 10px; font-family: 'Share Tech Mono'; border-radius: 6px; cursor: pointer; font-weight:bold; transition: all 0.2s;" onclick="startNewCampaign(event)">NEW CAMPAIGN</button>
+                <div class="wizard-body">
+                    <div id="lb-page-0" class="wiz-page active">
+                        <div class="end-subtitle" style="margin-top:10px;">FINAL PLANE CONDITION</div>
+                        
+                        <div id="campaign-integrity" style="font-size: 4rem; margin: 10px 0; font-weight: bold; color: #fff; text-shadow: 0 0 20px currentColor; transition: transform 0.2s;">
+                            0%
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; font-size: 0.75rem; color: #ccc; background: rgba(0,0,0,0.6); padding: 12px; border-radius: 8px; border: 1px solid #444; margin-bottom: 20px;">
+                            <div>REMAINING FUNDS:<br><strong id="stat-funds" style="color:var(--brand-gold); font-size:1.1rem;">0</strong></div>
+                            <div>TOTAL FLIGHT TIME:<br><strong id="stat-time" style="color:#fff; font-size:1.1rem;">0s</strong></div>
+                            <div>CARGO DELIVERED:<br><strong id="stat-cargo" style="color:var(--gauge-green); font-size:1.1rem;">0/0</strong></div>
+                            <div>TOTAL STALLS/CRASHES:<br><strong id="stat-stalls" style="color:var(--brand-red); font-size:1.1rem;">0/0</strong></div>
+                        </div>
+
+                        <input type="text" id="pilot-name-input" class="lb-input" placeholder="ENTER CALLSIGN" maxlength="12" autocomplete="off">
+                        <button class="play-again-btn" style="width: 100%; margin-bottom: 15px;" onclick="submitScore(event)">SUBMIT SCORE</button>
+                    </div>
+
+                    <div id="lb-page-1" class="wiz-page">
+                        <div style="text-align: center; color: var(--brand-gold); margin-bottom: 5px; font-weight: bold; font-size: 0.8rem; margin-top:10px;">TOP PILOTS (BY INTEGRITY)</div>
+                        <table id="lb-table">
+                            <thead><tr><th>RANK</th><th>PILOT</th><th style="text-align:right;">INTEGRITY</th></tr></thead>
+                            <tbody id="lb-table-body"></tbody>
+                        </table>
+                        
+                        <button class="outline-btn" style="margin-top: 15px; margin-bottom: 5px; color: var(--brand-red); background: transparent; border: 2px solid var(--brand-red); padding: 10px; font-family: 'Share Tech Mono'; border-radius: 6px; cursor: pointer; font-weight:bold; transition: all 0.2s;" onclick="clearLeaderboard(event)">CLEAR DATA</button>
+                    </div>
+                </div>
+
+                <div class="wizard-footer">
+                    <button id="lb-btn-prev" class="wiz-btn secondary" onclick="navLbWizard(-1)" style="visibility:hidden;">BACK</button>
+                    <button id="lb-btn-next" class="wiz-btn primary" onclick="navLbWizard(1)">VIEW LEADERBOARD</button>
+                    <button id="lb-btn-new" class="wiz-btn success" onclick="startNewCampaign(event)" style="display:none;">NEW CAMPAIGN</button>
                 </div>
             </div>
         </div>
@@ -654,6 +673,7 @@
         const CRUISE_ALT = 450; 
 
         let currentWizPage = 0;
+        let currentLbPage = 0;
 
         let playerProfile = { 
             currentLevel: 1,
@@ -755,7 +775,7 @@
                     osc.start(); osc.stop(this.ctx.currentTime + 0.5);
                 } catch(e) {}
             },
-            stopAll: function() { this.playAlarm(false); try { this.bgMusic.pause(); } catch(e) {} }
+            stopAll: function() { this.playAlarm(false); }
         };
 
         document.addEventListener("visibilitychange", () => {
@@ -777,7 +797,7 @@
             active: false, isPaused: false, inFlightPlan: false, phase: 0, phaseTimer: 0, pitch: 0, pitchVelocity: 0, vSpeed: 0, speed: 0, 
             altitude: 0, cameraY: 0, score: 0, pressing: false, frameId: null, lastFrameTime: 0, flashTimer: 0,
             currTargetMin: 10, currTargetMax: 16, bgX_sky: 0, bgX_fgSky: 0, bgX_threatFog: 0, bgX_city: 0, bgX_runway: 0, 
-            takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", 
+            takeoffDist: 150, landingDist: 260, dialogueStep: 0, dialogueTimeLeft: 0, dialogueText: "", dialogueCritical: false,
             timeOfDay: "day", weather: "clear", zoom: 1.0, targetZoom: 1.0, speedMod: CRUISE_SPEED, autoPilot: false, canRestart: true, 
             hudPitch: 0, hudPitchVelocity: 0, hasLiftedOff: false, events: [], enemies: [], overtakers: [], activeCargo: [],
             
@@ -840,6 +860,34 @@
             } else {
                 if(btnNext) btnNext.style.display = 'block';
                 if(btnTakeoff) btnTakeoff.style.display = 'none';
+            }
+        }
+
+        function navLbWizard(dir) {
+            sfx.playDing(1.2);
+            currentLbPage += dir;
+            if(currentLbPage < 0) currentLbPage = 0;
+            if(currentLbPage > 1) currentLbPage = 1;
+            
+            for(let i=0; i<=1; i++) {
+                let wp = document.getElementById('lb-page-'+i);
+                let wt = document.getElementById('lb-tab-'+i);
+                if(wp) wp.style.display = (i === currentLbPage) ? 'flex' : 'none';
+                if(wt) wt.className = (i === currentLbPage) ? 'wiz-tab active' : 'wiz-tab';
+            }
+            
+            let btnPrev = document.getElementById('lb-btn-prev');
+            let btnNext = document.getElementById('lb-btn-next');
+            let btnNew = document.getElementById('lb-btn-new');
+            
+            if(btnPrev) btnPrev.style.visibility = (currentLbPage === 0) ? 'hidden' : 'visible';
+            
+            if (currentLbPage === 1) {
+                if(btnNext) btnNext.style.display = 'none';
+                if(btnNew) btnNew.style.display = 'block';
+            } else {
+                if(btnNext) btnNext.style.display = 'block';
+                if(btnNew) btnNew.style.display = 'none';
             }
         }
 
@@ -914,7 +962,7 @@
                 }
             });
             
-            tkState.crashAnimDone = true; 
+            tkState.crashAnimDone = true; // Prevent re-animation on simple refreshes
 
             // Skin Update
             let skinPreview = document.getElementById('menu-plane-preview');
@@ -948,6 +996,7 @@
             }
         }
 
+        // New explicit skin selector
         function equipSkin(type, e) {
             if(e) { e.preventDefault(); e.stopPropagation(); }
             if(document.activeElement) document.activeElement.blur();
@@ -1267,6 +1316,9 @@
                 lo.style.display = 'flex';
                 setTimeout(() => { lo.classList.add('visible'); }, 50);
             }
+            
+            currentLbPage = 0;
+            navLbWizard(0);
 
             let intEl = document.getElementById('campaign-integrity');
             if (!intEl) return;
@@ -1329,6 +1381,8 @@
             if(ni) ni.value = "";
             renderLeaderboardTable();
             sfx.playDing(2.0);
+            
+            navLbWizard(1);
         }
 
         function renderLeaderboardTable() {
@@ -1551,8 +1605,6 @@
             logEvent(`CRASH: ${reasonText}`, "❌", "CRASH", "var(--brand-red)");
             setDialogue("<span class='alert-text'>" + reasonText + "</span>", 4500);
             
-            playerProfile.points = Math.max(0, playerProfile.points - 500);
-            
             playerProfile.lostDefenses = {
                 bird: playerProfile.upgrades.bird,
                 windShield: playerProfile.upgrades.windShield,
@@ -1755,7 +1807,7 @@
             
             tkState.apState = Math.random() * 100 < failMap[playerProfile.upgrades.ap] ? (Math.random() < 0.5 ? 1 : 2) : 0;
             tkState.hasGearFailure = Math.random() * 100 < failMap[playerProfile.upgrades.gear];
-            if (tkState.hasGearFailure) tkState.gearBreakAlt = Math.random() * 50 + 50;
+            if (tkState.hasGearFailure) tkState.gearBreakAlt = Math.random() * 50 + 50; 
             
             tkState.engineFailure = false;
             tkState.hasEngineFailureScenario = Math.random() * 100 < failMap[playerProfile.upgrades.engine];
@@ -2183,7 +2235,7 @@
                 }
             }
 
-            // SIMPLIFIED GAME PHASE LOGIC
+            // PHASE LOGIC
             if (tkState.phase === 0 && displaySpeed >= 150) { 
                 tkState.phase = 1; tkState.phaseTimer = 0; 
                 setDialogue("<span class='capt-text'>V1! KEEP 15 DEGREES</span>", 99999); 
@@ -2353,7 +2405,7 @@
             if (overtakerCollision) { return triggerCrash("MID-AIR CRASH!"); }
 
 
-            // Birds (Trigger reduced to 100m so it fits into the fast arcade loop)
+            // Birds (Fixed to PX)
             if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 100 && tkState.phase === 3 && tkState.birdX > window.innerWidth && Math.random() < 0.01) {
                 tkState.birdActive = true; tkState.birdAlt = Math.max(20, tkState.altitude + (Math.random() * 60 - 30)); logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)"); 
                 let bFlock = document.getElementById('tk-bird-flock');

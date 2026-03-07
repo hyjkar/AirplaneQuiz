@@ -40,9 +40,9 @@
 
         .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none; background-repeat: repeat-x; transition: filter 0.5s, background-color 0.5s; will-change: background-position, transform; }
 
-        /* REBUILT CLOUD LAYERS (Starts high, comes down at 1000m) */
-        #tk-bg-sky { background-size: auto 150vh; z-index: 1; height: 150vh; top: -400px; opacity: 0.6; }
-        #tk-fg-sky { background-size: auto 150vh; z-index: 14; height: 150vh; top: -800px; opacity: 0.9; }
+        /* CLOUDS RESTORED TO RUNWAY LEVEL */
+        #tk-bg-sky { background-size: auto 100vh; z-index: 1; height: 120%; top: -10%; }
+        #tk-fg-sky { background-size: auto 150vh; z-index: 14; height: 120%; top: -100%; opacity: 0.8; }
         #tk-threat-fog { display: none; background-size: auto 200vh; z-index: 15; height: 150%; top: -10%; opacity: 0.95; filter: blur(3px) brightness(1.1); }
         .wea-fog #tk-threat-fog { display: block; }
         
@@ -163,7 +163,7 @@
         .tk-enemy img, .tk-overtaker img { width: 100%; height: 100%; object-fit: contain; }
         .tk-enemy img { transform: scaleX(-1); }
 
-        /* RESTORED: INDIVIDUAL OVERTAKER WARNING BOXES */
+        /* INDIVIDUAL OVERTAKER WARNING BOXES */
         .rear-warning { 
             position: absolute; left: 20px; 
             color: #fff; background: rgba(215, 25, 32, 0.85); 
@@ -187,7 +187,7 @@
         .smoke-particle { position: absolute; z-index: 100; pointer-events: none; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         .score-particle { position: absolute; z-index: 102; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; left: 0; top: 0; will-change: transform, opacity; }
         
-        /* NEW IMAGE-BASED CARGO SPRITE */
+        /* IMAGE-BASED CARGO SPRITE (Transparency bug fixed) */
         .cargo-package { 
             position: absolute; 
             z-index: 15; 
@@ -198,6 +198,8 @@
             will-change: transform; 
             object-fit: contain;
             image-rendering: pixelated; 
+            background: transparent;
+            border: none;
         }
 
         .float-text { position: absolute; z-index: 99999; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 3px #000; animation: floatUp 1s ease-out forwards; left: 0; top: 0; will-change: transform, opacity; }
@@ -242,17 +244,27 @@
         .play-again-btn { background: var(--gauge-green); color: #000; border: none; padding: 12px 20px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; transition: transform 0.1s, filter 0.1s; width: 100%; margin-top: 15px; box-shadow: 0 0 15px rgba(46,204,113,0.4);}
         .play-again-btn:active { transform: scale(0.95); filter: brightness(0.8); }
 
-        /* Minimap Progress Bar */
+        /* Minimap Progress Bar Animation Updated */
         .completion-wrapper { margin-bottom: 35px; width: 100%; display: flex; flex-direction: column; align-items: center; }
         .completion-text { font-size: 1rem; color: #fff; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; text-align: center; width: 100%; }
         #end-completion-val { color: var(--fo-blue); }
         #tk-minimap { width: 90%; height: 12px; background: #222; border-radius: 6px; position: relative; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); margin: 0 auto; }
-        #tk-minimap-progress { height: 100%; background: var(--fo-blue); border-radius: 6px; width: 0%; transition: width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.5s; }
+        #tk-minimap-progress { height: 100%; background: var(--fo-blue); border-radius: 6px; width: 0%; transition: background-color 0.5s; }
         
-        .minimap-marker { position: absolute; top: -6px; transform: translateX(-50%); z-index: 10; cursor: help; transition: transform 0.2s; display: flex; flex-direction: column; align-items: center; }
+        .minimap-marker { 
+            position: absolute; top: -6px; transform: translateX(-50%) scale(0); opacity: 0; 
+            z-index: 10; cursor: help; display: flex; flex-direction: column; align-items: center; 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+        }
+        .minimap-marker.popped {
+            opacity: 1; transform: translateX(-50%) scale(1);
+        }
+        .minimap-marker.popped:hover { 
+            transform: translateX(-50%) scale(1.3); z-index: 20; 
+        }
+
         .minimap-icon-box { width: 24px; height: 24px; background: #111; border: 2px solid var(--fo-blue); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         .minimap-label { margin-top: 6px; font-size: 0.65rem; white-space: nowrap; text-shadow: 1px 1px 2px #000; font-family: 'Share Tech Mono', monospace; font-weight: bold; }
-        .minimap-marker:hover { transform: translateX(-50%) scale(1.3); z-index: 20; }
         .minimap-tooltip { display: none; position: absolute; bottom: 45px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); color: #fff; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; white-space: nowrap; pointer-events: none; border: 1px solid #555; z-index: 20; }
         .minimap-marker:hover .minimap-tooltip { display: block; }
         .minimap-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -4px; border-width: 4px; border-style: solid; border-color: #555 transparent transparent transparent; }
@@ -287,7 +299,7 @@
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v12.1 - The Master Build</div>
+        <div id="tk-version">v12.3 - Clean Fog & Solid Physics</div>
         
         <div id="nvg-overlay"></div>
         
@@ -335,7 +347,6 @@
             </div>
 
             <div id="tk-fg-sky" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
-            <div id="tk-threat-fog" class="parallax-layer" style="background-image: url('sky_transparent.png');"></div>
             
             <div id="enemy-0" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
             <div id="enemy-1" class="tk-enemy"><img src="a22.png" onerror="this.onerror=null; this.src='my-plane.png'; this.style.filter='brightness(0)';"></div>
@@ -403,7 +414,7 @@
                         <div>WEATHER: <strong id="fp-weather" style="color:var(--fo-blue);">CLEAR</strong></div>
                         <div>TRAFFIC: <strong id="fp-traffic">NORMAL</strong></div>
                         <div>WIND SHEAR: <strong id="fp-wind-risk" style="color:var(--brand-gold);">0%</strong></div>
-                        <div>BONUS: <strong id="fp-cargo-text">NONE</strong></div>
+                        <div>BONUS: <strong id="fp-cargo-text" style="display:inline;">NONE</strong></div>
                     </div>
                     <div style="display: flex; flex-direction: column; justify-content: center;">
                         <button class="reroll-btn" onclick="rerollFlightPlan(event)" title="Refresh (200)">
@@ -524,7 +535,10 @@
                     <tbody id="lb-table-body"></tbody>
                 </table>
                 
-                <button class="outline-btn" style="color: #fff; background: transparent; border: 2px solid #fff; padding: 10px; width: 100%; font-family: 'Share Tech Mono'; border-radius: 6px; cursor: pointer; margin-top: 15px; font-weight:bold; transition: all 0.2s;" onclick="startNewCampaign(event)">NEW CAMPAIGN</button>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="outline-btn" style="flex: 1; color: var(--brand-red); background: transparent; border: 2px solid var(--brand-red); padding: 10px; font-family: 'Share Tech Mono'; border-radius: 6px; cursor: pointer; font-weight:bold; transition: all 0.2s;" onclick="clearLeaderboard(event)">CLEAR DATA</button>
+                    <button class="outline-btn" style="flex: 2; color: #fff; background: transparent; border: 2px solid #fff; padding: 10px; font-family: 'Share Tech Mono'; border-radius: 6px; cursor: pointer; font-weight:bold; transition: all 0.2s;" onclick="startNewCampaign(event)">NEW CAMPAIGN</button>
+                </div>
             </div>
         </div>
 
@@ -538,7 +552,7 @@
         let playerPlaneSkin = 'my-plane.png';
         const CRUISE_ALT = 450; 
 
-        // --- PROFILE PERSISTENCE (V50) ---
+        // --- PROFILE PERSISTENCE (V51) ---
         let playerProfile = { 
             currentLevel: 1,
             points: 1000, 
@@ -552,7 +566,7 @@
 
         function loadProfile() {
             try {
-                let p = localStorage.getItem('h5_profile_v50');
+                let p = localStorage.getItem('h5_profile_v51');
                 if(p) {
                     let parsed = JSON.parse(p);
                     if(parsed && typeof parsed.upgrades === 'object') playerProfile = parsed;
@@ -568,7 +582,7 @@
         }
 
         function saveProfile() {
-            localStorage.setItem('h5_profile_v50', JSON.stringify(playerProfile));
+            localStorage.setItem('h5_profile_v51', JSON.stringify(playerProfile));
         }
         loadProfile();
 
@@ -794,6 +808,7 @@
                 }
             }
             playerPlaneSkin = playerProfile.currentSkin;
+            document.getElementById('tk-plane-img').src = playerPlaneSkin; 
             saveProfile();
             updateFlightPlanUI();
         }
@@ -1014,6 +1029,13 @@
             }, 300);
         }
 
+        function clearLeaderboard(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            localStorage.removeItem('h5_leaderboard');
+            renderLeaderboardTable();
+            sfx.playExplosion(); 
+        }
+
         // MASSIVE SPECTACLE CONDITION SCORING
         function getConditionScore() {
             let condScore = 0;
@@ -1137,9 +1159,9 @@
                 currentLevel: 1, points: 1000, 
                 upgrades: { gear: 4, engine: 4, gyro: 4, ap: 4, bird: false, windShield: false, nvg: false },
                 campaignStats: { stalls: 0, cargoHits: 0, cargoMisses: 0, flightTime: 0, crashes: 0 },
-                ownsGoldenPlane: false, currentSkin: 'my-plane.png'
+                ownsGoldenPlane: playerProfile.ownsGoldenPlane, 
+                currentSkin: playerProfile.currentSkin
             };
-            playerPlaneSkin = 'my-plane.png';
             saveProfile();
             
             document.getElementById('leaderboard-overlay').classList.remove('visible');
@@ -1231,15 +1253,13 @@
             let finalPct = isSuccess ? 100 : getCompletionPercentage();
             let markersHtml = '';
             displayEvents.forEach(ev => {
-                markersHtml += `<div class="minimap-marker" style="left: ${ev.percent}%"><div class="minimap-icon-box" style="border-color: ${ev.color}">${ev.icon}</div><div class="minimap-label" style="color: ${ev.color}">${ev.shortName}</div><div class="minimap-tooltip">${ev.name}</div></div>`;
+                markersHtml += `<div class="minimap-marker" data-pct="${ev.percent}" style="left: ${ev.percent}%"><div class="minimap-icon-box" style="border-color: ${ev.color}">${ev.icon}</div><div class="minimap-label" style="color: ${ev.color}">${ev.shortName}</div><div class="minimap-tooltip">${ev.name}</div></div>`;
             });
             document.getElementById('tk-minimap-markers').innerHTML = markersHtml;
 
-            setTimeout(() => {
-                document.getElementById('tk-minimap-progress').style.width = finalPct + '%';
-                document.getElementById('tk-minimap-progress').style.backgroundColor = isSuccess ? 'var(--gauge-green)' : 'var(--brand-red)';
-                document.getElementById('end-completion-val').style.color = isSuccess ? 'var(--gauge-green)' : 'var(--brand-red)';
-            }, 300);
+            // Animate bar width smoothly with Javascript & pop markers
+            document.getElementById('tk-minimap-progress').style.backgroundColor = isSuccess ? 'var(--gauge-green)' : 'var(--brand-red)';
+            document.getElementById('end-completion-val').style.color = isSuccess ? 'var(--gauge-green)' : 'var(--brand-red)';
             
             let curScore = 0; let scoreStep = Math.max(1, Math.ceil(totalScore / 40));
             let curPct = 0; let pctStep = Math.max(1, finalPct / 40);
@@ -1249,7 +1269,19 @@
 
             clearInterval(endScreenAnimInterval);
             endScreenAnimInterval = setInterval(() => {
-                if(curPct < finalPct) { curPct += pctStep; if(curPct >= finalPct) curPct = finalPct; pctEl.textContent = Math.floor(curPct) + '%'; }
+                if(curPct < finalPct) { 
+                    curPct += pctStep; 
+                    if(curPct >= finalPct) curPct = finalPct; 
+                    pctEl.textContent = Math.floor(curPct) + '%'; 
+                    document.getElementById('tk-minimap-progress').style.width = curPct + '%'; 
+                    
+                    let markers = document.querySelectorAll('.minimap-marker:not(.popped)');
+                    markers.forEach(m => {
+                        if (parseFloat(m.dataset.pct) <= curPct) {
+                            m.classList.add('popped');
+                        }
+                    });
+                }
                 
                 let targetScore = phase2Score ? totalScore : Math.max(0, Math.floor((finalScore - stallPenalty) * trafficMult));
                 if (!isSuccess) targetScore = 0; 
@@ -1369,11 +1401,11 @@
             let cEl = document.getElementById('fp-cargo-text');
             if (tkState.hasCargoMission) { 
                 cEl.textContent = `${tkState.cargoCount} CARGO DROP`; 
-                cEl.style.display = "block";
+                cEl.style.display = "inline";
             } else { 
                 cEl.textContent = "NONE"; 
                 cEl.style.color = "#777";
-                cEl.style.display = "block";
+                cEl.style.display = "inline";
             }
 
             let wRiskEl = document.getElementById('fp-wind-risk'); wRiskEl.textContent = tkState.baseWindRisk + "%";
@@ -1753,7 +1785,7 @@
                 if(tkState.autoPilot) toggleAutoPilot();
             }
 
-            if (isStalling || isTooFast || isTooHigh || (tkState.dialogueCritical && tkState.dialogueTimeLeft > 0) || tkState.flashTimer > 0) {
+            if (isStalling || isTooFast || isTooHigh || tkState.flashTimer > 0) {
                 document.getElementById('tk-alert-overlay').className = 'flashing';
             } else {
                 document.getElementById('tk-alert-overlay').className = '';
@@ -1822,7 +1854,7 @@
                     const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
                 }
             }
-            if (tkState.gearBroken && document.getElementById('tk-plane-img').src.indexOf('nolandinggear') === -1) { document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png'; }
+            if (tkState.gearBroken && document.getElementById('tk-plane-img').src.indexOf('nolandinggear') === -1) { document.getElementById('tk-plane-img').src = playerPlaneSkin.replace('.png', '-nolandinggear.png'); }
             if (tkState.phase === 1 && tkState.altitude >= CRUISE_ALT) { tkState.phase = 2; tkState.phaseTimer = 0; tkState.currTargetMin = -3; tkState.currTargetMax = 3; setDialogue("<span class='capt-text'>LEVEL OFF</span>", 4000); }
 
             // CARGO MISSION LOGIC 
@@ -1863,11 +1895,10 @@
                 }
             }
 
-            // High-Performance Cargo Physics Loop
             for (let i = tkState.activeCargo.length - 1; i >= 0; i--) {
                 let pkg = tkState.activeCargo[i];
-                let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
                 
+                let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
                 pkg.vx -= 0.2; 
                 if (pkg.vx < -groundSpeed) pkg.vx = -groundSpeed; 
                 pkg.x += pkg.vx; 
@@ -2037,7 +2068,7 @@
                     setDialogue("<span class='success-text'>GEAR DOWN. LANDING SECURE!</span>", 5000);
                 } else if (tkState.hasGearFailure) {
                     tkState.gearBroken = true; sfx.playExplosion(); logEvent("GEAR LOST", "🛬", "NO GEAR", "var(--brand-red)"); setDialogue("<span class='alert-text'>GEAR LOST! LAND NOW!</span>", 5000); const pr = document.getElementById('tk-plane-img').getBoundingClientRect(); triggerGearExplosion(pr.left + pr.width/2, pr.bottom - 10);
-                    document.getElementById('tk-plane-img').src = 'my-plane-nolandinggear.png';
+                    document.getElementById('tk-plane-img').src = playerPlaneSkin.replace('.png', '-nolandinggear.png');
                 } else {
                     setDialogue("<span class='alert-text'>DESCEND FOR LANDING!</span>", 5000);
                 }
@@ -2047,7 +2078,7 @@
                  tkState.phase = 6; tkState.altitude = 0; tkState.vSpeed = 0; setDialogue("<span class='alert-text'>BRAKES ON!</span>", 4000); if(tkState.autoPilot) toggleAutoPilot(); 
             }
 
-            // Camera Parallax Apply (With Fast Foreground Clouds)
+            // Camera Parallax Apply
             tkState.bgX_sky -= (displaySpeed * 0.006 * SPEED_MOD); 
             tkState.bgX_fgSky -= (displaySpeed * 0.05 * SPEED_MOD); 
             tkState.bgX_city -= (displaySpeed * 0.03 * SPEED_MOD); 
@@ -2058,7 +2089,6 @@
             document.getElementById('tk-bg-city').style.backgroundPositionX = `${tkState.bgX_city}px`; 
             document.getElementById('tk-runway-stripes').style.backgroundPositionX = `${tkState.bgX_runway}px`;
             
-            // Add threat fog moving math back
             if (tkState.weather === 'fog') { 
                 tkState.bgX_threatFog -= (displaySpeed * 0.025 * SPEED_MOD); 
                 document.getElementById('tk-threat-fog').style.backgroundPositionX = `${tkState.bgX_threatFog}px`; 
@@ -2068,8 +2098,8 @@
             
             document.getElementById('tk-runway').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; 
             document.getElementById('tk-bg-city').style.transform = `translate3d(0, ${tkState.cameraY * 0.7}px, 0)`; 
-            document.getElementById('tk-bg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.4}px, 0)`; 
-            document.getElementById('tk-fg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.85}px, 0)`; // Highly responsive to climb
+            document.getElementById('tk-bg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`; 
+            document.getElementById('tk-fg-sky').style.transform = `translate3d(0, ${tkState.cameraY * 0.3}px, 0)`; 
             document.getElementById('tk-mountain').style.transform = `translate3d(0, ${tkState.cameraY}px, 0)`; 
             document.getElementById('tk-sun').style.transform = `translate3d(0, ${tkState.cameraY * 0.2}px, 0)`;
             if (tkState.weather === 'fog') { document.getElementById('tk-threat-fog').style.transform = `translate3d(0, ${tkState.cameraY * 0.45}px, 0)`; }

@@ -8,6 +8,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
 
+    <link rel="preload" href="my-plane-small2.png" as="image">
+    <link rel="preload" href="sky_transparent.png" as="image">
+    <link rel="preload" href="mountain.png" as="image">
+    <link rel="preload" href="cargo.png" as="image">
+
     <style>
         :root {
             --brand-red: #d71920; --gauge-green: #2ecc71; --gauge-orange: #f39c12;
@@ -16,6 +21,19 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; outline: none; }
         body, html { background-color: #000; color: #fff; font-family: 'Share Tech Mono', monospace; width: 100%; height: 100%; overflow: hidden; user-select: none; }
+
+        /* LOADING SCREEN OVERLAY */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000;
+            z-index: 9999999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--brand-gold); font-size: 1.5rem; font-weight: bold; font-family: 'Share Tech Mono', monospace;
+            transition: opacity 0.3s ease;
+        }
+        .loading-spinner {
+            width: 40px; height: 40px; border: 4px solid rgba(207, 168, 110, 0.3);
+            border-top: 4px solid var(--brand-gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #orientation-lock { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; z-index: 999999; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; text-align: center; padding: 20px; }
         @media screen and (orientation: portrait) { #orientation-lock { display: flex; } }
@@ -38,47 +56,47 @@
 
         #camera-rig { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: 30% 80%; will-change: transform; z-index: 1; }
 
-        /* FLICKER FIX: Modified hardware acceleration rules */
         .parallax-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none; background-repeat: repeat-x; transition: filter 0.5s, background-color 0.5s; will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; transform: translateZ(0); }
 
         #tk-bg-sky { background-size: auto 100vh; z-index: 1; height: 120%; top: -10%; }
         #tk-fg-sky { background-size: auto 150vh; z-index: 14; height: 120%; top: -100%; opacity: 0.8; }
-        #tk-threat-fog { display: none; background-size: auto 200vh; z-index: 15; height: 150%; top: -10%; opacity: 0.95; filter: blur(3px) brightness(1.1); }
-        .wea-fog #tk-threat-fog { display: block; }
+        #tk-threat-fog { display: block; visibility: hidden; background-size: auto 200vh; z-index: 15; height: 150%; top: -10%; opacity: 0.95; filter: blur(3px) brightness(1.1); }
+        .wea-fog #tk-threat-fog { visibility: visible; }
         
         .nvg-mode #tk-plane-img, .nvg-mode .tk-enemy img, .nvg-mode .tk-overtaker img { 
             filter: sepia(1) hue-rotate(70deg) saturate(3) brightness(2.5) drop-shadow(0 0 8px #0f0) !important; 
         }
 
-        .passenger-windows { display: none; position: absolute; top: 62%; left: 35%; right: 25%; height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; }
-        .wea-fog .passenger-windows, .tod-night .passenger-windows { display: flex; }
+        .passenger-windows { visibility: hidden; position: absolute; top: 62%; left: 35%; right: 25%; height: 4px; z-index: 13; justify-content: space-evenly; align-items: center; pointer-events: none; display: flex; }
+        .wea-fog .passenger-windows, .tod-night .passenger-windows { visibility: visible; }
         .window-dot { width: 4px; height: 4px; background: #fffde7; box-shadow: 0 0 6px #fbc02d, 0 0 10px #f57f17; border-radius: 1px; animation: flicker 2s infinite alternate; }
         .tk-enemy .passenger-windows, .tk-overtaker .passenger-windows { left: 25%; right: 35%; top: 62%; }
         @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
-        #tk-sun { display: none; position: absolute; right: 15%; bottom: 35%; width: 60px; height: 60px; background: #fff; box-shadow: 0 0 0 10px rgba(255, 240, 150, 0.8), 0 0 0 25px rgba(255, 200, 100, 0.4), 0 0 0 45px rgba(255, 100, 50, 0.2); z-index: 0; will-change: transform; }
-        .tod-sunrise #tk-sun { display: block; }
+        #tk-sun { display: block; visibility: hidden; position: absolute; right: 15%; bottom: 35%; width: 60px; height: 60px; background: #fff; box-shadow: 0 0 0 10px rgba(255, 240, 150, 0.8), 0 0 0 25px rgba(255, 200, 100, 0.4), 0 0 0 45px rgba(255, 100, 50, 0.2); z-index: 0; will-change: transform; }
+        .tod-sunrise #tk-sun { visibility: visible; }
 
         #tk-bg-city { height: 100%; background-size: auto 100%; background-position: bottom left; z-index: 2; top: 0; }
         #tk-runway { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: #222; z-index: 3; transition: filter 0.5s; will-change: transform; }
         #tk-runway-stripes { width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 100px); background-position: 0px 10px; background-size: 200px 6px; background-repeat: repeat-x; will-change: background-position; }
 
+        /* PRE-RENDERED INVISIBLE GAME ELEMENTS */
         #tk-drop-zone { 
             position: absolute; bottom: 0; left: 0; height: 3000px; width: 1000px; 
             background: linear-gradient(to top, rgba(46, 204, 113, 0.5), rgba(46, 204, 113, 0.1)); 
             border-left: 8px dashed rgba(46, 204, 113, 0.9); border-right: 8px dashed rgba(46, 204, 113, 0.9); 
             box-shadow: inset 0 0 50px rgba(46, 204, 113, 0.4), 0 0 50px rgba(46, 204, 113, 0.4);
-            z-index: 4; display: none; will-change: transform; 
+            z-index: 4; visibility: hidden; will-change: transform; 
             text-shadow: 2px 2px 4px #000; font-family: 'Share Tech Mono', monospace; font-weight: bold;
             pointer-events: none;
         }
 
-        #tk-wind-pocket { position: absolute; bottom: 100px; left: 0; width: 300px; height: 150px; z-index: 14; display: none; will-change: transform; pointer-events: none; }
+        #tk-wind-pocket { position: absolute; bottom: 100px; left: 0; width: 300px; height: 150px; z-index: 14; visibility: hidden; will-change: transform; pointer-events: none; }
 
-        .weather-layer { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
-        .wea-rain .rain-layer { display: block; }
-        .wea-snow .snow-layer, .wea-snow .fog-layer { display: block; }
-        .wea-fog .fog-layer { display: block; }
+        .weather-layer { display: block; visibility: hidden; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
+        .wea-rain .rain-layer { visibility: visible; }
+        .wea-snow .snow-layer, .wea-snow .fog-layer { visibility: visible; }
+        .wea-fog .fog-layer { visibility: visible; }
         
         .tod-night { background-color: #0b1021 !important; }
         .tod-night #tk-bg-sky, .tod-night #tk-fg-sky, .tod-night #tk-bg-city, .tod-night #tk-runway, .tod-night #tk-mountain { filter: brightness(0.25) sepia(0.5) hue-rotate(180deg) saturate(1.2); }
@@ -100,8 +118,6 @@
         
         .rain-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNTAnIGhlaWdodD0nMjUwJz48cmVjdCB4PScyMCcgeT0nMjAnIHdpZHRoPScyJyBoZWlnaHQ9JzE1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuNCknLz48L3N2Zz4="); animation: rainAnim1 0.4s linear infinite; z-index: 11; }
         .rain-layer.layer-2 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJz48cmVjdCB4PSc1MCcgeT0nNTAnIHdpZHRoPSczJyBoZWlnaHQ9JzI1JyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuNiknLz48cmVjdCB4PScyNTAnIHk9JzIwMCcgd2lkdGg9JzInIGhlaWdodD0nMTUnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC40KScvPjwvc3ZnPg=="); animation: rainAnim2 0.3s linear infinite; z-index: 16; }
-        
-        /* PIXELATED SNOW LAYERS */
         .snow-layer.layer-1 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nMjAwJz48cmVjdCB4PScxNycgeT0nMTcnIHdpZHRoPSc2JyBoZWlnaHQ9JzYnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC44KScvPjxyZWN0IHg9Jzk4JyB5PSc3OCcgd2lkdGg9JzQnIGhlaWdodD0nNCcgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjYpJy8+PHJlY3QgeD0nMTQ2JyB5PScxNDYnIHdpZHRoPSc4JyBoZWlnaHQ9JzgnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC45KScvPjxyZWN0IHg9JzQ4JyB5PScxNzgnIHdpZHRoPSc0JyBoZWlnaHQ9JzQnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC41KScvPjwvc3ZnPg=="); animation: snowAnim1 2.5s linear infinite; z-index: 11; }
         .snow-layer.layer-2 { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMDAnIGhlaWdodD0nMzAwJz48cmVjdCB4PSc0NScgeT0nNDUnIHdpZHRoPScxMCcgaGVpZ2h0PScxMCcgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjkpJy8+PHJlY3QgeD0nMTk0JyB5PScxNDQnIHdpZHRoPScxMicgaGVpZ2h0PScxMicgZmlsbD0ncmdiYSgyNTUsMjU1LDI1NSwwLjgpJy8+PHJlY3QgeD0nMjQ2JyB5PScyNzYnIHdpZHRoPSc4JyBoZWlnaHQ9JzgnIGZpbGw9J3JnYmEoMjU1LDI1NSwyNTUsMC43KScvPjwvc3ZnPg=="); animation: snowAnim2 3.5s linear infinite; z-index: 16; }
         
@@ -112,8 +128,8 @@
         @keyframes snowAnim1 { from { background-position: 0 -200px; } to { background-position: -100px 200px; } }
         @keyframes snowAnim2 { from { background-position: 0 -300px; } to { background-position: -150px 300px; } }
 
-        #tk-flare-container { display: none; position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25; overflow: hidden; transition: opacity 0.2s; }
-        .tod-sunrise #tk-flare-container { display: block; }
+        #tk-flare-container { display: block; visibility: hidden; position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25; overflow: hidden; transition: opacity 0.2s; }
+        .tod-sunrise #tk-flare-container { visibility: visible; }
         .pf { position: absolute; background: rgba(255, 200, 100, 0.2); transform: translate(-50%, -50%); }
         .pf-1 { width: 60px; height: 60px; background: rgba(255, 150, 50, 0.15); border: 2px solid rgba(255,200,100,0.3); }
         .pf-2 { width: 30px; height: 30px; background: rgba(150, 255, 150, 0.2); }
@@ -161,13 +177,14 @@
         #tk-eject-btn { display: none; position: absolute; bottom: 20px; right: 20px; z-index: 99999; background: var(--brand-gold); border: 2px solid #fff; border-radius: 50%; width: 80px; height: 80px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: auto; color: #000; cursor: pointer; transition: transform 0.1s; }
         #tk-eject-btn:active { transform: scale(0.92); }
 
-        .tk-enemy, .tk-overtaker { position: absolute; bottom: 65px; left: 0; width: 162px; height: 56px; z-index: 10; display: none; will-change: transform; pointer-events: none;}
+        /* PRE-RENDERED ENEMIES (Visibility hidden instead of display none) */
+        .tk-enemy, .tk-overtaker { position: absolute; bottom: 65px; left: 0; width: 162px; height: 56px; z-index: 10; display: block; visibility: hidden; will-change: transform; pointer-events: none;}
         .tk-enemy img, .tk-overtaker img { width: 100%; height: 100%; object-fit: contain; }
         .tk-enemy img { transform: scaleX(-1); }
 
         .edge-warning { 
             position: absolute; bottom: 75px; 
-            z-index: 40; display: none; pointer-events: none; will-change: transform;
+            z-index: 40; display: block; visibility: hidden; pointer-events: none; will-change: transform;
         }
         .edge-warning span {
             display: block; color: var(--brand-red); font-size: 2.5rem; font-weight: bold; 
@@ -176,11 +193,10 @@
         }
         @keyframes pulseExclamation { from { transform: scale(1); opacity: 1; } to { transform: scale(1.2); opacity: 0.5; } }
 
-        #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: none; transition: filter 0.5s; will-change: transform; pointer-events: none;}
-        #tk-bird-flock { position: absolute; bottom: 65px; left: 0; width: 40px; height: 30px; z-index: 10; display: none; pointer-events: none; will-change: transform; }
+        #tk-mountain { position: absolute; bottom: 65px; left: 0; width: 220px; height: 120px; z-index: 2; display: block; visibility: hidden; transition: filter 0.5s; will-change: transform; pointer-events: none;}
+        #tk-bird-flock { position: absolute; bottom: 65px; left: 0; width: 40px; height: 30px; z-index: 10; display: block; visibility: hidden; pointer-events: none; will-change: transform; }
         .bird { position: absolute; width: 4px; height: 4px; background: #111; box-shadow: 12px 6px #111, -8px 10px #111, 16px 14px #111, 6px -4px #111; animation: flap 0.3s infinite alternate; }
 
-        /* ALL PARTICLES SQUARED (Removed border-radius) */
         .pixel-particle { position: absolute; z-index: 100; pointer-events: none; left: 0; top: 0; will-change: transform, opacity; }
         .spark-particle { position: absolute; z-index: 101; pointer-events: none; width: 4px; height: 4px; left: 0; top: 0; will-change: transform, opacity; }
         .smoke-particle { position: absolute; z-index: 100; pointer-events: none; left: 0; top: 0; will-change: transform, opacity; }
@@ -353,10 +369,15 @@
 </head>
 <body>
 
+    <div id="loading-screen">
+        <div class="loading-spinner"></div>
+        <div>INITIALIZING AVIONICS...</div>
+    </div>
+
     <div id="orientation-lock">PLEASE ROTATE DEVICE TO LANDSCAPE</div>
 
     <div id="takeoff-viewport">
-        <div id="tk-version">v18.4 - Ultimate Optimized Release</div>
+        <div id="tk-version">v18.5 - Pre-Rendered Performance Cache</div>
         
         <div id="nvg-overlay"></div>
         <div id="tk-alert-overlay"></div>
@@ -667,6 +688,17 @@
     </div>
 
     <script>
+        // REMOVE LOADING SCREEN WHEN ASSETS ARE READY
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                let ls = document.getElementById('loading-screen');
+                if (ls) {
+                    ls.style.opacity = '0';
+                    setTimeout(() => ls.style.display = 'none', 300);
+                }
+            }, 500); // 0.5s safety buffer for texture upload
+        });
+
         const CRUISE_SPEED = 0.5625; 
         const LANDING_SPEED = 0.25;  
         let SPEED_MOD = CRUISE_SPEED; 
@@ -761,7 +793,7 @@
                 if(!this.ctx || Math.random() > 0.4 || tkState.isPaused) return; 
                 try {
                     let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
-                    osc.type = 'square'; osc.frequency.setValueAtTime(2000 + Math.random()*2000, this.ctx.currentTime);
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(2000 + Math.random()*2000, this.ctx.currentTime);
                     gain.gain.setValueAtTime(0.05, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
                     osc.connect(gain); gain.connect(this.ctx.destination);
                     osc.start(); osc.stop(this.ctx.currentTime + 0.1);
@@ -777,7 +809,7 @@
                     osc.start(); osc.stop(this.ctx.currentTime + 0.5);
                 } catch(e) {}
             },
-            stopAll: function() { this.playAlarm(false); try { this.bgMusic.pause(); } catch(e) {} }
+            stopAll: function() { this.playAlarm(false); }
         };
 
         document.addEventListener("visibilitychange", () => {
@@ -967,6 +999,7 @@
             
             tkState.crashAnimDone = true; 
 
+            // Skin Update
             let skinPreview = document.getElementById('menu-plane-preview');
             let stdBtn = document.getElementById('btn-skin-std');
             let goldBtn = document.getElementById('btn-skin-gold');
@@ -998,6 +1031,7 @@
             }
         }
 
+        // New explicit skin selector
         function equipSkin(type, e) {
             if(e) { e.preventDefault(); e.stopPropagation(); }
             if(document.activeElement) document.activeElement.blur();
@@ -1753,7 +1787,7 @@
                 statsAdded: false, finalCampaignScore: 0, crashAnimDone: tkState.crashAnimDone
             };
 
-            document.querySelectorAll('.edge-warning').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.edge-warning').forEach(el => el.style.visibility = 'hidden');
             
             generateFlightPlanContext();
             
@@ -1763,20 +1797,20 @@
             let eb = document.getElementById('tk-eject-btn');
             if (eb) eb.style.display = 'none';
             let dz = document.getElementById('tk-drop-zone');
-            if(dz) dz.style.display = 'none';
+            if(dz) dz.style.visibility = 'hidden';
             let wp = document.getElementById('tk-wind-pocket');
-            if(wp) wp.style.display = 'none';
+            if(wp) wp.style.visibility = 'hidden';
             
             let pImg = document.getElementById('tk-plane-img');
             if (pImg) pImg.src = playerPlaneSkin;
             let pCon = document.getElementById('plane-container');
             if(pCon) pCon.style.display = 'block';
             
-            document.querySelectorAll('.tk-enemy').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.tk-overtaker').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tk-enemy').forEach(el => el.style.visibility = 'hidden');
+            document.querySelectorAll('.tk-overtaker').forEach(el => el.style.visibility = 'hidden');
             
             let bf = document.getElementById('tk-bird-flock');
-            if(bf) bf.style.display = 'none';
+            if(bf) bf.style.visibility = 'hidden';
             
             let overlay = document.getElementById('tk-alert-overlay');
             if(overlay) overlay.className = '';
@@ -2038,7 +2072,7 @@
                 tkState.windPocketSpawned = true; 
                 tkState.windPocketX = window.innerWidth + 500;
                 let wp = document.getElementById('tk-wind-pocket');
-                if(wp) wp.style.display = 'block';
+                if(wp) wp.style.visibility = 'visible';
             }
             if (tkState.windPocketSpawned) {
                 tkState.windPocketX -= (displaySpeed * 0.18 * SPEED_MOD * 0.4); 
@@ -2269,11 +2303,11 @@
                 }
             }
             
-            // JUMP DIRECTLY TO SWARM (PHASE 3) AT 150m ALTITUDE
+            // JUMP DIRECTLY TO SWARM
             if (tkState.phase === 1 && tkState.altitude >= 150) { 
                 tkState.phase = 3; 
                 tkState.phaseTimer = 0; 
-                tkState.currTargetMin = -15; // Wide target zone to allow dodging without penalty
+                tkState.currTargetMin = -15; 
                 tkState.currTargetMax = 20; 
                 setDialogue("<span class='alert-text'>TRAFFIC SWARM! EVADE!</span>", 5000); 
                 tkState.flashTimer = 800; 
@@ -2281,19 +2315,18 @@
                 logEvent("TRAFFIC SWARM", "✈️", "SWARM", "var(--brand-red)");
             }
 
-            // CARGO MISSION LOGIC (MOVED TO PHASE 3)
+            // CARGO MISSION LOGIC 
             if (tkState.hasCargoMission) {
                 tkState.cargoTimer = (tkState.cargoTimer || 0) + delta;
                 let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
                 
-                // Spawn exactly 4 seconds into Phase 3
                 if (!tkState.cargoPrompted && tkState.phase === 3 && tkState.cargoTimer > 4000) {
                     tkState.cargoPrompted = true;
                     setDialogue("<span style='color:var(--brand-gold); font-weight:bold;'>APPROACHING DROP ZONE!</span>", 3000);
                     tkState.dropZoneSpawned = true; 
                     tkState.dropZoneX = window.innerWidth + 2000;
                     let dz = document.getElementById('tk-drop-zone');
-                    if(dz) dz.style.display = 'block';
+                    if(dz) dz.style.visibility = 'visible';
                 }
                 
                 if (tkState.dropZoneSpawned) {
@@ -2321,7 +2354,7 @@
                 }
             }
 
-            // High-Performance Cargo Physics Loop
+            // Physics Loop
             for (let i = tkState.activeCargo.length - 1; i >= 0; i--) {
                 let pkg = tkState.activeCargo[i];
                 let groundSpeed = displaySpeed * 0.18 * SPEED_MOD;
@@ -2340,7 +2373,7 @@
                 }
             }
 
-            // Overtaker (Allowed in Phase 1 or 3)
+            // Overtaker
             let trySpawnOvertaker = false;
             if (tkState.phase === 1 && tkState.hasOvertakerScenario && Math.random() < 0.01) { trySpawnOvertaker = true; }
             if (tkState.trafficLevel === 2 && tkState.phase === 3 && Math.random() < 0.015) { trySpawnOvertaker = true; } 
@@ -2379,7 +2412,7 @@
                     
                     if (o.warningTimer > 0) {
                         if (ew) {
-                            ew.style.display = 'block';
+                            ew.style.visibility = 'visible';
                             ew.style.transform = `translate3d(0, ${Math.floor(-(o.alt - tkState.cameraY))}px, 0)`;
                         }
                     }
@@ -2389,11 +2422,11 @@
                         o.active = true;
                         o.x = -250;
                         let el = document.getElementById('overtaker-' + i);
-                        if(el) el.style.display = 'block';
-                        if (ew) ew.style.display = 'none';
+                        if(el) el.style.visibility = 'visible';
+                        if (ew) ew.style.visibility = 'hidden';
                     }
                 } else if (o.active) {
-                    if (ew) ew.style.display = 'none';
+                    if (ew) ew.style.visibility = 'hidden';
                     o.x += o.spd; 
                     let el = document.getElementById('overtaker-' + i); 
                     if(el) {
@@ -2404,20 +2437,20 @@
                             const gr = el.getBoundingClientRect();
                             if (!( (pr.right - 12) < (gr.left + 15) || (pr.left + 12) > (gr.right - 15) || (pr.bottom - 12) < (gr.top + 25) || (pr.top + 25) > (gr.bottom - 10) )) { overtakerCollision = true; }
                         }
-                        if (o.x > window.innerWidth + 200) { o.active = false; el.style.display = 'none'; }
+                        if (o.x > window.innerWidth + 200) { o.active = false; el.style.visibility = 'hidden'; }
                     }
                 } else {
-                    if (ew) ew.style.display = 'none';
+                    if (ew) ew.style.visibility = 'hidden';
                 }
             });
             if (overtakerCollision) { return triggerCrash("MID-AIR CRASH!"); }
 
 
-            // Birds (Trigger reduced to 100m so it fits into the fast arcade loop)
+            // Birds
             if (tkState.hasBirdScenario && !tkState.birdActive && tkState.altitude > 100 && tkState.phase === 3 && tkState.birdX > window.innerWidth && Math.random() < 0.01) {
                 tkState.birdActive = true; tkState.birdAlt = Math.max(20, tkState.altitude + (Math.random() * 60 - 30)); logEvent("BIRD FLOCK", "🦅", "BIRDS", "var(--brand-gold)"); 
                 let bFlock = document.getElementById('tk-bird-flock');
-                if(bFlock) bFlock.style.display = 'block'; 
+                if(bFlock) bFlock.style.visibility = 'visible'; 
                 setDialogue("<span class='alert-text'>BIRDS AHEAD!</span>", 3000);
             }
             if (tkState.birdActive) {
@@ -2429,7 +2462,7 @@
                         const pr = pImg.getBoundingClientRect(); const br = bEl.getBoundingClientRect();
                         if (!( (pr.right - 10) < (br.left + 10) || (pr.left + 10) > (br.right - 10) || (pr.bottom - 10) < (br.top + 10) || (pr.top + 25) > (br.bottom - 10) )) { 
                             if (playerProfile.upgrades.bird && !tkState.engineFailure) {
-                                tkState.birdActive = false; bEl.style.display = 'none';
+                                tkState.birdActive = false; bEl.style.visibility = 'hidden';
                                 tkState.engineFailure = true;
                                 logEvent("BIRD SHIELD TRIGGERED", "🛡️", "SHIELD", "var(--fo-blue)");
                                 setDialogue("<span class='alert-text'>BIRD STRIKE! ENGINES DAMAGED!</span>", 4000);
@@ -2439,11 +2472,11 @@
                             }
                         }
                     }
-                    if (tkState.birdX < -100) { tkState.birdActive = false; bEl.style.display = 'none'; }
+                    if (tkState.birdX < -100) { tkState.birdActive = false; bEl.style.visibility = 'hidden'; }
                 }
             }
 
-            // Random Engine Fail (Moved to Phase 3)
+            // Random Engine Fail
             if (tkState.phase === 3 && tkState.phaseTimer > 3000 && tkState.phaseTimer < 8000 && tkState.hasEngineFailureScenario && !tkState.engineFailure) {
                 tkState.engineFailure = true; logEvent("ENGINE FAILURE", "🔥", "ENGINE", "var(--brand-red)"); setDialogue("<span class='alert-text'>ENGINE FAILURE!</span>", 5000); tkState.flashTimer = 800; sfx.playExplosion(); 
             }
@@ -2472,9 +2505,9 @@
                             let e = tkState.enemies[slotIdx]; e.active = true; 
                             e.x = window.innerWidth + 200 + (Math.random() * 150); 
                             e.alt = proposedAlt; 
-                            e.spd = (9.6 + Math.random() * 9.6) * SPEED_MOD; // 20% slower
+                            e.spd = (9.6 + Math.random() * 9.6) * SPEED_MOD; 
                             let el = document.getElementById('enemy-' + slotIdx);
-                            if(el) el.style.display = 'block'; 
+                            if(el) el.style.visibility = 'visible'; 
                         }
                     } 
                 }
@@ -2498,17 +2531,17 @@
                             // Show edge warning if Swarm enemy is far off screen to the right
                             if (e.x > window.innerWidth - 20) {
                                 if (ew) {
-                                    ew.style.display = 'block';
+                                    ew.style.visibility = 'visible';
                                     ew.style.transform = `translate3d(0, ${Math.floor(-(e.alt - tkState.cameraY))}px, 0)`;
                                 }
                             } else {
-                                if (ew) ew.style.display = 'none';
+                                if (ew) ew.style.visibility = 'hidden';
                             }
                             
-                            if (e.x < -300) { e.active = false; el.style.display = 'none'; if(ew) ew.style.display = 'none'; }
+                            if (e.x < -300) { e.active = false; el.style.visibility = 'hidden'; if(ew) ew.style.visibility = 'hidden'; }
                         }
                     } else {
-                        if (ew) ew.style.display = 'none';
+                        if (ew) ew.style.visibility = 'hidden';
                     }
                 });
                 

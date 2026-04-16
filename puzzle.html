@@ -2,16 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Escape Room Puzzle - Landscape</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Escape Room Puzzle - Responsive</title>
     <style>
         :root {
             --bg-color: #1a1a1d;
             --panel-color: #2b2b30;
             --text-color: #e0e0e0;
             --accent-color: #d4af37; /* Gold */
-            --success-color: #4cd137;
-            --hint-color: #2ed573;
+            --success-color: #4cd137; /* Green */
             --tile-bg: #383840;
             --tile-border: #555;
             --warning-color: #ff4757;
@@ -65,7 +64,10 @@
 
         #game-container {
             background-color: var(--panel-color);
-            padding: 30px 50px;
+            width: 90vw; /* Scales with screen width */
+            max-width: 900px;
+            padding: 2vw 4vw;
+            box-sizing: border-box;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
             text-align: center;
@@ -80,35 +82,38 @@
             color: var(--accent-color);
             text-transform: uppercase;
             letter-spacing: 2px;
-            font-size: 24px;
+            font-size: clamp(18px, 3vw, 24px);
         }
 
         p.instructions {
-            font-size: 14px;
+            font-size: clamp(12px, 2vw, 14px);
             color: #aaa;
             margin-bottom: 25px;
         }
 
         .puzzle-area {
             display: flex;
-            flex-direction: row; /* Side by side in landscape */
-            gap: 40px;
+            flex-direction: row; 
+            gap: 3vw;
             margin-bottom: 30px;
+            width: 100%;
+            justify-content: center;
         }
 
         .word-group {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 1vw;
         }
 
         .tile {
-            width: 55px;
-            height: 55px;
+            /* Fluid sizing: shrinks on small screens, caps at 60px */
+            width: clamp(30px, 6vw, 60px);
+            height: clamp(30px, 6vw, 60px);
             background-color: var(--tile-bg);
             border: 3px solid var(--tile-border);
             border-radius: 8px;
-            font-size: 28px;
+            font-size: clamp(18px, 4vw, 28px);
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -117,6 +122,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             transition: all 0.2s ease;
             text-shadow: 1px 1px 2px black;
+            flex-shrink: 0;
         }
 
         .tile:hover:not(.fixed):not(.locked) {
@@ -131,20 +137,21 @@
             color: var(--accent-color);
         }
 
-        /* Styling for the pre-solved 'I' and 'E' tiles */
+        /* Styling for when a letter is in the right spot */
+        .tile.correct {
+            border-color: var(--success-color);
+            background-color: rgba(76, 209, 55, 0.1);
+            color: var(--success-color);
+            box-shadow: inset 0 0 10px rgba(76, 209, 55, 0.2);
+        }
+
         .tile.fixed {
-            border-color: var(--hint-color);
-            background-color: rgba(46, 213, 115, 0.05);
-            color: var(--hint-color);
             cursor: default;
             pointer-events: none; /* Cannot be clicked or swapped */
-            box-shadow: inset 0 0 10px rgba(46, 213, 115, 0.2);
+            opacity: 0.9;
         }
 
         .tile.locked {
-            border-color: var(--success-color);
-            background-color: rgba(76, 209, 55, 0.2);
-            color: var(--success-color);
             cursor: default;
             pointer-events: none;
             box-shadow: 0 0 15px rgba(76, 209, 55, 0.4);
@@ -152,7 +159,7 @@
 
         #message {
             height: 30px;
-            font-size: 18px;
+            font-size: clamp(14px, 2.5vw, 18px);
             font-weight: bold;
             letter-spacing: 1px;
             color: var(--success-color);
@@ -192,14 +199,11 @@
         const targetWord1 = "ILOA";
         const targetWord2 = "SONJALLE";
         
-        // We lock 'I' (first letter) and 'E' (last letter).
         const fixedFirst = "I";
         const fixedLast = "E";
         
-        // The remaining letters to shuffle: "LOA" from ILOA and "SONJALL" from SONJALLE
         let pool = "LOASONJALL".split("");
         
-        // Shuffle the pool until it doesn't match the solved "LOASONJALL" state
         let isShuffled = false;
         while (!isShuffled) {
             pool.sort(() => Math.random() - 0.5);
@@ -208,7 +212,6 @@
             }
         }
 
-        // Construct the full starting array
         const startingLetters = [fixedFirst, ...pool, fixedLast];
 
         const word1Container = document.getElementById('word1');
@@ -217,19 +220,18 @@
         let isSolved = false;
 
         function initBoard() {
-            // Build the first word (4 letters)
             for (let i = 0; i < targetWord1.length; i++) {
-                // The first letter (index 0) is fixed
                 const isFixed = (i === 0);
                 word1Container.appendChild(createTile(startingLetters[i], isFixed));
             }
             
-            // Build the second word (8 letters)
             for (let i = targetWord1.length; i < startingLetters.length; i++) {
-                // The last letter (index 11 overall) is fixed
                 const isFixed = (i === startingLetters.length - 1);
                 word2Container.appendChild(createTile(startingLetters[i], isFixed));
             }
+
+            // Check correct positions immediately on load
+            updateGameState();
         }
 
         function createTile(letter, isFixed) {
@@ -239,48 +241,63 @@
             
             if (isFixed) {
                 tile.classList.add('fixed');
-            } else {
-                tile.addEventListener('click', () => {
-                    if (isSolved) return; 
-
-                    if (selectedTile === null) {
-                        selectedTile = tile;
-                        tile.classList.add('selected');
-                    } else {
-                        if (selectedTile === tile) {
-                            tile.classList.remove('selected');
-                            selectedTile = null;
-                            return;
-                        }
-
-                        // Swap letters
-                        const temp = selectedTile.innerText;
-                        selectedTile.innerText = tile.innerText;
-                        tile.innerText = temp;
-
-                        selectedTile.classList.remove('selected');
-                        selectedTile = null;
-                        
-                        checkWinCondition();
-                    }
-                });
             }
+            
+            // Even fixed tiles need the click listener structural bypass 
+            // but pointer-events:none in CSS stops them from triggering it.
+            tile.addEventListener('click', () => {
+                if (isSolved || tile.classList.contains('fixed')) return; 
+
+                if (selectedTile === null) {
+                    selectedTile = tile;
+                    tile.classList.add('selected');
+                } else {
+                    if (selectedTile === tile) {
+                        tile.classList.remove('selected');
+                        selectedTile = null;
+                        return;
+                    }
+
+                    // Swap letters
+                    const temp = selectedTile.innerText;
+                    selectedTile.innerText = tile.innerText;
+                    tile.innerText = temp;
+
+                    selectedTile.classList.remove('selected');
+                    selectedTile = null;
+                    
+                    updateGameState();
+                }
+            });
 
             return tile;
         }
 
-        function checkWinCondition() {
+        function updateGameState() {
             let currentWord1 = "";
             let currentWord2 = "";
 
-            Array.from(word1Container.children).forEach(tile => {
+            // Check Word 1
+            Array.from(word1Container.children).forEach((tile, index) => {
                 currentWord1 += tile.innerText;
+                if (tile.innerText === targetWord1[index]) {
+                    tile.classList.add('correct');
+                } else {
+                    tile.classList.remove('correct');
+                }
             });
 
-            Array.from(word2Container.children).forEach(tile => {
+            // Check Word 2
+            Array.from(word2Container.children).forEach((tile, index) => {
                 currentWord2 += tile.innerText;
+                if (tile.innerText === targetWord2[index]) {
+                    tile.classList.add('correct');
+                } else {
+                    tile.classList.remove('correct');
+                }
             });
 
+            // Check Win Condition
             if (currentWord1 === targetWord1 && currentWord2 === targetWord2) {
                 triggerWin();
             }
@@ -292,7 +309,6 @@
             
             allTiles.forEach(tile => {
                 tile.classList.remove('selected');
-                tile.classList.remove('fixed'); // Remove fixed styling so they all match the win state
                 tile.classList.add('locked');
             });
 
@@ -300,7 +316,6 @@
             messageEl.classList.add('visible');
         }
 
-        // Start the game
         initBoard();
     </script>
 </body>

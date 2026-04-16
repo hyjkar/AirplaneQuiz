@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Escape Room Puzzle - Animated</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1d;
+            --panel-color: #2b2b30;
+            --text-color: #e0e0e0;
+            --accent-color: #d4af37; /* Gold */
+            --success-color: #4cd137; /* Green */
+            --tile-bg: #383840;
+            --tile-border: #555;
+            --warning-color: #ff4757;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            user-select: none;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Fullscreen Button */
+        #fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: 2px solid var(--tile-border);
+            border-radius: 8px;
+            color: var(--text-color);
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        #fullscreen-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        #fullscreen-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        /* Landscape Warning Screen */
+        #orientation-warning {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+            color: var(--warning-color);
+        }
+
+        #orientation-warning svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            fill: var(--warning-color);
+            animation: rotatePhone 2s infinite ease-in-out;
+        }
+
+        @keyframes rotatePhone {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(-90deg); }
+            100% { transform: rotate(-90deg); }
+        }
+
+        @media screen and (orientation: portrait) {
+            #game-container { display: none !important; }
+            #orientation-warning { display: flex; }
+        }
+
+        #game-container {
+            background-color: var(--panel-color);
+            width: 95vw; 
+            max-width: 850px;
+            padding: 30px 20px 50px 20px; /* Extra padding at bottom */
+            box-sizing: border-box;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            border: 2px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: clamp(16px, 2.5vw, 22px);
+        }
+
+        p.instructions {
+            font-size: clamp(11px, 1.8vw, 14px);
+            color: #aaa;
+            margin-bottom: 25px;
+        }
+
+        .puzzle-area {
+            display: flex;
+            flex-direction: row; 
+            flex-wrap: wrap; 
+            gap: 2vw;
+            margin-bottom: 20px;
+            width: 100%;
+            justify-content: center;
+            position: relative;
+        }
+
+        .word-group {
+            display: flex;
+            justify-content: center;
+            gap: 0.8vw;
+            flex-wrap: wrap;
+        }
+
+        .tile {
+            width: clamp(25px, 4.5vw, 45px);
+            height: clamp(25px, 4.5vw, 45px);
+            background-color: var(--tile-bg);
+            border: 2px solid var(--tile-border);
+            border-radius: 6px;
+            font-size: clamp(16px, 3vw, 22px);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: all 0.2s ease, color 0.5s, text-shadow 0.5s;
+            text-shadow: 1px 1px 2px black;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .tile:hover:not(.fixed):not(.locked) {
+            background-color: #4a4a55;
+        }
+
+        .tile.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(212, 175, 55, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(212, 175, 55, 0.3);
+            color: var(--accent-color);
+        }
+
+        .tile.correct {
+            border-color: var(--success-color);
+            background-color: rgba(76, 209, 55, 0.1);
+            color: var(--success-color);
+            box-shadow: inset 0 0 10px rgba(76, 209, 55, 0.2);
+        }
+
+        .tile.fixed {
+            cursor: default;
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        .tile.locked {
+            cursor: default;
+            pointer-events: none;
+            box-shadow: 0 0 15px rgba(76, 209, 55, 0.4);
+        }
+
+        /* End Animation Elements */
+        #qm-wrapper {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            z-index: 50;
+            transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 1.5s;
+            pointer-events: none; /* Ignore clicks during animation */
+        }
+
+        .floating-letter {
+            position: absolute;
+            font-size: clamp(22px, 4vw, 32px);
+            font-weight: bold;
+            color: var(--success-color);
+            text-shadow: 0 0 15px rgba(76, 209, 55, 1);
+            transform: translate(-50%, -50%);
+            transition: left 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        top 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            white-space: nowrap;
+        }
+
+        #envelope-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: clamp(40px, 8vw, 70px);
+            height: clamp(40px, 8vw, 70px);
+            opacity: 0;
+            transition: opacity 1s ease-in;
+            z-index: 10;
+        }
+
+        #envelope-container.visible {
+            opacity: 1;
+        }
+
+        #envelope-container svg {
+            width: 100%;
+            height: 100%;
+            fill: var(--accent-color);
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.4));
+        }
+
+        #message {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(14px, 2.5vw, 18px);
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: var(--success-color);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            text-shadow: 0 0 10px rgba(76, 209, 55, 0.5);
+        }
+
+        #message.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="fullscreen-btn" title="Toggle Fullscreen">
+        <svg viewBox="0 0 24 24">
+            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        </svg>
+    </button>
+
+    <div id="orientation-warning">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 1H8C6.34 1 5 2.34 5 4v16c0 1.66 1.34 3 3 3h8c1.66 0 3-1.34 3-3V4c0-1.66-1.34-3-3-3zm1 18h-10v-14h10v14z"/>
+        </svg>
+        <h2>Landscape Mode Required</h2>
+        <p>Please rotate your device to access this terminal.</p>
+    </div>
+
+    <div id="game-container">
+        <h1>Terminal Locked</h1>
+        <p class="instructions">Override sequence required.<br>Click two unanchored letters to swap their positions.</p>
+        
+        <div class="puzzle-area">
+            <div class="word-group" id="word1"></div>
+            <div class="word-group" id="word2"></div>
+        </div>
+
+        <div id="envelope-container">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
+        </div>
+
+        <div id="message">MESSAGE DELIVERED</div>
+    </div>
+
+    <script>
+        const fsBtn = document.getElementById('fullscreen-btn');
+        fsBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        });
+
+        const targetWord1 = "ILOA";
+        const targetWord2 = "SONJALLE";
+        const fixedFirst = "I";
+        const fixedLast = "E";
+        
+        const targetPoolStr = "LOASONJALL";
+        let pool = targetPoolStr.split("");
+        
+        let isShuffled = false;
+        while (!isShuffled) {
+            pool.sort(() => Math.random() - 0.5);
+            let hasCorrectLetter = false;
+            for (let i = 0; i < pool.length; i++) {
+                if (pool[i] === targetPoolStr[i]) {
+                    hasCorrectLetter = true;
+                    break;
+                }
+            }
+            if (!hasCorrectLetter) {
+                isShuffled = true;
+            }
+        }
+
+        const startingLetters = [fixedFirst, ...pool, fixedLast];
+        const word1Container = document.getElementById('word1');
+        const word2Container = document.getElementById('word2');
+        let selectedTile = null;
+        let isSolved = false;
+
+        function initBoard() {
+            for (let i = 0; i < targetWord1.length; i++) {
+                const isFixed = (i === 0);
+                word1Container.appendChild(createTile(startingLetters[i], isFixed));
+            }
+            
+            for (let i = targetWord1.length; i < startingLetters.length; i++) {
+                const isFixed = (i === startingLetters.length - 1);
+                word2Container.appendChild(createTile(startingLetters[i], isFixed));
+            }
+
+            updateGameState();
+        }
+
+        function createTile(letter, isFixed) {
+            const tile = document.createElement('div');
+            tile.className = 'tile';
+            tile.innerText = letter;
+            
+            if (isFixed) tile.classList.add('fixed');
+            
+            tile.addEventListener('click', () => {
+                if (isSolved || tile.classList.contains('fixed')) return; 
+
+                if (selectedTile === null) {
+                    selectedTile = tile;
+                    tile.classList.add('selected');
+                } else {
+                    if (selectedTile === tile) {
+                        tile.classList.remove('selected');
+                        selectedTile = null;
+                        return;
+                    }
+
+                    const temp = selectedTile.innerText;
+                    selectedTile.innerText = tile.innerText;
+                    tile.innerText = temp;
+
+                    selectedTile.classList.remove('selected');
+                    selectedTile = null;
+                    
+                    updateGameState();
+                }
+            });
+
+            return tile;
+        }
+
+        function updateGameState() {
+            let currentWord1 = "";
+            let currentWord2 = "";
+
+            Array.from(word1Container.children).forEach((tile, index) => {
+                currentWord1 += tile.innerText;
+                if (tile.innerText === targetWord1[index]) tile.classList.add('correct');
+                else tile.classList.remove('correct');
+            });
+
+            Array.from(word2Container.children).forEach((tile, index) => {
+                currentWord2 += tile.innerText;
+                if (tile.innerText === targetWord2[index]) tile.classList.add('correct');
+                else tile.classList.remove('correct');
+            });
+
+            if (currentWord1 === targetWord1 && currentWord2 === targetWord2) {
+                triggerWin();
+            }
+        }
+
+        function triggerWin() {
+            isSolved = true;
+            const allTiles = document.querySelectorAll('.tile');
+            
+            allTiles.forEach(tile => {
+                tile.classList.remove('selected');
+                tile.classList.add('locked');
+            });
+
+            // Start Animation Sequence
+            const gameContainer = document.getElementById('game-container');
+            const envelope = document.getElementById('envelope-container');
+            envelope.classList.add('visible');
+
+            const wrapper = document.createElement('div');
+            wrapper.id = 'qm-wrapper';
+            gameContainer.appendChild(wrapper);
+
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const floatingLetters = [];
+
+            // Relative Coordinates to form a Question Mark
+            // Scaled dynamically down for smaller screens
+            const scale = Math.min(1, window.innerWidth / 600);
+            const qmCoords = [
+                {x: -40, y: -90}, // I
+                {x: 0,   y: -100},// L
+                {x: 40,  y: -90}, // O
+                {x: 55,  y: -50}, // A
+                {x: 40,  y: -10}, // S
+                {x: 15,  y: 20},  // O
+                {x: 0,   y: 50},  // N
+                {x: 0,   y: 80},  // J
+                {x: 0,   y: 110}, // A
+                {x: -15, y: 150}, // L (left side dot)
+                {x: 15,  y: 150}, // L (right side dot)
+                {x: 0,   y: 170}  // E (bottom dot)
+            ];
+
+            // Extract letters from tiles to absolute positioned clones
+            allTiles.forEach((tile, index) => {
+                const rect = tile.getBoundingClientRect();
+                
+                // Calculate absolute position relative to wrapper's center
+                const startX = rect.left + (rect.width / 2) - wrapperRect.left;
+                const startY = rect.top + (rect.height / 2) - wrapperRect.top;
+                
+                const letter = document.createElement('div');
+                letter.className = 'floating-letter';
+                letter.innerText = tile.innerText;
+                
+                // Place it exactly over the existing tile
+                letter.style.left = `${startX}px`;
+                letter.style.top = `${startY}px`;
+                
+                wrapper.appendChild(letter);
+                floatingLetters.push(letter);
+                
+                // Hide the actual text inside the grid tiles (fade out)
+                tile.style.color = 'transparent';
+                tile.style.textShadow = 'none';
+            });
+
+            // Force reflow so the browser registers the start positions
+            wrapper.offsetHeight; 
+
+            // Phase 1: Move letters to form the Question Mark
+            floatingLetters.forEach((letter, index) => {
+                letter.style.left = `${qmCoords[index].x * scale}px`;
+                letter.style.top = `${qmCoords[index].y * scale}px`;
+            });
+
+            // Phase 2: Shrink, Spin, and Fly into Envelope
+            setTimeout(() => {
+                // Get the accurate center of the envelope right before flying
+                const envRect = envelope.getBoundingClientRect();
+                const updatedWrapperRect = wrapper.getBoundingClientRect();
+
+                const targetX = (envRect.left + envRect.width / 2) - (updatedWrapperRect.left + updatedWrapperRect.width / 2);
+                const targetY = (envRect.top + envRect.height / 2) - (updatedWrapperRect.top + updatedWrapperRect.height / 2);
+
+                wrapper.style.transform = `translate(${targetX}px, ${targetY}px) scale(0.05) rotate(360deg)`;
+                wrapper.style.opacity = '0';
+            }, 1800); // Wait 1.8 seconds for shape to fully form and linger
+
+            // Phase 3: Display Final Message
+            setTimeout(() => {
+                document.getElementById('message').classList.add('visible');
+            }, 3200); 
+        }
+
+        initBoard();
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Escape Room Puzzle</title>
+    <title>Escape Room Puzzle - Landscape</title>
     <style>
         :root {
             --bg-color: #1a1a1d;
@@ -11,8 +11,10 @@
             --text-color: #e0e0e0;
             --accent-color: #d4af37; /* Gold */
             --success-color: #4cd137;
+            --hint-color: #2ed573;
             --tile-bg: #383840;
             --tile-border: #555;
+            --warning-color: #ff4757;
         }
 
         body {
@@ -27,16 +29,50 @@
             justify-content: center;
             min-height: 100vh;
             user-select: none;
+            overflow: hidden;
         }
 
-        .container {
+        /* Landscape Warning Screen */
+        #orientation-warning {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+            color: var(--warning-color);
+        }
+
+        #orientation-warning svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            fill: var(--warning-color);
+            animation: rotatePhone 2s infinite ease-in-out;
+        }
+
+        @keyframes rotatePhone {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(-90deg); }
+            100% { transform: rotate(-90deg); }
+        }
+
+        /* Enforce Landscape via CSS Media Queries */
+        @media screen and (orientation: portrait) {
+            #game-container { display: none !important; }
+            #orientation-warning { display: flex; }
+        }
+
+        #game-container {
             background-color: var(--panel-color);
-            padding: 40px;
+            padding: 30px 50px;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
             text-align: center;
-            max-width: 600px;
             border: 2px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         h1 {
@@ -50,13 +86,13 @@
         p.instructions {
             font-size: 14px;
             color: #aaa;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .puzzle-area {
             display: flex;
-            flex-direction: column;
-            gap: 20px;
+            flex-direction: row; /* Side by side in landscape */
+            gap: 40px;
             margin-bottom: 30px;
         }
 
@@ -64,16 +100,15 @@
             display: flex;
             justify-content: center;
             gap: 10px;
-            flex-wrap: wrap;
         }
 
         .tile {
-            width: 60px;
-            height: 60px;
+            width: 55px;
+            height: 55px;
             background-color: var(--tile-bg);
             border: 3px solid var(--tile-border);
             border-radius: 8px;
-            font-size: 32px;
+            font-size: 28px;
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -84,7 +119,7 @@
             text-shadow: 1px 1px 2px black;
         }
 
-        .tile:hover {
+        .tile:hover:not(.fixed):not(.locked) {
             background-color: #4a4a55;
         }
 
@@ -94,6 +129,16 @@
             transform: translateY(-5px);
             box-shadow: 0 8px 15px rgba(212, 175, 55, 0.3);
             color: var(--accent-color);
+        }
+
+        /* Styling for the pre-solved 'I' and 'E' tiles */
+        .tile.fixed {
+            border-color: var(--hint-color);
+            background-color: rgba(46, 213, 115, 0.05);
+            color: var(--hint-color);
+            cursor: default;
+            pointer-events: none; /* Cannot be clicked or swapped */
+            box-shadow: inset 0 0 10px rgba(46, 213, 115, 0.2);
         }
 
         .tile.locked {
@@ -122,9 +167,17 @@
 </head>
 <body>
 
-    <div class="container">
+    <div id="orientation-warning">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 1H8C6.34 1 5 2.34 5 4v16c0 1.66 1.34 3 3 3h8c1.66 0 3-1.34 3-3V4c0-1.66-1.34-3-3-3zm1 18h-10v-14h10v14z"/>
+        </svg>
+        <h2>Landscape Mode Required</h2>
+        <p>Please rotate your device to access this terminal.</p>
+    </div>
+
+    <div id="game-container">
         <h1>Terminal Locked</h1>
-        <p class="instructions">Override sequence required.<br>Click a letter, then click another to swap their positions.</p>
+        <p class="instructions">Override sequence required.<br>Click two unanchored letters to swap their positions.</p>
         
         <div class="puzzle-area">
             <div class="word-group" id="word1"></div>
@@ -138,74 +191,84 @@
     <script>
         const targetWord1 = "ILOA";
         const targetWord2 = "SONJALLE";
-        const fullTarget = targetWord1 + targetWord2;
         
-        // Split all letters into an array
-        let letters = fullTarget.split("");
+        // We lock 'I' (first letter) and 'E' (last letter).
+        const fixedFirst = "I";
+        const fixedLast = "E";
         
-        // Shuffle the letters until they don't match the solved state
+        // The remaining letters to shuffle: "LOA" from ILOA and "SONJALL" from SONJALLE
+        let pool = "LOASONJALL".split("");
+        
+        // Shuffle the pool until it doesn't match the solved "LOASONJALL" state
         let isShuffled = false;
         while (!isShuffled) {
-            letters.sort(() => Math.random() - 0.5);
-            if (letters.join("") !== fullTarget) {
+            pool.sort(() => Math.random() - 0.5);
+            if (pool.join("") !== "LOASONJALL") {
                 isShuffled = true;
             }
         }
+
+        // Construct the full starting array
+        const startingLetters = [fixedFirst, ...pool, fixedLast];
 
         const word1Container = document.getElementById('word1');
         const word2Container = document.getElementById('word2');
         let selectedTile = null;
         let isSolved = false;
 
-        // Initialize the board
         function initBoard() {
-            // First 4 letters for ILOA
+            // Build the first word (4 letters)
             for (let i = 0; i < targetWord1.length; i++) {
-                word1Container.appendChild(createTile(letters[i]));
+                // The first letter (index 0) is fixed
+                const isFixed = (i === 0);
+                word1Container.appendChild(createTile(startingLetters[i], isFixed));
             }
-            // Remaining 8 letters for SONJALLE
-            for (let i = targetWord1.length; i < letters.length; i++) {
-                word2Container.appendChild(createTile(letters[i]));
+            
+            // Build the second word (8 letters)
+            for (let i = targetWord1.length; i < startingLetters.length; i++) {
+                // The last letter (index 11 overall) is fixed
+                const isFixed = (i === startingLetters.length - 1);
+                word2Container.appendChild(createTile(startingLetters[i], isFixed));
             }
         }
 
-        // Create individual tile element
-        function createTile(letter) {
+        function createTile(letter, isFixed) {
             const tile = document.createElement('div');
             tile.className = 'tile';
             tile.innerText = letter;
             
-            tile.addEventListener('click', () => {
-                if (isSolved) return; // Prevent clicks if game is won
+            if (isFixed) {
+                tile.classList.add('fixed');
+            } else {
+                tile.addEventListener('click', () => {
+                    if (isSolved) return; 
 
-                if (selectedTile === null) {
-                    // Select first tile
-                    selectedTile = tile;
-                    tile.classList.add('selected');
-                } else {
-                    // If clicking the same tile, deselect it
-                    if (selectedTile === tile) {
-                        tile.classList.remove('selected');
+                    if (selectedTile === null) {
+                        selectedTile = tile;
+                        tile.classList.add('selected');
+                    } else {
+                        if (selectedTile === tile) {
+                            tile.classList.remove('selected');
+                            selectedTile = null;
+                            return;
+                        }
+
+                        // Swap letters
+                        const temp = selectedTile.innerText;
+                        selectedTile.innerText = tile.innerText;
+                        tile.innerText = temp;
+
+                        selectedTile.classList.remove('selected');
                         selectedTile = null;
-                        return;
+                        
+                        checkWinCondition();
                     }
-
-                    // Swap the text content
-                    const temp = selectedTile.innerText;
-                    selectedTile.innerText = tile.innerText;
-                    tile.innerText = temp;
-
-                    // Deselect and check for win
-                    selectedTile.classList.remove('selected');
-                    selectedTile = null;
-                    checkWinCondition();
-                }
-            });
+                });
+            }
 
             return tile;
         }
 
-        // Check if the current layout matches the target words
         function checkWinCondition() {
             let currentWord1 = "";
             let currentWord2 = "";
@@ -223,18 +286,16 @@
             }
         }
 
-        // Handle the win state
         function triggerWin() {
             isSolved = true;
             const allTiles = document.querySelectorAll('.tile');
             
-            // Add locked styling to all tiles
             allTiles.forEach(tile => {
                 tile.classList.remove('selected');
+                tile.classList.remove('fixed'); // Remove fixed styling so they all match the win state
                 tile.classList.add('locked');
             });
 
-            // Show success message
             const messageEl = document.getElementById('message');
             messageEl.classList.add('visible');
         }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Escape Room Puzzle - Responsive</title>
+    <title>Escape Room Puzzle - Final</title>
     <style>
         :root {
             --bg-color: #1a1a1d;
@@ -29,6 +29,36 @@
             min-height: 100vh;
             user-select: none;
             overflow: hidden;
+            position: relative;
+        }
+
+        /* Fullscreen Button */
+        #fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: 2px solid var(--tile-border);
+            border-radius: 8px;
+            color: var(--text-color);
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        #fullscreen-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        #fullscreen-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
         }
 
         /* Landscape Warning Screen */
@@ -56,7 +86,6 @@
             100% { transform: rotate(-90deg); }
         }
 
-        /* Enforce Landscape via CSS Media Queries */
         @media screen and (orientation: portrait) {
             #game-container { display: none !important; }
             #orientation-warning { display: flex; }
@@ -64,9 +93,9 @@
 
         #game-container {
             background-color: var(--panel-color);
-            width: 90vw; /* Scales with screen width */
-            max-width: 900px;
-            padding: 2vw 4vw;
+            width: 95vw; 
+            max-width: 850px;
+            padding: 30px 20px;
             box-sizing: border-box;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
@@ -75,6 +104,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative;
         }
 
         h1 {
@@ -82,11 +112,11 @@
             color: var(--accent-color);
             text-transform: uppercase;
             letter-spacing: 2px;
-            font-size: clamp(18px, 3vw, 24px);
+            font-size: clamp(16px, 2.5vw, 22px);
         }
 
         p.instructions {
-            font-size: clamp(12px, 2vw, 14px);
+            font-size: clamp(11px, 1.8vw, 14px);
             color: #aaa;
             margin-bottom: 25px;
         }
@@ -94,8 +124,9 @@
         .puzzle-area {
             display: flex;
             flex-direction: row; 
-            gap: 3vw;
-            margin-bottom: 30px;
+            flex-wrap: wrap; /* Prevents overlapping on small screens */
+            gap: 2vw;
+            margin-bottom: 20px;
             width: 100%;
             justify-content: center;
         }
@@ -103,17 +134,18 @@
         .word-group {
             display: flex;
             justify-content: center;
-            gap: 1vw;
+            gap: 0.8vw;
+            flex-wrap: wrap;
         }
 
         .tile {
-            /* Fluid sizing: shrinks on small screens, caps at 60px */
-            width: clamp(30px, 6vw, 60px);
-            height: clamp(30px, 6vw, 60px);
+            /* Reduced size as requested */
+            width: clamp(25px, 4.5vw, 45px);
+            height: clamp(25px, 4.5vw, 45px);
             background-color: var(--tile-bg);
-            border: 3px solid var(--tile-border);
-            border-radius: 8px;
-            font-size: clamp(18px, 4vw, 28px);
+            border: 2px solid var(--tile-border);
+            border-radius: 6px;
+            font-size: clamp(16px, 3vw, 22px);
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -137,7 +169,6 @@
             color: var(--accent-color);
         }
 
-        /* Styling for when a letter is in the right spot */
         .tile.correct {
             border-color: var(--success-color);
             background-color: rgba(76, 209, 55, 0.1);
@@ -147,7 +178,7 @@
 
         .tile.fixed {
             cursor: default;
-            pointer-events: none; /* Cannot be clicked or swapped */
+            pointer-events: none;
             opacity: 0.9;
         }
 
@@ -155,6 +186,49 @@
             cursor: default;
             pointer-events: none;
             box-shadow: 0 0 15px rgba(76, 209, 55, 0.4);
+        }
+
+        /* Animation Section */
+        #animation-container {
+            display: none; /* Hidden by default */
+            position: relative;
+            width: 100px;
+            height: 80px;
+            margin: 10px auto;
+        }
+
+        #animation-container.active {
+            display: block;
+        }
+
+        .envelope {
+            width: 60px;
+            height: 60px;
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            fill: var(--accent-color);
+            z-index: 2;
+        }
+
+        .question-mark {
+            position: absolute;
+            font-size: 40px;
+            font-weight: bold;
+            color: var(--success-color);
+            z-index: 1;
+            opacity: 0;
+        }
+
+        .question-mark.animate {
+            animation: flyIn 1.5s ease-in-out forwards;
+        }
+
+        @keyframes flyIn {
+            0% { transform: translate(-40px, -80px) scale(1.5) rotate(-30deg); opacity: 0; }
+            30% { opacity: 1; }
+            70% { transform: translate(30px, -10px) scale(0.8) rotate(15deg); opacity: 1; }
+            100% { transform: translate(35px, 20px) scale(0.2) rotate(0deg); opacity: 0; }
         }
 
         #message {
@@ -165,6 +239,7 @@
             color: var(--success-color);
             opacity: 0;
             transition: opacity 0.5s ease;
+            margin-top: 10px;
         }
 
         #message.visible {
@@ -173,6 +248,12 @@
     </style>
 </head>
 <body>
+
+    <button id="fullscreen-btn" title="Toggle Fullscreen">
+        <svg viewBox="0 0 24 24">
+            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        </svg>
+    </button>
 
     <div id="orientation-warning">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -188,17 +269,37 @@
         
         <div class="puzzle-area">
             <div class="word-group" id="word1"></div>
-            
             <div class="word-group" id="word2"></div>
         </div>
 
-        <div id="message">ACCESS GRANTED</div>
+        <div id="animation-container">
+            <div class="question-mark">?</div>
+            <svg class="envelope" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
+        </div>
+
+        <div id="message">MESSAGE DELIVERED</div>
     </div>
 
     <script>
+        // Fullscreen Logic
+        const fsBtn = document.getElementById('fullscreen-btn');
+        fsBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        // Game Logic
         const targetWord1 = "ILOA";
         const targetWord2 = "SONJALLE";
-        
         const fixedFirst = "I";
         const fixedLast = "E";
         
@@ -230,7 +331,6 @@
                 word2Container.appendChild(createTile(startingLetters[i], isFixed));
             }
 
-            // Check correct positions immediately on load
             updateGameState();
         }
 
@@ -243,8 +343,6 @@
                 tile.classList.add('fixed');
             }
             
-            // Even fixed tiles need the click listener structural bypass 
-            // but pointer-events:none in CSS stops them from triggering it.
             tile.addEventListener('click', () => {
                 if (isSolved || tile.classList.contains('fixed')) return; 
 
@@ -277,7 +375,6 @@
             let currentWord1 = "";
             let currentWord2 = "";
 
-            // Check Word 1
             Array.from(word1Container.children).forEach((tile, index) => {
                 currentWord1 += tile.innerText;
                 if (tile.innerText === targetWord1[index]) {
@@ -287,7 +384,6 @@
                 }
             });
 
-            // Check Word 2
             Array.from(word2Container.children).forEach((tile, index) => {
                 currentWord2 += tile.innerText;
                 if (tile.innerText === targetWord2[index]) {
@@ -297,7 +393,6 @@
                 }
             });
 
-            // Check Win Condition
             if (currentWord1 === targetWord1 && currentWord2 === targetWord2) {
                 triggerWin();
             }
@@ -312,8 +407,18 @@
                 tile.classList.add('locked');
             });
 
+            // Trigger Animation
+            const animContainer = document.getElementById('animation-container');
+            const questionMark = document.querySelector('.question-mark');
             const messageEl = document.getElementById('message');
-            messageEl.classList.add('visible');
+
+            animContainer.classList.add('active');
+            questionMark.classList.add('animate');
+
+            // Show success message after animation completes (1.5 seconds)
+            setTimeout(() => {
+                messageEl.classList.add('visible');
+            }, 1500);
         }
 
         initBoard();

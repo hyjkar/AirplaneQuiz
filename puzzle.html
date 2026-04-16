@@ -139,7 +139,6 @@
         }
 
         .tile {
-            /* Reduced size as requested */
             width: clamp(25px, 4.5vw, 45px);
             height: clamp(25px, 4.5vw, 45px);
             background-color: var(--tile-bg);
@@ -190,7 +189,7 @@
 
         /* Animation Section */
         #animation-container {
-            display: none; /* Hidden by default */
+            display: none; 
             position: relative;
             width: 100px;
             height: 80px;
@@ -303,12 +302,23 @@
         const fixedFirst = "I";
         const fixedLast = "E";
         
-        let pool = "LOASONJALL".split("");
+        const targetPoolStr = "LOASONJALL";
+        let pool = targetPoolStr.split("");
         
+        // Ensure absolutely NO non-fixed letter starts in its correct final spot
         let isShuffled = false;
         while (!isShuffled) {
             pool.sort(() => Math.random() - 0.5);
-            if (pool.join("") !== "LOASONJALL") {
+            
+            let hasCorrectLetter = false;
+            for (let i = 0; i < pool.length; i++) {
+                if (pool[i] === targetPoolStr[i]) {
+                    hasCorrectLetter = true;
+                    break;
+                }
+            }
+            
+            if (!hasCorrectLetter) {
                 isShuffled = true;
             }
         }
